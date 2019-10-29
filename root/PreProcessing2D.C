@@ -40,7 +40,6 @@ int main ()
     for (Int_t iEvent = 0; iEvent < PtreeK2->GetEntries(); iEvent++)
     {
         PtreeK2->GetEntry(iEvent);
-        if (evKaonCouple.nKaonCouple <= 4) continue;
         for (int iKaon = 0; iKaon < evKaonCouple.nKaonCouple; iKaon++ )
         {
             if (evKaonCouple.bRec[iKaon] == 0) continue;
@@ -55,7 +54,6 @@ int main ()
                     if (evKaonCouple.pT[iKaon] >= fBound2D_pT(pT) && evKaonCouple.pT[iKaon] < fBound2D_pT(pT+1)) ipT = pT;
                     if (evKaonCouple.pT[jKaon] >= fBound2D_pT(pT) && evKaonCouple.pT[jKaon] < fBound2D_pT(pT+1)) jpT = pT;
                 }
-                 
                 hdM_dpT_Tot_Rec2D[ipT][jpT]->Fill(evKaonCouple.InvMass[iKaon],evKaonCouple.InvMass[jKaon]);
             }
         }

@@ -72,11 +72,14 @@ int main ()
     for (Int_t iEvent = 0; iEvent < PtreeK2->GetEntries(); iEvent++)
     {
         PtreeK2->GetEntry(iEvent);
-        if (evKaonCouple.nKaonCouple <= 4) continue;
         for (Int_t iKaon = 0; iKaon < evKaonCouple.nKaonCouple; iKaon++)
         {
-            for (Int_t jKaon = iKaon+1; jKaon < evKaonCouple.nKaonCouple; jKaon++)
+            for (Int_t jKaon = 0; jKaon < evKaonCouple.nKaonCouple; jKaon++)
             {
+                if ( evKaonCouple.iKaon[iKaon] == evKaonCouple.iKaon[jKaon] ) continue;
+                if ( evKaonCouple.iKaon[jKaon] == evKaonCouple.iKaon[iKaon] ) continue;
+                if ( evKaonCouple.jKaon[iKaon] == evKaonCouple.jKaon[jKaon] ) continue;
+                if ( evKaonCouple.jKaon[jKaon] == evKaonCouple.jKaon[iKaon] ) continue;
                 if ( !(evKaonCouple.bPhi[iKaon] && evKaonCouple.bPhi[jKaon]) ) continue;
                 hPhiGen_2D->Fill(evKaonCouple.pT[iKaon],evKaonCouple.pT[jKaon]);
                 if ( !(evKaonCouple.bRec[iKaon] && evKaonCouple.bRec[jKaon]) ) continue;

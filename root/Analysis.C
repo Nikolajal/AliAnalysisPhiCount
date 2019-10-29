@@ -195,16 +195,16 @@ int Analysis ()
             ch42D[iRVar][iRVa2] = new RooRealVar (hName,hName,0.,-1.,1.);
             
             hName       = Form("nSig2D_%i_%i",iRVar,iRVa2);
-            nSig2D[iRVar][iRVa2] = new RooRealVar (hName,hName,0.2*nEntries2D[iRVar][iRVa2],0.,nEntries2D[iRVar][iRVa2]);
+            nSig2D[iRVar][iRVa2] = new RooRealVar (hName,hName,0.01*nEntries2D[iRVar][iRVa2],0.,nEntries2D[iRVar][iRVa2]);
             
             hName       = Form("nBkg2D_%i_%i",iRVar,iRVa2);
-            nBkg2D[iRVar][iRVa2] = new RooRealVar (hName,hName,0.8*nEntries2D[iRVar][iRVa2],0.,nEntries2D[iRVar][iRVa2]);
+            nBkg2D[iRVar][iRVa2] = new RooRealVar (hName,hName,0.99*nEntries2D[iRVar][iRVa2],0.,nEntries2D[iRVar][iRVa2]);
             
             hName       = Form("PhiMass2D_%i_%i",iRVar,iRVa2);
             phiMass2D[iRVar][iRVa2] = new RooRealVar (hName,hName,1.020,1.010,1.030);
             
             hName       = Form("PhiWidth2D_%i_%i",iRVar,iRVa2);
-            phiWidth2D[iRVar][iRVa2] = new RooRealVar (hName,hName,0.05,0.0005,0.01);
+            phiWidth2D[iRVar][iRVa2] = new RooRealVar (hName,hName,0.005,0.003,0.01);
         }
     }
      
@@ -255,6 +255,9 @@ int Analysis ()
     {
         for (int iHist2 = 0; iHist2 < nBinPT2D; iHist2++ )
         {
+            //x.setRange(“oneSigma”,-3,3) ;
+            //RooAbsReal* fracInt = g.createIntegral(x,NormSet(x),Range(“cut”))
+            
             auto N_Raw      = ((nSig2D[iHisto][iHist2])->getVal());
             auto N_RawE     = ((nSig2D[iHisto][iHist2])->getError());
 
