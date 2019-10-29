@@ -116,7 +116,7 @@ int main ()
         if(nKaon > 0) PtreePhi->Fill();
     }
 
-    TFile * outFile = new TFile(outMC,"recreate");
+    TFile * outFile = new TFile(oFileMonCar,"recreate");
     PtreeK2     ->Write();
     PtreePhi    ->Write();
     outFile     ->Close();
