@@ -63,14 +63,14 @@ const Float_t   nMax_pT     = 4.;
 //___________________
 
 // InvMass range
-auto const nBinIM1D         = 90;
-auto const fMinIM1D         = 0.99;
-auto const fMaxIM1D         = 1.09;
+const Int_t     nBinIM1D    = 90;
+const Float_t   fMinIM1D    = 0.99;
+const Float_t   fMaxIM1D    = 1.09;
 
 // InvMass range
-auto const nBinIM2D         = 45;
-auto const fMinIM2D         = 0.99;
-auto const fMaxIM2D         = 1.09;
+const Int_t     nBinIM2D    = 45;
+const Float_t   fMinIM2D    = 0.99;
+const Float_t   fMaxIM2D    = 1.09;
 
 // pT cuts
 const Int_t     nBinPT1D    = 40;
