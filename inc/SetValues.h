@@ -44,6 +44,7 @@ auto const oFilePreP2D  = "./result/outPreProcessing2D.root";
 auto const oFileDataFt  = "./result/outDataFormat.root";
 auto const oFileAnalys  = "./result/outAnalysis.root";
 auto const oFileEffici  = "./result/outEfficiency.root";
+auto const oFileHistog  = "./result/outHistogram.root";
 auto const iFileMCEffi  = "./result/outGeneratorMC_Efficiency.root";
 auto const hPhiEff      = "hPhiEff";
 auto const PTreeNameK2  = "PythiaTreeK2";
@@ -68,7 +69,7 @@ const Float_t   fMinIM1D    = 0.99;
 const Float_t   fMaxIM1D    = 1.09;
 
 // InvMass range
-const Int_t     nBinIM2D    = 45;
+const Int_t     nBinIM2D    = 60;
 const Float_t   fMinIM2D    = 0.99;
 const Float_t   fMaxIM2D    = 1.09;
 
@@ -119,17 +120,6 @@ Float_t fBound_pT (Int_t index)
 Float_t fBound2D_pT (Int_t index)
 {
     return (index)*(fMaxPT2D - fMinPT2D)/(static_cast<Float_t>(nBinPT2D));
-}
-
-Bool_t checkBool (int a, int b, int c, int d)
-{
-    if ( a == b ) return false;
-    if ( a == c ) return false;
-    if ( a == d ) return false;
-    if ( b == c ) return false;
-    if ( b == d ) return false;
-    if ( c == d ) return false;
-    return true;
 }
 
 #endif

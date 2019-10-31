@@ -1,4 +1,4 @@
-g++ ./root/PreProcessing2D.C \
+g++ -L $ROOTSYS/lib -lRooFit ./root/PreProcessing2D.C \
 -o ./exe/PreProcessing2D \
 -std=c++11 \
 -I/Applications/root-build/include/ \

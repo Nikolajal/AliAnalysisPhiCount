@@ -26,6 +26,16 @@ int main ()
     PtreePhi  ->SetBranchAddress    ("evPhi.nPhi",&evPhi.nPhi);
     PtreePhi  ->SetBranchAddress    ("evPhi.pT",&evPhi.pT);
     
+    TH1F ** hdM_dpT_Tot_Rec     = new TH1F * [nBin_pT];
+    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
+    {
+        auto hName = Form("hdM_dpT_Tot_Rec_%i",iHisto);
+        auto hFill = Form("evKaonCouple.InvMass>>hdM_dpT_Tot_Rec_%i",iHisto);
+        auto hCuts = Form("evKaonCouple.pT >= %f && evKaonCouple.pT < %f && evKaonCouple.bRec == 1",fBound2D_pT(iHisto),fBound2D_pT(iHisto+1));
+        hdM_dpT_Tot_Rec[iHisto] = new TH1F (hName,hName,nBins,minBound,maxBound);
+        PtreeK2->Draw(hFill,hCuts,"goff");
+    }
+    
     TH2F ***hdM_dpT_Tot_Rec2D   = new TH2F **[nBinPT2D];
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
     {
@@ -66,6 +76,10 @@ int main ()
         {
             hdM_dpT_Tot_Rec2D[iHisto][iHist2]->Write();
         }
+    }
+    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
+    {
+        hdM_dpT_Tot_Rec[iHisto] -> Write();
     }
     outFile     ->Close();
     
