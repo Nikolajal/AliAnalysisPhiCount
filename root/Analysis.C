@@ -115,6 +115,8 @@ int Analysis ()
     //Check on results
     hPhiChk_2D->Divide(hPhiRes_2D,hPhiTru_2D,1.,1.,"");
     
+    
+    TFile *outFil2 = new TFile(oFileAnalys,"recreate");
     hPhiEff_1D->Write();
     hPhiEff_2D->Write();
     hPhiRaw_1D->Write();
@@ -129,6 +131,7 @@ int Analysis ()
     inFil2    -> Close();
     inFilE    -> Close();
     outFile   -> Close();
+    outFil2   -> Close();
     
     return 0;
 }

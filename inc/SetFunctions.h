@@ -66,12 +66,11 @@ enum fitresults2D
 {
     inBB,
     inBS,
-    inBkg2D,
     inSB,
     inSS,
 };
 
-void ModelFit1D (RooDataHist * data, RooRealVar var, FIT1D_RESULT & result, Int_t index)
+void ModelFit1D (RooDataHist * data, RooRealVar var, FIT1D_RESULT & result, Int_t index, Bool_t check = false)
 {
     /* Global variables */
     auto nEntries = data->sumEntries();
@@ -95,30 +94,45 @@ void ModelFit1D (RooDataHist * data, RooRealVar var, FIT1D_RESULT & result, Int_
     
     /* Model */
     result.fMod         = new RooAddPdf ("fMod","fMod",RooArgList(*fBkg,*fSig),RooArgList(*nBkg,*nSig));
-    result.FitRes       = result.fMod->fitTo(*data,Save());
+    result.FitRes       = result.fMod->fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save());
     
     /* Save to File */
-    TH1* Mod1D = result.fMod->createHistogram(Form("Mod1D_%f_%f",fBound_pT(index),fBound_pT(index+1)),var,Binning(20));
-    Mod1D->Write();
+    if (check == false)
+    {
+        RooPlot * frame = var.frame();
+        data->plotOn(frame);
+        result.fMod->plotOn(frame);
+        result.fMod->plotOn(frame,Components("fBkg"),LineStyle(kDashed));
+        frame->Write();
+    }
+    if (check == true)
+    {
+        TH1* Mod1D = result.fMod->createHistogram(Form("Mod1D_%f_%f",fBound2D_pT(index),fBound2D_pT(index+1)),var,Binning(nBinIM1D,fMinIM1D,fMaxIM1D));
+        Mod1D->Write();
+        RooPlot * frame = var.frame();
+        data->plotOn(frame);
+        result.fMod->plotOn(frame);
+        result.fMod->plotOn(frame,Components("fBkg"),LineStyle(kDashed));
+        frame->Write();
+    }
 }
 
 void ModelFit2D_Preprocess (RooDataHist ** data, RooRealVar var, FIT1D_RESULT_ARRAY & result)
 {
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
     {
-        ModelFit1D(data[iHisto],var,result.Array[iHisto],iHisto);
+        ModelFit1D(data[iHisto],var,result.Array[iHisto],iHisto,true);
     }
 }
 
 void ModelFit2D (RooDataHist * data, RooRealVar varx, RooRealVar vary, FIT1D_RESULT & result, FIT1D_RESULT_ARRAY & preprocess, Int_t index, Int_t jndex)
 {
     /* Global variables */
-    RooRealVar * nBB    = new RooRealVar ("nBB","nBB"           ,0.5,0.,20000);
-    RooRealVar * nSB    = new RooRealVar ("nSB","nSB"           ,0.5,0.,20000);
-    RooRealVar * nBS    = new RooRealVar ("nBS","nBS"           ,0.5,0.,20000);
-    RooRealVar * nSS    = new RooRealVar ("nSS","nSS"           ,0.5,0.,20000);
-    RooRealVar * nBkg   = new RooRealVar ("nBkg","nBkg"         ,0.5,0.,20000);
-    
+    auto nEntries = data->sumEntries();
+    RooRealVar * nBB    = new RooRealVar ("nBB","nBB"           ,0.25*nEntries,0.,nEntries);
+    RooRealVar * nSB    = new RooRealVar ("nSB","nSB"           ,0.25*nEntries,0.,nEntries);
+    RooRealVar * nBS    = new RooRealVar ("nBS","nBS"           ,0.25*nEntries,0.,nEntries);
+    RooRealVar * nSS    = new RooRealVar ("nSS","nSS"           ,0.25*nEntries,0.,nEntries);
     
     /* Background */
     // XBkg
@@ -154,17 +168,16 @@ void ModelFit2D (RooDataHist * data, RooRealVar varx, RooRealVar vary, FIT1D_RES
     RooProdPdf* fBB     = new RooProdPdf("fBB","fBB"            ,*fBkgx,*fBkgy);
     RooProdPdf* fSB     = new RooProdPdf("fSB","fSB"            ,*fSigx,*fBkgy);
     RooProdPdf* fBS     = new RooProdPdf("fBS","fBS"            ,*fBkgx,*fSigy);
-    RooAddPdf * fBkg    = new RooAddPdf ("fBkg","fBkg"          ,RooArgList(*fBB,*fSB,*fBS),RooArgList(*nBB,*nSB,*nBS));
     
     //Signal
-    RooProdPdf* fSS     = new RooProdPdf("fBB","fBB"            ,*fBkgx,*fBkgy);
+    RooProdPdf* fSS     = new RooProdPdf("fSS","fSS"            ,*fSigx,*fSigy);
     
     //Total
-    result.fMod         = new RooAddPdf ("fMod","fMod"          ,RooArgList(*fBkg,*fSS),RooArgList(*nBkg,*nSS));
-    result.FitRes       = result.fMod->fitTo(*data,Save());
+    result.fMod         = new RooAddPdf ("fMod","fMod"          ,RooArgList(*fBB,*fBS,*fSB,*fSS),RooArgList(*nBB,*nBS,*nSB,*nSS));
+    result.FitRes       = result.fMod->fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save());
     
     /* Save to File */
-    TH1* Mod2D = result.fMod->createHistogram(Form("Mod1D_%f_%f_%f_%f",fBound2D_pT(index),fBound2D_pT(index+1),fBound2D_pT(jndex),fBound2D_pT(jndex+1)),varx,Binning(20),YVar(vary,Binning(20)));
+    TH2F* Mod2D = (TH2F*)result.fMod->createHistogram(Form("Mod2D_%f_%f_%f_%f",fBound2D_pT(index),fBound2D_pT(index+1),fBound2D_pT(jndex),fBound2D_pT(jndex+1)),varx,Binning(nBinIM2D,fMinIM2D,fMaxIM2D),YVar(vary,Binning(nBinIM2D,fMinIM2D,fMaxIM2D)));
     Mod2D->Write();
 }
 

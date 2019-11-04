@@ -29,15 +29,19 @@ int main ()
     /*------*/
     /*  1D  */
     /*------*/
-    TH1F * hPhiGen_1D   = new TH1F ("hPhiGen_1D","hPhiGen_1D",nBinPhi1D,fMinPhi1D,fMaxPhi1D);
-    TH1F * hPhiRec_1D   = new TH1F ("hPhiRec_1D","hPhiRec_1D",nBinPhi1D,fMinPhi1D,fMaxPhi1D);
-    TH1F * hPhiTru_1D   = new TH1F ("hPhiTru_1D","hPhiTru_1D",nBinPhi1D,fMinPhi1D,fMaxPhi1D);
-    TH1F * hPhiEff_1D   = new TH1F ("hPhiEff_1D","hPhiEff_1D",nBinPhi1D,fMinPhi1D,fMaxPhi1D);
+    TH1F * hPhiGen_1D   = new TH1F ("hPhiGen_1D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode, 1D analysis",nBinPT1D,fMinPT1D,fMaxPT1D);
+    hPhiGen_1D->GetXaxis()->SetTitle("pT (GeV)");
+    TH1F * hPhiRec_1D   = new TH1F ("hPhiRec_1D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode, recordable in ALICE exp, 1D analysis",nBinPT1D,fMinPT1D,fMaxPT1D);
+    hPhiRec_1D->GetXaxis()->SetTitle("pT (GeV)");
+    TH1F * hPhiTru_1D   = new TH1F ("hPhiTru_1D","Generated #varphi per |y|<5, 1D analysis",nBinPT1D,fMinPT1D,fMaxPT1D);
+    hPhiTru_1D->GetXaxis()->SetTitle("pT (GeV)");
+    TH1F * hPhiEff_1D   = new TH1F ("hPhiEff_1D","#varphi reconstruction efficiency in ALICE exp (|y|<5), 1D analysis",nBinPT1D,fMinPT1D,fMaxPT1D);
+    hPhiEff_1D->GetXaxis()->SetTitle("pT (GeV)");
     
     //N_Gen and N_rec built
     for (int iHisto = 0; iHisto < nBin_pT; iHisto++)
     {
-        auto hCuts = Form("evKaonCouple.pT >= %f && evKaonCouple.pT < %f && evKaonCouple.bPhi",fBound_pT(iHisto),fBound_pT(iHisto+1));
+        auto hCuts = Form("evKaonCouple.pT >= %f && evKaonCouple.pT < %f && evKaonCouple.bPhi",fBoundPT1D(iHisto),fBoundPT1D(iHisto+1));
         TH1F hdM_dpT ("hdM_dpT","hdM_dpT",nBins,minBound,maxBound);
         PtreeK2->Draw("evKaonCouple.InvMass>>hdM_dpT",hCuts,"goff");
         auto N_Val      = (hdM_dpT.GetEntries());
@@ -45,7 +49,7 @@ int main ()
         hPhiGen_1D->SetBinContent      (iHisto+1,N_Val);
         hPhiGen_1D->SetBinError        (iHisto+1,N_ValE);
         
-        hCuts = Form("evKaonCouple.pT >= %f && evKaonCouple.pT < %f && evKaonCouple.bRec && evKaonCouple.bPhi",fBound_pT(iHisto),fBound_pT(iHisto+1));
+        hCuts = Form("evKaonCouple.pT >= %f && evKaonCouple.pT < %f && evKaonCouple.bRec && evKaonCouple.bPhi",fBoundPT1D(iHisto),fBoundPT1D(iHisto+1));
         TH1F hdM_dpT1 ("hdM_dpT1","hdM_dpT1",nBins,minBound,maxBound);
         PtreeK2->Draw("evKaonCouple.InvMass>>hdM_dpT",hCuts,"goff");
         N_Val      = (hdM_dpT.GetEntries());
@@ -64,10 +68,18 @@ int main ()
     /*  2D  */
     /*------*/
     
-    TH2F * hPhiGen_2D   = new TH2F ("hPhiGen_2D","hPhiGen_2D",nBinPhi2D,fMinPhi2D,fMaxPhi2D,nBinPhi2D,fMinPhi2D,fMaxPhi2D);
-    TH2F * hPhiRec_2D   = new TH2F ("hPhiRec_2D","hPhiRec_2D",nBinPhi2D,fMinPhi2D,fMaxPhi2D,nBinPhi2D,fMinPhi2D,fMaxPhi2D);
-    TH2F * hPhiTru_2D   = new TH2F ("hPhiTru_2D","hPhiTru_2D",nBinPhi2D,fMinPhi2D,fMaxPhi2D,nBinPhi2D,fMinPhi2D,fMaxPhi2D);
-    TH2F * hPhiEff_2D   = new TH2F ("hPhiEff_2D","hPhiEff_2D",nBinPhi2D,fMinPhi2D,fMaxPhi2D,nBinPhi2D,fMinPhi2D,fMaxPhi2D);
+    TH2F * hPhiGen_2D   = new TH2F ("hPhiGen_2D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode, 2D analysis",nBinPT2D,fMinPT2D,fMaxPT2D,nBinPT2D,fMinPT2D,fMaxPT2D);
+    hPhiGen_2D->GetXaxis()->SetTitle("pT (GeV)");
+    hPhiGen_2D->GetYaxis()->SetTitle("pT (GeV)");
+    TH2F * hPhiRec_2D   = new TH2F ("hPhiRec_2D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode recordable in ALICE exp, 2D analysis",nBinPT2D,fMinPT2D,fMaxPT2D,nBinPT2D,fMinPT2D,fMaxPT2D);
+    hPhiRec_2D->GetXaxis()->SetTitle("pT (GeV)");
+    hPhiRec_2D->GetYaxis()->SetTitle("pT (GeV)");
+    TH2F * hPhiTru_2D   = new TH2F ("hPhiTru_2D","Generated #varphi per |y|<5, 2D analysis",nBinPT2D,fMinPT2D,fMaxPT2D,nBinPT2D,fMinPT2D,fMaxPT2D);
+    hPhiTru_2D->GetXaxis()->SetTitle("pT (GeV)");
+    hPhiTru_2D->GetYaxis()->SetTitle("pT (GeV)");
+    TH2F * hPhiEff_2D   = new TH2F ("hPhiEff_2D","#varphi reconstruction efficiency in ALICE exp (|y|<5), 2D analysis",nBinPT2D,fMinPT2D,fMaxPT2D,nBinPT2D,fMinPT2D,fMaxPT2D);
+    hPhiEff_2D->GetXaxis()->SetTitle("pT (GeV)");
+    hPhiEff_2D->GetYaxis()->SetTitle("pT (GeV)");
     
     for (Int_t iEvent = 0; iEvent < PtreeK2->GetEntries(); iEvent++)
     {

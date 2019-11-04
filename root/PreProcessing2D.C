@@ -55,8 +55,10 @@ int main ()
             if (evKaonCouple.bRec[iKaon] == 0) continue;
             for (int jKaon = 0; jKaon < evKaonCouple.nKaonCouple; jKaon++ )
             {
-                if (evKaonCouple.bRec[jKaon] == 0)  continue;
-                if (iKaon == jKaon)  continue;
+                if ( evKaonCouple.iKaon[iKaon] == evKaonCouple.iKaon[jKaon] ) continue;
+                if ( evKaonCouple.iKaon[jKaon] == evKaonCouple.iKaon[iKaon] ) continue;
+                if ( evKaonCouple.jKaon[iKaon] == evKaonCouple.jKaon[jKaon] ) continue;
+                if ( evKaonCouple.jKaon[jKaon] == evKaonCouple.jKaon[iKaon] ) continue;
                 auto ipT = 0;
                 auto jpT = 0;
                 for (int pT = 0; pT < nBinPT2D; pT++ )

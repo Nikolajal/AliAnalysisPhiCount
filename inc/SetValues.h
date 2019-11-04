@@ -51,47 +51,25 @@ auto const PTreeNameK2  = "PythiaTreeK2";
 auto const PTreeNamePhi = "PythiaTreePhi";
 auto const PEvents      = 1e7;
 
-/*Change_____________*/
-// InvMass range
-auto const nBins            = 100;       //nBinIM0D
-auto const minBound         = 0.99;
-auto const maxBound         = 1.09;
-
-// pT cuts
-const Int_t     nBin_pT     = 40;
-const Float_t   nMin_pT     = 0.;
-const Float_t   nMax_pT     = 4.;
-//___________________
-
-// InvMass range
-const Int_t     nBinIM1D    = 90;
+// InvMass range 1D
+const Int_t     nBinIM1D    = 100;
 const Float_t   fMinIM1D    = 0.99;
 const Float_t   fMaxIM1D    = 1.09;
 
-// InvMass range
-const Int_t     nBinIM2D    = 60;
+// InvMass range 2D
+const Int_t     nBinIM2D    = 100;
 const Float_t   fMinIM2D    = 0.99;
 const Float_t   fMaxIM2D    = 1.09;
 
-// pT cuts
+// pT cuts 1D
 const Int_t     nBinPT1D    = 40;
 const Float_t   fMinPT1D    = 0.;
 const Float_t   fMaxPT1D    = 4.;
 
-// pT cuts
-const Int_t     nBinPT2D    = 4;
+// pT cuts 2D
+const Int_t     nBinPT2D    = 1;
 const Float_t   fMinPT2D    = 0.;
 const Float_t   fMaxPT2D    = 4.;
-
-// pT cuts
-const Int_t     nBinPhi1D   = 40;
-const Float_t   fMinPhi1D   = 0.;
-const Float_t   fMaxPhi1D   = 4.;
-
-// pT cuts
-const Int_t     nBinPhi2D   = 4;
-const Float_t   fMinPhi2D   = 0.;
-const Float_t   fMaxPhi2D   = 4.;
 
 typedef struct
 {
@@ -112,12 +90,12 @@ typedef struct
     Float_t pT[1024];
 } EVPHI;
 
-Float_t fBound_pT (Int_t index)
+Float_t fBoundPT1D (Int_t index)
 {
     return (index)*(nMax_pT - nMin_pT)/(static_cast<Float_t>(nBin_pT));
 }
 
-Float_t fBound2D_pT (Int_t index)
+Float_t fBoundPT2D (Int_t index)
 {
     return (index)*(fMaxPT2D - fMinPT2D)/(static_cast<Float_t>(nBinPT2D));
 }
