@@ -43,8 +43,11 @@ auto const oFilePreP1D  = "./result/outPreProcessing1D.root";
 auto const oFilePreP2D  = "./result/outPreProcessing2D.root";
 auto const oFileDataFt  = "./result/outDataFormat.root";
 auto const oFileAnalys  = "./result/outAnalysis.root";
+auto const oFileAnal1D  = "./result/outAnalysis1D.root";
+auto const oFileAnal2D  = "./result/outAnalysis2D.root";
 auto const oFileEffici  = "./result/outEfficiency.root";
-auto const oFileHistog  = "./result/outHistogram.root";
+auto const oFileHist1D  = "./result/outHistogram1D.root";
+auto const oFileHist2D  = "./result/outHistogram2D.root";
 auto const iFileMCEffi  = "./result/outGeneratorMC_Efficiency.root";
 auto const hPhiEff      = "hPhiEff";
 auto const PTreeNameK2  = "PythiaTreeK2";
@@ -57,7 +60,7 @@ const Float_t   fMinIM1D    = 0.99;
 const Float_t   fMaxIM1D    = 1.09;
 
 // InvMass range 2D
-const Int_t     nBinIM2D    = 100;
+const Int_t     nBinIM2D    = 75;
 const Float_t   fMinIM2D    = 0.99;
 const Float_t   fMaxIM2D    = 1.09;
 
@@ -67,7 +70,7 @@ const Float_t   fMinPT1D    = 0.;
 const Float_t   fMaxPT1D    = 4.;
 
 // pT cuts 2D
-const Int_t     nBinPT2D    = 1;
+const Int_t     nBinPT2D    = 3.;
 const Float_t   fMinPT2D    = 0.;
 const Float_t   fMaxPT2D    = 4.;
 
@@ -92,12 +95,13 @@ typedef struct
 
 Float_t fBoundPT1D (Int_t index)
 {
-    return (index)*(nMax_pT - nMin_pT)/(static_cast<Float_t>(nBin_pT));
+    auto result = {0.,1.,2.,4.};
+    return fMinPT1D+(index)*(fMaxPT1D - fMinPT1D)/(static_cast<Float_t>(nBinPT1D));
 }
 
 Float_t fBoundPT2D (Int_t index)
 {
-    return (index)*(fMaxPT2D - fMinPT2D)/(static_cast<Float_t>(nBinPT2D));
+    return fMinPT2D+(index)*(fMaxPT2D - fMinPT2D)/(static_cast<Float_t>(nBinPT2D));
 }
 
 #endif
