@@ -52,7 +52,7 @@ auto const iFileMCEffi  = "./result/outGeneratorMC_Efficiency.root";
 auto const hPhiEff      = "hPhiEff";
 auto const PTreeNameK2  = "PythiaTreeK2";
 auto const PTreeNamePhi = "PythiaTreePhi";
-auto const PEvents      = 1e7;
+auto const PEvents      = 1e5;
 
 // InvMass range 1D
 const Int_t     nBinIM1D    = 100;
