@@ -33,7 +33,7 @@ int main ()
     
     auto hName  = "Name";
     auto hTitle = "Title";
-    TH1F ** hdM_dpT_Tot_Rec     = new TH1F * [nBinIM1D];
+    TH1F ** hdM_dpT_Tot_Rec     = new TH1F * [nBinPT2D];
     TH2F ***hdM_dpT_Tot_Rec2D   = new TH2F **[nBinPT2D];
     TH2F ***hdM_dpT_Tot_Bkg2D   = new TH2F **[nBinPT2D];
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)

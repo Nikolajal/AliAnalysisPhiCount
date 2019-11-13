@@ -42,6 +42,7 @@ auto const oFileMonCar  = "./result/outGeneratorMC.root";
 auto const oFilePreP1D  = "./result/outPreProcessing1D.root";
 auto const oFilePreP2D  = "./result/outPreProcessing2D.root";
 auto const oFilePreBKG  = "./result/outPreProcessingBKG.root";
+auto const oFilePrBKG2  = "./result/outPreProcessingBKGModel.root";
 auto const oFileDataFt  = "./result/outDataFormat.root";
 auto const oFileAnalys  = "./result/outAnalysis.root";
 auto const oFileAnal1D  = "./result/outAnalysis1D.root";
@@ -52,8 +53,10 @@ auto const oFileHist2D  = "./result/outHistogram2D.root";
 auto const iFileMCEffi  = "./result/outGeneratorMC_Efficiency.root";
 auto const hPhiEff      = "hPhiEff";
 auto const PTreeNameK2  = "PythiaTreeK2";
+auto const PTreeNameKS  = "PythiaTreeKS";
+auto const PTreeNameKD  = "PythiaTreeKD";
 auto const PTreeNamePhi = "PythiaTreePhi";
-auto const PEvents      = 1e5;
+int  const PEvents      = 1e6;
 bool       BKG2         = false;
 
 // InvMass range 1D
