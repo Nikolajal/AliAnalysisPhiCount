@@ -30,16 +30,22 @@ int Analysis2D ()
         }
     }
 
+    
+    vSetBinsPT1D();
+    vSetBinsIM1D();
+    vSetBinsPT2D();
+    vSetBinsIM2D();
+    
     //Final Histograms
     TH1F * hPhiEff_2D      = (TH1F*)(iFile_Ef->Get("hPhiEff_2D"));
     TH1F * hPhiTru_2D      = (TH1F*)(iFile_Ef->Get("hPhiTru_2D"));
-    TH2F * hPhiRaw_2D      = new TH2F ("hPhiRaw_2D","hPhiRaw_2D",        nBinPT2D,fMinPT2D,fMaxPT2D,nBinPT2D,fMinPT2D,fMaxPT2D);
+    TH2F * hPhiRaw_2D      = new TH2F ("hPhiRaw_2D","hPhiRaw_2D",        nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
     hPhiRaw_2D->GetXaxis()->SetTitle("pT #varphi_{1} (GeV)");
     hPhiRaw_2D->GetYaxis()->SetTitle("pT #varphi_{2} (GeV)");
-    TH2F * hPhiRes_2D      = new TH2F ("hPhiRes_2D","hPhiRes_2D",        nBinPT2D,fMinPT2D,fMaxPT2D,nBinPT2D,fMinPT2D,fMaxPT2D);
+    TH2F * hPhiRes_2D      = new TH2F ("hPhiRes_2D","hPhiRes_2D",        nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
     hPhiRes_2D->GetXaxis()->SetTitle("pT #varphi_{1} (GeV)");
     hPhiRes_2D->GetYaxis()->SetTitle("pT #varphi_{2} (GeV)");
-    TH2F * hPhiChk_2D      = new TH2F ("hPhiChk_2D","hPhiChk_2D",        nBinPT2D,fMinPT2D,fMaxPT2D,nBinPT2D,fMinPT2D,fMaxPT2D);
+    TH2F * hPhiChk_2D      = new TH2F ("hPhiChk_2D","hPhiChk_2D",        nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
     hPhiChk_2D->GetXaxis()->SetTitle("pT #varphi_{1} (GeV)");
     hPhiChk_2D->GetYaxis()->SetTitle("pT #varphi_{2} (GeV)");
     
@@ -90,8 +96,12 @@ int Analysis2D ()
     {
         for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
         {
-            HistoModel(utility[iHisto],utility[jHisto],Results[iHisto][jHisto],xInvMass2D,yInvMass2D,Form("Model2D_%f_%f_%f_%f",fBoundPT2D(iHisto),fBoundPT2D(iHisto+1),fBoundPT2D(jHisto),fBoundPT2D(jHisto+1)))->Write();
+            HistoModel(utility[iHisto],utility[jHisto],Results[iHisto][jHisto],xInvMass2D,yInvMass2D,Form("Model2D_%f_%f_%f_%f",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]))->Write();
         }
+    }
+    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
+    {
+        HistoModel(utility[iHisto],xInvMass2D,Form("Model1D_%f_%f",fArrPT2D[iHisto],fArrPT2D[iHisto+1]))->Write();
     }
     oFile_Ht  -> Close();
     return 0;

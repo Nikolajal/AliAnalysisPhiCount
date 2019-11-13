@@ -29,79 +29,74 @@ int main ()
     /*------*/
     /*  1D  */
     /*------*/
-    TH1F * hPhiGen_1D   = new TH1F ("hPhiGen_1D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode, 1D analysis",nBinPT1D,fMinPT1D,fMaxPT1D);
+    
+    vSetBinsPT1D();
+    vSetBinsIM1D();
+    TH1F * hPhiGen_1D   = new TH1F ("hPhiGen_1D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode, 1D analysis",nBinPT1D,fArrPT1D);
     hPhiGen_1D->GetXaxis()->SetTitle("pT #varphi (GeV)");
-    TH1F * hPhiRec_1D   = new TH1F ("hPhiRec_1D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode, recordable in ALICE exp, 1D analysis",nBinPT1D,fMinPT1D,fMaxPT1D);
+    TH1F * hPhiRec_1D   = new TH1F ("hPhiRec_1D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode, recordable in ALICE exp, 1D analysis",nBinPT1D,fArrPT1D);
     hPhiRec_1D->GetXaxis()->SetTitle("pT #varphi (GeV)");
-    TH1F * hPhiTru_1D   = new TH1F ("hPhiTru_1D","Generated #varphi per |y|<5, 1D analysis",nBinPT1D,fMinPT1D,fMaxPT1D);
+    TH1F * hPhiTru_1D   = new TH1F ("hPhiTru_1D","Generated #varphi per |y|<5, 1D analysis",nBinPT1D,fArrPT1D);
     hPhiTru_1D->GetXaxis()->SetTitle("pT #varphi (GeV)");
-    TH1F * hPhiEff_1D   = new TH1F ("hPhiEff_1D","#varphi reconstruction efficiency in ALICE exp (|y|<5), 1D analysis",nBinPT1D,fMinPT1D,fMaxPT1D);
+    TH1F * hPhiEff_1D   = new TH1F ("hPhiEff_1D","#varphi reconstruction efficiency in ALICE exp (|y|<5), 1D analysis",nBinPT1D,fArrPT1D);
     hPhiEff_1D->GetXaxis()->SetTitle("pT #varphi (GeV)");
-    
-    //N_Gen and N_rec built
-    for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)
-    {
-        auto hCuts = Form("evKaonCouple.pT >= %f && evKaonCouple.pT < %f && evKaonCouple.bPhi",fBoundPT1D(iHisto),fBoundPT1D(iHisto+1));
-        TH1F hdM_dpT ("hdM_dpT","hdM_dpT",nBinIM1D,fMinIM1D,fMaxIM1D);
-        PtreeK2->Draw("evKaonCouple.InvMass>>hdM_dpT",hCuts,"goff");
-        auto N_Val      = (hdM_dpT.GetEntries());
-        auto N_ValE     = sqrt(N_Val);
-        hPhiGen_1D->SetBinContent      (iHisto+1,N_Val);
-        hPhiGen_1D->SetBinError        (iHisto+1,N_ValE);
-        
-        hCuts = Form("evKaonCouple.pT >= %f && evKaonCouple.pT < %f && evKaonCouple.bRec && evKaonCouple.bPhi",fBoundPT1D(iHisto),fBoundPT1D(iHisto+1));
-        TH1F hdM_dpT1 ("hdM_dpT1","hdM_dpT1",nBinIM1D,fMinIM1D,fMaxIM1D);
-        PtreeK2->Draw("evKaonCouple.InvMass>>hdM_dpT",hCuts,"goff");
-        N_Val      = (hdM_dpT.GetEntries());
-        N_ValE     = sqrt(N_Val);
-        hPhiRec_1D->SetBinContent      (iHisto+1,N_Val);
-        hPhiRec_1D->SetBinError        (iHisto+1,N_ValE);
-    }
-    
-    //N_Tru
-    PtreePhi->Draw("evPhi.pT >> hPhiTru_1D","","goff");
-    
-    //Efficiency
-    hPhiEff_1D->Divide(hPhiRec_1D,hPhiGen_1D,1,1,"b");
     
     /*------*/
     /*  2D  */
     /*------*/
     
-    TH2F * hPhiGen_2D   = new TH2F ("hPhiGen_2D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode, 2D analysis",nBinPT2D,fMinPT2D,fMaxPT2D,nBinPT2D,fMinPT2D,fMaxPT2D);
+    vSetBinsPT2D();
+    vSetBinsIM2D();
+    TH2F * hPhiEff_1D_2D    = new TH2F ("hPhiEff_1D_2D","hPhiEff_1D_2D",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    TH2F * hPhiChk_xD   = new TH2F ("hPhiChk_xD","hPhiChk_xD",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    TH1F * hPhiEff_1D2D_= new TH1F ("hPhiEff_1D2D_","hPhiEff_1D2D_",nBinPT2D,fArrPT2D);
+    
+    
+    TH2F * hPhiGen_2D   = new TH2F ("hPhiGen_2D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode, 2D analysis",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
     hPhiGen_2D->GetXaxis()->SetTitle("pT #varphi_{1} (GeV)");
     hPhiGen_2D->GetYaxis()->SetTitle("pT #varphi_{2} (GeV)");
-    TH2F * hPhiRec_2D   = new TH2F ("hPhiRec_2D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode recordable in ALICE exp, 2D analysis",nBinPT2D,fMinPT2D,fMaxPT2D,nBinPT2D,fMinPT2D,fMaxPT2D);
+    TH2F * hPhiRec_2D   = new TH2F ("hPhiRec_2D","Generated #varphi per |y|<5 in K_{+}K_{-} Decay mode recordable in ALICE exp, 2D analysis",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
     hPhiRec_2D->GetXaxis()->SetTitle("pT #varphi_{1} (GeV)");
     hPhiRec_2D->GetYaxis()->SetTitle("pT #varphi_{2} (GeV)");
-    TH2F * hPhiTru_2D   = new TH2F ("hPhiTru_2D","Generated #varphi per |y|<5, 2D analysis",nBinPT2D,fMinPT2D,fMaxPT2D,nBinPT2D,fMinPT2D,fMaxPT2D);
+    TH2F * hPhiTru_2D   = new TH2F ("hPhiTru_2D","Generated #varphi per |y|<5, 2D analysis",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
     hPhiTru_2D->GetXaxis()->SetTitle("pT #varphi_{1} (GeV)");
     hPhiTru_2D->GetYaxis()->SetTitle("pT #varphi_{2} (GeV)");
-    TH2F * hPhiEff_2D   = new TH2F ("hPhiEff_2D","#varphi reconstruction efficiency in ALICE exp (|y|<5), 2D analysis",nBinPT2D,fMinPT2D,fMaxPT2D,nBinPT2D,fMinPT2D,fMaxPT2D);
+    TH2F * hPhiEff_2D   = new TH2F ("hPhiEff_2D","#varphi reconstruction efficiency in ALICE exp (|y|<5), 2D analysis",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
     hPhiEff_2D->GetXaxis()->SetTitle("pT #varphi_{1} (GeV)");
     hPhiEff_2D->GetYaxis()->SetTitle("pT #varphi_{2} (GeV)");
     
+    //N_Gen & N_Rec
     for (Int_t iEvent = 0; iEvent < PtreeK2->GetEntries(); iEvent++)
     {
         PtreeK2->GetEntry(iEvent);
         for (int iPhi = 0; iPhi < evKaonCouple.nKaonCouple; iPhi++ )
         {
+            if (evKaonCouple.bPhi[iPhi] == false) continue;
+            hPhiGen_1D->Fill(evKaonCouple.pT[iPhi]);
+            if (evKaonCouple.bRec[iPhi] == false) continue;
+            hPhiRec_1D->Fill(evKaonCouple.pT[iPhi]);
+        }
+        for (int iPhi = 0; iPhi < evKaonCouple.nKaonCouple; iPhi++ )
+        {
             for (int jPhi = 0; jPhi < evKaonCouple.nKaonCouple; jPhi++ )
             {
+                // Only non overlapping couples of Kaons
                 if ( evKaonCouple.iKaon[iPhi] == evKaonCouple.iKaon[jPhi] ) continue;
-                if ( evKaonCouple.iKaon[jPhi] == evKaonCouple.iKaon[iPhi] ) continue;
+                if ( evKaonCouple.iKaon[iPhi] == evKaonCouple.jKaon[jPhi] ) continue;
+                if ( evKaonCouple.jKaon[iPhi] == evKaonCouple.iKaon[jPhi] ) continue;
                 if ( evKaonCouple.jKaon[iPhi] == evKaonCouple.jKaon[jPhi] ) continue;
-                if ( evKaonCouple.jKaon[jPhi] == evKaonCouple.jKaon[iPhi] ) continue;
-               
+                
+                // Only True Phi Candidates
                 if (evKaonCouple.bPhi[iPhi] == false) continue;
                 if (evKaonCouple.bPhi[jPhi] == false) continue;
                 
-                hPhiGen_2D->Fill(evKaonCouple.pT[iPhi],evKaonCouple.pT[jPhi]);
+                hPhiGen_2D->Fill(evKaonCouple.pT[iPhi],evKaonCouple.pT[jPhi],0.5);
                 
+                // Only Recordable Phi Candidates
                 if (evKaonCouple.bRec[iPhi] == false) continue;
                 if (evKaonCouple.bRec[jPhi] == false) continue;
                 
-                hPhiRec_2D->Fill(evKaonCouple.pT[iPhi],evKaonCouple.pT[jPhi]);
+                hPhiRec_2D->Fill(evKaonCouple.pT[iPhi],evKaonCouple.pT[jPhi],0.5);
             }
         }
     }
@@ -112,16 +107,30 @@ int main ()
         PtreePhi->GetEntry(iEvent);
         for (Int_t iPhi = 0; iPhi < evPhi.nPhi; iPhi++)
         {
-            for (Int_t jPhi = 1+iPhi; jPhi < evPhi.nPhi; jPhi++)
+            hPhiTru_1D->Fill(evPhi.pT[iPhi]);
+            for (Int_t jPhi = 0; jPhi < evPhi.nPhi; jPhi++)
             {
                 if (iPhi == jPhi) continue;
-                hPhiTru_2D->Fill(evPhi.pT[iPhi],evPhi.pT[jPhi]);
+                hPhiTru_2D->Fill(evPhi.pT[iPhi],evPhi.pT[jPhi],0.5);
             }
         }
     }
     
     //Efficiency
+    hPhiEff_1D->Divide(hPhiRec_1D,hPhiGen_1D,1,1,"b");
     hPhiEff_2D->Divide(hPhiRec_2D,hPhiGen_2D,1,1,"b");
+    
+    //Check on Efficiency
+    hPhiEff_1D2D_           ->Divide((hPhiRec_1D),(hPhiGen_1D),1,1,"b"); //->Rebin(1,"h2")
+    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
+    {
+        for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
+        {
+            hPhiEff_1D_2D->SetBinContent(iHisto+1,jHisto+1,(hPhiEff_1D2D_->GetBinContent(iHisto+1))*(hPhiEff_1D2D_->GetBinContent(jHisto+1)));
+            hPhiEff_1D_2D->SetBinError(iHisto+1,jHisto+1,(hPhiEff_1D2D_->GetBinContent(iHisto+1))*(hPhiEff_1D2D_->GetBinContent(jHisto+1))*((hPhiEff_1D2D_->GetBinError(iHisto+1))/(hPhiEff_1D2D_->GetBinContent(iHisto+1))+(hPhiEff_1D2D_->GetBinError(jHisto+1))/(hPhiEff_1D2D_->GetBinContent(jHisto+1))));
+        }
+    }
+    hPhiChk_xD              ->Divide(hPhiEff_2D,hPhiEff_1D_2D,1,1,"b");
     
     // Writing results out to file
     TFile * outFile = new TFile(oFileEffici,"recreate");
@@ -131,8 +140,25 @@ int main ()
     hPhiGen_2D      ->Write();
     hPhiRec_1D      ->Write();
     hPhiRec_2D      ->Write();
+    /*
+    hPhiEff_1D      ->SetMaximum(1.1);
+    hPhiEff_1D_2D   ->SetMaximum(1.1);
+    hPhiEff_1D2D_   ->SetMaximum(1.1);
+    hPhiEff_2D      ->SetMaximum(1.1);
+    hPhiChk_xD      ->SetMaximum(1.5);
+    
+    hPhiEff_1D      ->SetMinimum(0.);
+    hPhiEff_1D_2D   ->SetMinimum(0.);
+    hPhiEff_1D2D_   ->SetMinimum(0.);
+    hPhiEff_2D      ->SetMinimum(0.);
+    hPhiChk_xD      ->SetMinimum(0.5);
+    */
     hPhiEff_1D      ->Write();
+    hPhiEff_1D_2D   ->Write();
+    hPhiEff_1D2D_   ->Write();
     hPhiEff_2D      ->Write();
+    hPhiChk_xD      ->Write();
+    
     outFile         ->Close();
     return 0;
 }

@@ -23,70 +23,97 @@ int main ()
     PtreeK2  ->SetBranchAddress    ("evKaonCouple.InvMass",&evKaonCouple.InvMass);
     PtreeK2  ->SetBranchAddress    ("evKaonCouple.pT",&evKaonCouple.pT);
     
-    PtreePhi  ->SetBranchAddress    ("evPhi.nPhi",&evPhi.nPhi);
-    PtreePhi  ->SetBranchAddress    ("evPhi.pT",&evPhi.pT);
+    PtreePhi ->SetBranchAddress    ("evPhi.nPhi",&evPhi.nPhi);
+    PtreePhi ->SetBranchAddress    ("evPhi.pT",&evPhi.pT);
     
+    vSetBinsPT1D();
+    vSetBinsIM1D();
+    vSetBinsPT2D();
+    vSetBinsIM2D();
+    
+    auto hName  = "Name";
+    auto hTitle = "Title";
     TH1F ** hdM_dpT_Tot_Rec     = new TH1F * [nBinIM1D];
-    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
-    {
-        auto hName = Form("hdM_dpT_Tot_Rec_%i",iHisto);
-        auto hFill = Form("evKaonCouple.InvMass>>hdM_dpT_Tot_Rec_%i",iHisto);
-        auto hCuts = Form("evKaonCouple.pT >= %f && evKaonCouple.pT < %f && evKaonCouple.bRec == 1",fBoundPT2D(iHisto),fBoundPT2D(iHisto+1));
-        hdM_dpT_Tot_Rec[iHisto] = new TH1F (hName,hName,nBinIM1D,fMinIM1D,fMaxIM1D);
-        PtreeK2->Draw(hFill,hCuts,"goff");
-    }
-    
     TH2F ***hdM_dpT_Tot_Rec2D   = new TH2F **[nBinPT2D];
+    TH2F ***hdM_dpT_Tot_Bkg2D   = new TH2F **[nBinPT2D];
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
     {
         hdM_dpT_Tot_Rec2D[iHisto] = new TH2F * [nBinPT2D];
-        for (int iHist2 = 0; iHist2 < nBinPT2D; iHist2++)
+        hdM_dpT_Tot_Bkg2D[iHisto] = new TH2F * [nBinPT2D];
+        
+        // Setting up 1D Histogram
+        hName = Form("hdM_dpT_Tot_Rec_%i",iHisto);
+        hTitle= Form("m_{K_{+}K_{-}} in p_{T} range %f to %f",fArrPT2D[iHisto],fArrPT2D[iHisto+1]);
+        hdM_dpT_Tot_Rec[iHisto] = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+        
+        for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
         {
-            auto hName = Form("hdM_dpT_Tot_Rec2D_%i_%i",iHisto,iHist2);
-            hdM_dpT_Tot_Rec2D[iHisto][iHist2] = new TH2F (hName,hName,nBinIM2D,fMinIM2D,fMaxIM2D,nBinIM2D,fMinIM2D,fMaxIM2D);
+            // Setting up 2D Histogram
+            hName = Form("hdM_dpT_Tot_Rec2D_%i_%i",iHisto,jHisto);
+            hTitle= Form("m_{K_{+}K_{-}} in p_{T} range %f to %f and %f to %f",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]);
+            hdM_dpT_Tot_Rec2D[iHisto][jHisto] = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
         }
     }
-    Int_t nPhiCouple = 0;
-    Int_t nPhiCouple2 = 0;
+    
+    Int_t ipT, jpT;
+    Int_t nBkgComb = 0;
     for (Int_t iEvent = 0; iEvent < PtreeK2->GetEntries(); iEvent++)
     {
         PtreeK2->GetEntry(iEvent);
-        Int_t nPhi__ = 0;
         for (int iPhi = 0; iPhi < evKaonCouple.nKaonCouple; iPhi++ )
         {
-            //if (evKaonCouple.bRec[iPhi] == false) continue;
-            //if (evKaonCouple.bPhi[iPhi] == true) continue;
-            nPhi__++;
+            // Only Recordable Phi Candidates
+            if (evKaonCouple.bRec[iPhi] == false) continue;
+            
+            // Only True Phi Candidates
+            //if (evKaonCouple.bPhi[iPhi] == false) continue;
+            
+            // Information on pT based on defined bins
+            if (evKaonCouple.pT[iPhi] >  fMaxPT2D ) break;
+            if (evKaonCouple.pT[iPhi] <  fMinPT2D ) break;
+            for (Int_t ipT_ = 0; ipT_ <= nBinPT2D; ipT_++ )
+            {
+                ipT = ipT_;
+                if (evKaonCouple.pT[iPhi] <= fArrPT2D[ipT_+1]) break;
+            }
+            hdM_dpT_Tot_Rec[ipT]->Fill(evKaonCouple.InvMass[iPhi]);
+            
             for (int jPhi = 0; jPhi < evKaonCouple.nKaonCouple; jPhi++ )
             {
-                //if (evKaonCouple.bRec[jPhi] == false) continue;
-                //if (evKaonCouple.bPhi[jPhi] == true) continue;
-                if ( evKaonCouple.iKaon[iPhi] == evKaonCouple.iKaon[jPhi] ) continue;
-                if ( evKaonCouple.iKaon[jPhi] == evKaonCouple.iKaon[iPhi] ) continue;
-                if ( evKaonCouple.jKaon[iPhi] == evKaonCouple.jKaon[jPhi] ) continue;
-                if ( evKaonCouple.jKaon[jPhi] == evKaonCouple.jKaon[iPhi] ) continue;
-                nPhiCouple2++;
-                auto ipT = 0;
-                auto jpT = 0;
-                for (int pT = 0; pT < nBinPT2D; pT++ )
+                // Only Recordable Phi Candidates
+                if (evKaonCouple.bRec[jPhi] == false) continue;
+                
+                // Only True Phi Candidates
+                //if (evKaonCouple.bPhi[jPhi] == false) continue;
+                
+                // Information on pT based on defined bins
+                if (evKaonCouple.pT[jPhi] >  fMaxPT2D ) break;
+                if (evKaonCouple.pT[jPhi] <  fMinPT2D ) break;
+                for (Int_t jpT_ = 0; jpT_ <= nBinPT2D; jpT_++ )
                 {
-                    if (evKaonCouple.pT[iPhi] >= fBoundPT2D(pT) && evKaonCouple.pT[iPhi] < fBoundPT2D(pT+1)) ipT = pT;
-                    if (evKaonCouple.pT[jPhi] >= fBoundPT2D(pT) && evKaonCouple.pT[jPhi] < fBoundPT2D(pT+1)) jpT = pT;
+                    jpT = jpT_;
+                    if (evKaonCouple.pT[jPhi] <= fArrPT2D[jpT_+1]) break;
                 }
+                
+                // Only non overlapping couples of Kaons
+                if ( evKaonCouple.iKaon[iPhi] == evKaonCouple.iKaon[jPhi] ) continue;
+                if ( evKaonCouple.iKaon[iPhi] == evKaonCouple.jKaon[jPhi] ) continue;
+                if ( evKaonCouple.jKaon[iPhi] == evKaonCouple.iKaon[jPhi] ) continue;
+                if ( evKaonCouple.jKaon[iPhi] == evKaonCouple.jKaon[jPhi] ) continue;
+                
                 hdM_dpT_Tot_Rec2D[ipT][jpT]->Fill(evKaonCouple.InvMass[iPhi],evKaonCouple.InvMass[jPhi],0.5);
+                
             }
         }
-        if (nPhi__ < 2) continue;
-        nPhiCouple += TMath::Binomial(nPhi__,2);
     }
-    cout << nPhiCouple << endl;
-    cout << nPhiCouple2 << endl;
+
     TFile *outFile = new TFile(oFilePreP2D,"recreate");
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
     {
-        for (int iHist2 = 0; iHist2 < nBinPT2D; iHist2++)
+        for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
         {
-            hdM_dpT_Tot_Rec2D[iHisto][iHist2]->Write();
+            hdM_dpT_Tot_Rec2D[iHisto][jHisto]->Write();
+            hdM_dpT_Tot_Bkg2D[iHisto][jHisto]->Write();
         }
     }
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)

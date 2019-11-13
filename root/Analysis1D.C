@@ -20,13 +20,15 @@ int Analysis1D ()
     }
 
     //Final Histograms
+    vSetBinsPT1D();
+    vSetBinsIM1D();
     TH1F * hPhiEff_1D      = (TH1F*)(iFile_Ef->Get("hPhiEff_1D"));
     TH1F * hPhiTru_1D      = (TH1F*)(iFile_Ef->Get("hPhiTru_1D"));
-    TH1F * hPhiRaw_1D      = new TH1F ("hPhiRaw_1D","Number of #varphi found in Fit per |y|<5 in K_{+}K_{-} Decay mode, 1D analysis",nBinPT1D,fMinPT1D,fMaxPT1D);
+    TH1F * hPhiRaw_1D      = new TH1F ("hPhiRaw_1D","Number of #varphi found in Fit per |y|<5 in K_{+}K_{-} Decay mode, 1D analysis",nBinPT1D,fArrPT1D);
     hPhiRaw_1D->GetXaxis()->SetTitle("pT #varphi (GeV)");
-    TH1F * hPhiRes_1D      = new TH1F ("hPhiRes_1D","Number of #varphi reconstructed from Fit per |y|<5, 1D analysis",nBinPT1D,fMinPT1D,fMaxPT1D);
+    TH1F * hPhiRes_1D      = new TH1F ("hPhiRes_1D","Number of #varphi reconstructed from Fit per |y|<5, 1D analysis",nBinPT1D,fArrPT1D);
     hPhiRes_1D->GetXaxis()->SetTitle("pT #varphi (GeV)");
-    TH1F * hPhiChk_1D      = new TH1F ("hPhiChk_1D","Ratio of #varphi found in Fit and #varphi generated in MC per |y|<5, 1D analysis",nBinPT1D,fMinPT1D,fMaxPT1D);
+    TH1F * hPhiChk_1D      = new TH1F ("hPhiChk_1D","Ratio of #varphi found in Fit and #varphi generated in MC per |y|<5, 1D analysis",nBinPT1D,fArrPT1D);
     hPhiChk_1D->GetXaxis()->SetTitle("pT #varphi (GeV)");
 
     /*------------*/
@@ -39,6 +41,9 @@ int Analysis1D ()
     // Fit  to  data, N_raw
     for (int iFit = 0; iFit < nBinPT1D; iFit++)
     {
+        // Changing Background pdf
+        if ( fArrPT1D[iFit+1] <= 0.2 )BKG2 = true;
+        else            BKG2 = false;
         Results[iFit] = FitModel1D(hdM_dpT_Tot_Rec[iFit],xInvMass1D);
         
         /* Building N_Raw histogram */
@@ -65,7 +70,7 @@ int Analysis1D ()
     TFile *oFile_Ht = new TFile(oFileHist1D,"recreate");
     for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)
     {
-        HistoModel(Results[iHisto],xInvMass1D,Form("Model1D_%f_%f",fBoundPT1D(iHisto),fBoundPT1D(iHisto+1)))->Write();
+        HistoModel(Results[iHisto],xInvMass1D,Form("Model1D_%f_%f",fArrPT1D[iHisto],fArrPT1D[iHisto+1]))->Write();
     }
     oFile_Ht  -> Close();
     return 0;

@@ -65,11 +65,11 @@ RooFitResult *  FitModel1D (RooDataHist * data, RooRealVar var)
     Int_t nEntries      = data->sumEntries();
     
     // Background
-    RooRealVar ch0      = RooRealVar ("ch0","ch0"       ,0.,-1.,1.);
-    RooRealVar ch1      = RooRealVar ("ch1","ch1"       ,0.,-1.,1.);
-    RooRealVar ch2      = RooRealVar ("ch2","ch2"       ,0.,-1.,1.);
-    RooRealVar ch3      = RooRealVar ("ch3","ch3"       ,0.,-1.,1.);
-    RooRealVar ch4      = RooRealVar ("ch4","ch4"       ,0.,-1.,1.);
+    RooRealVar ch0      = RooRealVar ("ch0","ch0"       ,0.1,-1.,1.);
+    RooRealVar ch1      = RooRealVar ("ch1","ch1"       ,0.1,-1.,1.);
+    RooRealVar ch2      = RooRealVar ("ch2","ch2"       ,0.1,-1.,1.);
+    RooRealVar ch3      = RooRealVar ("ch3","ch3"       ,0.1,-1.,1.);
+    RooRealVar ch4      = RooRealVar ("ch4","ch4"       ,0.1,-1.,1.);
     
     //Signal
     RooRealVar pMass    = RooRealVar ("pMass","pMass"   ,1.020,1.010,1.030);
@@ -80,11 +80,14 @@ RooFitResult *  FitModel1D (RooDataHist * data, RooRealVar var)
     RooRealVar n1       = RooRealVar ("nBB","nBB"       ,0.5*nEntries,0.,nEntries);
     
     // PDFs
-    RooChebychev        fBkg ("fBkg","fBkg"             ,var,RooArgSet(ch0,ch1,ch2,ch3,ch4));
     RooBreitWigner      fSig ("fSig","fSig"             ,var,pMass,pWidth);
+    RooChebychev        fBkg ("fBkg","fBkg"             ,var,RooArgSet(ch0,ch1,ch2,ch3,ch4));
     RooAddPdf           fMod ("fMod","fMod"             ,RooArgList(fBkg,fSig),RooArgList(n1,n0));
+    RooGenericPdf       fBkg2("fBkg2","max(0,@0*@1-@2*@1-@3)",RooArgSet(var,ch0,ch1,ch2,ch3,ch4));
+    RooAddPdf           fMod2("fMod2","fMod2"           ,RooArgList(fBkg2,fSig),RooArgList(n1,n0));
     
     // Fit
+    if (BKG2) return    fMod2.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save());
     return              fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save());
 }
 
@@ -106,11 +109,14 @@ TH1F * HistoModel   (RooFitResult * input, RooRealVar var, char *  hName)
     RooRealVar n1       = RooRealVar ("nBB","nBB"       ,static_cast<RooRealVar*>(input->floatParsFinal().at(inBkg))->getVal());
     
     // PDFs
-    RooChebychev        fBkg ("fBkg","fBkg"             ,var,RooArgSet(ch0,ch1,ch2,ch3,ch4));
     RooBreitWigner      fSig ("fSig","fSig"             ,var,pMass,pWidth);
+    RooChebychev        fBkg ("fBkg","fBkg"             ,var,RooArgSet(ch0,ch1,ch2,ch3,ch4));
     RooAddPdf           fMod ("fMod","fMod"             ,RooArgList(fBkg,fSig),RooArgList(n1,n0));
+    RooGenericPdf       fBkg2("fBkg2","max(0,@0*@1-@2*@1-@3)",RooArgSet(var,ch0,ch1,ch2,ch3,ch4));
+    RooAddPdf           fMod2("fMod2","fMod2"           ,RooArgList(fBkg2,fSig),RooArgList(n1,n0));
     
-    return (TH1F *)     fMod.createHistogram(hName,var,Binning(nBinIM1D,fMinIM1D,fMaxIM1D));
+    if (BKG2) return (TH1F *)   fMod2.createHistogram(hName,var,Binning(nBinIM1D,fMinIM1D,fMaxIM1D));
+    return (TH1F *)             fMod.createHistogram(hName,var,Binning(nBinIM1D,fMinIM1D,fMaxIM1D));
 }
 
 RooFitResult *  FitModel2D (RooFitResult * utilityx, RooFitResult * utilityy, RooDataHist * data, RooRealVar varx, RooRealVar vary)
