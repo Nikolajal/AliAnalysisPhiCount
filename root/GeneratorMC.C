@@ -2,13 +2,15 @@
 // Pythia
 #include "Pythia8/Pythia.h"
 
-int main ()
+int main (int argc, char *argv[])
 {
     // Define some simple data structures
     EVKAONCOUPLE evKaonCouple;
     EVPHI evPhi;
 
     //Initialisation of TTree
+    TFile * outFile = new TFile(argv[1],"recreate");
+
     TTree * PtreeK2     = new   TTree   (PTreeNameK2,"A ROOT tree for pythia MC - Kaon");
     TTree * PtreePhi    = new   TTree   (PTreeNamePhi,"A ROOT tree for pythia MC - Phi");
 
@@ -116,7 +118,6 @@ int main ()
         if(nKaon > 0) PtreePhi->Fill();
     }
 
-    TFile * outFile = new TFile(oFileMonCar,"recreate");
     PtreeK2     ->Write();
     PtreePhi    ->Write();
     outFile     ->Close();
