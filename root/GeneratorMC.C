@@ -96,7 +96,8 @@ int main (int argc, char *argv[])
                     evKaonCouple.InvMass[evKaonCouple.nKaonCouple]   = pPhi.mCalc();
                     
                     //Cut on Invariant Mass
-                    if (evKaonCouple.InvMass[evKaonCouple.nKaonCouple] > maxBound) continue;
+                    if (evKaonCouple.InvMass[evKaonCouple.nKaonCouple] < fMinIM2D) continue;
+                    if (evKaonCouple.InvMass[evKaonCouple.nKaonCouple] > fMaxIM2D) continue;
                     //Cut on Rapidity
                     if (abs(pPhi.rap()) >= 0.5) continue;
                     evKaonCouple.nKaonCouple++;
