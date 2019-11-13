@@ -114,9 +114,6 @@ int main (int argc, char *argv[])
             if (abs((pPhi.p()).rap()) >= 0.5) continue;
             evPhi.nPhi++;
         }
-        //Filling TTrees
-        if(nPhi  > 0) PtreeK2->Fill();
-        if(nKaon > 0) PtreePhi->Fill();
     }
 
     PtreeK2     ->Write();
