@@ -102,12 +102,6 @@ typedef struct
     Float_t pT[1024];
 } EVPHI;
 
-typedef struct
-{
-    Int_t   nBinPT;
-    Float_t InvMass[33554432];
-} MCBKG;
-
 void    vSetBinsIM1D ()
 {
     for (int i = 0; i <= nBinIM1D; i++ )
