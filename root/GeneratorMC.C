@@ -14,9 +14,9 @@ int main (int argc, char *argv[])
     
     //TFile * outFile     = new   TFile   (oFilePreBKG,   "recreate");
     TFile * outFile     = new   TFile   (argv[1],       "recreate");
-    TTree * PTreeKSig   = new   TTree   (PTreeNameKS,   "A ROOT tree for pythia MC - Kaon++ Couples");
-    TTree * PTreeKBkg   = new   TTree   (PTreeNameKD,   "A ROOT tree for pythia MC - Kaon+- Couples");
-    TTree * PTreePTru   = new   TTree   (PTreeNamePhi,  "A ROOT tree for pythia MC - Phi");
+    TTree * PTreeKSig   = new   TTree   (PTreeKSigName, "A ROOT tree for pythia MC - Kaon++ Couples");
+    TTree * PTreeKBkg   = new   TTree   (PTreeKBkgName, "A ROOT tree for pythia MC - Kaon+- Couples");
+    TTree * PTreePTru   = new   TTree   (PTreePTruName, "A ROOT tree for pythia MC - Phi");
     
     // Filling Kaon Couple TTree
     PTreeKSig->Branch    ("evKaonCouple.nKaonCouple"  ,&evKaonS.nKaonCouple, "nKaonCouple/I");

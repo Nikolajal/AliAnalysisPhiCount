@@ -52,10 +52,10 @@ auto const  oFileHist1D = "./result/outHistogram1D.root";
 auto const  oFileHist2D = "./result/outHistogram2D.root";
 auto const  iFileMCEffi = "./result/outGeneratorMC_Efficiency.root";
 auto const  hPhiEff     = "hPhiEff";
-auto const  PTreeNameK2 = "PythiaTreeK2";
-auto const  PTreeNameKS = "PythiaTreeKS";
-auto const  PTreeNameKD = "PythiaTreeKD";
-auto const  PTreeNamePhi= "PythiaTreePhi";
+
+auto const  PTreeKSigName = "PythiaTreeKSig";
+auto const  PTreeKBkgName = "PythiaTreeKBkg";
+auto const  PTreePTruName = "PythiaTreePTru";
 int  const  PEvents     = 1e5;
 bool        BKG2        = false;
 
