@@ -38,50 +38,50 @@ using namespace std;
 using namespace RooFit;
 using namespace std::chrono;
 
-auto const oFileMonCar  = "./result/outGeneratorMC.root";
-auto const oFilePreP1D  = "./result/outPreProcessing1D.root";
-auto const oFilePreP2D  = "./result/outPreProcessing2D.root";
-auto const oFilePreBKG  = "./result/outPreProcessingBKG.root";
-auto const oFilePrBKG2  = "./result/outPreProcessingBKGModel.root";
-auto const oFileDataFt  = "./result/outDataFormat.root";
-auto const oFileAnalys  = "./result/outAnalysis.root";
-auto const oFileAnal1D  = "./result/outAnalysis1D.root";
-auto const oFileAnal2D  = "./result/outAnalysis2D.root";
-auto const oFileEffici  = "./result/outEfficiency.root";
-auto const oFileHist1D  = "./result/outHistogram1D.root";
-auto const oFileHist2D  = "./result/outHistogram2D.root";
-auto const iFileMCEffi  = "./result/outGeneratorMC_Efficiency.root";
-auto const hPhiEff      = "hPhiEff";
-auto const PTreeNameK2  = "PythiaTreeK2";
-auto const PTreeNameKS  = "PythiaTreeKS";
-auto const PTreeNameKD  = "PythiaTreeKD";
-auto const PTreeNamePhi = "PythiaTreePhi";
-int  const PEvents      = 1e6;
-bool       BKG2         = false;
+auto const  oFileMonCar = "./result/outGeneratorMC.root";
+auto const  oFilePreP1D = "./result/outPreProcessing1D.root";
+auto const  oFilePreP2D = "./result/outPreProcessing2D.root";
+auto const  oFilePreBKG = "./result/outPreProcessingBKG.root";
+auto const  oFilePrBKG2 = "./result/outPreProcessingBKGModel.root";
+auto const  oFileDataFt = "./result/outDataFormat.root";
+auto const  oFileAnalys = "./result/outAnalysis.root";
+auto const  oFileAnal1D = "./result/outAnalysis1D.root";
+auto const  oFileAnal2D = "./result/outAnalysis2D.root";
+auto const  oFileEffici = "./result/outEfficiency.root";
+auto const  oFileHist1D = "./result/outHistogram1D.root";
+auto const  oFileHist2D = "./result/outHistogram2D.root";
+auto const  iFileMCEffi = "./result/outGeneratorMC_Efficiency.root";
+auto const  hPhiEff     = "hPhiEff";
+auto const  PTreeNameK2 = "PythiaTreeK2";
+auto const  PTreeNameKS = "PythiaTreeKS";
+auto const  PTreeNameKD = "PythiaTreeKD";
+auto const  PTreeNamePhi= "PythiaTreePhi";
+int  const  PEvents     = 1e5;
+bool        BKG2        = false;
 
 // InvMass range 1D
-const Int_t     nBinIM1D    = 100;
-const Float_t   fMinIM1D    = 0.99;
-const Float_t   fMaxIM1D    = 1.09;
-      Float_t * fArrIM1D    = new Float_t [nBinIM1D+1];
+const   Int_t     nBinIM1D  = 100;
+const   Float_t   fMinIM1D  = 0.99;
+const   Float_t   fMaxIM1D  = 1.09;
+        Float_t * fArrIM1D  = new Float_t [nBinIM1D+1];
 
 // InvMass range 2D
-const Int_t     nBinIM2D    = 100;
-const Float_t   fMinIM2D    = 0.99;
-const Float_t   fMaxIM2D    = 1.09;
-      Float_t * fArrIM2D    = new Float_t [nBinIM2D+1];
+const   Int_t     nBinIM2D  = 100;
+const   Float_t   fMinIM2D  = 0.99;
+const   Float_t   fMaxIM2D  = 1.09;
+        Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];
 
 // pT cuts 1D
-const Int_t     nBinPT1D    = 4;
-const Float_t   fMinPT1D    = 0.;
-const Float_t   fMaxPT1D    = 4.;
-      Float_t * fArrPT1D    = new Float_t [nBinPT1D+1];
+        Int_t     nBinPT1D  = 1;
+const   Float_t   fMinPT1D  = 0.;
+const   Float_t   fMaxPT1D  = 4.;
+        Float_t * fArrPT1D  = new Float_t [nBinPT1D+1];
 
 // pT cuts 2D
-const Int_t     nBinPT2D    = 4;
-const Float_t   fMinPT2D    = 0.;
-const Float_t   fMaxPT2D    = 4.;
-      Float_t * fArrPT2D    = new Float_t [nBinPT2D+1];
+        Int_t     nBinPT2D  = 1;
+const   Float_t   fMinPT2D  = 0.;
+const   Float_t   fMaxPT2D  = 4.;
+        Float_t * fArrPT2D  = new Float_t [nBinPT2D+1];
 
 typedef struct
 {
@@ -132,11 +132,12 @@ void    vSetBinsPT1D ()
     fArrPT1D[8] =   2.5;
     fArrPT1D[9] =   3.;
     fArrPT1D[10]=   4.;
-     */
+    /*/
     for (int i = 0; i <= nBinPT1D; i++ )
     {
         fArrPT1D[i] = fMinPT1D+(i)*(fMaxPT1D - fMinPT1D)/(static_cast<Float_t>(nBinPT1D));
     }
+    
 }
 
 void    vSetBinsPT2D ()
@@ -153,11 +154,12 @@ void    vSetBinsPT2D ()
     fArrPT2D[8] =   2.5;
     fArrPT2D[9] =   3.;
     fArrPT2D[10]=   4.;
-     */
+    /*/
     for (int i = 0; i <= nBinPT2D; i++ )
     {
         fArrPT2D[i] = fMinPT2D+(i)*(fMaxPT2D - fMinPT2D)/(static_cast<Float_t>(nBinPT2D));
     }
+    
 }
 
 #endif

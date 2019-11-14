@@ -6,6 +6,7 @@ int Analysis2D ()
 {
     //Retrieving PreProcessing
     TFile *iFile_PP = new TFile(oFilePreP2D);
+    //TFile *iFile_PB = new TFile(oFilePrBKG2);
     TFile *iFile_Ef = new TFile(oFileEffici);
     
     //Target variables
@@ -13,20 +14,29 @@ int Analysis2D ()
     RooRealVar  yInvMass2D ("yInvMass2D","yInvMass2D",fMinIM2D,fMaxIM2D);
     
     //Recovering histograms in roofit
-    RooDataHist **  hdM_dpT_Tot_Rec    = new RooDataHist *  [nBinPT2D];
-    RooDataHist *** hdM_dpT_Tot_Rec2D  = new RooDataHist ** [nBinPT2D];
+    RooDataHist **  hdM_dpT_Tot_Rec     = new RooDataHist *  [nBinPT2D];
+    RooDataHist *** hdM_dpT_Tot_Rec2D   = new RooDataHist ** [nBinPT2D];
+    RooDataHist *** hdM_dpT_Rec_BB2D    = new RooDataHist ** [nBinPT2D];
+    RooDataHist *** hdM_dpT_Rec_SB2D    = new RooDataHist ** [nBinPT2D];
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
     {
-        auto hName = Form("hdM_dpT_Tot_Rec_%i",iHisto);
+        // Importing 1D Histograms
+        hName       = Form("hdM_dpT_Tot_Rec_%i",iHisto);
         hdM_dpT_Tot_Rec[iHisto] = new RooDataHist (hName,hName,xInvMass2D,Import(*(TH1F*)(iFile_PP->Get(hName))));
-    }
-    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
-    {
-        hdM_dpT_Tot_Rec2D[iHisto] = new RooDataHist * [nBinPT2D];
+        
+        // 2D set-up
+        hdM_dpT_Tot_Rec2D[iHisto]   = new RooDataHist * [nBinPT2D];
+        hdM_dpT_Rec_BB2D[iHisto]    = new RooDataHist * [nBinPT2D];
+        hdM_dpT_Rec_BB2D[iHisto]    = new RooDataHist * [nBinPT2D];
         for (int iHist2 = 0; iHist2 < nBinPT2D; iHist2++)
         {
-            auto hName  = Form("hdM_dpT_Tot_Rec2D_%i_%i",iHisto,iHist2);
-            hdM_dpT_Tot_Rec2D[iHisto][iHist2] = new RooDataHist(hName,hName,RooArgList(xInvMass2D,yInvMass2D),Import(*(TH2F*)(iFile_PP->Get(hName))));
+            // Importing 2D Histograms
+            hName   = Form("hdM_dpT_Tot_Rec2D_%i_%i",iHisto,iHist2);
+            hdM_dpT_Tot_Rec2D[iHisto][iHist2]   = new RooDataHist(hName,hName,RooArgList(xInvMass2D,yInvMass2D),Import(*(TH2F*)(iFile_PP->Get(hName))));
+            hName   = Form("hdM_dpT_Rec_BB2D_%i_%i",iHisto,jHisto);
+            //hdM_dpT_Rec_BB2D[iHisto][iHist2]    = new RooDataHist(hName,hName,RooArgList(xInvMass2D,yInvMass2D),Import(*(TH2F*)(iFile_PB->Get(hName))));
+            hName   = Form("hdM_dpT_Rec_SB2D_%i_%i",iHisto,jHisto);
+            //hdM_dpT_Rec_SB2D[iHisto][iHist2]    = new RooDataHist(hName,hName,RooArgList(xInvMass2D,yInvMass2D),Import(*(TH2F*)(iFile_PB->Get(hName))));
         }
     }
 

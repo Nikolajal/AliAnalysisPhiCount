@@ -12,7 +12,7 @@ int main ()
     // Define some simple data structures
     EVKAONCOUPLE evKaonCouple;
     EVPHI evPhi;
-        
+
     //Setting Branch Addresses
     // Filling TTree
     PtreeK2  ->SetBranchAddress    ("evKaonCouple.nKaonCouple",&evKaonCouple.nKaonCouple);
@@ -69,12 +69,15 @@ int main ()
             //if (evKaonCouple.bPhi[iPhi] == false) continue;
             
             // Information on pT based on defined bins
-            if (evKaonCouple.pT[iPhi] >  fMaxPT2D ) break;
-            if (evKaonCouple.pT[iPhi] <  fMinPT2D ) break;
-            for (Int_t ipT_ = 0; ipT_ <= nBinPT2D; ipT_++ )
+            if (evKaonCouple.pT[iPhi] >=  fMaxPT2D ) break;
+            if (evKaonCouple.pT[iPhi] <=  fMinPT2D ) break;
+            for (Int_t ipT_ = 0; ipT_ < nBinPT2D; ipT_++ )
             {
-                ipT = ipT_;
-                if (evKaonCouple.pT[iPhi] <= fArrPT2D[ipT_+1]) break;
+                if (evKaonCouple.pT[iPhi] < fArrPT2D[ipT_+1] && evKaonCouple.pT[iPhi] > fArrPT2D[ipT_])
+                {
+                    ipT = ipT_;
+                    break;
+                }
             }
             hdM_dpT_Tot_Rec[ipT]->Fill(evKaonCouple.InvMass[iPhi]);
             
@@ -89,7 +92,7 @@ int main ()
                 // Information on pT based on defined bins
                 if (evKaonCouple.pT[jPhi] >  fMaxPT2D ) break;
                 if (evKaonCouple.pT[jPhi] <  fMinPT2D ) break;
-                for (Int_t jpT_ = 0; jpT_ <= nBinPT2D; jpT_++ )
+                for (Int_t jpT_ = 0; jpT_ < nBinPT2D; jpT_++ )
                 {
                     jpT = jpT_;
                     if (evKaonCouple.pT[jPhi] <= fArrPT2D[jpT_+1]) break;
@@ -106,21 +109,22 @@ int main ()
             }
         }
     }
-
+     
     TFile *outFile = new TFile(oFilePreP2D,"recreate");
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
     {
         for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
         {
             hdM_dpT_Tot_Rec2D[iHisto][jHisto]->Write();
-            hdM_dpT_Tot_Bkg2D[iHisto][jHisto]->Write();
+            //hdM_dpT_Tot_Bkg2D[iHisto][jHisto]->Write();
         }
     }
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
     {
         hdM_dpT_Tot_Rec[iHisto] -> Write();
     }
-    outFile     ->Close();
+    inFile->Close();
+    outFile->Close();
     
     return 0;
 }

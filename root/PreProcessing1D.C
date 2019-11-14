@@ -69,6 +69,8 @@ int main ()
     {
         hdM_dpT_Tot_Rec[iHisto] -> Write();
     }
-    outFile     -> Close();
+    inFile->Close();
+    outFile->Close();
+    
     return 0;
 }

@@ -154,7 +154,8 @@ int main ()
     {
         hdM_dpT_Rec_BB1D[iHisto] -> Write();
     }
-    outFile     ->Close();
+    inFile->Close();
+    outFile->Close();
     
     return 0;
 }
