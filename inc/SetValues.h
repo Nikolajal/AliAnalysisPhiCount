@@ -56,7 +56,6 @@ auto const  hPhiEff     = "hPhiEff";
 auto const  PTreeKSigName = "PythiaTreeKSig";
 auto const  PTreeKBkgName = "PythiaTreeKBkg";
 auto const  PTreePTruName = "PythiaTreePTru";
-int  const  PEvents     = 1e3;
 bool        BKG2        = false;
 
 // InvMass range 1D

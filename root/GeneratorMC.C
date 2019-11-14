@@ -5,6 +5,12 @@
 //int main ()
 int main (int argc, char *argv[])
 {
+  if (argc < 3) {
+    std::cout << "usage: ./GeneratorMC [filename] [nevents]" << std::endl;
+    return 1;
+  }
+  int PEvents = atoi(argv[2]);
+
     // Define some simple data structures
     EVKAONCOUPLE    evKaonS;
     EVKAONCOUPLE    evKaonD;
