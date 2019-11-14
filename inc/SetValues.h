@@ -72,13 +72,13 @@ const   Float_t   fMaxIM2D  = 1.09;
         Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];
 
 // pT cuts 1D
-        Int_t     nBinPT1D  = 1;
+        Int_t     nBinPT1D  = 2;
 const   Float_t   fMinPT1D  = 0.;
 const   Float_t   fMaxPT1D  = 4.;
         Float_t * fArrPT1D  = new Float_t [nBinPT1D+1];
 
 // pT cuts 2D
-        Int_t     nBinPT2D  = 1;
+        Int_t     nBinPT2D  = 2;
 const   Float_t   fMinPT2D  = 0.;
 const   Float_t   fMaxPT2D  = 4.;
         Float_t * fArrPT2D  = new Float_t [nBinPT2D+1];
@@ -92,13 +92,14 @@ typedef struct
 typedef struct
 {
     Int_t   nKaonCouple, iKaon[1024], jKaon[1024];
-    Bool_t  bPhi[1024], bRec[1024];
+    Bool_t  bPhi[1024], bRec[1024], bEta[1024];
     Float_t InvMass[1024], pT[1024];
 } EVKAONCOUPLE;
 
 typedef struct
 {
     Int_t   nPhi;
+    Bool_t  bRec[1024], bEta[1024];
     Float_t pT[1024];
 } EVPHI;
 

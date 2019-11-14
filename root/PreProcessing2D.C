@@ -4,9 +4,10 @@ int main ()
 {
     //Retrieving Event/MC data
     TFile *inFile = new TFile(oFileMonCar);
+    TFile *inFil2 = new TFile(oFilePreBKG);
         
     //Retrieving Event/MC TTree
-    TTree *PtreeK2  = (TTree*)inFile->Get(PTreeNameK2);
+    TTree *PtreeK2  = (TTree*)inFil2->Get(PTreeNameKD);
     TTree *PtreePhi = (TTree*)inFile->Get(PTreeNamePhi);
         
     // Define some simple data structures
@@ -63,7 +64,7 @@ int main ()
         for (int iPhi = 0; iPhi < evKaonCouple.nKaonCouple; iPhi++ )
         {
             // Only Recordable Phi Candidates
-            if (evKaonCouple.bRec[iPhi] == false) continue;
+            //if (evKaonCouple.bRec[iPhi] == false) continue;
             
             // Only True Phi Candidates
             //if (evKaonCouple.bPhi[iPhi] == false) continue;
@@ -84,7 +85,7 @@ int main ()
             for (int jPhi = 0; jPhi < evKaonCouple.nKaonCouple; jPhi++ )
             {
                 // Only Recordable Phi Candidates
-                if (evKaonCouple.bRec[jPhi] == false) continue;
+                //if (evKaonCouple.bRec[jPhi] == false) continue;
                 
                 // Only True Phi Candidates
                 //if (evKaonCouple.bPhi[jPhi] == false) continue;

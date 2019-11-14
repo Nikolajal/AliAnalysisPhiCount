@@ -41,18 +41,12 @@ int main ()
     TH1F ** hdM_dpT_Rec_BB1D        = new TH1F *    [nBinPT2D];
     TH2F ***hdM_dpT_Rec_BB2D        = new TH2F **   [nBinPT2D];
     TH2F ***hdM_dpT_Rec_SB2D        = new TH2F **   [nBinPT2D];
-    Float_t** IMS                   = new Float_t*  [nBinPT2D];
-    Float_t** IMD                   = new Float_t*  [nBinPT2D];
-    Int_t * indexIMS                = new Int_t     [nBinPT2D];
-    Int_t * indexIMD                = new Int_t     [nBinPT2D];
+    TH2F ***hdM_dpT_Rec_BS2D        = new TH2F **   [nBinPT2D];
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
     {
         hdM_dpT_Rec_BB2D[iHisto]    = new TH2F * [nBinPT2D];
         hdM_dpT_Rec_SB2D[iHisto]    = new TH2F * [nBinPT2D];
-        IMS[iHisto]                 = new Float_t [PEvents*25];
-        IMD[iHisto]                 = new Float_t [PEvents*25];
-        indexIMS[iHisto]            = 0;
-        indexIMD[iHisto]            = 0;
+        hdM_dpT_Rec_BS2D[iHisto]    = new TH2F * [nBinPT2D];
         
         // Setting up 1D Histogram
         hName = Form("hdM_dpT_Rec_BB1D_%i",iHisto);
@@ -69,6 +63,10 @@ int main ()
             hName = Form("hdM_dpT_Rec_SB2D_%i_%i",iHisto,jHisto);
             hTitle= Form("m_{K_{+}K_{-}} in p_{T} range %f to %f and m_{K_{#pm}K_{#pm}} in p_{T} range %f to %f",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]);
             hdM_dpT_Rec_SB2D[iHisto][jHisto] = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+            
+            hName = Form("hdM_dpT_Rec_BS2D_%i_%i",iHisto,jHisto);
+            hTitle= Form("m_{K_{+}K_{-}} in p_{T} range %f to %f and m_{K_{#pm}K_{#pm}} in p_{T} range %f to %f",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]);
+            hdM_dpT_Rec_BS2D[iHisto][jHisto] = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
         }
     }
     
@@ -76,10 +74,14 @@ int main ()
     for (Int_t iEvent = 0; iEvent < PTreeKS->GetEntries(); iEvent++)
     {
         PTreeKS->GetEntry(iEvent);
+        PTreeKD->GetEntry(iEvent);
         for (Int_t iPhi = 0; iPhi < evKaonS.nKaonCouple; iPhi++ )
         {
             // Only Recordable Phi Candidates
             //if (evKaonS.bRec[iPhi] == false) continue;
+        
+            // Only |y| < 0.5 Phi Candidates
+            //if (evKaonS.bEta[iPhi] == false) continue;
             
             // Only True Phi Candidates
             //if (evKaonS.bPhi[iPhi] == false) continue;
@@ -95,48 +97,52 @@ int main ()
                 }
             }
             hdM_dpT_Rec_BB1D[ipT]->Fill(evKaonS.InvMass[iPhi]);
-            IMS[ipT][indexIMS[ipT]] = evKaonS.InvMass[iPhi];
-            indexIMS[ipT]++;
-        }
-        PTreeKD->GetEntry(iEvent);
-        for (Int_t iPhi = 0; iPhi < evKaonD.nKaonCouple; iPhi++ )
-        {
-            // Only Recordable Phi Candidates
-            //if (evKaonS.bRec[iPhi] == false) continue;
-            
-            // Only True Phi Candidates
-            //if (evKaonS.bPhi[iPhi] == false) continue;
-            
-            // Information on pT based on defined bins
-            if (evKaonD.pT[iPhi] >  fMaxPT2D ) continue;
-            if (evKaonD.pT[iPhi] <  fMinPT2D ) continue;
-            for (Int_t ipT_ = 0; ipT_ <= nBinPT2D; ipT_++ )
+            for (Int_t jPhi = 0; jPhi < evKaonS.nKaonCouple; jPhi++ )
             {
-                if (evKaonD.pT[iPhi] < fArrPT2D[ipT_+1] && evKaonD.pT[iPhi] > fArrPT2D[ipT_])
+                // Only Recordable Phi Candidates
+                //if (evKaonS.bRec[jPhi] == false) continue;
+                
+                // Only |y| < 0.5 Phi Candidates
+                //if (evKaonS.bEta[jPhi] == false) continue;
+            
+                // Only True Phi Candidates
+                //if (evKaonS.bPhi[jPhi] == false) continue;
+                
+                // Information on pT based on defined bins
+                if (evKaonD.pT[jPhi] >  fMaxPT2D ) continue;
+                if (evKaonD.pT[jPhi] <  fMinPT2D ) continue;
+                for (Int_t ipT_ = 0; ipT_ <= nBinPT2D; ipT_++ )
                 {
-                    ipT = ipT_;
+                    if (evKaonD.pT[jPhi] < fArrPT2D[ipT_+1] && evKaonD.pT[jPhi] > fArrPT2D[ipT_])
+                    {
+                        jpT = ipT_;
+                    }
                 }
+                hdM_dpT_Rec_SB2D[ipT][jpT]->Fill(evKaonS.InvMass[iPhi],evKaonD.InvMass[jPhi],0.5);
+                hdM_dpT_Rec_BS2D[jpT][ipT]->Fill(evKaonD.InvMass[jPhi],evKaonS.InvMass[iPhi],0.5);
             }
-            IMD[ipT][indexIMD[ipT]] = evKaonD.InvMass[iPhi];
-            indexIMD[ipT]++;
-        }
-    }
-    
-    for (ipT = 0; ipT < nBinPT2D; ipT++ )
-    {
-        for (jpT = 0; jpT < nBinPT2D; jpT++ )
-        {
-            for (Int_t iPhi = 0; iPhi < indexIMS[ipT]; iPhi++ )
+            for (Int_t jPhi = 0; jPhi < evKaonD.nKaonCouple; jPhi++ )
             {
-                for (Int_t jPhi = 0; jPhi < indexIMS[jpT]; jPhi++ )
+                if ( iPhi == jPhi ) continue;
+                // Only Recordable Phi Candidates
+                //if (evKaonD.bRec[jPhi] == false) continue;
+                    
+                // Only |y| < 0.5 Phi Candidates
+                //if (evKaonD.bEta[jPhi] == false) continue;
+                
+                // Only True Phi Candidates
+                //if (evKaonD.bPhi[jPhi] == false) continue;
+                
+                if (evKaonS.pT[jPhi] >  fMaxPT2D ) continue;
+                if (evKaonS.pT[jPhi] <  fMinPT2D ) continue;
+                for (Int_t ipT_ = 0; ipT_ <= nBinPT2D; ipT_++ )
                 {
-                    hdM_dpT_Rec_BB2D[ipT][jpT]->Fill(IMS[ipT][iPhi],IMS[jpT][jPhi],0.5);
+                    if (evKaonS.pT[jPhi] < fArrPT2D[ipT_+1] && evKaonS.pT[jPhi] >= fArrPT2D[ipT_])
+                    {
+                        jpT = ipT_;
+                    }
                 }
-                for (Int_t jPhi = 0; jPhi < indexIMD[jpT]; jPhi++ )
-                {
-                    hdM_dpT_Rec_SB2D[ipT][jpT]->Fill(IMS[ipT][iPhi],IMD[jpT][jPhi],0.5);
-                    hdM_dpT_Rec_SB2D[ipT][jpT]->Fill(IMD[ipT][iPhi],IMS[jpT][jPhi],0.5);
-                }
+                hdM_dpT_Rec_BB2D[ipT][jpT]->Fill(evKaonS.InvMass[iPhi],evKaonS.InvMass[jPhi],0.5);
             }
         }
     }
@@ -148,6 +154,7 @@ int main ()
         {
             hdM_dpT_Rec_BB2D[iHisto][jHisto]->Write();
             hdM_dpT_Rec_SB2D[iHisto][jHisto]->Write();
+            hdM_dpT_Rec_BS2D[iHisto][jHisto]->Write();
         }
     }
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)

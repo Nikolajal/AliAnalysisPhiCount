@@ -13,6 +13,9 @@ int Analysis2D ()
     RooRealVar  xInvMass2D ("xInvMass2D","xInvMass2D",fMinIM2D,fMaxIM2D);
     RooRealVar  yInvMass2D ("yInvMass2D","yInvMass2D",fMinIM2D,fMaxIM2D);
     
+    auto hName = "ee";
+    auto hTitle = "ee";
+    
     //Recovering histograms in roofit
     RooDataHist **  hdM_dpT_Tot_Rec     = new RooDataHist *  [nBinPT2D];
     RooDataHist *** hdM_dpT_Tot_Rec2D   = new RooDataHist ** [nBinPT2D];
@@ -33,9 +36,9 @@ int Analysis2D ()
             // Importing 2D Histograms
             hName   = Form("hdM_dpT_Tot_Rec2D_%i_%i",iHisto,iHist2);
             hdM_dpT_Tot_Rec2D[iHisto][iHist2]   = new RooDataHist(hName,hName,RooArgList(xInvMass2D,yInvMass2D),Import(*(TH2F*)(iFile_PP->Get(hName))));
-            hName   = Form("hdM_dpT_Rec_BB2D_%i_%i",iHisto,jHisto);
+            hName   = Form("hdM_dpT_Rec_BB2D_%i_%i",iHisto,iHist2);
             //hdM_dpT_Rec_BB2D[iHisto][iHist2]    = new RooDataHist(hName,hName,RooArgList(xInvMass2D,yInvMass2D),Import(*(TH2F*)(iFile_PB->Get(hName))));
-            hName   = Form("hdM_dpT_Rec_SB2D_%i_%i",iHisto,jHisto);
+            hName   = Form("hdM_dpT_Rec_SB2D_%i_%i",iHisto,iHist2);
             //hdM_dpT_Rec_SB2D[iHisto][iHist2]    = new RooDataHist(hName,hName,RooArgList(xInvMass2D,yInvMass2D),Import(*(TH2F*)(iFile_PB->Get(hName))));
         }
     }
