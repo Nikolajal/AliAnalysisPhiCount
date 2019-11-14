@@ -1,3 +1,5 @@
+mkdir -p ./exe
+
 if [ `hostname` == "bownalice07.bo.infn.it" ]; then
 
     g++ ./root/GeneratorMC.C \
