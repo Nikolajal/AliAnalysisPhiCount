@@ -1,122 +1,160 @@
 #include "../inc/SetValues.h"
-// Pythia
-#include "Pythia8/Pythia.h"
 
 int main ()
 {
+    //Retrieving Event/MC data
+    TFile *inFile = new TFile(oFilePreBKG);
+        
+    //Retrieving Event/MC TTree
+    TTree *PTreeKS  = (TTree*)inFile->Get(PTreeNameKS);
+    TTree *PTreeKD  = (TTree*)inFile->Get(PTreeNameKD);
+        
     // Define some simple data structures
     EVKAONCOUPLE evKaonS;
     EVKAONCOUPLE evKaonD;
-
-    //Initialisation of TTree
-    
-    TFile * outFile     = new   TFile   (oFilePreBKG,   "recreate");
-    TTree * PtreeKS     = new   TTree   (PTreeNameKS,   "A ROOT tree for pythia MC - Kaon Couples");
-    TTree * PtreeKD     = new   TTree   (PTreeNameKD,   "A ROOT tree for pythia MC - Kaon Couples");
-    
-    // Filling Kaon Couple TTree
-    PtreeKS->Branch    ("evKaonCouple.nKaonCouple"  ,&evKaonS.nKaonCouple, "nKaonCouple/I");
-    PtreeKS->Branch    ("evKaonCouple.iKaon"        ,&evKaonS.iKaon,       "iKaon[nKaonCouple]/I");
-    PtreeKS->Branch    ("evKaonCouple.jKaon"        ,&evKaonS.jKaon,       "jKaon[nKaonCouple]/I");
-    PtreeKS->Branch    ("evKaonCouple.bPhi"         ,&evKaonS.bPhi,        "bPhi[nKaonCouple]/O");
-    PtreeKS->Branch    ("evKaonCouple.bRec"         ,&evKaonS.bRec,        "bRec[nKaonCouple]/O");
-    PtreeKS->Branch    ("evKaonCouple.InvMass"      ,&evKaonS.InvMass,     "InvMass[nKaonCouple]/F");
-    PtreeKS->Branch    ("evKaonCouple.pT"           ,&evKaonS.pT,          "pT[nKaonCouple]/F");
-    
-    PtreeKD->Branch    ("evKaonCouple.nKaonCouple"  ,&evKaonD.nKaonCouple, "nKaonCouple/I");
-    PtreeKD->Branch    ("evKaonCouple.iKaon"        ,&evKaonD.iKaon,       "iKaon[nKaonCouple]/I");
-    PtreeKD->Branch    ("evKaonCouple.jKaon"        ,&evKaonD.jKaon,       "jKaon[nKaonCouple]/I");
-    PtreeKD->Branch    ("evKaonCouple.bPhi"         ,&evKaonD.bPhi,        "bPhi[nKaonCouple]/O");
-    PtreeKD->Branch    ("evKaonCouple.bRec"         ,&evKaonD.bRec,        "bRec[nKaonCouple]/O");
-    PtreeKD->Branch    ("evKaonCouple.InvMass"      ,&evKaonD.InvMass,     "InvMass[nKaonCouple]/F");
-    PtreeKD->Branch    ("evKaonCouple.pT"           ,&evKaonD.pT,          "pT[nKaonCouple]/F");
-    
-    /* PYTHIA INITIALISATION ( Add string pointer for ... ) */
-    Pythia8::Pythia pythia;
-    
-    //Settings
-    pythia.readString("SoftQCD:nonDiffractive = on");
-    pythia.readString("ParticleDecays:limitTau0 = on");
-    pythia.readString("333:mMin = 0.99");
-    pythia.readString("333:mMax = 1.09");
-    pythia.readString("Random:setSeed = on");
-    pythia.readString("Random:seed = 0");
-    pythia.init();
-    
-    // save the ID of kaons here
-    int nKaon, nPhi, kaonID[1024], phiID[1024];
-    bool kaonRec[1024];
-    
-    for (int iEvent = 0; iEvent < PEvents; iEvent++)
-    {
-        pythia.next();
-        nKaon   = 0;
-        for (int iParticle = 0; iParticle < pythia.event.size() ; iParticle++)
-        {
-            const auto particle = pythia.event[iParticle];
-            kaonRec[nKaon] = 1;
-            
-            //Skipping non-final particles
-            if(!particle.isFinal())                 continue;
-            
-            //Skipping particles in Eta non-acceptance region
-            if (abs(particle.eta()) > 0.8)          kaonRec[nKaon] = false;
-            
-            //Skipping particles in pT non-acceptance region
-            if (particle.pT() < 0.15)               kaonRec[nKaon] = false;
-            
-            //Getting Kaons only
-            if (particle.id() == 321 || particle.id() == -321)
-            {
-                kaonID[nKaon] = iParticle;
-                nKaon++;
-            }
-        }
         
-        // now I create Kaon++-- pairs TTree entry
-        evKaonS.nKaonCouple = 0;
-        evKaonD.nKaonCouple = 0;
-        for (int iKaon = 0; iKaon < nKaon; iKaon++)
+    //Setting Branch Addresses
+    // Filling TTree
+    PTreeKD  ->SetBranchAddress    ("evKaonCouple.nKaonCouple",&evKaonD.nKaonCouple);
+    PTreeKD  ->SetBranchAddress    ("evKaonCouple.iKaon",&evKaonD.iKaon);
+    PTreeKD  ->SetBranchAddress    ("evKaonCouple.jKaon",&evKaonD.jKaon);
+    PTreeKD  ->SetBranchAddress    ("evKaonCouple.bPhi",&evKaonD.bPhi);
+    PTreeKD  ->SetBranchAddress    ("evKaonCouple.bRec",&evKaonD.bRec);
+    PTreeKD  ->SetBranchAddress    ("evKaonCouple.InvMass",&evKaonD.InvMass);
+    PTreeKD  ->SetBranchAddress    ("evKaonCouple.pT",&evKaonD.pT);
+    
+    PTreeKS  ->SetBranchAddress    ("evKaonCouple.nKaonCouple",&evKaonS.nKaonCouple);
+    PTreeKS  ->SetBranchAddress    ("evKaonCouple.iKaon",&evKaonS.iKaon);
+    PTreeKS  ->SetBranchAddress    ("evKaonCouple.jKaon",&evKaonS.jKaon);
+    PTreeKS  ->SetBranchAddress    ("evKaonCouple.bPhi",&evKaonS.bPhi);
+    PTreeKS  ->SetBranchAddress    ("evKaonCouple.bRec",&evKaonS.bRec);
+    PTreeKS  ->SetBranchAddress    ("evKaonCouple.InvMass",&evKaonS.InvMass);
+    PTreeKS  ->SetBranchAddress    ("evKaonCouple.pT",&evKaonS.pT);
+    
+    vSetBinsPT1D();
+    vSetBinsIM1D();
+    vSetBinsPT2D();
+    vSetBinsIM2D();
+    
+    auto hName  = "Name";
+    auto hTitle = "Title";
+    TH1F ** hdM_dpT_Rec_BB1D        = new TH1F *    [nBinPT2D];
+    TH2F ***hdM_dpT_Rec_BB2D        = new TH2F **   [nBinPT2D];
+    TH2F ***hdM_dpT_Rec_SB2D        = new TH2F **   [nBinPT2D];
+    Float_t** IMS                   = new Float_t*  [nBinPT2D];
+    Float_t** IMD                   = new Float_t*  [nBinPT2D];
+    Int_t * indexIMS                = new Int_t     [nBinPT2D];
+    Int_t * indexIMD                = new Int_t     [nBinPT2D];
+    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
+    {
+        hdM_dpT_Rec_BB2D[iHisto]    = new TH2F * [nBinPT2D];
+        hdM_dpT_Rec_SB2D[iHisto]    = new TH2F * [nBinPT2D];
+        IMS[iHisto]                 = new Float_t [PEvents*25];
+        IMD[iHisto]                 = new Float_t [PEvents*25];
+        indexIMS[iHisto]            = 0;
+        indexIMD[iHisto]            = 0;
+        
+        // Setting up 1D Histogram
+        hName = Form("hdM_dpT_Rec_BB1D_%i",iHisto);
+        hTitle= Form("m_{K_{#pm}K_{#pm}} in p_{T} range %f to %f",fArrPT2D[iHisto],fArrPT2D[iHisto+1]);
+        hdM_dpT_Rec_BB1D[iHisto] = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+        
+        for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
         {
-            const auto Kaon1 = pythia.event[kaonID[iKaon]];
-            for (int jKaon = (iKaon+1); jKaon < nKaon; jKaon++)
+            // Setting up 2D Histogram
+            hName = Form("hdM_dpT_Rec_BB2D_%i_%i",iHisto,jHisto);
+            hTitle= Form("m_{K_{#pm}K_{#pm}} in p_{T} range %f to %f and %f to %f",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]);
+            hdM_dpT_Rec_BB2D[iHisto][jHisto] = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+            
+            hName = Form("hdM_dpT_Rec_SB2D_%i_%i",iHisto,jHisto);
+            hTitle= Form("m_{K_{+}K_{-}} in p_{T} range %f to %f and m_{K_{#pm}K_{#pm}} in p_{T} range %f to %f",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]);
+            hdM_dpT_Rec_SB2D[iHisto][jHisto] = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+        }
+    }
+    
+    Int_t ipT, jpT;
+    for (Int_t iEvent = 0; iEvent < PTreeKS->GetEntries(); iEvent++)
+    {
+        PTreeKS->GetEntry(iEvent);
+        for (Int_t iPhi = 0; iPhi < evKaonS.nKaonCouple; iPhi++ )
+        {
+            // Only Recordable Phi Candidates
+            //if (evKaonS.bRec[iPhi] == false) continue;
+            
+            // Only True Phi Candidates
+            //if (evKaonS.bPhi[iPhi] == false) continue;
+            
+            // Information on pT based on defined bins
+            if (evKaonS.pT[iPhi] >  fMaxPT2D ) continue;
+            if (evKaonS.pT[iPhi] <  fMinPT2D ) continue;
+            for (Int_t ipT_ = 0; ipT_ <= nBinPT2D; ipT_++ )
             {
-                const auto Kaon2 = pythia.event[kaonID[jKaon]];
-                const auto pPhi = Kaon1.p() + Kaon2.p();
-                
-                //Cut on Rapidity
-                if (abs(pPhi.rap()) >= 0.5) continue;
-                
-                //Cut on Invariant Mass
-                if (pPhi.mCalc() < fMinIM2D) continue;
-                if (pPhi.mCalc() > fMaxIM2D) continue;
-                if ( Kaon1.id() == Kaon2.id() )
+                if (evKaonS.pT[iPhi] < fArrPT2D[ipT_+1] && evKaonS.pT[iPhi] >= fArrPT2D[ipT_])
                 {
-                    evKaonS.InvMass[evKaonS.nKaonCouple]   = pPhi.mCalc();
-                    evKaonS.pT[evKaonS.nKaonCouple]        = pPhi.pT();
-                    evKaonS.bRec[evKaonS.nKaonCouple]      = (kaonRec[iKaon] && kaonRec[jKaon]);
-                    evKaonS.bPhi[evKaonS.nKaonCouple]      = 0;
-                    evKaonS.iKaon[evKaonS.nKaonCouple]     = iKaon;
-                    evKaonS.jKaon[evKaonS.nKaonCouple]     = jKaon;
-                    evKaonS.nKaonCouple++;
+                    ipT = ipT_;
                 }
-                if ( Kaon1.id() != Kaon2.id() )
+            }
+            hdM_dpT_Rec_BB1D[ipT]->Fill(evKaonS.InvMass[iPhi]);
+            IMS[ipT][indexIMS[ipT]] = evKaonS.InvMass[iPhi];
+            indexIMS[ipT]++;
+        }
+        PTreeKD->GetEntry(iEvent);
+        for (Int_t iPhi = 0; iPhi < evKaonD.nKaonCouple; iPhi++ )
+        {
+            // Only Recordable Phi Candidates
+            //if (evKaonS.bRec[iPhi] == false) continue;
+            
+            // Only True Phi Candidates
+            //if (evKaonS.bPhi[iPhi] == false) continue;
+            
+            // Information on pT based on defined bins
+            if (evKaonD.pT[iPhi] >  fMaxPT2D ) continue;
+            if (evKaonD.pT[iPhi] <  fMinPT2D ) continue;
+            for (Int_t ipT_ = 0; ipT_ <= nBinPT2D; ipT_++ )
+            {
+                if (evKaonD.pT[iPhi] < fArrPT2D[ipT_+1] && evKaonD.pT[iPhi] > fArrPT2D[ipT_])
                 {
-                    evKaonD.InvMass[evKaonD.nKaonCouple]   = pPhi.mCalc();
-                    evKaonD.pT[evKaonD.nKaonCouple]        = pPhi.pT();
-                    evKaonD.bRec[evKaonD.nKaonCouple]      = (kaonRec[iKaon] && kaonRec[jKaon]);
-                    evKaonD.bPhi[evKaonD.nKaonCouple]      = (Kaon1.mother2() == 0 && Kaon1.mother1() == Kaon2.mother1() && (pythia.event[Kaon1.mother1()]).id() == 333);
-                    evKaonD.iKaon[evKaonD.nKaonCouple]     = iKaon;
-                    evKaonD.jKaon[evKaonD.nKaonCouple]     = jKaon;
-                    evKaonD.nKaonCouple++;
+                    ipT = ipT_;
+                }
+            }
+            IMD[ipT][indexIMD[ipT]] = evKaonD.InvMass[iPhi];
+            indexIMD[ipT]++;
+        }
+    }
+    
+    for (ipT = 0; ipT < nBinPT2D; ipT++ )
+    {
+        for (jpT = 0; jpT < nBinPT2D; jpT++ )
+        {
+            for (Int_t iPhi = 0; iPhi < indexIMS[ipT]; iPhi++ )
+            {
+                for (Int_t jPhi = 0; jPhi < indexIMS[jpT]; jPhi++ )
+                {
+                    hdM_dpT_Rec_BB2D[ipT][jpT]->Fill(IMS[ipT][iPhi],IMS[jpT][jPhi],0.5);
+                }
+                for (Int_t jPhi = 0; jPhi < indexIMD[jpT]; jPhi++ )
+                {
+                    hdM_dpT_Rec_SB2D[ipT][jpT]->Fill(IMS[ipT][iPhi],IMD[jpT][jPhi],0.5);
+                    hdM_dpT_Rec_SB2D[ipT][jpT]->Fill(IMD[ipT][iPhi],IMS[jpT][jPhi],0.5);
                 }
             }
         }
-        PtreeKS->Fill();
-        PtreeKD->Fill();
     }
-    PtreeKS     ->Write();
-    PtreeKD     ->Write();
+    
+    TFile *outFile = new TFile(oFilePrBKG2,"recreate");
+    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
+    {
+        for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
+        {
+            hdM_dpT_Rec_BB2D[iHisto][jHisto]->Write();
+            hdM_dpT_Rec_SB2D[iHisto][jHisto]->Write();
+        }
+    }
+    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
+    {
+        hdM_dpT_Rec_BB1D[iHisto] -> Write();
+    }
     outFile     ->Close();
+    
     return 0;
 }
