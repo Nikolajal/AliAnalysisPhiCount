@@ -1,3 +1,6 @@
+// Global Values and constants file
+// !TODO: All set!
+
 #ifndef SETVALUES_H
 #define SETVALUES_H
 
@@ -8,84 +11,178 @@
 #include <algorithm>
 #include <chrono>
 
-// ROOT
+// ROOT // Trees
 #include "TTree.h"
+
+// ROOT // Histograms
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+
+// ROOT // Functions
 #include "TF1.h"
+
+// ROOT // Graphs
+#include "TGraphErrors.h"
+
+// ROOT // I/O
 #include "TFile.h"
 
-// RooFit
-#include "RooRealVar.h"
-#include "RooConstVar.h"
-#include "RooAddPdf.h"
-#include "RooDataSet.h"
-#include "RooAbsData.h"
-#include "RooDataHist.h"
-#include "RooPlot.h"
-#include "RooGlobalFunc.h"
-
-// RooFitFunction
-#include "RooChebychev.h"
-#include "RooArgusBG.h"
-#include "RooBreitWigner.h"
-#include "RooGaussian.h"
-#include "RooGenericPdf.h"
-#include "RooUniform.h"
-
 using namespace std;
-using namespace RooFit;
-using namespace std::chrono;
 
-auto const  oFileMonCar = "./result/outGeneratorMC.root";
-auto const  oFilePreP1D = "./result/outPreProcessing1D.root";
-auto const  oFilePreP2D = "./result/outPreProcessing2D.root";
-auto const  oFilePreBKG = "./result/outPreProcessingBKG.root";
-auto const  oFilePrBKG2 = "./result/outPreProcessingBKGModel.root";
-auto const  oFileDataFt = "./result/outDataFormat.root";
-auto const  oFileAnalys = "./result/outAnalysis.root";
-auto const  oFileAnal1D = "./result/outAnalysis1D.root";
-auto const  oFileAnal2D = "./result/outAnalysis2D.root";
-auto const  oFileEffici = "./result/outEfficiency.root";
-auto const  oFileHist1D = "./result/outHistogram1D.root";
-auto const  oFileHist2D = "./result/outHistogram2D.root";
-auto const  iFileMCEffi = "./result/outGeneratorMC_Efficiency.root";
-auto const  hPhiEff     = "hPhiEff";
+//------------------------------//
+//      GLOBAL VARIABLES        //
+//------------------------------//
 
-auto const  PTreeKSigName = "PythiaTreeKSig";
-auto const  PTreeKBkgName = "PythiaTreeKBkg";
-auto const  PTreePTruName = "PythiaTreePTru";
-bool        BKG2        = false;
+// - // File Names
 
-// InvMass range 1D
+auto const  fInvMasHist         =   "./result/InvariantMassHistograms.root";
+auto const  fEfficiHist         =   "./result/Efficiencies_MCTruth.root";
+auto const  fFitResHist         =   "./result/InvariantMassFitResultsPlots.root";
+auto const  fFitResults         =   "./result/InvariantMassFitResults.root";
+auto const  fAnlResHist         =   "./result/AnalysisResultsPlots.root";
+auto const  fAnlResults         =   "./result/AnalysisResults.root";
+auto const  fSystError_         =   "./result/Syst_SigExt.root";
+
+// - // Efficiencies & Errors
+
+// Signal Extraction
+auto const  kSignalExtraction   =   1.000;
+auto const  kSignalExtractERP   =   0.000; // TBD
+auto const  kSignalExtractERM   =   0.000; // TBD
+
+// Rapidity
+auto const  kRapidityInterval   =   1.000;  // Da Togliere poiché è un bin
+auto const  kRapidityInterERP   =   0.000;
+auto const  kRapidityInterERM   =   0.000;
+
+// Event
+auto const  kEventEfficiency_   =   0.850;
+auto const  kEventEfficienERP   =   0.062;
+auto const  kEventEfficienERM   =   0.030;
+
+// Branching Ratio
+auto const  kBranchingRatio__   =   0.489;
+auto const  kBranchingRatiERP   =   0.005;
+auto const  kBranchingRatiERM   =   0.005;
+
+// Vertex
+auto const  kVertexEfficiency   =   0.990;
+auto const  kVertexEfficieERP   =   0.000;
+auto const  kVertexEfficieERM   =   0.000;
+
+// Tracking
+auto const  kTrackingEfficien   =   1.000;
+auto const  kTrackingEfficERP   =   0.080;
+auto const  kTrackingEfficERM   =   0.080;
+
+// PID
+auto const  kParticleIdentifi   =   1.000;
+auto const  kParticleIdentERP   =   0.015;
+auto const  kParticleIdentERM   =   0.015;
+
+auto const  kSystematicalErrP   =   kSignalExtractERP + kEventEfficienERP + kBranchingRatiERP + kVertexEfficieERP + kTrackingEfficERP + kParticleIdentERP;
+auto const  kSystematicalErrM   =   kSignalExtractERM + kEventEfficienERM + kBranchingRatiERM + kVertexEfficieERM + kTrackingEfficERM + kParticleIdentERM;
+
+// Pythia8
+auto const  kPythia1DEfficien   =   0.970;
+auto const  kPythia2DEfficien   =   0.943;
+
+// Color Style and Width, Fill Marker Line
+Int_t kColor[] = {38,kBlue,kBlue+3,46,38};
+Int_t kStyle[] = {26,9,10,25,22};
+Int_t kWidth[] = {1,3,3,1,1};
+
+// TRandom
+TRandom *   fRandomGen      =   new TRandom();
+
+auto const  fFileDTAnal     = "./result/DTFinalAnalysisResults.root";
+auto const  fFileZZ1D1D     = "./result/ZZFitResults1D-1D.root";
+auto const  fFileZZ2D1D     = "./result/ZZFitResults1D-2D.root";
+auto const  fFileZZ2D2D     = "./result/ZZFitResults2D-2D.root";
+auto const  fFileZZ1DPT     = "./result/ZZFitResults1D-PT.root";
+auto const  fFileZZ2DPT     = "./result/ZZFitResults2D-PT.root";
+auto const  fSystError2     = "./result/bSystematicErrors.root";
+auto const  fFileDT_10b     = "./result/LHC10b.root";
+auto const  fFileDT_10c     = "./result/LHC10c.root";
+auto const  fFileDT_10d     = "./result/LHC10d.root";
+auto const  fFileDT_10e     = "./result/LHC10e.root";
+auto const  fFileMC_10b     = "./result/LHC14j4b.root";
+auto const  fFileMC_10c     = "./result/LHC14j4c.root";
+auto const  fFileMC_10d     = "./result/LHC14j4d.root";
+auto const  fFileMC_10e     = "./result/LHC14j4e.root";
+auto        hName           = "Name";
+auto        hTitle          = "Title";
+auto const  bPythiaTest     = false;
+auto const  bSave           = true;
+
+// - // Physics Constants
+
+//---------------------------------------//
+//- Physics is by defualt in GeV, we    -//
+//- define some constants to evaluate   -//
+//- results in other units              -//
+//---------------------------------------//
+
+auto const  kPMas           = 1.019455; // 1.019455 ± 0.000020 GeV
+auto const  kPWid           = 0.004260; // 0.004260 ± 0.000040 GeV
+auto const  KeV             = 1e6;
+auto const  MeV             = 1e3;
+auto const  GeV             = 1;
+auto const  TeV             = 1e-3;
+
+// - // DATA
+auto const  fFileDTForm     = "./result/DTZFetched.root";
+auto const  fFileDTPreP     = "./result/DTPreProcessed.root";
+auto const  fFileDTAn1D     = "./result/DTAnalysis1D.root";
+auto const  fFileDTAn2D     = "./result/DTAnalysis2D.root";
+auto const  fTreeSigName    = "SIG_Kaon_Tree";
+
+// - // MONTECARLO
+auto const  fFileMCForm     = "/Volumes/[HD][Nikolajal]_Toshiba/Rubini/outAAA.root";
+//auto const  fFileMCForm     = "./result/MCZGenerated.root";
+auto const  fFileMCPreP     = "./result/MCPreProcessed.root";
+auto const  fTreeBkgName    = "BKG_Kaon_Tree";
+
+// - // EFFICIENCY
+auto const  fFileEFPreP     = "./result/EFPreProcessed.root";
+auto const  fTreeTruName    = "TRU_Phi__Tree";
+
+// INVARIANT MASS
+//-// InvMass range Pythia MC
+const   Float_t   fMinIMMC  = 0.75;
+const   Float_t   fMaxIMMC  = 1.25;
+
+//-// InvMass range 1D
 const   Int_t     nBinIM1D  = 100;
 const   Float_t   fMinIM1D  = 0.99;
-const   Float_t   fMaxIM1D  = 1.09;
+const   Float_t   fMaxIM1D  = 1.05;
         Float_t * fArrIM1D  = new Float_t [nBinIM1D+1];
 
-// InvMass range 2D
-const   Int_t     nBinIM2D  = 100;
+//-// InvMass range 2D
+const   Int_t     nBinIM2D  = 60;
 const   Float_t   fMinIM2D  = 0.99;
-const   Float_t   fMaxIM2D  = 1.09;
+const   Float_t   fMaxIM2D  = 1.05;
         Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];
 
+// MOMENTUM
 // pT cuts 1D
-        Int_t     nBinPT1D  = 2;
-const   Float_t   fMinPT1D  = 0.;
-const   Float_t   fMaxPT1D  = 4.;
+        Int_t     nBinPT1D  = 32;
+const   Float_t   fMinPT1D  = 0.0;
+const   Float_t   fMaxPT1D  = 10.0;
         Float_t * fArrPT1D  = new Float_t [nBinPT1D+1];
 
 // pT cuts 2D
-        Int_t     nBinPT2D  = 2;
-const   Float_t   fMinPT2D  = 0.;
-const   Float_t   fMaxPT2D  = 4.;
+        Int_t     nBinPT2D  = 12;
+const   Float_t   fMinPT2D  = 0.0;
+const   Float_t   fMaxPT2D  = 10.0;
         Float_t * fArrPT2D  = new Float_t [nBinPT2D+1];
 
+// DATA Structures
 typedef struct
 {
-    Int_t nKaon, particleID[1024], mother1[1024], mother2[1024], motherID[1024];
-    Float_t px[1024], py[1024], pz[1024], pT[1024], e[1024];
+    Int_t nKaon, ID[1024], Mom1[1024], Mom2[1024];
+    Bool_t  bRec [1024];
 } EVKAON;
 
 typedef struct
@@ -97,12 +194,16 @@ typedef struct
 
 typedef struct
 {
-    Int_t   nPhi;
-    Bool_t  bRec[1024], bEta[1024];
+    Int_t   nPhi, Dau1[1024], Dau2[1024], ID[1024];
+    Bool_t  bRec[1024], bEta[1024], bKdc[1024];
     Float_t pT[1024];
 } EVPHI;
 
-void    vSetBinsIM1D ()
+//------------------------------//
+//    VARIABLES UTILITIES       //
+//------------------------------//
+
+void    fSetBinIM1D ()
 {
     for (int i = 0; i <= nBinIM1D; i++ )
     {
@@ -110,7 +211,20 @@ void    vSetBinsIM1D ()
     }
 }
 
-void    vSetBinsIM2D ()
+Int_t   fGetBinIM1D (Float_t input_value )
+{
+    if ( input_value > fMaxIM1D ) return -1;
+    for ( Int_t iBin = 0; iBin <= nBinIM1D; iBin++ )
+    {
+        if ( input_value <= fArrIM1D[iBin] )
+        {
+            return iBin -1;
+        }
+    }
+    return nBinIM1D-1;
+}
+
+void    fSetBinIM2D ()
 {
     for (int i = 0; i <= nBinIM2D; i++ )
     {
@@ -118,48 +232,95 @@ void    vSetBinsIM2D ()
     }
 }
 
-void    vSetBinsPT1D ()
+Int_t   fGetBinIM2D (Float_t input_value )
 {
-    /*
-    fArrPT1D[0] =   0.;
-    fArrPT1D[1] =   0.5;
-    fArrPT1D[2] =   1.;
-    fArrPT1D[3] =   0.75;
-    fArrPT1D[4] =   1.;
-    fArrPT1D[5] =   1.25;
-    fArrPT1D[6] =   1.5;
-    fArrPT1D[7] =   2.;
-    fArrPT1D[8] =   2.5;
-    fArrPT1D[9] =   3.;
-    fArrPT1D[10]=   4.;
-    /*/
-    for (int i = 0; i <= nBinPT1D; i++ )
+    if ( input_value > fMaxIM2D ) return -1;
+    for ( Int_t iBin = 0; iBin <= nBinIM2D; iBin++ )
     {
-        fArrPT1D[i] = fMinPT1D+(i)*(fMaxPT1D - fMinPT1D)/(static_cast<Float_t>(nBinPT1D));
+        if ( input_value <= fArrIM2D[iBin] )
+        {
+            return iBin -1;
+        }
     }
-    
+    return nBinIM2D-1;
 }
 
-void    vSetBinsPT2D ()
+void    fSetBinPT1D ()
 {
-    /*
-    fArrPT2D[0] =   0.;
-    fArrPT2D[1] =   0.25;
-    fArrPT2D[2] =   0.5;
-    fArrPT2D[3] =   0.75;
-    fArrPT2D[4] =   1.;
-    fArrPT2D[5] =   1.25;
-    fArrPT2D[6] =   1.5;
-    fArrPT2D[7] =   2.;
-    fArrPT2D[8] =   2.5;
-    fArrPT2D[9] =   3.;
-    fArrPT2D[10]=   4.;
-    /*/
-    for (int i = 0; i <= nBinPT2D; i++ )
+    fArrPT1D[0] =   0.0;
+    fArrPT1D[1] =   0.1;
+    fArrPT1D[2] =   0.2;
+    fArrPT1D[3] =   0.3;
+    fArrPT1D[4] =   0.4;
+    fArrPT1D[5] =   0.5;
+    fArrPT1D[6] =   0.6;
+    fArrPT1D[7] =   0.7;
+    fArrPT1D[8] =   0.8;
+    fArrPT1D[9] =   0.9;
+    fArrPT1D[10]=   1.0;
+    fArrPT1D[11]=   1.1;
+    fArrPT1D[12]=   1.2;
+    fArrPT1D[13]=   1.3;
+    fArrPT1D[14]=   1.4;
+    fArrPT1D[15]=   1.5;
+    fArrPT1D[16]=   1.6;
+    fArrPT1D[17]=   1.7;
+    fArrPT1D[18]=   1.8;
+    fArrPT1D[19]=   1.9;
+    fArrPT1D[20]=   2.0;
+    fArrPT1D[21]=   2.2;
+    fArrPT1D[22]=   2.4;
+    fArrPT1D[23]=   2.6;
+    fArrPT1D[24]=   2.8;
+    fArrPT1D[25]=   3.0;
+    fArrPT1D[26]=   3.5;
+    fArrPT1D[27]=   4.0;
+    fArrPT1D[28]=   4.5;
+    fArrPT1D[29]=   5.0;
+    fArrPT1D[30]=   6.0;
+    fArrPT1D[31]=   8.0;
+    fArrPT1D[32]=   10.;
+}
+
+void    fSetBinPT2D ()
+{
+    fArrPT2D[0] =   0.0;
+    fArrPT2D[1] =   0.2;
+    fArrPT2D[2] =   0.40;
+    fArrPT2D[3] =   0.55;
+    fArrPT2D[4] =   0.70;
+    fArrPT2D[5] =   0.85;
+    fArrPT2D[6] =   1.0;
+    fArrPT2D[7] =   1.2;
+    fArrPT2D[8] =  1.6;
+    fArrPT2D[9] =  2.3;
+    fArrPT2D[10] =  3.0;
+    fArrPT2D[11] =  6.0;
+    fArrPT2D[12] =  10.;
+ }
+
+Int_t   fGetBinPT1D (Float_t input_value )
+{
+    for ( Int_t iBin = 0; iBin <= nBinPT1D; iBin++ )
     {
-        fArrPT2D[i] = fMinPT2D+(i)*(fMaxPT2D - fMinPT2D)/(static_cast<Float_t>(nBinPT2D));
+        if ( input_value <= fArrPT1D[iBin] )
+        {
+            return iBin -1;
+        }
     }
-    
+    return -1;
+}
+
+Int_t   fGetBinPT2D (Float_t input_value )
+{
+    for ( Int_t iBin = 0; iBin <= nBinPT2D; iBin++ )
+    {
+        if ( input_value <= fArrPT2D[iBin] )
+        {
+            return iBin -1;
+        }
+    }
+    return -1;
 }
 
 #endif
