@@ -4,7 +4,7 @@
 #include "../inc/SetValues.h"
 #include "../inc/SetFunctions.h"
 
-void InvariantMassFit ( bool fSilent = false )
+void Anls_InvariantMassFit ( bool fSilent = false )
 {
     //---------------------//
     //  Setting up input   //-------------------------------------------------------------------------------
@@ -105,7 +105,7 @@ void InvariantMassFit ( bool fSilent = false )
         auto fResults = FitModel(hIM_1D_Rec_PT_S[iFit],"",bSave,iFit,1);        // FitModel with Save enabled will write every fit performed on a Canvas
         
         // Building N_Raw histogram
-        auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(Signal____));
+        auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(Signal));
         h1D_Raw->SetBinContent      (iFit+1,N_Raw->getVal());
         h1D_Raw->SetBinError        (iFit+1,N_Raw->getError());
     }
@@ -116,7 +116,7 @@ void InvariantMassFit ( bool fSilent = false )
     for (int iFit = 0; iFit < nBinPT2D; iFit++ )
     {
         Results[iFit]   = new RooFitResult * [nBinPT2D];
-        utility[iFit]   = FitModel(hdM_dpT_Tot_Rec[iFit],"",bSave,iFit,2);
+        utility[iFit]   = FitModel(hdM_dpT_Tot_Rec[iFit],"STD",bSave,iFit,2);
     }
     
     // 2D Fits
@@ -130,7 +130,7 @@ void InvariantMassFit ( bool fSilent = false )
             if ( fArrPT2D[jFit+1] <= 0.41 ) continue;
 
             // Fit
-            Results[iFit][jFit] = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],bSave,iFit,jFit);
+            Results[iFit][jFit] = FitModel(hdM_dpT_Tot_Rec2D[iFit][jFit],utility[iFit],utility[jFit],"STD",bSave,iFit,jFit);
             
             // Building N_Raw histogram
             auto N_Raw      = static_cast<RooRealVar*>(Results[iFit][jFit]->floatParsFinal().at(SignlSignl));

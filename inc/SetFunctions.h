@@ -216,6 +216,17 @@ Float_t fLevyPar3 [] = {0.69e-3,0.69e-3,0.69e-3,0.58e-3,0.51e-3,0.37e-3,.193e-3,
 //  Signal Extraction from Invariant Mass hst //
 //--------------------------------------------//
 
+enum            fitresults1D
+{
+    Background, Signal
+};
+
+enum            fitresults2D
+{
+
+    BackgBackg, BackgSignl, SignlBackg, SignlSignl
+};
+
 void            SetBoundaries   ( string fOption, Double_t &aValMin, Double_t &aValMax )
 {
     aValMin = 0.99;
@@ -1703,7 +1714,7 @@ void fMosaicCanvas ( TH2F * hData, const char*  fDTOpt = "", const char*  fName 
     fMosaicCanvas(hSlcY,"",Form("YProjection_%s",fName),xDiv,yDiv,fSaveToFile,fLogy,fAmbg);
     return;
 }
-
+/*
 TF1 FitModelPT1D (TH1D * data, Int_t nEntries_DT, TF1 var, Bool_t fSaveToFile = false,  const char * fName = "" )
 {
     // Scaling the data
@@ -1804,7 +1815,7 @@ TH2F * HistoModel2D (RooFitResult * utilityx, RooFitResult * utilityy, RooFitRes
     return_histo->SetName(hName);
     return return_histo;
 }
-
+*/
 
  // Utility
 
