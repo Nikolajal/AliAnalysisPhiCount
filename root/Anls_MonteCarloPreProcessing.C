@@ -1,7 +1,7 @@
 #include "../inc/SetValues.h"
 // !TODO: Rebooting the selection process
 
-void PreProcessingMC ( const char * fFileName )
+void Anls_MonteCarloPreProcessing ( const char * fFileName )
 {
     if ( !fFileName )
     {

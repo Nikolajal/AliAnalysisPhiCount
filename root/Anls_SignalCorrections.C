@@ -6,7 +6,7 @@
 #include "../inc/SetFunctions.h"
 #include "RooMsgService.h"
 
-void CorrectionsPTFit ( bool fSilent = false )
+void Anls_SignalCorrections ( bool fSilent = false )
 {
     //---------------------//
     //  Setting up input   //-------------------------------------------------------------------------------
