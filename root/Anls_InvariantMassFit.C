@@ -22,17 +22,13 @@ void InvariantMassFit ( bool fSilent = false )
     // Opening Data File
     TFile*  insFile_DT              =   new TFile   (fInvMasHist);
     
-    // Fit Variables for Roofit
-    RooRealVar  xInvMass2D ("xInvMass2D","xInvMass2D",fMinIM2D,fMaxIM2D);
-    RooRealVar  yInvMass2D ("yInvMass2D","yInvMass2D",fMinIM2D,fMaxIM2D);
-    
     //-// Recovering Data histograms
     
     // Generating local Histograms to work on
     TH1F *          Entry_DT            = new TH1F          ();
     TH1F **         hIM_1D_Rec_PT_S     = new TH1F *        [nBinPT1D];
     TH1F **         hdM_dpT_Tot_Rec     = new TH1F *        [nBinPT2D];
-    RooDataHist *** hdM_dpT_Tot_Rec2D   = new RooDataHist **[nBinPT2D];
+    TH2F ***        hdM_dpT_Tot_Rec2D   = new TH2F **       [nBinPT2D];
     
     //------ 1D Histograms Recovery ------//
     
@@ -54,12 +50,12 @@ void InvariantMassFit ( bool fSilent = false )
         hdM_dpT_Tot_Rec[iHisto]     =   (TH1F*)(insFile_DT->Get(hName));
         
         // 2D set-up
-        hdM_dpT_Tot_Rec2D[iHisto]   =   new RooDataHist * [nBinPT2D];
+        hdM_dpT_Tot_Rec2D[iHisto]   =   new TH2F * [nBinPT2D];
         for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
         {
             // Importing 2D Invariant Mass Data Histograms
             hName                               =   Form("hIM_2D_Rec_PT_PT_BB_BS_SB_SS_%i_%i",iHisto,jHisto);   // Name of the histogram in the preprocessed file
-            hdM_dpT_Tot_Rec2D[iHisto][jHisto]   =   new RooDataHist(hName,hName,RooArgList(xInvMass2D,yInvMass2D),Import(*(TH2F*)(insFile_DT->Get(hName))));
+            hdM_dpT_Tot_Rec2D[iHisto][jHisto]   =   (TH2F*)(insFile_DT->Get(hName));
         }
     }
     
@@ -134,7 +130,7 @@ void InvariantMassFit ( bool fSilent = false )
             if ( fArrPT2D[jFit+1] <= 0.41 ) continue;
 
             // Fit
-            Results[iFit][jFit] = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],xInvMass2D,yInvMass2D,bSave,iFit,jFit);
+            Results[iFit][jFit] = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],bSave,iFit,jFit);
             
             // Building N_Raw histogram
             auto N_Raw      = static_cast<RooRealVar*>(Results[iFit][jFit]->floatParsFinal().at(SignlSignl));
