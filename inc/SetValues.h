@@ -154,13 +154,13 @@ const   Float_t   fMinIMMC  = 0.75;
 const   Float_t   fMaxIMMC  = 1.25;
 
 //-// InvMass range 1D
-const   Int_t     nBinIM1D  = 100;
+const   Int_t     nBinIM1D  = 180;
 const   Float_t   fMinIM1D  = 0.99;
 const   Float_t   fMaxIM1D  = 1.05;
         Float_t * fArrIM1D  = new Float_t [nBinIM1D+1];
 
 //-// InvMass range 2D
-const   Int_t     nBinIM2D  = 60;
+const   Int_t     nBinIM2D  = 90;
 const   Float_t   fMinIM2D  = 0.99;
 const   Float_t   fMaxIM2D  = 1.05;
         Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];
@@ -287,15 +287,15 @@ void    fSetBinPT2D ()
     fArrPT2D[0] =   0.0;
     fArrPT2D[1] =   0.2;
     fArrPT2D[2] =   0.40;
-    fArrPT2D[3] =   0.55;
-    fArrPT2D[4] =   0.70;
-    fArrPT2D[5] =   0.85;
-    fArrPT2D[6] =   1.0;
-    fArrPT2D[7] =   1.2;
-    fArrPT2D[8] =  1.6;
-    fArrPT2D[9] =  2.3;
+    fArrPT2D[3] =   0.68;
+    fArrPT2D[4] =   0.82;
+    fArrPT2D[5] =   0.95;
+    fArrPT2D[6] =   1.1;
+    fArrPT2D[7] =   1.3;
+    fArrPT2D[8] =   1.6;
+    fArrPT2D[9] =   2.3;
     fArrPT2D[10] =  3.0;
-    fArrPT2D[11] =  6.0;
+    fArrPT2D[11] =  5.0;
     fArrPT2D[12] =  10.;
  }
 

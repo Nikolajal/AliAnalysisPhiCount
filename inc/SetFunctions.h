@@ -206,6 +206,67 @@ void            TH2_SetDescription ( TH2F * hTarget )
     hTarget->GetYaxis()->SetTitleOffset(1.5);
 }
 
+void            SetBoundaries       ( string fOption, Double_t &aValMin, Double_t &aValMax )
+{
+    aValMin = 0.99;
+    aValMax = 1.05;
+    if ( fOption.find("RA") != -1 )
+    {
+        aValMin =   0.990;
+        aValMax =   1.040;
+    }
+    if ( fOption.find("RB") != -1 )
+    {
+        aValMin =   0.990;
+        aValMax =   1.060;
+    }
+    if ( fOption.find("RC") != -1 )
+    {
+        aValMin =   0.990;
+        aValMax =   1.070;
+    }
+    if ( fOption.find("RD") != -1 )
+    {
+        aValMin =   0.995;
+        aValMax =   1.040;
+    }
+    if ( fOption.find("RE") != -1 )
+    {
+        aValMin =   0.995;
+        aValMax =   1.050;
+    }
+    if ( fOption.find("RF") != -1 )
+    {
+        aValMin =   0.995;
+        aValMax =   1.060;
+    }
+    if ( fOption.find("RG") != -1 )
+    {
+        aValMin =   0.995;
+        aValMax =   1.070;
+    }
+    if ( fOption.find("RH") != -1 )
+    {
+        aValMin =   1.000;
+        aValMax =   1.040;
+    }
+    if ( fOption.find("RI") != -1 )
+    {
+        aValMin =   1.000;
+        aValMax =   1.050;
+    }
+    if ( fOption.find("RJ") != -1 )
+    {
+        aValMin =   1.000;
+        aValMax =   1.060;
+    }
+    if ( fOption.find("RK") != -1 )
+    {
+        aValMin =   1.000;
+        aValMax =   1.070;
+    }
+}
+
 
 // initialised values for fits in 2D
 Float_t fLevyPar1 [] = {5.45,   5.05,   5.55,   5.85,   6.15,   6.10,   6.20,   5.2,    5.2,    4.1};
@@ -336,16 +397,14 @@ RooFitResult*   FitModel (TH1F * THdata, const char* fName = "", Bool_t fSaveToF
     Bool_t  fMass_  =   false;
     if  ( fOption.find("M") != -1 )     fMass_  =   true;
     
-    Bool_t  fRangb  =   false;
-    string  fRangs;
-    if ( fOption.find("R") != -1 )   { fRangb  =   true;   fRangs  =    fOption.at(fOption.find("R")+1); }
+    Double_t fInvMassValMax, fInvMassValMin;
+    SetBoundaries(fOption,fInvMassValMin,fInvMassValMax);
     
     // Global Variables
     Int_t nEntries      = THdata->GetEntries();
-    RooRealVar InvMass  = RooRealVar        ("InvMass","InvMass",fMinIM1D,fMaxIM1D);
+    RooRealVar InvMass  = RooRealVar        ("InvMass","InvMass",fInvMassValMin,fInvMassValMax);
     RooDataHist* data   = new RooDataHist   (fName,fName,InvMass,Import(*THdata));
-    Int_t kNCycle       = 3;
-    if ( PTindex == 8 ) kNCycle = 3;
+    Int_t kNCycle       = 5;
     
     // Background PDF Coefficients
     RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,-1,1);//,0.5,-1,1);
@@ -355,7 +414,7 @@ RooFitResult*   FitModel (TH1F * THdata, const char* fName = "", Bool_t fSaveToF
     
     RooRealVar ch4, ch5;
     if ( fCheb3 && !fCheb5 )    ch4     = RooRealVar        ("ch4","ch4"        ,0.);
-    else                        ch4     = RooRealVar        ("ch4","ch4"        ,0.,-1,1);
+    else                        ch4     = RooRealVar        ("ch4","ch4"        ,0.2,-1,1);
     
     if ( fCheb5 )               ch5     = RooRealVar        ("ch5","ch5"        ,0.,-1,1);
     else                        ch5     = RooRealVar        ("ch5","ch5"        ,0.);
@@ -380,22 +439,11 @@ RooFitResult*   FitModel (TH1F * THdata, const char* fName = "", Bool_t fSaveToF
     RooChebychev    fBkg= RooChebychev     ("fBkg","fBkg"      ,InvMass,RooArgSet(ch0,ch1,ch2,ch3,ch4,ch5));
     RooAddPdf       fMod= RooAddPdf        ("fMod","fMod"      ,RooArgList(fBkg,fSig),RooArgList(nBB,nSS));
     
-    InvMass.setRange("1",   fMinIM1D,  1.045);
-    InvMass.setRange("2",   fMinIM1D,  1.040);
-    InvMass.setRange("3",   0.995,     fMaxIM1D);
-    InvMass.setRange("4",   1.000,     fMaxIM1D);
-    InvMass.setRange("5",   0.995,     1.045);
-    InvMass.setRange("6",   0.995,     1.040);
-    InvMass.setRange("7",   1.000,     1.045);
-    InvMass.setRange("8",   1.000,     1.040);
-    InvMass.setRange("Full",fMinIM1D,   fMaxIM1D);
+    
     RooFitResult* result;
-
-    if ( fRangb ) fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NormRange("Full"),Range("Full"));
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        if ( fRangb )       result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NormRange("Full"),Range(fRangs.c_str()));
-        else                result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NormRange("Full"),Range("Full"));
+        result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),Range(""),NormRange(""));
     }
     
     if ( fSaveToFile )
@@ -588,7 +636,7 @@ RooFitResult*   FitModel (RooFitResult * utilityx, RooFitResult * utilityy, RooD
     return FitResults;
 }*/
 
-RooFitResult*   FitModel (RooFitResult * fFitShapeX, RooFitResult * fFitShapeY, RooDataHist * data, RooRealVar varx, RooRealVar vary, string fHistName = "", Bool_t fSaveToFile = false, Int_t PTindex = -1, Int_t PTjndex = -1, string fOption = "" )
+RooFitResult*   FitModel (RooFitResult * fFitShapeX, RooFitResult * fFitShapeY, TH2F * THdata, string fHistName = "", Bool_t fSaveToFile = false, Int_t PTindex = -1, Int_t PTjndex = -1, string fOption = "" )
 {
     // Silencing TCanvas Pop-Up
     gROOT->SetBatch();
@@ -596,16 +644,19 @@ RooFitResult*   FitModel (RooFitResult * fFitShapeX, RooFitResult * fFitShapeY, 
     Bool_t  fBackg  =   false;
     if  ( fOption.find("BK") != -1 )     fBackg  =   true;
     
-    Bool_t  fRangb  =   false;
-    string  fRangs;
-    if ( fOption.find("R") != -1 )   { fRangb  =   true;   fRangs  =    fOption.at(fOption.find("x^")+2); }
+    Double_t fInvMassValMax, fInvMassValMin;
+    SetBoundaries(fOption,fInvMassValMin,fInvMassValMax);
+    
+    // Global Variables
+    Int_t nEntries      = THdata->GetEntries();
+    RooRealVar varx     = RooRealVar        ("xInvMass2D","xInvMass2D",fInvMassValMin,fInvMassValMax);
+    RooRealVar vary     = RooRealVar        ("yInvMass2D","yInvMass2D",fInvMassValMin,fInvMassValMax);
+    RooDataHist* data   = new RooDataHist   (fHistName.c_str(),fHistName.c_str(),RooArgList(varx,vary),Import(*THdata));
+    Int_t kNCycle       = 5;
     
     RooArgSet  *utilityx    =   new RooArgSet(fFitShapeX->floatParsFinal(),fFitShapeX->constPars());
     RooArgSet  *utilityy    =   new RooArgSet(fFitShapeY->floatParsFinal(),fFitShapeY->constPars());
     
-    // Variables
-    Int_t nEntries      = data->sumEntries();
-    Int_t kNCycle       = 3;
     
     // Background
     RooRealVar ch0x, ch1x, ch2x, ch3x, ch4x, ch5x, ch0y, ch1y, ch2y, ch3y, ch4y, ch5y;
@@ -671,33 +722,11 @@ RooFitResult*   FitModel (RooFitResult * fFitShapeX, RooFitResult * fFitShapeY, 
     RooProdPdf          fSS   ("fSigSig","fSigSig"      ,fSigx,fSigy);
     RooAddPdf           fMod  ("fMod2D","fMod2D"        ,RooArgList(fBB,fSS,fSB,fBS),RooArgList(n1,n0,n3,n2));
     
-    varx.setRange("Full",fMinIM1D,fMaxIM1D);
-    varx.setRange("1",   fMinIM1D,  1.045);
-    varx.setRange("2",   fMinIM1D,  1.040);
-    varx.setRange("3",   0.995,     fMaxIM1D);
-    varx.setRange("4",   1.000,     fMaxIM1D);
-    varx.setRange("5",   0.995,     1.045);
-    varx.setRange("6",   0.995,     1.040);
-    varx.setRange("7",   1.000,     1.045);
-    varx.setRange("8",   1.000,     1.040);
-    vary.setRange("Full",fMinIM1D,fMaxIM1D);
-    vary.setRange("1",   fMinIM1D,  1.045);
-    vary.setRange("2",   fMinIM1D,  1.040);
-    vary.setRange("3",   0.995,     fMaxIM1D);
-    vary.setRange("4",   1.000,     fMaxIM1D);
-    vary.setRange("5",   0.995,     1.045);
-    vary.setRange("6",   0.995,     1.040);
-    vary.setRange("7",   1.000,     1.045);
-    vary.setRange("8",   1.000,     1.040);
+
     RooFitResult* FitResults;
-    
-    if ( fRangb ) fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NormRange("Full"),Range("Full"));
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        gSystem->RedirectOutput("/dev/null");
-        if ( fRangb )       FitResults = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NormRange("Full"),Range(fRangs.c_str()));
-        else                FitResults = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NormRange("Full"),Range("Full"));
-        gSystem->RedirectOutput(0,0);
+       FitResults = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save());
     }
     
     // Save to file

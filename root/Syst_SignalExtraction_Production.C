@@ -30,7 +30,7 @@ void Syst_SigExt_Prod ( bool fSilent = false)
     }
     
     TH1F **  hdM_dpT_Tot_Rec     = new TH1F *  [nBinPT2D];
-    RooDataHist *** hdM_dpT_Tot_Rec2D   = new RooDataHist ** [nBinPT2D];
+    TH2F *** hdM_dpT_Tot_Rec2D   = new TH2F ** [nBinPT2D];
     for (int iHisto = 2; iHisto < nBinPT2D; iHisto++)
     {
         // Importing 1D Histograms
@@ -38,12 +38,12 @@ void Syst_SigExt_Prod ( bool fSilent = false)
         hdM_dpT_Tot_Rec[iHisto] = (TH1F*)(insFile_DT->Get(hName));
         
         // 2D set-up
-        hdM_dpT_Tot_Rec2D[iHisto]   = new RooDataHist * [nBinPT2D];
+        hdM_dpT_Tot_Rec2D[iHisto]   = new TH2F * [nBinPT2D];
         for (int jHisto = 2; jHisto < nBinPT2D; jHisto++)
         {
             // Importing 2D Histograms
             hName = Form("hIM_2D_Rec_PT_PT_BB_BS_SB_SS_%i_%i",iHisto,jHisto);
-            hdM_dpT_Tot_Rec2D[iHisto][jHisto]   = new RooDataHist(hName,hName,RooArgList(xInvMass2D,yInvMass2D),Import(*(TH2F*)(insFile_DT->Get(hName))));
+            hdM_dpT_Tot_Rec2D[iHisto][jHisto]   = (TH2F*)(insFile_DT->Get(hName));
         }
     }
     hName                           =   "Entry_DT";
@@ -68,13 +68,13 @@ void Syst_SigExt_Prod ( bool fSilent = false)
     TH1F*   h1D_Raw     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
     TH1_SetDescription(h1D_Raw);
     
-    const   Bool_t  fStandar    =   false;
-    const   Bool_t  f1DOptio    =   false;
+    const   Bool_t  fStandar    =   true;
+    const   Bool_t  f1DOptio    =   true;
     const   Bool_t  f2DOptio    =   true;
-    const   Int_t   nOptions    =   5;
-    const   string  sOptions[]  =   {"R4","R2","R6","R7","R8","M","R5","W","CH3","CH5","R1","R3"};
-    const   Int_t   nOption2    =   0;
-    const   string  sOption2[]  =   {"R4","R6","R7","R8","BK","R1","R2","R3","R5"};
+    const   Int_t   nOptions    =   15; //15
+    const   string  sOptions[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK","M","W","CH3","CH5"};
+    const   Int_t   nOption2    =   11; //11
+    const   string  sOption2[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK"};
     
     TH1F**  h1D_Syst    =   new TH1F*   [nOptions];
     for ( Int_t iTer = 0; iTer < nOptions; iTer++ )
@@ -181,7 +181,7 @@ void Syst_SigExt_Prod ( bool fSilent = false)
             if ( fArrPT2D[jFit+1] <= 0.41 ) continue;
             
             // Fit
-            auto fFitResult = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],xInvMass2D,yInvMass2D,"STD",bSave,iFit,jFit);
+            auto fFitResult = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],"STD",bSave,iFit,jFit);
             
             // Building N_Raw histogram
             auto N_Raw      = static_cast<RooRealVar*>(fFitResult->floatParsFinal().at(SignlSignl));
@@ -211,7 +211,7 @@ void Syst_SigExt_Prod ( bool fSilent = false)
                 if ( fArrPT2D[jFit+1] <= 0.41 ) continue;
                 
                 // Fit
-                auto fResults = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],xInvMass2D,yInvMass2D,Form("2D_%s",sOption2[iSys].c_str()),bSave,iFit,jFit,sOption2[iSys-nOptions].c_str());
+                auto fResults = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],Form("2D_%s",sOption2[iSys].c_str()),bSave,iFit,jFit,sOption2[iSys-nOptions].c_str());
                    
                 // Building N_Raw histogram
                 auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(SignlSignl));
@@ -245,7 +245,7 @@ void Syst_SigExt_Prod ( bool fSilent = false)
                 if ( fArrPT2D[jFit+1] <= 0.41 ) continue;
 
                 // Fit
-                auto fResults = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],xInvMass2D,yInvMass2D,Form("1D-2D_%s",sOptions[iSys].c_str()),bSave,iFit,jFit);
+                auto fResults = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],Form("1D-2D_%s",sOptions[iSys].c_str()),bSave,iFit,jFit,sOptions[iSys].c_str());
                 
                 // Building N_Raw histogram
                 auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(SignlSignl));
