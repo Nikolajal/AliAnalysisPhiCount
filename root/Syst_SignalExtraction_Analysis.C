@@ -6,11 +6,11 @@
 #include "../inc/SetFunctions.h"
 #include "RooMsgService.h"
 
-void Systematics_2 ( bool fSilent = false)
+void Syst_SignalExtraction_Analysis ( bool fSilent = false)
 {
     const   Int_t   nOptions    =   15;
     const   string  sOptions[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK","M","W","CH3","CH5"};
-    const   Int_t   nOption2    =   11;
+    const   Int_t   nOption2    =   0;
     const   string  sOption2[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK"};
     
     TFile **insFileHst  =   new TFile*  [2*nOptions+nOption2+2];
@@ -51,7 +51,9 @@ void Systematics_2 ( bool fSilent = false)
     TH1F  **fh1D_Systematics_Bin    =   new TH1F   *[nBinPT1D];
     for ( Int_t iAll = 0; iAll < nBinPT1D; iAll++ )
     {
-        fh1D_Systematics_Bin[iAll] =   new TH1F    (Form("1D_BIN_%i",iAll+1),Form("1D_BIN_%i",iAll+1),180,0.1,1.9);
+        fh1D_Systematics_Bin[iAll]  =   new TH1F    (Form("1D_BIN_%i",iAll+1),Form("1D_BIN_%i",iAll+1),180,0.1,1.9);
+        fh1D_Systematics_Bin[iAll]  ->SetTitle(Form("Percentage variation of raw yield for bin %i",iAll+1));
+        fh1D_Systematics_Bin[iAll]  ->GetXaxis()->SetTitle("Percentage variation");
     }
     TH1F ***fh2D_Systematics_Bin    =   new TH1F  **[nBinPT2D];
     for ( Int_t iAll = 0; iAll < nBinPT2D; iAll++ )
@@ -59,7 +61,9 @@ void Systematics_2 ( bool fSilent = false)
         fh2D_Systematics_Bin[iAll]  =   new TH1F   *[nBinPT2D];
         for ( Int_t jAll = 0; jAll < nBinPT2D; jAll++ )
         {
-            fh2D_Systematics_Bin[iAll][jAll]  =   new TH1F    (Form("2D_BIN_%i_%i",iAll+1,jAll+1),Form("2D_BIN_%i_%i",iAll+1,jAll+1),180,0.1,1.9);
+            fh2D_Systematics_Bin[iAll][jAll]    =   new TH1F    (Form("2D_BIN_%i_%i",iAll+1,jAll+1),Form("2D_BIN_%i_%i",iAll+1,jAll+1),180,0.1,1.9);
+            fh2D_Systematics_Bin[iAll][jAll]    ->SetTitle(Form("Percentage variation of raw yield for bin %i-%i",iAll+1,jAll+1));
+            fh2D_Systematics_Bin[iAll][jAll]    ->GetXaxis()->SetTitle("Percentage variation");
         }
     }
     
@@ -103,6 +107,16 @@ void Systematics_2 ( bool fSilent = false)
         Histogram_1D_Systematics_Error_Normalised   ->  SetBinContent   (iTer-3,  0);
         Histogram_1D_Systematics_Error_Normalised   ->  SetBinError     (iTer-3,  fabs(1- fh1D_Systematics_Bin[iTer]->GetMean()) + fabs(fh1D_Systematics_Bin[iTer]->GetRMS()) );
         fh1D_Systematics_Bin[iTer]->GetXaxis()->SetRangeUser(0.1,1.9);
+        fh1D_Systematics_Bin[iTer]->Write();
+        if ( iTer == 18 )
+        {
+            TCanvas *c1 = new TCanvas();
+            gStyle->SetOptStat(0);
+            fh1D_Systematics_Bin[iTer]->GetXaxis()->SetRangeUser(0.8,1.2);
+            fh1D_Systematics_Bin[iTer]->Draw();
+            c1->SaveAs("./graphs/SysBin1.pdf");
+            delete c1;
+        }
     }
     
     TH1F   *fh1D_FnlTT_   = new   TH1F("Total1D",           "Total1D",          100,0.,.2);
@@ -158,6 +172,15 @@ void Systematics_2 ( bool fSilent = false)
             fh2D_FnlBin     ->  SetBinContent   (iTer-1,  jTer-1,   fabs(1-fh2D_Systematics_Bin[iTer][jTer]->GetMean())+ fabs(fh2D_Systematics_Bin[iTer][jTer]->GetRMS()));
             fh2D_Systematics_Bin[iTer][jTer]->GetXaxis()->SetRangeUser(0.1,1.9);
             fh2D_Systematics_Bin[iTer][jTer]->Write();
+            if ( iTer == 6 && jTer == 4 )
+            {
+                TCanvas *c1 = new TCanvas();
+                gStyle->SetOptStat(0);
+                fh2D_Systematics_Bin[iTer][jTer]->GetXaxis()->SetRangeUser(0.4,1.6);
+                fh2D_Systematics_Bin[iTer][jTer]->Draw();
+                c1->SaveAs("./graphs/SysBin2.pdf");
+                delete c1;
+            }
         }
     }
     TH1F   *fh2D_FnlTT_   = new   TH1F("Total2D",           "Total2D",              100,0.,1.);
@@ -204,6 +227,13 @@ void Systematics_2 ( bool fSilent = false)
             fh2D_Systematics_Bin[iTer][jTer]->GetXaxis()->SetRangeUser(0.1,1.9);
         }
     }
+    
+    TCanvas *c2 = new TCanvas();
+    Histogram_2D_Systematics_Error->Draw("colz text");
+    c2->Write();
+    c2->SaveAs("./graphs/Sys2D.pdf");
+    delete c2;
+    
     TH1F   *Histogram_2D_Systematics_Error_Projection               = new   TH1F("Systematics_2D_1D",       "Systematics_2D_1D",        nBinPT2D-2, 2,  nBinPT2D);
     TH1F   *Histogram_2D_Systematics_Error_Projection_Normalised    = new   TH1F("Systematics_2D_1D_Norm",  "Systematics_2D_1D_Norm",   nBinPT2D-2, 2,  nBinPT2D);
     for ( Int_t iTer = 2; iTer < nBinPT2D; iTer++ )
@@ -250,6 +280,13 @@ void Systematics_2 ( bool fSilent = false)
             Histogram_2D_Statistical_Error_Normalised   ->SetBinError(iTer-1,jTer-1,fErr/fVal);
         }
     }
+    
+    TCanvas *c1 = new TCanvas();
+    Histogram_2D_Statistical_Error->Draw("colz text");
+    c1->Write();
+    c1->SaveAs("./graphs/Stat2D.pdf");
+    delete c1;
+    
     TH1F   *Histogram_2D_Statistical_Error_Projection               = new   TH1F("Statistical_2D_1D",       "Statistical_2D_1D",        nBinPT2D-2, 2,  nBinPT2D);
     TH1F   *Histogram_2D_Statistical_Error_Projection_Normalised    = new   TH1F("Statistical_2D_1D_Norm",  "Statistical_2D_1D_Norm",   nBinPT2D-2, 2,  nBinPT2D);
     for ( Int_t iTer = 2; iTer < nBinPT2D; iTer++ )
@@ -280,30 +317,42 @@ void Systematics_2 ( bool fSilent = false)
     
     gStyle->SetOptStat(0);
     
-    Histogram_1D_Systematics_Error_Normalised   ->SetFillColorAlpha(kRed,0.5);
-    Histogram_1D_Systematics_Error_Normalised   ->Draw("E3 same");
     Histogram_1D_Statistical_Error_Normalised   ->SetFillColorAlpha(kGray,0.5);
     Histogram_1D_Statistical_Error_Normalised   ->Draw("E3 same");
+    Histogram_1D_Statistical_Error_Normalised   ->GetXaxis()->SetTitle("p_{T} bin");
+    Histogram_1D_Statistical_Error_Normalised   ->GetYaxis()->SetTitle("Error (%)");
+    Histogram_1D_Statistical_Error_Normalised   ->SetTitle("Comparison of statistical error to the Systematic");
+    Histogram_1D_Systematics_Error_Normalised   ->SetFillColorAlpha(kRed,0.5);
+    Histogram_1D_Systematics_Error_Normalised   ->Draw("E3 same");
     Legend_Satistical_Systematic_Overlap        ->AddEntry(Histogram_1D_Systematics_Error_Normalised,   "Systematics",  "F");
     Legend_Satistical_Systematic_Overlap        ->AddEntry(Histogram_1D_Statistical_Error_Normalised,   "Statistical",  "F");
     Legend_Satistical_Systematic_Overlap        ->Draw("same");
     
     Canvas_Satistical_Systematic_Overlap        ->Write();
+    Canvas_Satistical_Systematic_Overlap        ->SaveAs("./graphs/Canvas_Satistical_Systematic_Overlap.pdf");
+    Canvas_Satistical_Systematic_Overlap        ->SaveAs("./graphs/Canvas_Satistical_Systematic_Overlap.png");
     
     Legend_Satistical_Systematic_Overlap        ->Clear();
-    Canvas_Satistical_Systematic_Overlap        ->Clear();
+    delete Canvas_Satistical_Systematic_Overlap;
+    
+    TCanvas    *Canvas_Satistical_Systematic_Overla2    =   new TCanvas();
     
     Histogram_2D_Statistical_Error_Projection_Normalised   ->SetFillColorAlpha(kGray,0.5);
     Histogram_2D_Statistical_Error_Projection_Normalised   ->Draw("E3 same");
+    Histogram_2D_Statistical_Error_Projection_Normalised   ->GetXaxis()->SetTitle("p_{T} bin");
+    Histogram_2D_Statistical_Error_Projection_Normalised   ->GetYaxis()->SetTitle("Error (%)");
+    Histogram_2D_Statistical_Error_Projection_Normalised   ->SetTitle("Comparison of statistical error to the Systematic");
     Histogram_2D_Systematics_Error_Projection_Normalised   ->SetFillColorAlpha(kRed,0.5);
     Histogram_2D_Systematics_Error_Projection_Normalised   ->Draw("E3 same");
     Legend_Satistical_Systematic_Overlap        ->AddEntry(Histogram_2D_Systematics_Error_Projection_Normalised,   "Systematics",  "F");
     Legend_Satistical_Systematic_Overlap        ->AddEntry(Histogram_2D_Statistical_Error_Projection_Normalised,   "Statistical",  "F");
     Legend_Satistical_Systematic_Overlap        ->Draw("same");
     
-    Canvas_Satistical_Systematic_Overlap     ->Write();
+    Canvas_Satistical_Systematic_Overla2        ->Write();
+    Canvas_Satistical_Systematic_Overla2        ->SaveAs("./graphs/Canvas_Satistical_Systematic_Overlap_2D.pdf");
+    Canvas_Satistical_Systematic_Overla2        ->SaveAs("./graphs/Canvas_Satistical_Systematic_Overlap_2D.png");
     
-    delete Canvas_Satistical_Systematic_Overlap;
+    delete Canvas_Satistical_Systematic_Overla2;
     
     
     Histogram_1D_Statistical_Error                          ->Write();

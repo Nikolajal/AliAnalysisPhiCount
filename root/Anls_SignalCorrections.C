@@ -229,9 +229,23 @@ void Anls_SignalCorrections ( bool fSilent = false )
     cout << "INT_Res: " << fResults2D[0][1][0]          << "+-" << fResults2D[0][1][1] << " +-" << fResults2D[0][1][2]                  << endl;
     cout << "Res/Tru: " << fResults2D[0][1][0]/intREC   << "+-" << (1/intREC)*(fResults2D[0][1][1]+errREC*(fResults2D[0][1][0]/intREC))<< endl;
     cout << endl;
+    cout << "1D YIELD:" << endl;
+    cout << "YIELD: " << fResults1D[0]    << "+-" <<  fResults1D[1]   << "+" <<   fResults1D[0]*kSystematicalErrP   << "-" <<   fResults1D[0]*kSystematicalErrM   << endl;
+    cout << "MeanP: " << fResults1D[3]    << "+-" <<  fResults1D[4]   << endl;
+    cout << endl;
+    cout << "2DX YIELD:" << endl;
+    cout << "YIELD: " << fResults2D[0][0][0]    << "+-" <<  fResults2D[0][0][1]   << "+" <<   fResults2D[0][0][1] + fResults1D[0]*kSystematicalErrP   << "-" <<   fResults2D[0][0][1] + fResults1D[0]*kSystematicalErrM   << endl;
+    cout << "MeanP: " << fResults2D[0][0][3]    << "+-" <<  fResults2D[0][0][4]   << endl;
+    cout << endl;
+    cout << "2DY YIELD:" << endl;
+    cout << "YIELD: " << fResults2D[0][1][0]    << "+-" <<  fResults2D[0][1][1]   << "+" <<   fResults2D[0][1][1] + fResults1D[0]*kSystematicalErrP   << "-" <<   fResults2D[0][1][1] + fResults1D[0]*kSystematicalErrM   << endl;
+    cout << "MeanP: " << fResults2D[0][1][3]    << "+-" <<  fResults2D[0][1][4]   << endl;
+    cout << endl;
     
     //---- Graphics of Presentation -----//
-    //TGrCompare1D(g1D_Res_Stat,h1D_Tru_P6,h1D_Tru_P8,gCheck_);
+    TGraphAsymmErrors   *g1D_Res_Stat    =   new TGraphAsymmErrors(h1D_Res);
+    TGraphAsymmErrors   *g1D_Res_Syst    =   new TGraphAsymmErrors(SetSystErrorsh(h1D_Res));
+    TGrCompare1D(g1D_Res_Stat,g1D_Res_Syst,h1D_Tru_P6,h1D_Tru_P8,gCheck_);
     
     //---------------------//
     // Output and wrap up  //-------------------------------------------------------------------------------

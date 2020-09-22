@@ -316,13 +316,13 @@ RooFitResult*   FitModel        ( TH1F * THdata, const char* fName = "", Bool_t 
     
     // Background PDF Coefficients
     RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,-1,1);//,0.5,-1,1);
-    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,-0.1,-1,1);//,-0.1,-1,1);
-    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.01,-1,1);//,0.01,-1,1);
-    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,-0.05,-1,1);//,-0.05,-1,1);
+    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,0.,-1,1);//,-0.1,-1,1);
+    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.,-1,1);//,0.01,-1,1);
+    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,0.,-1,1);//,-0.05,-1,1);
     
     RooRealVar ch4, ch5;
     if ( fCheb3 && !fCheb5 )    ch4     = RooRealVar        ("ch4","ch4"        ,0.);
-    else                        ch4     = RooRealVar        ("ch4","ch4"        ,0.2,-1,1);
+    else                        ch4     = RooRealVar        ("ch4","ch4"        ,0.,-1,1);
     
     if ( fCheb5 )               ch5     = RooRealVar        ("ch5","ch5"        ,0.,-1,1);
     else                        ch5     = RooRealVar        ("ch5","ch5"        ,0.);
@@ -351,7 +351,7 @@ RooFitResult*   FitModel        ( TH1F * THdata, const char* fName = "", Bool_t 
     RooFitResult* result;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),Range(""),NormRange(""));
+        result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save());
     }
     
     if ( fSaveToFile )
@@ -381,7 +381,7 @@ RooFitResult*   FitModel        ( TH1F * THdata, const char* fName = "", Bool_t 
                                                 );
         
         RooPlot * fSaveToFrame      = InvMass.frame(Name(hName),Title(hTitle));
-        TLegend * fLegend           = new TLegend   (0.12,0.60,0.45,0.85);
+        TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
         
         fRooPlotMaker(fSaveToFrame,fLegend,fMod,data,"InvMass1D");
         
@@ -499,7 +499,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
         TCanvas*    cTotal          =   new TCanvas("","",0,45,1440,855);
                     cTotal          ->  SetTitle(Form("Slices of 2D Invariant Mass of Kaons in pT %.1f-%.1f GeV, %.1f-%.1f GeV",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
                     cTotal          ->  SetName(Form("PT_%.1f_%.1f__%.1f_%.1f_%s",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fHistName.c_str()));
-                    cTotal          ->  Divide(nBinsPrint,2);
+                    cTotal          ->  Divide(2,nBinsPrint);
         
                             varx.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
                             vary.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
@@ -516,7 +516,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
                                                     );
             
             RooPlot * fSaveToFrame  =   vary.frame(Name(hName),Title(hTitle));
-            TLegend * fLegend           = new TLegend   (0.12,0.60,0.45,0.85);
+            TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
 
                             varx.setRange("fDrawRange",fMinIM2D+i*dIncrement,fMinIM2D+(i+1)*dIncrement);
                             vary.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
@@ -526,11 +526,11 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
             cTotal->cd( i+1 );
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.5, 0.8, Form("%.3f < m^{x}_{K_{+}K_{-}} < %.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K_{+}K_{-}} < %.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
             fSaveToCanvas->cd();
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.5, 0.8, Form("%.3f < m^{x}_{K_{+}K_{-}} < %.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K_{+}K_{-}} < %.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
             fSaveToCanvas               ->Write();
             delete fSaveToCanvas;
         }
@@ -549,7 +549,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
                                                     );
             
             RooPlot * fSaveToFrame      =   varx.frame(Name(hName),Title(hTitle));
-            TLegend * fLegend           = new TLegend   (0.12,0.60,0.45,0.85);
+            TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
             
                                         varx.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
                                         vary.setRange("fDrawRange",fMinIM2D+i*dIncrement,fMinIM2D+(i+1)*dIncrement);
@@ -559,12 +559,12 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
             cTotal->cd( i+1 +3 );
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.5, 0.8, Form("%.2f < m^{y}_{K_{+}K_{-}} < %.2f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.2f < m^{y}_{K_{+}K_{-}} < %.2f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
             
             fSaveToCanvas->cd();
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.5, 0.8, Form("%.2f < m^{y}_{K_{+}K_{-}} < %.2f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.2f < m^{y}_{K_{+}K_{-}} < %.2f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
             fSaveToCanvas               ->Write();
             delete fSaveToCanvas;
         }
@@ -1257,6 +1257,9 @@ Float_t             EvlMeanPT__     ( TGraphAsymmErrors * gTarget, Float_t & _Er
 
 Float_t **          EvlMeanPT__     ( TH2F * hTarget, Float_t **& _ErrorHig, Float_t **& _ErrorLow )
 {
+    // Silencing TCanvas Pop-Up
+    gROOT->SetBatch();
+    
     Float_t ** _Return__    = new Float_t *[2];
     _Return__[0]            = new Float_t [nBinPT2D+1];
     _Return__[1]            = new Float_t [nBinPT2D+1];
@@ -1346,11 +1349,14 @@ Float_t **          EvlMeanPT__     ( TH2F * hTarget, Float_t **& _ErrorHig, Flo
     cDrawAllX->Write();
     cDrawAllY->Write();
     cDrawCHXY->Write();
+    
+    
+    gROOT->SetBatch(false);
+    
     return _Return__;
-     
 }
 
-void                TGrCompare1D    ( TGraphAsymmErrors * gDataStat, TH1F * h1D_Tru_P6, TH1F * h1D_Tru_P8, TGraphAsymmErrors * gCompare = nullptr )
+void                TGrCompare1D    ( TGraphAsymmErrors * gDataStat, TGraphAsymmErrors * gDataSyst, TH1F * h1D_Tru_P6, TH1F * h1D_Tru_P8, TGraphAsymmErrors * gCompare = nullptr )
 {
     // Setting Canvas
     TCanvas *       cCompare1D  =   new TCanvas ("cCompare1D","cCompare1D");
@@ -1366,15 +1372,22 @@ void                TGrCompare1D    ( TGraphAsymmErrors * gDataStat, TH1F * h1D_
     gDataStat->SetMarkerColor(38);
     gDataStat->SetFillColorAlpha(33,0.33);
     gDataStat->SetLineColorAlpha(33,0.66);
-    gDataStat->GetYaxis()->SetRangeUser(4e-6,4e-2);
     gDataStat->GetXaxis()->SetRangeUser(0,1e1);
+    gDataStat->GetYaxis()->SetRangeUser(4e-2,4e-5);
+    gDataSyst->SetMarkerStyle(22);
+    gDataSyst->SetMarkerColor(38);
+    gDataSyst->SetFillColorAlpha(33,0.33);
+    gDataSyst->SetLineColorAlpha(33,0.66);
+    gDataSyst->GetXaxis()->SetRangeUser(0,1e1);
+    gDataSyst->GetYaxis()->SetRangeUser(4e-2,4e-5);
     
     // Setting Legend
     TLegend * lLegend1          =   new TLegend(0.65,0.65,0.85,0.85);
     lLegend1                    ->SetFillColor(kWhite);
     lLegend1                    ->SetLineColor(kWhite);
-    lLegend1                    ->AddEntry(gDataStat,    "Data",             "P");
-    lLegend1                    ->AddEntry(gDataStat,    "Statistical",      "EF");
+    lLegend1                    ->AddEntry(gDataStat,   "Data",             "P");
+    lLegend1                    ->AddEntry(gDataStat,   "Stat. Err.",       "EF");
+    lLegend1                    ->AddEntry(gDataSyst,   "Syst. Err.",       "EP[]");
     lLegend1                    ->AddEntry(gCompare,    "Previous Paper",   "EP");
     lLegend1                    ->AddEntry(h1D_Tru_P6,  "Pythia 6",         "EP");
     lLegend1                    ->AddEntry(h1D_Tru_P8,  "Pythia 8",         "EP");
@@ -1382,8 +1395,9 @@ void                TGrCompare1D    ( TGraphAsymmErrors * gDataStat, TH1F * h1D_
     
     // Setting Multigraph
     TMultiGraph *   mCompare1D  =   new TMultiGraph();
-    mCompare1D      ->Add   (gDataStat,"AP35");
-    mCompare1D      ->Add   (gCompare,"P");
+    mCompare1D      ->Add   (gDataStat, "AP35");
+    mCompare1D      ->Add   (gDataSyst, "EP[]");
+    mCompare1D      ->Add   (gCompare,  "P");
     
     // Drawing
     mCompare1D      ->Draw  ("AP");
@@ -2007,7 +2021,7 @@ TH1F *              SetSystErrorsh  ( TH1F * aTarget ) // Togliere l'h
         fError  =   aTarget ->GetBinError   (iBin);
         fValue  =   aTarget ->GetBinContent (iBin);
         fReturn ->  SetBinContent           (iBin,   fValue );
-        fReturn ->  SetBinError             (iBin,   fError );//+ kSystematicalErrP*fValue );
+        fReturn ->  SetBinError             (iBin,   fError + kSystematicalErrP*fValue );
     }
     return fReturn;
 }
@@ -2021,7 +2035,7 @@ TH1D *              SetSystErrorsh  ( TH1D * aTarget ) // Togliere l'h
         fError  =   aTarget ->GetBinError   (iBin);
         fValue  =   aTarget ->GetBinContent (iBin);
         fReturn ->  SetBinContent           (iBin,   fValue );
-        fReturn ->  SetBinError             (iBin,   fError );//+ kSystematicalErrP*fValue );
+        fReturn ->  SetBinError             (iBin,   fError + 2*kSystematicalErrP*fValue - kEventEfficienERP*fValue);
     }
     return fReturn;
 }
@@ -2213,9 +2227,8 @@ Double_t *          ExtrapolateVl   ( TH1F * aTarget,   string aName__ = "", Boo
     
     //Stat Error
     fReturn[1]  =   fStatErr[0] + fHIntWidtE;
-    cout << fStatErr[0] << " " << fHIntWidtE << endl;
     
-    //Syst Error
+    //Syst Error +
     fReturn[2]  =   fReturn[1] + kSystematicalErrP*fReturn[0];
     
     // Mean PT
@@ -2232,6 +2245,7 @@ Double_t *          ExtrapolateVl   ( TH1F * aTarget,   string aName__ = "", Boo
 
 Double_t *          ExtrapolateVl   ( TH1D * aTarget,   string aName__ = "", Bool_t aSaveFit = false )
 {
+    gROOT->SetBatch();
     Double_t *  fReturn =   new Double_t    [6];    // Result of the Process
                                                     // 1. Mean Value    2. Stat Err     3. Syst Err     4. Mean PT
     // Prepping the FIT
@@ -2262,7 +2276,6 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   string aName__ = "", Boo
     
     //Stat Error
     fReturn[1]  =   fStatErr[0] + fHIntWidtE;
-    cout << fStatErr[0] << " " << fHIntWidtE << endl;
     
     //Syst Error
     fReturn[2]  =   fReturn[1] + kSystematicalErrP*fReturn[0];
@@ -2276,11 +2289,13 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   string aName__ = "", Boo
     //Syst Error
     fReturn[5]  =   0;
 
+    gROOT->SetBatch(false);
     return fReturn;
 }
 
 Double_t ***        ExtrapolateVl   ( TH2F * aTarget )
 {
+    gROOT->SetBatch();
     Double_t***     fReturn =   new Double_t**  [nBinPT2D+1];
     TF1  **         fLevyMm =   new TF1 *       [nBinPT2D+1];
     for ( Int_t iTer = 0; iTer < nBinPT2D+1; iTer++ )
@@ -2295,19 +2310,22 @@ Double_t ***        ExtrapolateVl   ( TH2F * aTarget )
     TH1D *      hSliceFY    =   new TH1D("hSliceFY_","hSliceFY_",nBinPT2D,fArrPT2D);
     
     TCanvas *   fDrawAllX   =   new TCanvas("cDrawAllX","cDrawAllX");
-    fDrawAllX               ->  Divide(5,2);
+    fDrawAllX               ->  Divide(2,5);
     TCanvas *   fDrawAllY   =   new TCanvas("cDrawAllY","cDrawAllY");
-    fDrawAllY               ->  Divide(5,2);
+    fDrawAllY               ->  Divide(2,5);
     TCanvas *   fDrawFull   =   new TCanvas("fDrawFull","fDrawFull");
     fDrawFull               ->  Divide(2,1);
     
     Int_t iHisto = 0;
     for ( Int_t iFit = 1; iFit <= nBinPT2D-2; iFit++ )
     {
+        cout << "X-" << iFit << endl;
         // X-Projection
         fDrawAllX           ->  cd(iFit);
         gStyle              ->  SetOptStat(0);
         gPad                ->  SetLogy();
+        
+        cout << "XXX" << endl;
         hName = Form("XProjection_PT_%.1f_%.1f",fArrPT2D[iFit+1],fArrPT2D[iFit+2]);
         TH1D *  h1D_ResX    =   new TH1D    (*(aTarget->ProjectionX(hName,iFit+2,iFit+2)));
         h1D_ResX            ->  SetTitle(Form("Slice in #phi_{1} P_{T} from %.1f to %.1f GeV",fArrPT2D[iFit+1],fArrPT2D[iFit+2]));
@@ -2318,10 +2336,12 @@ Double_t ***        ExtrapolateVl   ( TH2F * aTarget )
         h1D_ResX            ->  Draw();
         fLevyMm[iFit][0]    .   Draw("same");
         
+        cout << "XXX" << endl;
         fReturn[iFit][0]    =   ExtrapolateVl   (h1D_ResX,Form("X_%d",iFit),true);
         hSliceFY            ->  SetBinContent   (iFit+2,fReturn[iFit][0][0]);
         hSliceFY            ->  SetBinError     (iFit+2,fReturn[iFit][0][1]);
-    
+        
+        cout << "Y-" << iFit << endl;
         // Y-Projection
         fDrawAllY           ->  cd(iFit);
         gStyle              ->  SetOptStat(0);
@@ -2372,6 +2392,8 @@ Double_t ***        ExtrapolateVl   ( TH2F * aTarget )
     fDrawAllY->Write();
     delete fDrawAllX;
     delete fDrawAllY;
+    
+    gROOT->SetBatch(false);
     return fReturn;
 }
  

@@ -1,7 +1,7 @@
 #include "../inc/SetValues.h"
 // !TODO: Rebooting the selection process
 
-void PreProcessingDT ( const char * fFileName )
+void Anls_DataPreProcessing ( const char * fFileName )
 {
     if ( !fFileName )
     {

@@ -6,7 +6,7 @@
 #include "../inc/SetFunctions.h"
 #include "RooMsgService.h"
 
-void Syst_SigExt_Prod ( bool fSilent = false)
+void Syst_SignalExtraction_Production ( bool fSilent = false)
 {
     if ( fSilent )
     {
@@ -71,9 +71,9 @@ void Syst_SigExt_Prod ( bool fSilent = false)
     const   Bool_t  fStandar    =   true;
     const   Bool_t  f1DOptio    =   true;
     const   Bool_t  f2DOptio    =   true;
-    const   Int_t   nOptions    =   15; //15
+    const   Int_t   nOptions    =   0; //15
     const   string  sOptions[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK","M","W","CH3","CH5"};
-    const   Int_t   nOption2    =   11; //11
+    const   Int_t   nOption2    =   0; //11
     const   string  sOption2[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK"};
     
     TH1F**  h1D_Syst    =   new TH1F*   [nOptions];
@@ -118,7 +118,7 @@ void Syst_SigExt_Prod ( bool fSilent = false)
         auto fFitResult = FitModel(hIM_1D_Rec_PT_S[iFit],"1D_STD",bSave,iFit,1,"");
         
         // Building N_Raw histogram
-        auto N_Raw      = static_cast<RooRealVar*>(fFitResult->floatParsFinal().at(Signal____));
+        auto N_Raw      = static_cast<RooRealVar*>(fFitResult->floatParsFinal().at(Signal));
         h1D_Raw->SetBinContent      (iFit+1,N_Raw->getVal());
         h1D_Raw->SetBinError        (iFit+1,N_Raw->getError());
     }
@@ -142,7 +142,7 @@ void Syst_SigExt_Prod ( bool fSilent = false)
             auto fFitResult = FitModel(hIM_1D_Rec_PT_S[iFit],Form("1D_%s",sOptions[iSys].c_str()),bSave,iFit,1,sOptions[iSys].c_str());
             
             // Building N_Raw histogram
-            auto N_Raw      = static_cast<RooRealVar*>(fFitResult->floatParsFinal().at(Signal____));
+            auto N_Raw      = static_cast<RooRealVar*>(fFitResult->floatParsFinal().at(Signal));
             h1D_Syst[iSys]->SetBinContent      (iFit+1,N_Raw->getVal());
             h2D_Syst[iSys]->SetBinError        (iFit+1,N_Raw->getError());
             
@@ -181,7 +181,7 @@ void Syst_SigExt_Prod ( bool fSilent = false)
             if ( fArrPT2D[jFit+1] <= 0.41 ) continue;
             
             // Fit
-            auto fFitResult = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],"STD",bSave,iFit,jFit);
+            auto fFitResult = FitModel(hdM_dpT_Tot_Rec2D[iFit][jFit],utility[iFit],utility[jFit],"STD",bSave,iFit,jFit);
             
             // Building N_Raw histogram
             auto N_Raw      = static_cast<RooRealVar*>(fFitResult->floatParsFinal().at(SignlSignl));
@@ -211,7 +211,7 @@ void Syst_SigExt_Prod ( bool fSilent = false)
                 if ( fArrPT2D[jFit+1] <= 0.41 ) continue;
                 
                 // Fit
-                auto fResults = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],Form("2D_%s",sOption2[iSys].c_str()),bSave,iFit,jFit,sOption2[iSys-nOptions].c_str());
+                auto fResults = FitModel(hdM_dpT_Tot_Rec2D[iFit][jFit],utility[iFit],utility[jFit],Form("2D_%s",sOption2[iSys].c_str()),bSave,iFit,jFit,sOption2[iSys-nOptions].c_str());
                    
                 // Building N_Raw histogram
                 auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(SignlSignl));
@@ -245,7 +245,7 @@ void Syst_SigExt_Prod ( bool fSilent = false)
                 if ( fArrPT2D[jFit+1] <= 0.41 ) continue;
 
                 // Fit
-                auto fResults = FitModel(utility[iFit],utility[jFit],hdM_dpT_Tot_Rec2D[iFit][jFit],Form("1D-2D_%s",sOptions[iSys].c_str()),bSave,iFit,jFit,sOptions[iSys].c_str());
+                auto fResults = FitModel(hdM_dpT_Tot_Rec2D[iFit][jFit],utility[iFit],utility[jFit],Form("1D-2D_%s",sOptions[iSys].c_str()),bSave,iFit,jFit,sOptions[iSys].c_str());
                 
                 // Building N_Raw histogram
                 auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(SignlSignl));

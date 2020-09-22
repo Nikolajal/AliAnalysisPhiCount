@@ -81,8 +81,8 @@ auto const  kParticleIdentifi   =   1.000;
 auto const  kParticleIdentERP   =   0.015;
 auto const  kParticleIdentERM   =   0.015;
 
-auto const  kSystematicalErrP   =   kSignalExtractERP + kEventEfficienERP + kBranchingRatiERP + kVertexEfficieERP + kTrackingEfficERP + kParticleIdentERP;
-auto const  kSystematicalErrM   =   kSignalExtractERM + kEventEfficienERM + kBranchingRatiERM + kVertexEfficieERM + kTrackingEfficERM + kParticleIdentERM;
+auto const  kSystematicalErrP   =   kEventEfficienERP + kBranchingRatiERP + kVertexEfficieERP + kTrackingEfficERP + kParticleIdentERP;
+auto const  kSystematicalErrM   =   kEventEfficienERM + kBranchingRatiERM + kVertexEfficieERM + kTrackingEfficERM + kParticleIdentERM;
 
 // Pythia8
 auto const  kPythia1DEfficien   =   0.970;
