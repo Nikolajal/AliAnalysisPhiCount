@@ -586,7 +586,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
 //--------------------------------------------//
 
 // - // Errors and management
-
+/*
 TGraphAsymmErrors * SetTGrAsymE1D   ( TH1  * hTarget )
 {
     TGraphAsymmErrors * gUtility  =   new TGraphAsymmErrors(hTarget);
@@ -859,71 +859,6 @@ Float_t             TGrAEIntegral    ( TGraphAsymmErrors * gTarget, Float_t & _E
 
 // - // Fits
 
-Double_t            fLevyFunc1D     ( Double_t * fVar, Double_t * fParams )
-{
-    Double_t    fPT     = fVar[0];
-    Double_t    fMass   = fParams[0];
-    Double_t    fEnne   = fParams[1];
-    Double_t    fSlop   = fParams[2];
-    Double_t    fdNdY   = fParams[3];
-    
-    Double_t    fNum1   = (fEnne-1)*(fEnne-2);
-    Double_t    fDen1   = fEnne*fSlop*(fEnne*fSlop+fMass*(fEnne-2));
-    Double_t    fFac1   = fNum1/fDen1;
-    
-    Double_t    fMasT   = sqrt(fMass*fMass+fPT*fPT);
-    Double_t    fNum2   = fMasT - fMass;
-    Double_t    fDen2   = fEnne*fSlop;
-    Double_t    fFac2   = TMath::Power((1 + fNum2/fDen2),(-fEnne));
-    
-    return      fPT*fdNdY*fFac1*fFac2;
-}
-
-TF1 *               fLevyFit1D      = new TF1 ("fLevyFunc1D",fLevyFunc1D,fMinPT1D,fMaxPT1D,4);
-
-void                SetLevyTsalPT1D ( )
-{
-    // - // Setting up Fit parameters
-    
-    // Mass
-    fLevyFit1D  ->  SetParLimits(0,kPMas,kPMas);
-    fLevyFit1D  ->  SetParameter(0,kPMas);
-    
-    // n-Parameter
-    fLevyFit1D  ->  SetParLimits(1,6.0,7.4);
-    fLevyFit1D  ->  SetParameter(1,6.7); // 6.7
-    
-    // T-Parameter
-    fLevyFit1D  ->  SetParLimits(2,.25,.30);
-    fLevyFit1D  ->  SetParameter(2,.272); // .272
-    
-    // dN/dy
-    fLevyFit1D  ->  SetParLimits(3,0.028,0.036);
-    fLevyFit1D  ->  SetParameter(3,0.032);
-}
- 
-void                SetLevyTsalPT2D ( )
-{
-    // - // Setting up Fit parameters
-    
-    // Mass
-    fLevyFit1D  ->  SetParLimits(0,kPMas,kPMas);
-    fLevyFit1D  ->  SetParameter(0,kPMas);
-    
-    // n-Parameter
-    fLevyFit1D  ->  SetParLimits(1,3.5,7.5);
-    fLevyFit1D  ->  SetParameter(1,4.5); // 6.7
-    
-    // T-Parameter
-    fLevyFit1D  ->  SetParLimits(2,.18,.45);
-    fLevyFit1D  ->  SetParameter(2,.272); // .272
-    
-    // dN/dy
-    fLevyFit1D  ->  SetParLimits(3,0.5e-6,1.e-3);
-    fLevyFit1D  ->  SetParameter(3,1.e-6);
-}
-
-
 void                SetLevyTsalPT2D ( Int_t iSet )
 {
     // - // Setting up Fit parameters
@@ -1125,12 +1060,13 @@ Float_t **          EvlIntegral     ( TH2F * hTarget, Float_t **& _ErrorHig, Flo
         TH1D * Y__  = new TH1D(*static_cast<TH1D*>(hTarget->ProjectionY(hName,iFit+1,iFit+1)));
         X__ ->Draw("");
         Y__ ->Draw("same");
-        /*
+        
+ 
         hFitY[iHisto]->SetNameTitle(hName,hName);
         hFitY[iHisto]->GetYaxis()->SetTitle("#frac{d^{2}N_{#phi}}{dydp_{T}}(GeV/c)^{-1}");
         hFitY[iHisto]->GetXaxis()->SetTitleOffset(1.);
         hFitY[iHisto]->GetYaxis()->SetTitleOffset(1.4);
-         */
+        
         
         cout << "iHisto:" << iHisto << endl;
         
@@ -1355,59 +1291,7 @@ Float_t **          EvlMeanPT__     ( TH2F * hTarget, Float_t **& _ErrorHig, Flo
     
     return _Return__;
 }
-
-void                TGrCompare1D    ( TGraphAsymmErrors * gDataStat, TGraphAsymmErrors * gDataSyst, TH1F * h1D_Tru_P6, TH1F * h1D_Tru_P8, TGraphAsymmErrors * gCompare = nullptr )
-{
-    // Setting Canvas
-    TCanvas *       cCompare1D  =   new TCanvas ("cCompare1D","cCompare1D");
-    gPad->SetLogy();
-    
-    // Setting Standard Colors
-    setMarker               (gCompare,3);
-    setLine                 (h1D_Tru_P6,1);
-    setLine                 (h1D_Tru_P8,2);
-    
-    // Setting Statistical error
-    gDataStat->SetMarkerStyle(22);
-    gDataStat->SetMarkerColor(38);
-    gDataStat->SetFillColorAlpha(33,0.33);
-    gDataStat->SetLineColorAlpha(33,0.66);
-    gDataStat->GetXaxis()->SetRangeUser(0,1e1);
-    gDataStat->GetYaxis()->SetRangeUser(4e-2,4e-5);
-    gDataSyst->SetMarkerStyle(22);
-    gDataSyst->SetMarkerColor(38);
-    gDataSyst->SetFillColorAlpha(33,0.33);
-    gDataSyst->SetLineColorAlpha(33,0.66);
-    gDataSyst->GetXaxis()->SetRangeUser(0,1e1);
-    gDataSyst->GetYaxis()->SetRangeUser(4e-2,4e-5);
-    
-    // Setting Legend
-    TLegend * lLegend1          =   new TLegend(0.65,0.65,0.85,0.85);
-    lLegend1                    ->SetFillColor(kWhite);
-    lLegend1                    ->SetLineColor(kWhite);
-    lLegend1                    ->AddEntry(gDataStat,   "Data",             "P");
-    lLegend1                    ->AddEntry(gDataStat,   "Stat. Err.",       "EF");
-    lLegend1                    ->AddEntry(gDataSyst,   "Syst. Err.",       "EP[]");
-    lLegend1                    ->AddEntry(gCompare,    "Previous Paper",   "EP");
-    lLegend1                    ->AddEntry(h1D_Tru_P6,  "Pythia 6",         "EP");
-    lLegend1                    ->AddEntry(h1D_Tru_P8,  "Pythia 8",         "EP");
-    
-    
-    // Setting Multigraph
-    TMultiGraph *   mCompare1D  =   new TMultiGraph();
-    mCompare1D      ->Add   (gDataStat, "AP35");
-    mCompare1D      ->Add   (gDataSyst, "EP[]");
-    mCompare1D      ->Add   (gCompare,  "P");
-    
-    // Drawing
-    mCompare1D      ->Draw  ("AP");
-    h1D_Tru_P6      ->Draw  ("same HIST L");
-    h1D_Tru_P8      ->Draw  ("same HIST L");
-    lLegend1        ->Draw  ("same");
-    
-    cCompare1D->Write();
-}
-
+*/
 
 //------------------------------//
 //                              //
@@ -1833,6 +1717,70 @@ TH2F * HistoModel2D (RooFitResult * utilityx, RooFitResult * utilityy, RooFitRes
 
  // Utility
 
+Double_t            fLevyFunc1D     ( Double_t * fVar, Double_t * fParams )
+{
+    Double_t    fPT     = fVar[0];
+    Double_t    fMass   = fParams[0];
+    Double_t    fEnne   = fParams[1];
+    Double_t    fSlop   = fParams[2];
+    Double_t    fdNdY   = fParams[3];
+    
+    Double_t    fNum1   = (fEnne-1)*(fEnne-2);
+    Double_t    fDen1   = fEnne*fSlop*(fEnne*fSlop+fMass*(fEnne-2));
+    Double_t    fFac1   = fNum1/fDen1;
+    
+    Double_t    fMasT   = sqrt(fMass*fMass+fPT*fPT);
+    Double_t    fNum2   = fMasT - fMass;
+    Double_t    fDen2   = fEnne*fSlop;
+    Double_t    fFac2   = TMath::Power((1 + fNum2/fDen2),(-fEnne));
+    
+    return      fPT*fdNdY*fFac1*fFac2;
+}
+
+TF1 *               fLevyFit1D      = new TF1 ("fLevyFunc1D",fLevyFunc1D,fMinPT1D,fMaxPT1D,4);
+
+void                SetLevyTsalPT1D ( )
+{
+    // - // Setting up Fit parameters
+    
+    // Mass
+    fLevyFit1D  ->  SetParLimits(0,kPMas,kPMas);
+    fLevyFit1D  ->  SetParameter(0,kPMas);
+    
+    // n-Parameter
+    fLevyFit1D  ->  SetParLimits(1,6.0,7.4);
+    fLevyFit1D  ->  SetParameter(1,6.7); // 6.7
+    
+    // T-Parameter
+    fLevyFit1D  ->  SetParLimits(2,.25,.30);
+    fLevyFit1D  ->  SetParameter(2,.272); // .272
+    
+    // dN/dy
+    fLevyFit1D  ->  SetParLimits(3,0.028,0.036);
+    fLevyFit1D  ->  SetParameter(3,0.032);
+}
+ 
+void                SetLevyTsalPT2D ( )
+{
+    // - // Setting up Fit parameters
+    
+    // Mass
+    fLevyFit1D  ->  SetParLimits(0,kPMas,kPMas);
+    fLevyFit1D  ->  SetParameter(0,kPMas);
+    
+    // n-Parameter
+    fLevyFit1D  ->  SetParLimits(1,3.5,7.5);
+    fLevyFit1D  ->  SetParameter(1,4.5); // 6.7
+    
+    // T-Parameter
+    fLevyFit1D  ->  SetParLimits(2,.18,.45);
+    fLevyFit1D  ->  SetParameter(2,.272); // .272
+    
+    // dN/dy
+    fLevyFit1D  ->  SetParLimits(3,0.5e-6,1.e-3);
+    fLevyFit1D  ->  SetParameter(3,1.e-6);
+}
+
 void                SetLevyTsalis   ( )
 {
     // - // Setting up Fit parameters
@@ -1873,7 +1821,7 @@ void                SetLevyTsalis   ( )
     }
 }
 
-Double_t            FuncIntegrals   ( TF1 * aFunction, Double_t aLowBound, Double_t aHigBound, string aOption = "", Double_t aEpsilon = 1.e-3 )
+Double_t            FuncIntegrals   ( TF1 * aFunction, Double_t aLowBound, Double_t aHigBound, string aOption = "", Double_t aEpsilon = 1.e-4 )
 {
     Double_t    fResult = 0;
     Int_t       fiTer,  fnPowr;
@@ -1895,7 +1843,7 @@ Double_t            FuncIntegrals   ( TF1 * aFunction, Double_t aLowBound, Doubl
         // Exiting the loop if out of bound
         if ( fPoint >= aHigBound ) break;
         
-        Double_t        fCycleAdd   =   (aFunction->Eval( fPoint ));
+        Double_t        fCycleAdd   =   ( aFunction->Eval(fPoint) );
         
         if ( fWidth )   fCycleAdd  *=   ( aEpsilon );
         if ( fPower )   fCycleAdd  *=   pow( ( fPoint ) , fnPowr );
@@ -1925,12 +1873,9 @@ Double_t            HistIntegrals   ( TH1F* aHistogrm, string aOption = "", Doub
     // Starting iterations at 0
     for ( Int_t fiTer = 1; fiTer <= aHistogrm->GetNbinsX(); fiTer++ )
     {
-        // Determining the pT point to calculate
-        auto fPoint =   aHistogrm->GetBinCenter(fiTer);
-        
         // Exiting the loop if out of bound
-        if ( aHistogrm->GetBinLowEdge(fiTer)   <= aLowBound && aLowBound != aHigBound ) continue;
-        if ( aHistogrm->GetBinLowEdge(fiTer+1) >= aHigBound && aLowBound != aHigBound ) break;
+        if ( aHistogrm->GetBinLowEdge(fiTer)   < aLowBound && aLowBound != aHigBound ) continue;
+        if ( aHistogrm->GetBinLowEdge(fiTer+1) > aHigBound && aLowBound != aHigBound ) break;
         
         Double_t        fCycleAdd   =   ( aHistogrm->GetBinContent(fiTer) );
         if ( fError )   fCycleAdd   =   ( aHistogrm->GetBinError(fiTer) );
@@ -1976,7 +1921,6 @@ Double_t            HistIntegrals   ( TH1D* aHistogrm, string aOption = "", Doub
         if ( fWidth )   fCycleAdd  *=   ( aHistogrm->GetBinWidth(fiTer) );
         if ( fPower )   fCycleAdd  *=   pow( ( aHistogrm->GetBinCenter(fiTer) ) , fnPowr );
         if ( fError )   fCycleAdd  *=   fCycleAdd;
-        
         fResult += fCycleAdd;
     }
     
@@ -2021,7 +1965,7 @@ TH1F *              SetSystErrorsh  ( TH1F * aTarget ) // Togliere l'h
         fError  =   aTarget ->GetBinError   (iBin);
         fValue  =   aTarget ->GetBinContent (iBin);
         fReturn ->  SetBinContent           (iBin,   fValue );
-        fReturn ->  SetBinError             (iBin,   fError + kSystematicalErrP*fValue );
+        fReturn ->  SetBinError             (iBin,   fError + kSystematical1D_*fValue );
     }
     return fReturn;
 }
@@ -2035,7 +1979,7 @@ TH1D *              SetSystErrorsh  ( TH1D * aTarget ) // Togliere l'h
         fError  =   aTarget ->GetBinError   (iBin);
         fValue  =   aTarget ->GetBinContent (iBin);
         fReturn ->  SetBinContent           (iBin,   fValue );
-        fReturn ->  SetBinError             (iBin,   fError + 2*kSystematicalErrP*fValue - kEventEfficienERP*fValue);
+        fReturn ->  SetBinError             (iBin,   fError + kSystematical2D_*fValue);
     }
     return fReturn;
 }
@@ -2064,8 +2008,8 @@ Double_t *          EvalStErInteg   ( TH1F * aTarget,   string aName__ = "",  Bo
         SetLevyTsalis();
         fRandPt->Fit(fLevyFit1D,"IMREQ0S","",0.4,10.);
         if ( bPythiaTest ) fRandPt->Fit(fLevyFit1D,"IMREQ0S","",0.4,1.6);
-        fUtilPt[iTer]   =   fLevyFit1D->Moment(1,0.0,0.4);
-        fUtilMn[iTer]   =   fLevyFit1D->Integral(0.0,0.4);
+        fUtilPt[iTer]   =   FuncIntegrals( fLevyFit1D,  0.,0.4,"W x^1");
+        fUtilMn[iTer]   =   FuncIntegrals( fLevyFit1D,  0.,0.4,"W");
         fUtilP1[iTer]   =   fLevyFit1D->GetParameter(1);
         fUtilP2[iTer]   =   fLevyFit1D->GetParameter(2);
         fUtilP3[iTer]   =   fLevyFit1D->GetParameter(3);
@@ -2113,12 +2057,12 @@ Double_t *          EvalStErInteg   ( TH1F * aTarget,   string aName__ = "",  Bo
     
     fUtilHM             ->  Fit ("gaus","IMREQ0S");
     fUtilHP             ->  Fit ("gaus","IMREQ0S");
-    fReturn[0]  =   fUtilHM      ->  GetFunction ("gaus")->GetParameter(2);
-    fReturn[1]  =   fUtilHP      ->  GetFunction ("gaus")->GetParameter(2);
+    fReturn[0]  =   fUtilHM      ->  GetRMS();//GetFunction ("gaus")->GetParameter(2);
+    fReturn[1]  =   fUtilHP      ->  GetRMS();//GetFunction ("gaus")->GetParameter(2);
     return fReturn;
 }
 
-Double_t *          EvalStErInteg   ( TH1D * aTarget,   string aName__ = "",  Bool_t aSaveFit = false )
+Double_t *          EvalStErInteg   ( TH1D * aTarget,   string aName__ = "",  Bool_t aSaveFit = false, Int_t aIntBin = -1  )
 {
     Int_t       fPoints =   1.e2;
     Double_t *  fReturn = new Double_t [2];
@@ -2142,6 +2086,16 @@ Double_t *          EvalStErInteg   ( TH1D * aTarget,   string aName__ = "",  Bo
         if ( bPythiaTest ) fRandPt->Fit(fLevyFit1D,"IMREQ0S","",0.4,1.6);
         fUtilPt[iTer]   =   fLevyFit1D->Moment(1,0.0,0.4);
         fUtilMn[iTer]   =   fLevyFit1D->Integral(0.0,0.4);
+        if ( aIntBin == 12 )
+        {
+            fUtilPt[iTer]   =   fLevyFit1D->Moment(1,0.0,0.68);
+            fUtilMn[iTer]   =   fLevyFit1D->Integral(0.0,0.68);
+        }
+        if ( aIntBin == 3  )
+        {
+            fUtilPt[iTer]  +=   fLevyFit1D->Moment(1,5.0,10.);
+            fUtilMn[iTer]  +=   fLevyFit1D->Integral(5.0,10.);
+        }
         fUtilP1[iTer]   =   fLevyFit1D->GetParameter(1);
         fUtilP2[iTer]   =   fLevyFit1D->GetParameter(2);
         fUtilP3[iTer]   =   fLevyFit1D->GetParameter(3);
@@ -2197,6 +2151,8 @@ Double_t *          EvalStErInteg   ( TH1D * aTarget,   string aName__ = "",  Bo
 
 Double_t *          ExtrapolateVl   ( TH1F * aTarget,   string aName__ = "", Bool_t aSaveFit = false )
 {
+    gROOT->SetBatch(true);
+    
     Double_t *  fReturn =   new Double_t    [6];    // Result of the Process
                                                     // 1. Mean Value    2. Stat Err     3. Syst Err     4. Mean PT
     // Prepping the FIT
@@ -2214,10 +2170,10 @@ Double_t *          ExtrapolateVl   ( TH1F * aTarget,   string aName__ = "", Boo
         fSaveToCanvas->Write();
         delete fSaveToCanvas;
     }
-    Double_t    fHIntWidth      =   HistIntegrals( aTarget,     "W" );
-    Double_t    fHIntWidtE      =   HistIntegrals( aTarget,     "WE" );
+    Double_t    fHIntWidth, fHIntWidtE;
+    fHIntWidth = aTarget->IntegralAndError(-1,100,fHIntWidtE,"width");
     Double_t    fHIntWidx1      =   HistIntegrals( aTarget,     "W x^1" );
-    Double_t    fHIntWidxE      =   HistIntegrals( aTarget,     "WE x^1" );
+    Double_t    fHIntWidxE      =   HistIntegrals( aTarget,     "WE x^1");
     Double_t    fFIntWidth      =   FuncIntegrals( fLevyFit1D,  0.,0.4,"W");
     Double_t    fFIntWidx1      =   FuncIntegrals( fLevyFit1D,  0.,0.4,"W x^1");
     Double_t *  fStatErr        =   EvalStErInteg(aTarget,aName__);
@@ -2229,23 +2185,25 @@ Double_t *          ExtrapolateVl   ( TH1F * aTarget,   string aName__ = "", Boo
     fReturn[1]  =   fStatErr[0] + fHIntWidtE;
     
     //Syst Error +
-    fReturn[2]  =   fReturn[1] + kSystematicalErrP*fReturn[0];
+    fReturn[2]  =   kSystematical1D_*fReturn[0];
     
     // Mean PT
     fReturn[3]  =   (fHIntWidx1+fFIntWidx1)/(fHIntWidth+fFIntWidth);
     
     //Stat Error
-    fReturn[4]  =   fStatErr[1] + fHIntWidxE;
+    fReturn[4]  =   fReturn[3]*((fHIntWidxE+fStatErr[1])/(fHIntWidx1+fFIntWidx1)+(fHIntWidtE+fStatErr[0])/(fHIntWidth+fFIntWidth));
     
     //Syst Error
     fReturn[5]  =   0;
-
+    
+    gROOT->SetBatch(false);
     return fReturn;
 }
 
-Double_t *          ExtrapolateVl   ( TH1D * aTarget,   string aName__ = "", Bool_t aSaveFit = false )
+Double_t *          ExtrapolateVl   ( TH1D * aTarget,   string aName__ = "", Bool_t aSaveFit = false, Int_t aIntBin = -1  )
 {
-    gROOT->SetBatch();
+    gROOT->SetBatch(true);
+    
     Double_t *  fReturn =   new Double_t    [6];    // Result of the Process
                                                     // 1. Mean Value    2. Stat Err     3. Syst Err     4. Mean PT
     // Prepping the FIT
@@ -2263,12 +2221,22 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   string aName__ = "", Boo
         fSaveToCanvas->Write();
         delete fSaveToCanvas;
     }
-    Double_t    fHIntWidth      =   HistIntegrals( aTarget,     "W" );
-    Double_t    fHIntWidtE      =   HistIntegrals( aTarget,     "WE" );
+    Double_t    fHIntWidth, fHIntWidtE;
+    fHIntWidth = aTarget->IntegralAndError(-1,100,fHIntWidtE,"width");
     Double_t    fHIntWidx1      =   HistIntegrals( aTarget,     "W x^1" );
-    Double_t    fHIntWidxE      =   HistIntegrals( aTarget,     "WE x^1" );
+    Double_t    fHIntWidxE      =   HistIntegrals( aTarget,     "WE x^1");
     Double_t    fFIntWidth      =   FuncIntegrals( fLevyFit1D,  0.,0.4,"W");
     Double_t    fFIntWidx1      =   FuncIntegrals( fLevyFit1D,  0.,0.4,"W x^1");
+    if ( aIntBin == 12  )
+    {
+        fFIntWidth      =   FuncIntegrals( fLevyFit1D,  0.,0.68,"W");
+        fFIntWidx1      =   FuncIntegrals( fLevyFit1D,  0.,0.68,"W x^1");
+    }
+    if ( aIntBin == 3 )
+    {
+        fFIntWidth     +=   FuncIntegrals( fLevyFit1D,  5.,10.,"W");
+        fFIntWidx1     +=   FuncIntegrals( fLevyFit1D,  5.,10.,"W x^1");
+    }
     Double_t *  fStatErr        =   EvalStErInteg(aTarget,aName__);
     
     // Mean Value
@@ -2277,18 +2245,18 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   string aName__ = "", Boo
     //Stat Error
     fReturn[1]  =   fStatErr[0] + fHIntWidtE;
     
-    //Syst Error
-    fReturn[2]  =   fReturn[1] + kSystematicalErrP*fReturn[0];
+    //Syst Error +
+    fReturn[2]  =   kSystematical1D_*fReturn[0];
     
     // Mean PT
     fReturn[3]  =   (fHIntWidx1+fFIntWidx1)/(fHIntWidth+fFIntWidth);
     
     //Stat Error
-    fReturn[4]  =   fStatErr[1] + fHIntWidxE;
+    fReturn[4]  =   fReturn[3]*((fHIntWidxE+fStatErr[1])/(fHIntWidx1+fFIntWidx1)+(fHIntWidtE+fStatErr[0])/(fHIntWidth+fFIntWidth));
     
     //Syst Error
     fReturn[5]  =   0;
-
+    
     gROOT->SetBatch(false);
     return fReturn;
 }
@@ -2325,6 +2293,16 @@ Double_t ***        ExtrapolateVl   ( TH2F * aTarget )
         gStyle              ->  SetOptStat(0);
         gPad                ->  SetLogy();
         
+        Int_t aIntBin = -1;
+        if ( iFit == 1 )
+        {
+            aIntBin = 3;
+        }
+        if ( iFit == 10 )
+        {
+            aIntBin = 12;
+        }
+        
         cout << "XXX" << endl;
         hName = Form("XProjection_PT_%.1f_%.1f",fArrPT2D[iFit+1],fArrPT2D[iFit+2]);
         TH1D *  h1D_ResX    =   new TH1D    (*(aTarget->ProjectionX(hName,iFit+2,iFit+2)));
@@ -2337,7 +2315,7 @@ Double_t ***        ExtrapolateVl   ( TH2F * aTarget )
         fLevyMm[iFit][0]    .   Draw("same");
         
         cout << "XXX" << endl;
-        fReturn[iFit][0]    =   ExtrapolateVl   (h1D_ResX,Form("X_%d",iFit),true);
+        fReturn[iFit][0]    =   ExtrapolateVl   (h1D_ResX,Form("X_%d",iFit),true,aIntBin);
         hSliceFY            ->  SetBinContent   (iFit+2,fReturn[iFit][0][0]);
         hSliceFY            ->  SetBinError     (iFit+2,fReturn[iFit][0][1]);
         
@@ -2356,7 +2334,7 @@ Double_t ***        ExtrapolateVl   ( TH2F * aTarget )
         h1D_ResY            ->  Draw();
         fLevyMm[iFit][1]    .   Draw("same");
         
-        fReturn[iFit][1]    =   ExtrapolateVl   (h1D_ResY,Form("Y_%d",iFit),true);
+        fReturn[iFit][1]    =   ExtrapolateVl   (h1D_ResY,Form("Y_%d",iFit),true,aIntBin);
         hSliceFX            ->  SetBinContent   (iFit+2,fReturn[iFit][1][0]);
         hSliceFX            ->  SetBinError     (iFit+2,fReturn[iFit][1][1]);
     }
@@ -2372,7 +2350,7 @@ Double_t ***        ExtrapolateVl   ( TH2F * aTarget )
     hSliceFY            ->  Draw();
     fLevyMm[0][0]       .   Draw("same");
     
-    fReturn[0][0]       =   ExtrapolateVl   (hSliceFY,"Y_Full",true);
+    fReturn[0][0]       =   ExtrapolateVl   (hSliceFY,"Y_Full",true,-1);
     
     fDrawFull           ->  cd(1);
     gStyle              ->  SetOptStat(0);
@@ -2385,7 +2363,7 @@ Double_t ***        ExtrapolateVl   ( TH2F * aTarget )
     hSliceFX            ->  Draw();
     fLevyMm[0][1]       .   Draw("same");
     
-    fReturn[0][1]       =   ExtrapolateVl   (hSliceFX,"X_Full",true);
+    fReturn[0][1]       =   ExtrapolateVl   (hSliceFX,"X_Full",true,-1);
     
     fDrawFull->Write();
     fDrawAllX->Write();
@@ -2480,6 +2458,179 @@ TGraphErrors **     BuildTGraphEr   ( Double_t * aExtrapolateVl1D, Double_t *** 
     }
     
     return fResult;
+}
+
+void                TGrCompare1D    ( TGraphAsymmErrors * gDataStat, TGraphAsymmErrors * gDataSyst, TH1F * h1D_Tru_P6, TH1F * h1D_Tru_P8, TGraphAsymmErrors * gCompare = nullptr )
+{
+    // Setting Canvas
+    TCanvas *       cCompare1D  =   new TCanvas ("cCompare1D","cCompare1D");
+    gPad->SetLogy();
+    
+    // Setting Standard Colors
+    if ( !!gCompare ) setMarker               (gCompare,3);
+    setLine                 (h1D_Tru_P6,1);
+    setLine                 (h1D_Tru_P8,2);
+    
+    // Setting Statistical error
+    gDataStat->SetMarkerStyle(22);
+    gDataStat->SetMarkerColor(38);
+    gDataStat->SetFillColorAlpha(33,0.33);
+    gDataStat->SetLineColorAlpha(33,0.66);
+    gDataStat->GetXaxis()->SetRangeUser(0,1e1);
+    gDataStat->GetYaxis()->SetRangeUser(4e-2,4e-5);
+    gDataSyst->SetMarkerStyle(22);
+    gDataSyst->SetMarkerColor(38);
+    gDataSyst->SetLineColor(kBlack);
+    gDataSyst->GetXaxis()->SetRangeUser(0,1e1);
+    gDataSyst->GetYaxis()->SetRangeUser(4e-2,4e-5);
+    
+    // Setting Legend
+    TLegend * lLegend1          =   new TLegend(0.65,0.65,0.85,0.85);
+    lLegend1                    ->SetFillColor(kWhite);
+    lLegend1                    ->SetLineColor(kWhite);
+    lLegend1                    ->AddEntry(gDataStat,   "Data",             "P");
+    lLegend1                    ->AddEntry(gDataStat,   "Stat. Err.",       "EF");
+    lLegend1                    ->AddEntry(gDataSyst,   "Syst. Err.",       "EP[]");
+    if ( !!gCompare ) lLegend1                    ->AddEntry(gCompare,    "Previous Paper",   "EP");
+    lLegend1                    ->AddEntry(h1D_Tru_P6,  "Pythia 6",         "EP");
+    lLegend1                    ->AddEntry(h1D_Tru_P8,  "Pythia 8",         "EP");
+
+    // Setting Multigraph
+    TMultiGraph *   mCompare1D  =   new TMultiGraph();
+    mCompare1D      ->Add   (gDataStat, "AP35");
+    mCompare1D      ->Add   (gDataSyst, "EP[]");
+    if ( !!gCompare )    mCompare1D      ->Add   (gCompare,  "P");
+    
+    // Drawing
+    mCompare1D      ->Draw  ("AP");
+    h1D_Tru_P6      ->Draw  ("same HIST L");
+    h1D_Tru_P8      ->Draw  ("same HIST L");
+    lLegend1        ->Draw  ("same");
+    
+    cCompare1D->Write();
+    cCompare1D->SaveAs("./graphs/cCompare1D.png");
+    cCompare1D->SaveAs("./graphs/cCompare1D.pdf");
+    gPad->SetLogx();
+    cCompare1D->Write();
+    cCompare1D->SaveAs("./graphs/cCompare1D_logx.png");
+    cCompare1D->SaveAs("./graphs/cCompare1D_logx.pdf");
+    gPad->SetLogx(false);
+    delete cCompare1D;
+}
+
+void                TGrCompare2D    ( TH2F* h2D_Res, TH2F * h2D_Tru_P6, TH2F * h2D_Tru_P8)
+{
+    gROOT->SetBatch(true);
+    TCanvas*cCompare2D  =   new TCanvas("cCompare2D","cCompare2D");
+    cCompare2D->Divide(3,3);
+    TH1D  **hProfileP8  =   new TH1D*   [nBinPT2D];
+    TH1D  **hProfileP6  =   new TH1D*   [nBinPT2D];
+    TH1D  **hProfileDT  =   new TH1D*   [nBinPT2D];
+    TGraphAsymmErrors  **gProfileDT_Stat  =   new TGraphAsymmErrors*   [nBinPT2D];
+    TGraphAsymmErrors  **gProfileDT_Syst  =   new TGraphAsymmErrors*   [nBinPT2D];
+    for ( Int_t iTer = 2; iTer < nBinPT2D; iTer++ )
+    {
+        cCompare2D->cd(iTer-1);
+        hProfileP8[iTer]        =   new TH1D(*(h2D_Tru_P8  ->ProjectionX(Form("P8_%i",iTer+1),iTer+1,iTer+1)));
+        hProfileP6[iTer]        =   new TH1D(*(h2D_Tru_P6  ->ProjectionX(Form("P6_%i",iTer+1),iTer+1,iTer+1)));
+        hProfileDT[iTer]        =   new TH1D(*(h2D_Res     ->ProjectionX(Form("DT_%i",iTer+1),iTer+1,iTer+1)));
+        gProfileDT_Stat[iTer]   =   new TGraphAsymmErrors(hProfileDT[iTer]);
+        gProfileDT_Syst[iTer]   =   new TGraphAsymmErrors(SetSystErrorsh(hProfileDT[iTer]));
+        
+        for ( Int_t jTer = 0; jTer < 2; jTer++ )
+        {
+            gProfileDT_Stat[iTer]->RemovePoint(0);
+            gProfileDT_Syst[iTer]->RemovePoint(0);
+        }
+        
+        // Setting Canvas
+        TCanvas *       cCompare2D_bin  =   new TCanvas (Form("cCompare2D_%i",iTer),Form("cCompare2D_%i",iTer));
+        gPad->SetLogy();
+        
+        // Setting Standard Colors
+        setLine                 (hProfileP6[iTer],1);
+        setLine                 (hProfileP8[iTer],2);
+        
+        // Setting Statistical error
+        gProfileDT_Stat[iTer]->SetMarkerStyle(22);
+        gProfileDT_Stat[iTer]->SetMarkerColor(38);
+        gProfileDT_Stat[iTer]->SetFillColorAlpha(33,0.33);
+        gProfileDT_Stat[iTer]->SetLineColorAlpha(33,0.66);
+        gProfileDT_Stat[iTer]->GetXaxis()->SetRangeUser(0,1e1);
+        gProfileDT_Stat[iTer]->GetYaxis()->SetRangeUser(4e-2,4e-5);
+        gProfileDT_Syst[iTer]->SetMarkerStyle(22);
+        gProfileDT_Syst[iTer]->SetMarkerColor(38);
+        gProfileDT_Syst[iTer]->SetLineColor(kBlack);
+        gProfileDT_Syst[iTer]->GetXaxis()->SetRangeUser(0,1e1);
+        gProfileDT_Syst[iTer]->GetYaxis()->SetRangeUser(4e-2,4e-5);
+        
+        // Setting Legend
+        TLegend * lLegend1          =   new TLegend(0.65,0.65,0.85,0.85);
+        lLegend1                    ->SetFillColor(kWhite);
+        lLegend1                    ->SetLineColor(kWhite);
+        lLegend1                    ->AddEntry(gProfileDT_Stat[iTer],   "Data",             "P");
+        lLegend1                    ->AddEntry(gProfileDT_Stat[iTer],   "Stat. Err.",       "EF");
+        lLegend1                    ->AddEntry(gProfileDT_Syst[iTer],   "Syst. Err.",       "EP[]");
+        lLegend1                    ->AddEntry(hProfileP6[iTer],  "Pythia 6",         "EP");
+        lLegend1                    ->AddEntry(hProfileP8[iTer],  "Pythia 8",         "EP");
+
+        // Setting Multigraph
+        TMultiGraph *   mCompare1D  =   new TMultiGraph();
+        mCompare1D      ->Add   (gProfileDT_Stat[iTer], "AP35");
+        mCompare1D      ->Add   (gProfileDT_Syst[iTer], "EP[]");
+        
+        // Drawing
+        mCompare1D      ->Draw  ("AP");
+        hProfileP6[iTer]      ->Draw  ("same HIST L");
+        hProfileP8[iTer]      ->Draw  ("same HIST L");
+        lLegend1        ->Draw  ("same");
+        
+        cCompare2D_bin->Write();
+        cCompare2D_bin->SaveAs(Form("./graphs/cCompare2D_%i.png",iTer));
+        cCompare2D_bin->SaveAs(Form("./graphs/cCompare2D_%i.pdf",iTer));
+        gPad->SetLogx();
+        cCompare2D_bin->Write();
+        cCompare2D_bin->SaveAs(Form("./graphs/cCompare2D_%i_logx.png",iTer));
+        cCompare2D_bin->SaveAs(Form("./graphs/cCompare2D_%i_logx.pdf",iTer));
+        gPad->SetLogx(false);
+        
+        cCompare2D->cd(iTer-2);
+        mCompare1D      ->Draw  ("AP");
+        hProfileP6[iTer]      ->Draw  ("same HIST L");
+        hProfileP8[iTer]      ->Draw  ("same HIST L");
+        lLegend1        ->Draw  ("same");
+    }
+    cCompare2D->Write();
+    cCompare2D->SaveAs(Form("./graphs/cCompare2D.png"));
+    cCompare2D->SaveAs(Form("./graphs/cCompare2D.pdf"));
+    gROOT->SetBatch(false);
+}
+
+void  TGraphAEGeneratorPT   ( Double_t***   aInput )
+{
+    TCanvas           * c1      =   new TCanvas             ("c1_e","c1_e");
+    TLegend           * Legend  =   new TLegend             (0.6,0.15,0.9,0.3);
+    TMultiGraph       * fPTTotal=   new TMultiGraph         ("fPTTotal","fPTTotal");
+    TGraphAsymmErrors * fPTX    =   new TGraphAsymmErrors   ();
+    TGraphAsymmErrors * fPTY    =   new TGraphAsymmErrors   ();
+    for ( Int_t iTer = 2; iTer < nBinPT2D; iTer++ )
+    {
+        fPTX->SetPoint       (iTer-2,  (fArrPT2D[iTer]+fArrPT2D[iTer+1])*0.5,aInput[iTer-1][0][3]);
+        fPTX->SetPointError  (iTer-2, -(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,-(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,aInput[iTer-1][0][4],aInput[iTer-1][0][4]);
+        fPTY->SetPoint       (iTer-2,  (fArrPT2D[iTer]+fArrPT2D[iTer+1])*0.5,aInput[iTer-1][1][3]);
+        fPTY->SetPointError  (iTer-2, -(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,-(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,aInput[iTer-1][1][4],aInput[iTer-1][1][4]);
+    }
+    fPTX->SetMarkerStyle(22);
+    fPTX->SetMarkerColor(38);
+    fPTX->SetFillColorAlpha(33,0.33);
+    fPTX->SetLineColorAlpha(33,0.66);
+    Legend      ->AddEntry(fPTY,"Statistical Error","F");
+    fPTTotal    ->Add(fPTX,"AP35");
+    fPTTotal    ->Draw("AP");
+    Legend      ->Draw("same");
+    c1->Write();
+    c1->SaveAs("./graphs/PTTOTAL.pdf");
+    c1->SaveAs("./graphs/PTTOTAL.png");
 }
 
 #endif

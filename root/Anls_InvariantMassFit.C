@@ -122,10 +122,10 @@ void Anls_InvariantMassFit ( bool fSilent = false )
     // 2D Fits
     for (int iFit = 0; iFit < nBinPT2D; iFit++ )
     {
+        if ( fArrPT2D[iFit+1] <= 0.41 ) continue;
         for (int jFit = 0; jFit < nBinPT2D; jFit++ )
         {
             // Not considering pT < 0.4 GeV
-            if ( fArrPT2D[iFit+1] <= 0.41 ) continue;
             if ( fArrPT2D[jFit+1] <= 0.41 ) continue;
             if ( iFit == 11 && jFit == 2  ) continue;
             if ( iFit == 2  && jFit == 11 ) continue;

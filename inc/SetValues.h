@@ -46,43 +46,40 @@ auto const  fSystError_         =   "./result/Syst_SigExt.root";
 
 // - // Efficiencies & Errors
 
-// Signal Extraction
-auto const  kSignalExtraction   =   1.000;
-auto const  kSignalExtractERP   =   0.000; // TBD
-auto const  kSignalExtractERM   =   0.000; // TBD
+auto const  kRapidityInterval   =   1.000;
 
-// Rapidity
-auto const  kRapidityInterval   =   1.000;  // Da Togliere poiché è un bin
-auto const  kRapidityInterERP   =   0.000;
-auto const  kRapidityInterERM   =   0.000;
+// Uniform Bin by Bin
+
+// Signal Extraction
+auto const  kSyst_SigExtr1D     =   0.030;
+auto const  kSyst_SigExtr2D     =   0.100;
+
+// Branching Ratio
+auto const  kBranchingRatio__   =   0.489;
+auto const  kSyst_BRatio1D      =   0.005;
+auto const  kSyst_BRatio2D      =   0.010;
+
+// Vertex
+auto const  kVertexEfficiency   =   0.990;
+
+// Tracking
+auto const  kSyst_TrackEff1D    =   0.080;
+auto const  kSyst_TrackEff2D    =   0.160;
+
+// PID
+auto const  kSyst_PID1D         =   0.015;
+auto const  kSyst_PID2D         =   0.030;
+
+// On the final result
 
 // Event
 auto const  kEventEfficiency_   =   0.850;
 auto const  kEventEfficienERP   =   0.062;
 auto const  kEventEfficienERM   =   0.030;
 
-// Branching Ratio
-auto const  kBranchingRatio__   =   0.489;
-auto const  kBranchingRatiERP   =   0.005;
-auto const  kBranchingRatiERM   =   0.005;
-
-// Vertex
-auto const  kVertexEfficiency   =   0.990;
-auto const  kVertexEfficieERP   =   0.000;
-auto const  kVertexEfficieERM   =   0.000;
-
-// Tracking
-auto const  kTrackingEfficien   =   1.000;
-auto const  kTrackingEfficERP   =   0.080;
-auto const  kTrackingEfficERM   =   0.080;
-
-// PID
-auto const  kParticleIdentifi   =   1.000;
-auto const  kParticleIdentERP   =   0.015;
-auto const  kParticleIdentERM   =   0.015;
-
-auto const  kSystematicalErrP   =   kEventEfficienERP + kBranchingRatiERP + kVertexEfficieERP + kTrackingEfficERP + kParticleIdentERP;
-auto const  kSystematicalErrM   =   kEventEfficienERM + kBranchingRatiERM + kVertexEfficieERM + kTrackingEfficERM + kParticleIdentERM;
+// Total
+auto const  kSystematical1D_   =   kSyst_SigExtr1D + kSyst_BRatio1D + kSyst_TrackEff1D + kSyst_PID1D;
+auto const  kSystematical2D_   =   kSyst_SigExtr2D + kSyst_BRatio2D + kSyst_TrackEff2D + kSyst_PID2D;
 
 // Pythia8
 auto const  kPythia1DEfficien   =   0.970;
@@ -154,13 +151,13 @@ const   Float_t   fMinIMMC  = 0.75;
 const   Float_t   fMaxIMMC  = 1.25;
 
 //-// InvMass range 1D
-const   Int_t     nBinIM1D  = 180;
+const   Int_t     nBinIM1D  = 200;
 const   Float_t   fMinIM1D  = 0.99;
 const   Float_t   fMaxIM1D  = 1.05;
         Float_t * fArrIM1D  = new Float_t [nBinIM1D+1];
 
 //-// InvMass range 2D
-const   Int_t     nBinIM2D  = 90;
+const   Int_t     nBinIM2D  = 100;
 const   Float_t   fMinIM2D  = 0.99;
 const   Float_t   fMaxIM2D  = 1.05;
         Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];

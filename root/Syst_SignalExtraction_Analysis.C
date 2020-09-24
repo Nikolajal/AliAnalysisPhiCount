@@ -139,6 +139,8 @@ void Syst_SignalExtraction_Analysis ( bool fSilent = false)
         {
             for ( Int_t kFll = 0; kFll < nBinPT2D; kFll++ )
             {
+                if ( jFll == 0 && kFll == 9 ) continue;
+                if ( jFll == 9 && kFll == 0  ) continue;
                 fh2D_Systematics_Bin[jFll][kFll]    ->  Fill(h2D_Systematics_Util->GetBinContent(jFll+1,kFll+1));
             }
         }
@@ -222,7 +224,7 @@ void Syst_SignalExtraction_Analysis ( bool fSilent = false)
         {
             fh2D_Systematics_Bin[iTer][jTer]->GetXaxis()->SetRangeUser(0.6,1.4);
             Histogram_2D_Systematics_Error              ->  SetBinContent   (iTer-1,  jTer-1,   fabs(1-fh2D_Systematics_Bin[iTer][jTer]->GetMean())+ fabs(fh2D_Systematics_Bin[iTer][jTer]->GetRMS()));
-            Histogram_2D_Systematics_Error_Normalised   ->  SetBinContent   (iTer-1,  jTer-1,   1.);
+            Histogram_2D_Systematics_Error_Normalised   ->  SetBinContent   (iTer-1,  jTer-1,   0.);
             Histogram_2D_Systematics_Error_Normalised   ->  SetBinError     (iTer-1,  jTer-1,   fabs(1-fh2D_Systematics_Bin[iTer][jTer]->GetMean())+ fabs(fh2D_Systematics_Bin[iTer][jTer]->GetRMS()));
             fh2D_Systematics_Bin[iTer][jTer]->GetXaxis()->SetRangeUser(0.1,1.9);
         }
@@ -240,8 +242,6 @@ void Syst_SignalExtraction_Analysis ( bool fSilent = false)
     {
         for ( Int_t jTer = iTer+1; jTer < nBinPT2D; jTer++ )
         {
-            if ( iTer == 2  && jTer == 11 ) continue;
-            if ( iTer == 11 && jTer == 2  ) continue;
             Histogram_2D_Systematics_Error_Projection->Fill(iTer,fabs(Histogram_2D_Systematics_Error->GetBinContent(iTer-1,jTer-1))/(2*(nBinPT2D-iTer)-1));
             Histogram_2D_Systematics_Error_Projection->Fill(iTer,fabs(Histogram_2D_Systematics_Error->GetBinContent(jTer-1,iTer-1))/(2*(nBinPT2D-iTer)-1));
         }
@@ -336,23 +336,36 @@ void Syst_SignalExtraction_Analysis ( bool fSilent = false)
     delete Canvas_Satistical_Systematic_Overlap;
     
     TCanvas    *Canvas_Satistical_Systematic_Overla2    =   new TCanvas();
-    
-    Histogram_2D_Statistical_Error_Projection_Normalised   ->SetFillColorAlpha(kGray,0.5);
-    Histogram_2D_Statistical_Error_Projection_Normalised   ->Draw("E3 same");
-    Histogram_2D_Statistical_Error_Projection_Normalised   ->GetXaxis()->SetTitle("p_{T} bin");
-    Histogram_2D_Statistical_Error_Projection_Normalised   ->GetYaxis()->SetTitle("Error (%)");
-    Histogram_2D_Statistical_Error_Projection_Normalised   ->SetTitle("Comparison of statistical error to the Systematic");
-    Histogram_2D_Systematics_Error_Projection_Normalised   ->SetFillColorAlpha(kRed,0.5);
-    Histogram_2D_Systematics_Error_Projection_Normalised   ->Draw("E3 same");
-    Legend_Satistical_Systematic_Overlap        ->AddEntry(Histogram_2D_Systematics_Error_Projection_Normalised,   "Systematics",  "F");
-    Legend_Satistical_Systematic_Overlap        ->AddEntry(Histogram_2D_Statistical_Error_Projection_Normalised,   "Statistical",  "F");
-    Legend_Satistical_Systematic_Overlap        ->Draw("same");
+    Canvas_Satistical_Systematic_Overla2->Divide(2,5);
+    TH1D  **hProjection =   new TH1D   *[nBinPT2D];
+    TH1D  **hProjectio2 =   new TH1D   *[nBinPT2D];
+    for ( Int_t iTer = 0; iTer < nBinPT2D-2; iTer++ )
+    {
+        Canvas_Satistical_Systematic_Overla2->cd(iTer+1);
+        hProjection[iTer]   =   new TH1D(*Histogram_2D_Statistical_Error_Normalised->ProjectionX(Form("%i_",iTer),iTer+1,iTer+1));
+        hProjectio2[iTer]   =   new TH1D(*Histogram_2D_Systematics_Error_Normalised->ProjectionX(Form("%i_",iTer),iTer+1,iTer+1));
+        hProjection[iTer]   ->SetFillColorAlpha(kGray,0.5);
+        if ( iTer == 0 )    hProjection[iTer]->GetXaxis()->SetRangeUser(2,11);
+        if ( iTer == 9 )    hProjection[iTer]->GetXaxis()->SetRangeUser(3,12);
+        hProjection[iTer]   ->Draw("E3 same");
+        hProjection[iTer]   ->GetXaxis()->SetTitle("p_{T} bin");
+        hProjection[iTer]   ->GetYaxis()->SetTitle("Error (%)");
+        hProjection[iTer]   ->SetTitle("Comparison of statistical error to the Systematic");
+        hProjectio2[iTer]   ->SetFillColorAlpha(kRed,0.5);
+        hProjectio2[iTer]   ->Draw("E3 same");
+        if (iTer == 2)
+        {
+            Legend_Satistical_Systematic_Overlap        ->AddEntry(hProjectio2[iTer],   "Systematics",  "F");
+            Legend_Satistical_Systematic_Overlap        ->AddEntry(hProjection[iTer],   "Statistical",  "F");
+        }
+        Legend_Satistical_Systematic_Overlap        ->Draw("same");
+    }
     
     Canvas_Satistical_Systematic_Overla2        ->Write();
     Canvas_Satistical_Systematic_Overla2        ->SaveAs("./graphs/Canvas_Satistical_Systematic_Overlap_2D.pdf");
     Canvas_Satistical_Systematic_Overla2        ->SaveAs("./graphs/Canvas_Satistical_Systematic_Overlap_2D.png");
     
-    delete Canvas_Satistical_Systematic_Overla2;
+    //delete Canvas_Satistical_Systematic_Overla2;
     
     
     Histogram_1D_Statistical_Error                          ->Write();

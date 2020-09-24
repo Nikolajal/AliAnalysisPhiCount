@@ -62,6 +62,10 @@ void Anls_SignalCorrections ( bool fSilent = false )
     TH2F *  h2D_Tru                 =   (TH2F*)(insFile_EF->Get(hName));
     hName                           =   "hNP_2D_Rec_PT_S";                      // Name of the histogram in the preprocessed file
     TH2F *  h2D_Rec                 =   (TH2F*)(insFile_EF->Get(hName));
+    hName                           =   "hNP_2D_Tru_PT_S";                      // Name of the histogram in the preprocessed file
+    TH2F *  h2D_Tru_P6              =   (TH2F*)(insFile_MC_P6->Get(hName));
+    hName                           =   "hNP_2D_Tru_PT_S";                      // Name of the histogram in the preprocessed file
+    TH2F *  h2D_Tru_P8              =   (TH2F*)(insFile_MC_P8->Get(hName));
     
     //------ TGraphAsymmErrors Rec ------//
     hName                           =   "Table 2/Graph1D_y1";                   // Name of the histogram in the preprocessed file
@@ -148,18 +152,6 @@ void Anls_SignalCorrections ( bool fSilent = false )
         // Scaling for Vertex Selection Efficiency
         h1D_Res->Scale(1./kVertexEfficiency);
         h2D_Res->Scale(1./kVertexEfficiency);
-        
-        // Scaling for Signal Extraction Efficiency
-        h1D_Res->Scale(1./kSignalExtraction);
-        h2D_Res->Scale(1./kSignalExtraction);
-
-        // Scaling for Tracking Efficiency
-        h1D_Res->Scale(1./kTrackingEfficien);
-        h2D_Res->Scale(1./kTrackingEfficien);
-        
-        // Scaling for PID Efficiency
-        h1D_Res->Scale(1./kParticleIdentifi);
-        h2D_Res->Scale(1./kParticleIdentifi);
     }
     
     //------- Histograms Fitting  -------//
@@ -169,7 +161,6 @@ void Anls_SignalCorrections ( bool fSilent = false )
     gSystem->RedirectOutput("/dev/null");
     fResults1D = ExtrapolateVl( h1D_Res );
     gSystem->RedirectOutput(0,0);
-    
     
     // 2D PT Eval
     Double_t***     fResults2D =   new Double_t**  [nBinPT2D+1];
@@ -230,22 +221,46 @@ void Anls_SignalCorrections ( bool fSilent = false )
     cout << "Res/Tru: " << fResults2D[0][1][0]/intREC   << "+-" << (1/intREC)*(fResults2D[0][1][1]+errREC*(fResults2D[0][1][0]/intREC))<< endl;
     cout << endl;
     cout << "1D YIELD:" << endl;
-    cout << "YIELD: " << fResults1D[0]    << "+-" <<  fResults1D[1]   << "+" <<   fResults1D[0]*kSystematicalErrP   << "-" <<   fResults1D[0]*kSystematicalErrM   << endl;
+    cout << "YIELD: " << fResults1D[0]    << "+-" <<  fResults1D[1]   << "+" <<   fResults1D[2]+kEventEfficienERP*fResults1D[0]  << "-" <<   fResults1D[2]+kEventEfficienERM*fResults1D[0]  << endl;
     cout << "MeanP: " << fResults1D[3]    << "+-" <<  fResults1D[4]   << endl;
     cout << endl;
     cout << "2DX YIELD:" << endl;
-    cout << "YIELD: " << fResults2D[0][0][0]    << "+-" <<  fResults2D[0][0][1]   << "+" <<   fResults2D[0][0][1] + fResults1D[0]*kSystematicalErrP   << "-" <<   fResults2D[0][0][1] + fResults1D[0]*kSystematicalErrM   << endl;
+    cout << "YIELD: " << fResults2D[0][0][0]    << "+-" <<  fResults2D[0][0][1]   << "+" <<   fResults2D[0][0][2] + fResults2D[0][0][0]*kEventEfficienERP   << "-" <<   fResults2D[0][0][2] + fResults2D[0][0][0]*kEventEfficienERM   << endl;
     cout << "MeanP: " << fResults2D[0][0][3]    << "+-" <<  fResults2D[0][0][4]   << endl;
     cout << endl;
     cout << "2DY YIELD:" << endl;
-    cout << "YIELD: " << fResults2D[0][1][0]    << "+-" <<  fResults2D[0][1][1]   << "+" <<   fResults2D[0][1][1] + fResults1D[0]*kSystematicalErrP   << "-" <<   fResults2D[0][1][1] + fResults1D[0]*kSystematicalErrM   << endl;
+    cout << "YIELD: " << fResults2D[0][1][0]    << "+-" <<  fResults2D[0][1][1]   << "+" <<   fResults2D[0][1][2] + fResults2D[0][1][0]*kEventEfficienERP   << "-" <<   fResults2D[0][1][2] + fResults2D[0][1][0]*kEventEfficienERM   << endl;
     cout << "MeanP: " << fResults2D[0][1][3]    << "+-" <<  fResults2D[0][1][4]   << endl;
+    cout << endl;
+    cout << endl;
+    cout << endl;
+    auto valy   =   fResults2D[0][0][0]/(fResults1D[0]*fResults1D[0]);
+    auto valx   =   fResults2D[0][1][0]/(fResults1D[0]*fResults1D[0]);
+    auto errx   =   sqrt(fResults2D[0][0][1]*fResults2D[0][1][1]/(fResults2D[0][0][0]*fResults2D[0][0][0])+2*(fResults1D[1]*fResults1D[1])/(fResults1D[0]*fResults1D[0]));
+    auto erry   =   sqrt(fResults2D[0][1][1]*fResults2D[0][1][1]/(fResults2D[0][1][0]*fResults2D[0][1][0])+2*(fResults1D[1]*fResults1D[1])/(fResults1D[0]*fResults1D[0]));
+    auto ersx   =   sqrt((pow(2*kSyst_SigExtr1D+kSyst_SigExtr2D,2)+pow(kEventEfficienERP,2)));
+    auto ersy   =   sqrt((pow(2*kSyst_SigExtr1D+kSyst_SigExtr2D,2)+pow(kEventEfficienERP,2)));
+    auto er2x   =   sqrt((pow(2*kSyst_SigExtr1D+kSyst_SigExtr2D,2)+pow(kEventEfficienERM,2)));
+    auto er2y   =   sqrt((pow(2*kSyst_SigExtr1D+kSyst_SigExtr2D,2)+pow(kEventEfficienERM,2)));
+    cout << "2DX/1D^2:" << valx << "+-" << valx*errx << "+" << valx*ersx << "-" << valx*er2x << endl;
+    cout << endl;
+    cout << "2DY/1D^2:" << valy << "+-" << valy*erry << "+" << valy*ersy << "-" << valy*er2y << endl;
+    cout << endl;
+    cout << endl;
     cout << endl;
     
     //---- Graphics of Presentation -----//
+    
     TGraphAsymmErrors   *g1D_Res_Stat    =   new TGraphAsymmErrors(h1D_Res);
     TGraphAsymmErrors   *g1D_Res_Syst    =   new TGraphAsymmErrors(SetSystErrorsh(h1D_Res));
+    for ( Int_t iTer = 0; iTer < 4; iTer++ )
+    {
+        g1D_Res_Stat->RemovePoint(0);
+        g1D_Res_Syst->RemovePoint(0);
+    }
     TGrCompare1D(g1D_Res_Stat,g1D_Res_Syst,h1D_Tru_P6,h1D_Tru_P8,gCheck_);
+    TGrCompare2D(h2D_Res,h2D_Tru_P6,h2D_Tru_P8);
+    TGraphAEGeneratorPT(fResults2D);
     
     //---------------------//
     // Output and wrap up  //-------------------------------------------------------------------------------
@@ -260,8 +275,8 @@ void Anls_SignalCorrections ( bool fSilent = false )
     h2D_Res->Write();
     
     // Closing opened files
-    insFile_DT->Close();
-    insFile_EF->Close();
     outFile_FT->Close();
     outFile_RS->Close();
+    insFile_DT->Close();
+    insFile_EF->Close();
 }
