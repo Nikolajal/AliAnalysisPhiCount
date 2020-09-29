@@ -119,6 +119,11 @@ void Syst_SignalExtraction_Analysis ( bool fSilent = false)
         }
     }
     
+    Histogram_1D_Systematics_Error              ->Scale(100.);
+    Histogram_1D_Systematics_Error_Mean         ->Scale(100.);
+    Histogram_1D_Systematics_Error_Widt         ->Scale(100.);
+    Histogram_1D_Systematics_Error_Normalised   ->Scale(100.);
+    
     TH1F   *fh1D_FnlTT_   = new   TH1F("Total1D",           "Total1D",          100,0.,.2);
     TH1F   *fh1D_FnlTTM   = new   TH1F("Total1D_mean",      "Total1D_mean",     100,0.,.2);
     TH1F   *fh1D_FnlTTW   = new   TH1F("Total1D_widt",      "Total1D_widt",     100,0.,.2);
@@ -230,6 +235,9 @@ void Syst_SignalExtraction_Analysis ( bool fSilent = false)
         }
     }
     
+    Histogram_2D_Systematics_Error              ->Scale(100.);
+    Histogram_2D_Systematics_Error_Normalised   ->Scale(100.);
+    
     TCanvas *c2 = new TCanvas();
     Histogram_2D_Systematics_Error->Draw("colz text");
     c2->Write();
@@ -266,6 +274,9 @@ void Syst_SignalExtraction_Analysis ( bool fSilent = false)
         Histogram_1D_Statistical_Error_Normalised   ->SetBinContent (iTer-3,0.);
         Histogram_1D_Statistical_Error_Normalised   ->SetBinError   (iTer-3,fErr/fVal);
     }
+    Histogram_1D_Statistical_Error                      ->Scale(100.);
+    Histogram_1D_Statistical_Error_Normalised           ->Scale(100.);
+    
     
     TH2F   *Histogram_2D_Statistical_Error              =   new TH2F("Statistical_2D",      "Statistical_2D",       nBinPT2D-2, 2,  nBinPT2D,   nBinPT2D-2, 2,  nBinPT2D);
     TH2F   *Histogram_2D_Statistical_Error_Normalised   =   new TH2F("Statistical_2D_Norm", "Statistical_2D_Norm",  nBinPT2D-2, 2,  nBinPT2D,   nBinPT2D-2, 2,  nBinPT2D);
@@ -280,6 +291,8 @@ void Syst_SignalExtraction_Analysis ( bool fSilent = false)
             Histogram_2D_Statistical_Error_Normalised   ->SetBinError(iTer-1,jTer-1,fErr/fVal);
         }
     }
+    Histogram_2D_Statistical_Error                      ->Scale(100.);
+    Histogram_2D_Statistical_Error_Normalised           ->Scale(100.);
     
     TCanvas *c1 = new TCanvas();
     Histogram_2D_Statistical_Error->Draw("colz text");
@@ -321,7 +334,7 @@ void Syst_SignalExtraction_Analysis ( bool fSilent = false)
     Histogram_1D_Statistical_Error_Normalised   ->Draw("E3 same");
     Histogram_1D_Statistical_Error_Normalised   ->GetXaxis()->SetTitle("p_{T} bin");
     Histogram_1D_Statistical_Error_Normalised   ->GetYaxis()->SetTitle("Error (%)");
-    Histogram_1D_Statistical_Error_Normalised   ->SetTitle("Comparison of statistical error to the Systematic");
+    Histogram_1D_Statistical_Error_Normalised   ->SetTitle("");
     Histogram_1D_Systematics_Error_Normalised   ->SetFillColorAlpha(kRed,0.5);
     Histogram_1D_Systematics_Error_Normalised   ->Draw("E3 same");
     Legend_Satistical_Systematic_Overlap        ->AddEntry(Histogram_1D_Systematics_Error_Normalised,   "Systematics",  "F");
@@ -350,22 +363,30 @@ void Syst_SignalExtraction_Analysis ( bool fSilent = false)
         hProjection[iTer]   ->Draw("E3 same");
         hProjection[iTer]   ->GetXaxis()->SetTitle("p_{T} bin");
         hProjection[iTer]   ->GetYaxis()->SetTitle("Error (%)");
-        hProjection[iTer]   ->SetTitle("Comparison of statistical error to the Systematic");
+        hProjection[iTer]   ->SetTitle("");
         hProjectio2[iTer]   ->SetFillColorAlpha(kRed,0.5);
         hProjectio2[iTer]   ->Draw("E3 same");
-        if (iTer == 2)
+        if (iTer == 0)
         {
             Legend_Satistical_Systematic_Overlap        ->AddEntry(hProjectio2[iTer],   "Systematics",  "F");
             Legend_Satistical_Systematic_Overlap        ->AddEntry(hProjection[iTer],   "Statistical",  "F");
         }
         Legend_Satistical_Systematic_Overlap        ->Draw("same");
+        TCanvas * c22 = new TCanvas ();
+        hProjection[iTer]   ->Draw("E3 same");
+        hProjectio2[iTer]   ->Draw("E3 same");
+        Legend_Satistical_Systematic_Overlap        ->Draw("same");
+        c22 ->Write();
+        c22 ->SaveAs(Form("./graphs/Canvas_Satistical_Systematic_Overlap_2D_%i.pdf",iTer+3));
+        c22 ->SaveAs(Form("./graphs/Canvas_Satistical_Systematic_Overlap_2D_%i.png",iTer+3));
+        delete c22;
     }
     
     Canvas_Satistical_Systematic_Overla2        ->Write();
     Canvas_Satistical_Systematic_Overla2        ->SaveAs("./graphs/Canvas_Satistical_Systematic_Overlap_2D.pdf");
     Canvas_Satistical_Systematic_Overla2        ->SaveAs("./graphs/Canvas_Satistical_Systematic_Overlap_2D.png");
     
-    //delete Canvas_Satistical_Systematic_Overla2;
+    delete Canvas_Satistical_Systematic_Overla2;
     
     
     Histogram_1D_Statistical_Error                          ->Write();

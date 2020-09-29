@@ -246,6 +246,8 @@ void Anls_SignalCorrections ( bool fSilent = false )
     cout << endl;
     cout << "2DY/1D^2:" << valy << "+-" << valy*erry << "+" << valy*ersy << "-" << valy*er2y << endl;
     cout << endl;
+    cout << "Sigma:" << 2*fResults2D[0][0][0] + fResults1D[0] -fResults1D[0]*fResults1D[0] << "+-" << valy*erry << "+" << valy*ersy << "-" << valy*er2y << endl;
+    cout << endl;
     cout << endl;
     cout << endl;
     
@@ -261,6 +263,140 @@ void Anls_SignalCorrections ( bool fSilent = false )
     TGrCompare1D(g1D_Res_Stat,g1D_Res_Syst,h1D_Tru_P6,h1D_Tru_P8,gCheck_);
     TGrCompare2D(h2D_Res,h2D_Tru_P6,h2D_Tru_P8);
     TGraphAEGeneratorPT(fResults2D);
+    
+    TCanvas *c____1 = new TCanvas("c1", "Intensity of LED 1",0,  0, 800, 600);
+    TPad *pad1 = new TPad("pad1","",0,0,1,1);
+    TPad *pad2 = new TPad("pad2","",0,0,1,1);
+    pad2->SetFillStyle(4000);
+    pad2->SetFrameFillStyle(0);
+    pad1->Draw();
+    pad1->cd();
+    
+    TLegend        *lLegend1D           =   new TLegend(0.35,0.45,0.65,0.6);
+    TMultiGraph    *gFinal1D            =   new TMultiGraph();
+    TGraphErrors   *gFinal1DDataStat    =   new TGraphErrors();
+    gFinal1DDataStat->SetPoint(0,1,fResults1D[0]);
+    gFinal1DDataStat->SetPointError(0,0,fResults1D[1]);
+    TGraphAsymmErrors   *gFinal1DDataSyst    =   new TGraphAsymmErrors();
+    gFinal1DDataSyst->SetPoint(0,1,fResults1D[0]);
+    gFinal1DDataSyst->SetPointError(0,0.05,0.05,fResults1D[2]+fResults1D[0]*kEventEfficienERM,fResults1D[2]+fResults1D[0]*kEventEfficienERP);
+    TGraphErrors   *gFinal1DPythia6_    =   new TGraphErrors();
+    gFinal1DPythia6_->SetPoint(0,1.05,h1D_Tru_P6->Integral("width"));
+    TGraphErrors   *gFinal1DPythia8_    =   new TGraphErrors();
+    gFinal1DPythia8_->SetPoint(0,1.1,h1D_Tru_P8->Integral("width"));
+    
+    gFinal1DDataStat->SetMarkerStyle(20);
+    gFinal1DDataStat->SetMarkerColor(46);
+    gFinal1DDataStat->SetLineColor(kRed);
+    gFinal1DDataSyst->SetMarkerStyle(20);
+    gFinal1DDataSyst->SetMarkerColor(46);
+    gFinal1DDataSyst->SetLineColor(kBlue);
+    gFinal1DPythia6_->SetMarkerStyle(26);
+    gFinal1DPythia6_->SetMarkerColor(kBlue);
+    gFinal1DPythia8_->SetMarkerStyle(32);
+    gFinal1DPythia8_->SetMarkerColor(kBlue+3);
+    
+    gFinal1D->Add(gFinal1DDataSyst,"EP5");
+    gFinal1D->Add(gFinal1DDataStat,"EP");
+    gFinal1D->Add(gFinal1DPythia6_,"P");
+    gFinal1D->Add(gFinal1DPythia8_,"P");
+    gFinal1D->GetXaxis()->SetTitle("");
+    gFinal1D->GetXaxis()->SetLimits(0.85,2.15);
+    gFinal1D->GetYaxis()->SetTitle("1-Dimensional yield");
+    gFinal1D->SetMaximum(0.040);
+    gFinal1D->SetMinimum(0.025);
+    TAxis  *xLeftAxis   =   new TAxis(*gFinal1D->GetYaxis());
+    TAxis  *xBttmAxis   =   new TAxis(*gFinal1D->GetXaxis());
+    
+    lLegend1D->AddEntry(gFinal1DDataStat,"Stat. Err.","EP");
+    lLegend1D->AddEntry(gFinal1DDataSyst,"Syst. Err.","F");
+    lLegend1D->AddEntry(gFinal1DPythia6_,"Pythia 6","P");
+    lLegend1D->AddEntry(gFinal1DPythia8_,"Pythia 8","P");
+    
+    gFinal1D->Draw("AP");
+    pad2->Draw();
+    pad2->cd();
+    
+    TMultiGraph    *gFinal2D            =   new TMultiGraph();
+    TGraphErrors   *gFinal2DDataStat    =   new TGraphErrors();
+    gFinal2DDataStat->SetPoint(0,2,fResults2D[0][0][0]);
+    gFinal2DDataStat->SetPointError(0,0,fResults2D[0][0][1]);
+    TGraphAsymmErrors   *gFinal2DDataSyst    =   new TGraphAsymmErrors();
+    gFinal2DDataSyst->SetPoint(0,2,fResults2D[0][0][0]);
+    gFinal2DDataSyst->SetPointError(0,0.05,0.05,fResults2D[0][0][2]+fResults2D[0][0][0]*kEventEfficienERM,fResults2D[0][0][2]+fResults2D[0][0][0]*kEventEfficienERP);
+    TGraphErrors   *gFinal2DPythia6_    =   new TGraphErrors();
+    gFinal2DPythia6_->SetPoint(0,2.05,h2D_Tru_P6->Integral("width"));
+    TGraphErrors   *gFinal2DPythia8_    =   new TGraphErrors();
+    gFinal2DPythia8_->SetPoint(0,2.1,h2D_Tru_P8->Integral("width"));
+    
+    gFinal2DDataStat->SetMarkerStyle(20);
+    gFinal2DDataStat->SetMarkerColor(46);
+    gFinal2DDataStat->SetLineColor(kRed);
+    gFinal2DDataSyst->SetMarkerStyle(20);
+    gFinal2DDataSyst->SetMarkerColor(46);
+    gFinal2DDataSyst->SetLineColor(kBlue);
+    gFinal2DPythia6_->SetMarkerStyle(26);
+    gFinal2DPythia6_->SetMarkerColor(kBlue);
+    gFinal2DPythia8_->SetMarkerStyle(32);
+    gFinal2DPythia8_->SetMarkerColor(kBlue+3);
+    
+    gFinal2D->Add(gFinal2DDataSyst,"EP5");
+    gFinal2D->Add(gFinal2DDataStat,"EP");
+    gFinal2D->Add(gFinal2DPythia6_,"P");
+    gFinal2D->Add(gFinal2DPythia8_,"P");
+    gFinal2D->GetYaxis()->SetTitle("2-Dimensional yield");
+    gFinal2D->GetXaxis()->SetLimits(0.85,2.15);
+    gFinal2D->SetMaximum(0.0019);
+    gFinal2D->SetMinimum(0.001);
+    TAxis  *xRigtAxis   =   new TAxis(*gFinal2D->GetYaxis());
+    
+    
+    (gFinal2D->GetHistogram())->Draw("Y+");
+    gFinal2D->Draw("PL");
+    lLegend1D->Draw("same");
+    c____1->Write();
+    c____1->SaveAs("./graphs/c____1.pdf");
+    c____1->SaveAs("./graphs/c____1.png");
+    xLeftAxis->Draw();
+    xBttmAxis->Draw();
+    
+    ratioplot(h1D_Res,h1D_Tru_P6,h1D_Tru_P8,"1D");
+    TH1D * hSlice6 = new TH1D ("hSlice6","hSlice6",nBinPT2D,fArrPT2D);
+    TH1D * hSlice8 = new TH1D ("hSlice8","hSlice8",nBinPT2D,fArrPT2D);
+    for ( Int_t iTer = 0; iTer < nBinPT2D; iTer++ )
+    {
+        auto    hProjXPythia6   =   h2D_Tru_P6->ProjectionX(Form("P6X_%i",iTer),iTer+1,iTer+1);
+        auto    hProjXPythia8   =   h2D_Tru_P8->ProjectionX(Form("P8X_%i",iTer),iTer+1,iTer+1);
+        auto    hProjXDataset   =   h2D_Res->ProjectionX(Form("DTX_%i",iTer),iTer+1,iTer+1);
+        auto    hProjYPythia6   =   h2D_Tru_P6->ProjectionY(Form("P6Y_%i",iTer),iTer+1,iTer+1);
+        auto    hProjYPythia8   =   h2D_Tru_P8->ProjectionY(Form("P8Y_%i",iTer),iTer+1,iTer+1);
+        auto    hProjYDataset   =   h2D_Res->ProjectionY(Form("DTY_%i",iTer),iTer+1,iTer+1);
+        hSlice6->SetBinContent(iTer+1,hProjXPythia6->Integral("width"));
+        hSlice8->SetBinContent(iTer+1,hProjXPythia8->Integral("width"));
+        if ( iTer > 1 )
+        {
+            ratioplot(hProjXDataset,hProjXPythia6,hProjXPythia8,Form("2DX_%i",iTer+1));
+            ratioplot(hProjYDataset,hProjYPythia6,hProjYPythia8,Form("2DY_%i",iTer+1));
+        }
+    }
+    TCanvas *cCompareFinal  =   new TCanvas();
+    TH1D * hData__ = TH1DGeneratorYield(fResults2D,false);
+    hData__->GetXaxis()->SetTitle("P_{T}#phi_{2} (GeV/c)");
+    hData__->GetYaxis()->SetTitle("#frac{d^{2}N#phi#phi}{dydp_{T}#phi_{2}}(GeV/c)^{-1}");
+    TLegend * lLegend1          =   new TLegend(0.65,0.65,0.85,0.85);
+    lLegend1                    ->SetFillColor(kWhite);
+    lLegend1                    ->SetLineColor(kWhite);
+    lLegend1                    ->AddEntry(hSlice8,"Res","L");
+    lLegend1                    ->AddEntry(hData__,"MC","EP");
+    gPad->SetLogy();
+    hSlice8->SetLineColor(kBlue);
+    hSlice8->Draw("HIST L");
+    hData__->SetMarkerStyle(25);
+    hData__->SetMarkerColor(kRed);
+    hData__->Draw("SAME EP");
+    lLegend1->Draw("SAME");
+    cCompareFinal->SaveAs("./graphs/cCompareFinal.pdf");
+    ratioplot(fResults2D,hSlice6,hSlice8);
     
     //---------------------//
     // Output and wrap up  //-------------------------------------------------------------------------------

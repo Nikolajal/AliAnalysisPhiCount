@@ -539,7 +539,8 @@ void Util_GraphicsProduction ()
     
     fc_2D_Res_Tru_Overlap->Write();
     fc_2D_Res_Tru_Overlap->SaveAs("./graphs/fc_2D_Res_Tru_Overlap.pdf");
-    delete fc_2D_Res_Tru_Overlap;
+    
+    
     /*
     // 2D PT Eval
     Double_t***     fResults2D =   new Double_t**  [nBinPT2D+1];
