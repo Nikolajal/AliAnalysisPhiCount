@@ -9,6 +9,8 @@
 #define SETFUNCTIONS_H
 #include "SetValues.h"
 #include "SpectraUtils.C"
+#include "Util_Functions.cpp"
+#include "Util_Histograms.cpp"
 
 // C++
 #include <iostream>
@@ -53,164 +55,6 @@ using namespace RooFit;
 //  Utilities for histogram creations         //
 //--------------------------------------------//
 
-int             fLegendSelect       ( string fOption )
-{
-    if ( !fOption.compare("InvMass1D") )   return 1;
-    if ( !fOption.compare("xInvMass2D") )  return 2;
-    if ( !fOption.compare("yInvMass2D") )  return 2;
-    else return -1;
-}
-
-void            fLegendMaker        ( RooPlot * fRooPlot, const char * fSelect, TLegend * fLegend )
-{
-    switch (fLegendSelect(fSelect))
-    {
-        case 1:
-            fLegend                     ->SetFillColor(kWhite);
-            fLegend                     ->SetLineColor(kWhite);
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooData"), "Data",                 "EP");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooSS"),   "Fit (Sig)",            "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooBB"),   "Fit (Bkg)",            "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooMod"),  "Fit (Model)",          "L");
-            break;
-        case 2:
-            fLegend                     ->SetFillColor(kWhite);
-            fLegend                     ->SetLineColor(kWhite);
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooData"), "Data",                 "EP");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooSS"),   "Fit (Sig #times Sig)", "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooBS"),   "Fit (Bkg #times Sig)", "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooSB"),   "Fit (Sig #times Bkg)", "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooBB"),   "Fit (Bkg #times Bkg)", "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooMod"),  "Fit (Model)",          "L");
-            break;
-        default:
-            cout << "Improper option, no changes made" << endl;
-            break;
-    }
-}
-
-int             fAxisSelect         ( string fOption )
-{
-    if ( !fOption.compare("InvMass1D") )   return 1;
-    if ( !fOption.compare("xInvMass2D") )  return 2;
-    if ( !fOption.compare("yInvMass2D") )  return 3;
-    else return -1;
-}
-
-void            fAxisMaker          ( RooPlot * fRooPlot, const char * fSelect )
-{
-    switch (fAxisSelect(fSelect))
-    {
-        case 1:
-            fRooPlot                    ->GetXaxis()->SetTitle("m_{K_{+}K_{-}} (GeV/c^{2})");
-            break;
-        case 2:
-            fRooPlot                    ->GetXaxis()->SetTitle("m^{x}_{K_{+}K_{-}} (GeV/c^{2})");
-            break;
-        case 3:
-            fRooPlot                    ->GetXaxis()->SetTitle("m^{y}_{K_{+}K_{-}} (GeV/c^{2})");
-            break;
-        default:
-            cout << "Improper option, no changes made" << endl;
-            break;
-    }
-}
-
-int             fPlotterSelect      ( string fOption )
-{
-    if ( !fOption.compare("InvMass1D") )   return 1;
-    if ( !fOption.compare("xInvMass2D") )  return 2;
-    if ( !fOption.compare("yInvMass2D") )  return 2;
-    else return -1;
-}
-
-void            fRooPlotPlotter     ( RooPlot * fRooPlot, const char * fSelect, RooAddPdf fModel , RooDataHist * fData )
-{
-    switch (fPlotterSelect(fSelect))
-    {
-        case 1:
-            fData                           ->plotOn(fRooPlot,      MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
-            fModel                          .plotOn (fRooPlot,      LineColor(4),                   LineStyle(kDashed), Name("RooMod"));
-            fModel                          .plotOn (fRooPlot,      Components("fBkg"),             LineStyle(kDashed), LineColor(38),      Name("RooBB"));
-            fModel                          .plotOn (fRooPlot,      Components("fSig"),             LineColor(2),       Name("RooSS"));
-            break;
-        case 2:
-            fData                           ->plotOn(fRooPlot,      CutRange("fDrawRange"),         MarkerColor(38),    MarkerStyle(26) ,   Name("RooData"));
-            fModel                          .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  LineColor(4),       LineStyle(kDashed), Name("RooMod"));
-            fModel                          .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fBkg"), LineStyle(kDashed), LineColor(38),      Name("RooBB"));
-            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fSigSig"),LineColor(2),       Name("RooSS"));
-            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fSigBkg"),LineStyle(kDashed), LineColor(33),    Name("RooSB"));
-            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fBkgSig"),LineStyle(kDashed), LineColor(36),    Name("RooBS"));
-            break;
-        default:
-            cout << "Improper option, no changes made" << endl;
-            break;
-    }
-}
-
-void            fRooPlotMaker       ( RooPlot * fRooPlot, TLegend * fLegend, RooAddPdf fModel , RooDataHist * fData, const char * fSelect )
-{
-    fRooPlotPlotter(fRooPlot,fSelect,fModel,fData);
-    fLegendMaker(fRooPlot,fSelect,fLegend);
-    fAxisMaker(fRooPlot,fSelect);
-}
-
-void            setMarker           ( TH1F * hTarget, Int_t iType = 0 )
-{
-    hTarget->SetMarkerColor(kColor[iType]);
-    hTarget->SetMarkerStyle(kStyle[iType]);
-    hTarget->SetMarkerSize(kWidth[iType]);
-}
-
-void            setLine             ( TH1F * hTarget, Int_t iType = 0 )
-{
-    hTarget->SetLineColor(kColor[iType]);
-    hTarget->SetLineStyle(kStyle[iType]);
-    hTarget->SetLineWidth(kWidth[iType]);
-}
-
-void            setMarker           ( TH1D * hTarget, Int_t iType = 0 )
-{
-    hTarget->SetMarkerColor(kColor[iType]);
-    hTarget->SetMarkerStyle(kStyle[iType]);
-    hTarget->SetMarkerSize(kWidth[iType]);
-}
-
-void            setMarker           ( TGraphAsymmErrors * hTarget, Int_t iType = 0 )
-{
-    hTarget->SetMarkerColor(kColor[iType]);
-    hTarget->SetMarkerStyle(kStyle[iType]);
-    hTarget->SetMarkerSize(kWidth[iType]);
-}
-
-void            setLine             ( TH1D * hTarget, Int_t iType = 0 )
-{
-    hTarget->SetLineColor(kColor[iType]);
-    hTarget->SetLineStyle(kStyle[iType]);
-    hTarget->SetLineWidth(kWidth[iType]);
-}
-
-void            TH1_SetDescription ( TH1F * hTarget )
-{
-    hTarget->GetXaxis()->SetTitle("p_{T} #phi (GeV/c)");
-    hTarget->GetYaxis()->SetTitle("#frac{d^{2}N_{#phi}}{dydp_{T}}(GeV/c)^{-1}");
-    hTarget->GetXaxis()->SetTitleOffset(1.15);
-    hTarget->GetYaxis()->SetTitleOffset(1.15);
-}
-
-void            TH2_SetDescription ( TH2F * hTarget )
-{
-    hTarget->GetXaxis()->SetTitle("p_{T} #phi_{1} (GeV/c)");
-    hTarget->GetYaxis()->SetTitle("p_{T} #phi_{2} (GeV/c)");
-    hTarget->GetXaxis()->SetTitleOffset(1.5);
-    hTarget->GetYaxis()->SetTitleOffset(1.5);
-}
-
-
-// initialised values for fits in 2D
-Float_t fLevyPar1 [] = {5.45,   5.05,   5.55,   5.85,   6.15,   6.10,   6.20,   5.2,    5.2,    4.1};
-Float_t fLevyPar2 [] = {.238,   .234,   .262,   .283,   .302,   .315,   .347,   .344,   .385,   0.41};
-Float_t fLevyPar3 [] = {0.69e-3,0.69e-3,0.69e-3,0.58e-3,0.51e-3,0.37e-3,.193e-3,83.2e-6,16.9e-6,1.01e-6};
 
 //--------------------------------------------//
 //  Signal Extraction from Invariant Mass hst //
@@ -526,11 +370,11 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
             cTotal->cd( i+1 );
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K_{+}K_{-}} < %.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K^{+}K^{-}} < %.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
             fSaveToCanvas->cd();
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K_{+}K_{-}} < %.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K^{+}K^{-}} < %.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
             fSaveToCanvas               ->Write();
             delete fSaveToCanvas;
         }
@@ -559,12 +403,12 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
             cTotal->cd( i+1 +3 );
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.2f < m^{y}_{K_{+}K_{-}} < %.2f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.2f < m^{y}_{K^{+}K^{-}} < %.2f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
             
             fSaveToCanvas->cd();
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.2f < m^{y}_{K_{+}K_{-}} < %.2f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.2f < m^{y}_{K^{+}K^{-}} < %.2f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
             fSaveToCanvas               ->Write();
             delete fSaveToCanvas;
         }
@@ -584,748 +428,6 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
 //--------------------------------------------//
 //  Final Yield Extraction and extrapolation  //
 //--------------------------------------------//
-
-// - // Errors and management
-/*
-TGraphAsymmErrors * SetTGrAsymE1D   ( TH1  * hTarget )
-{
-    TGraphAsymmErrors * gUtility  =   new TGraphAsymmErrors(hTarget);
-    gUtility->RemovePoint(0);
-    gUtility->RemovePoint(0);
-    gUtility->RemovePoint(0);
-    gUtility->RemovePoint(0);
-    TGraphAsymmErrors * gResult___  =   new TGraphAsymmErrors();
-    return gResult___;
-}
-
-TGraphAsymmErrors * SetTGrAsymE2D   ( TH1  * hTarget )
-{
-    TGraphAsymmErrors * gResult___  =   new TGraphAsymmErrors(hTarget);
-    gResult___->RemovePoint(0);
-    gResult___->RemovePoint(0);
-    return gResult___;
-}
-
-TGraphAsymmErrors * AddTGrAsymESQ   ( TGraphAsymmErrors * gTarget, TGraphAsymmErrors * gTargetAdd )
-{
-    TGraphAsymmErrors * gResult___  =   new TGraphAsymmErrors();
-    
-    // Running on all points
-    for ( Int_t iPoint = 0; iPoint < gTarget->GetMaxSize(); iPoint++ )
-    {
-        // Generating TGraph Points
-        Double_t        XPoint__    =   (gTarget->  GetX())     [iPoint];
-        Double_t        XPointEl    =   (gTarget->  GetEXlow()) [iPoint];
-        Double_t        XPointEh    =   (gTarget->  GetEXhigh())[iPoint];
-        Double_t        YPoint__    =   (gTarget->  GetY())     [iPoint];
-        Double_t        YPointEl    =   pow((gTarget->  GetEYlow()) [iPoint],2) + pow((gTargetAdd->  GetEYlow()) [iPoint],2);
-        Double_t        YPointEh    =   pow((gTarget->  GetEYhigh())[iPoint],2) + pow((gTargetAdd->  GetEYhigh())[iPoint],2);
-        
-        // Setting Final values
-        gResult___  ->  SetPointX       (iPoint-3,XPoint__);
-        gResult___  ->  SetPointEXhigh  (iPoint-3,XPointEl);
-        gResult___  ->  SetPointEXlow   (iPoint-3,XPointEh);
-        gResult___  ->  SetPointY       (iPoint-3,YPoint__);
-        gResult___  ->  SetPointEYhigh  (iPoint-3,sqrt(YPointEl));
-        gResult___  ->  SetPointEYlow   (iPoint-3,sqrt(YPointEh));
-    }
-    return gResult___;
-}
-
-TGraphAsymmErrors * AddTGrAsymESM   ( TGraphAsymmErrors * gTarget, TGraphAsymmErrors * gTargetAdd )
-{
-    TGraphAsymmErrors * gResult___  =   new TGraphAsymmErrors();
-    
-    // Running on all points
-    for ( Int_t iPoint = 0; iPoint < gTarget->GetMaxSize(); iPoint++ )
-    {
-        // Generating TGraph Points
-        Double_t        XPoint__    =   (gTarget->  GetX())     [iPoint];
-        Double_t        XPointEl    =   (gTarget->  GetEXlow()) [iPoint];
-        Double_t        XPointEh    =   (gTarget->  GetEXhigh())[iPoint];
-        Double_t        YPoint__    =   (gTarget->  GetY())     [iPoint];
-        Double_t        YPointEl    =   (gTarget->  GetEYlow()) [iPoint] + (gTargetAdd->  GetEYlow()) [iPoint];
-        Double_t        YPointEh    =   (gTarget->  GetEYhigh())[iPoint] + (gTargetAdd->  GetEYhigh())[iPoint];
-        
-        // Setting Final values
-        gResult___  ->  SetPointX       (iPoint-3,XPoint__);
-        gResult___  ->  SetPointEXhigh  (iPoint-3,XPointEl);
-        gResult___  ->  SetPointEXlow   (iPoint-3,XPointEh);
-        gResult___  ->  SetPointY       (iPoint-3,YPoint__);
-        gResult___  ->  SetPointEYhigh  (iPoint-3,sqrt(YPointEl));
-        gResult___  ->  SetPointEYlow   (iPoint-3,sqrt(YPointEh));
-    }
-    return gResult___;
-}
-
-void                SetUnCorrltdE   ( TGraphAsymmErrors * gTarget )
-{
-    TGraphAsymmErrors * gResult___  =   new TGraphAsymmErrors();
-    
-    Double_t*       FYPntErrH_  =   gTarget->GetEYhigh();
-    Double_t*       FYPntErrL_  =   gTarget->GetEYlow();
-    
-    // Running on all points
-    for ( Int_t iPoint = 0; iPoint < gTarget->GetMaxSize(); iPoint++ )
-    {
-        Double_t        YPointEl    =   pow(FYPntErrH_[iPoint],2);
-        Double_t        YPointEh    =   pow(FYPntErrL_[iPoint],2);
-        
-        // Event Trigger Efficiency
-        YPointEh                    +=  pow(kEventEfficienERP,2);
-        YPointEl                    +=  pow(kEventEfficienERM,2);
-        
-        // Setting Final values
-        gResult___  ->  SetPointEYhigh  (iPoint,YPointEl);
-        gResult___  ->  SetPointEYlow   (iPoint,YPointEh);
-    }
-}
-
-void                SetCorrelatdE   ( TGraphAsymmErrors * gTarget )
-{
-    TGraphAsymmErrors * gResult___  =   new TGraphAsymmErrors();
-    
-    Double_t*       FYPntErrH_  =   gTarget->GetEYhigh();
-    Double_t*       FYPntErrL_  =   gTarget->GetEYlow();
-    
-    // Running on all points
-    for ( Int_t iPoint = 0; iPoint < gTarget->GetMaxSize(); iPoint++ )
-    {
-        Double_t        YPointEl    =   pow(FYPntErrH_[iPoint],2);
-        Double_t        YPointEh    =   pow(FYPntErrL_[iPoint],2);
-        
-        YPointEh                    +=  0;
-        YPointEl                    +=  0;
-        
-        // Setting Final values
-        gResult___  ->  SetPointEYhigh  (iPoint,YPointEl);
-        gResult___  ->  SetPointEYlow   (iPoint,YPointEh);
-    }
-}
-
-TGraphAsymmErrors * SetSystErrors   ( TH1  * hTarget, string fOption )
-{
-    TGraphAsymmErrors * gResult___  =   new TGraphAsymmErrors();
-    
-    Bool_t              fCorrelatd  =   false;
-    Bool_t              fUnCorrltd  =   false;
-    
-    for ( Char_t iOption:fOption )
-    {
-        if ( fOption.empty() )      break;
-        if ( iOption == 'C' )       fCorrelatd = kTRUE;
-        if ( iOption == 'U' )       fUnCorrltd = kTRUE;
-        if ( iOption == '1' )       gResult___  =   SetTGrAsymE1D( hTarget );
-        if ( iOption == '2' )       gResult___  =   SetTGrAsymE2D( hTarget );
-    }
-    
-    if  ( fCorrelatd )              SetCorrelatdE(gResult___);
-    if  ( fUnCorrltd )              SetUnCorrltdE(gResult___);
-    
-    return  gResult___;
-}
-
-TGraphAsymmErrors * SetSystErrors   ( TH1F * hTarget )
-{
-    TGraphAsymmErrors * _Return = new TGraphAsymmErrors(hTarget);
-    
-    Int_t iPoint = 0;
-    for ( Int_t iHisto = 0; iHisto < nBinPT1D; iHisto++ )
-    {
-        auto fBinContent    =   hTarget->GetBinContent  (iHisto+1);
-        if ( fBinContent == 0 )
-        {
-            _Return ->  RemovePoint(0);
-            continue;
-        }
-        auto fBinError__    =   hTarget->GetBinError    (iHisto+1);
-        auto ErrorYhigh = fBinContent*sqrt(pow(fBinError__/fBinContent,2)+ pow(kRapidityInterERP/kRapidityInterval,2)+pow(kEventEfficienERP/kEventEfficiency_,2)+pow(kBranchingRatiERP/kBranchingRatio__,2)+pow(kVertexEfficieERP/kVertexEfficiency,2)+pow(kSignalExtractERP/kSignalExtraction,2)+pow(kTrackingEfficERP/kTrackingEfficien,2)+pow(kParticleIdentERP/kParticleIdentifi,2));
-        auto ErrorYlow_ = fBinContent*sqrt(pow(fBinError__/fBinContent,2)+ pow(kRapidityInterERM/kRapidityInterval,2)+pow(kEventEfficienERM/kEventEfficiency_,2)+pow(kBranchingRatiERM/kBranchingRatio__,2)+pow(kVertexEfficieERM/kVertexEfficiency,2)+pow(kSignalExtractERM/kSignalExtraction,2)+pow(kTrackingEfficERM/kTrackingEfficien,2)+pow(kParticleIdentERM/kParticleIdentifi,2));
-        _Return ->  SetPointEYhigh  (iPoint,ErrorYhigh);
-        _Return ->  SetPointEYlow   (iPoint,ErrorYlow_);
-        iPoint++;
-    }
-    
-    return _Return;
-}
-
-TGraphAsymmErrors * SetSystErrors   ( TH1D * hTarget )
-{
-    TGraphAsymmErrors * _Return = new TGraphAsymmErrors(hTarget);
-    
-    Int_t iPoint = 0;
-    for ( Int_t iHisto = 0; iHisto < nBinPT2D; iHisto++ )
-    {
-        auto fBinContent    =   hTarget->GetBinContent  (iHisto+1);
-        if ( fBinContent == 0 )
-        {
-            _Return ->  RemovePoint(0);
-            continue;
-        }
-        auto fBinError__    =   hTarget->GetBinError    (iHisto+1);
-        auto ErrorYhigh = fBinContent*sqrt(pow(fBinError__/fBinContent,2)+ pow(kRapidityInterERP/kRapidityInterval,2)+pow(kEventEfficienERP/kEventEfficiency_,2)+pow(2*kBranchingRatiERP/kBranchingRatio__,2)+pow(kVertexEfficieERP/kVertexEfficiency,2)+pow(kSignalExtractERP/kSignalExtraction,2)+pow(kTrackingEfficERP/kTrackingEfficien,2)+pow(kParticleIdentERP/kParticleIdentifi,2));
-        auto ErrorYlow_ = fBinContent*sqrt(pow(fBinError__/fBinContent,2)+ pow(kRapidityInterERM/kRapidityInterval,2)+pow(kEventEfficienERM/kEventEfficiency_,2)+pow(2*kBranchingRatiERM/kBranchingRatio__,2)+pow(kVertexEfficieERM/kVertexEfficiency,2)+pow(kSignalExtractERM/kSignalExtraction,2)+pow(kTrackingEfficERM/kTrackingEfficien,2)+pow(kParticleIdentERM/kParticleIdentifi,2));
-        _Return ->  SetPointEYhigh  (iPoint,ErrorYhigh);
-        _Return ->  SetPointEYlow   (iPoint,ErrorYlow_);
-        iPoint++;
-    }
-    return _Return;
-}
-
-void                SetSystErr1D_   ( TGraphAsymmErrors * gTarget )
-{
-    Double_t*           FXPoints__  =   gTarget->GetX();
-    Double_t*           FXPntErrH_  =   gTarget->GetEXhigh();
-    Double_t*           FXPntErrL_  =   gTarget->GetEXlow();
-    Double_t*           FYPoints__  =   gTarget->GetY();
-    Double_t*           FYPntErrH_  =   gTarget->GetEYhigh();
-    Double_t*           FYPntErrL_  =   gTarget->GetEYlow();
-    
-    for ( Int_t iHisto = 0; iHisto < gTarget->GetMaxSize(); iHisto++ )
-    {
-        Double_t    EYlow   =   (FYPntErrH_[iHisto]/FYPoints__[iHisto])+kRapidityInterERM+kEventEfficienERM+kBranchingRatiERM+kVertexEfficieERM+kSignalExtractERM+kTrackingEfficERM+kParticleIdentERM;
-        Double_t    EYhig   =   (FYPntErrL_[iHisto]/FYPoints__[iHisto])+kRapidityInterERP+kEventEfficienERP+kBranchingRatiERP+kVertexEfficieERP+kSignalExtractERP+kTrackingEfficERP+kParticleIdentERP;
-        
-        gTarget->SetPointEYlow  (iHisto,EYlow*FYPoints__[iHisto]);
-        gTarget->SetPointEYhigh (iHisto,EYhig*FYPoints__[iHisto]);
-    }
-}
-
-
-TGraphAsymmErrors * SetRandPoints   ( TGraphAsymmErrors * gTarget )
-{
-    TGraphAsymmErrors * gResult___  =   new TGraphAsymmErrors();
-                    
-    Double_t*           FXPoints__  =   gTarget->GetX();
-    Double_t*           FXPntErrH_  =   gTarget->GetEXhigh();
-    Double_t*           FXPntErrL_  =   gTarget->GetEXlow();
-    Double_t*           FYPoints__  =   gTarget->GetY();
-    Double_t*           FYPntErrH_  =   gTarget->GetEYhigh();
-    Double_t*           FYPntErrL_  =   gTarget->GetEYlow();
-    
-    // Running on all points
-    for ( Int_t iPoint = 0; iPoint < gTarget->GetMaxSize(); iPoint++ )
-    {
-        gResult___  ->  SetPointX       (iPoint,FXPoints__[iPoint]);
-        gResult___  ->  SetPointEXhigh  (iPoint,FXPntErrH_[iPoint]);
-        gResult___  ->  SetPointEXlow   (iPoint,FXPntErrL_[iPoint]);
-    
-        // Generating Shuffling
-        Double_t        LowBound    =   (FYPoints__[iPoint] - FYPntErrL_[iPoint]);
-        Double_t        HigBound    =   (FYPoints__[iPoint] + FYPntErrH_[iPoint]);
-        Double_t        MidPoint;
-        Bool_t kCheck = true;
-        while ( kCheck )
-        {
-            MidPoint    =   fRandomGen  ->  Gaus( FYPoints__[iPoint], HigBound );
-            if ( MidPoint >= LowBound && MidPoint <= HigBound ) kCheck = false;
-        }
-        
-        // Setting Final values
-        gResult___  ->  SetPointY       (iPoint,MidPoint);
-        gResult___  ->  SetPointEYhigh  (iPoint,HigBound - MidPoint);
-        gResult___  ->  SetPointEYlow   (iPoint,MidPoint - LowBound);
-    }
-    return gResult___;
-}
-
-// - // Integrals
-
-Float_t             TGrAEIntegral    ( TGraphAsymmErrors * gTarget, Float_t & _ErrorHigh, Float_t & _ErrorLow_, Int_t kMinBin = 0, Int_t kMaxBin = 0 )
-{
-    Float_t         _Return     = 0;
-    Float_t         fErrorHigh  = 0;
-    Float_t         fErrorLow_  = 0;
-    
-    Double_t*       FXPoints__  =   gTarget->GetX();
-    Double_t*       FXPntErrH_  =   gTarget->GetEXhigh();
-    Double_t*       FXPntErrL_  =   gTarget->GetEXlow();
-    Double_t*       FYPoints__  =   gTarget->GetY();
-    Double_t*       FYPntErrH_  =   gTarget->GetEYhigh();
-    Double_t*       FYPntErrL_  =   gTarget->GetEYlow();
-    
-    // Running on requested points
-    for ( Int_t iPoint = kMinBin; iPoint < kMaxBin; iPoint++ )
-    {
-        _Return     += FYPoints__[iPoint]*(FXPntErrH_[iPoint]+FXPntErrL_[iPoint]);
-        fErrorHigh  += FYPntErrH_[iPoint]*FYPntErrH_[iPoint];
-        fErrorLow_  += FYPntErrL_[iPoint]*FYPntErrL_[iPoint];
-    }
-    
-    _ErrorHigh = sqrt(fErrorHigh);
-    _ErrorLow_ = sqrt(fErrorLow_);
-    return _Return;
-}
-
-// - // Fits
-
-void                SetLevyTsalPT2D ( Int_t iSet )
-{
-    // - // Setting up Fit parameters
-    
-    // Mass
-    fLevyFit1D  ->  SetParLimits(0,kPMas,kPMas);
-    fLevyFit1D  ->  SetParameter(0,kPMas);
-    
-    // n-Parameter
-    fLevyFit1D  ->  SetParLimits(1,3.5,7.5);
-    fLevyFit1D  ->  SetParameter(1,fLevyPar1[iSet]); // 6.7
-    
-    // T-Parameter
-    fLevyFit1D  ->  SetParLimits(2,.18,.45);
-    fLevyFit1D  ->  SetParameter(2,fLevyPar2[iSet]); // .272
-    
-    // dN/dy
-    fLevyFit1D  ->  SetParLimits(3,1.e-8,1.e-3);
-    fLevyFit1D  ->  SetParameter(3,fLevyPar3[iSet]);
-}
-
-Float_t             LevyTsalPT1D    ( TGraphAsymmErrors * gTarget, Float_t & _Error, TFitResultPtr & _FitRst, Float_t kMinVal = 0, Float_t kMaxVal = 0, Bool_t fSaveToFile = false )
-{
-    Float_t _Return;
-    Float_t Cycle1, Cycle2, Cycle3;
-    _FitRst     =   gTarget     ->  Fit(fLevyFit1D,"MREQ0S","EX0",0.4,10.);
-    
-    if ( fSaveToFile )
-    {
-        TCanvas * cSave = new TCanvas();
-        gStyle->SetOptStat(0);
-        gPad->SetLogy();
-        gTarget->Draw();
-        fLevyFit1D->Draw("same");
-        cSave->Write();
-        delete cSave;
-    }
-    
-    _Return     =   fLevyFit1D ->Integral(kMinVal,kMaxVal);
-    _Error      =   fLevyFit1D ->IntegralError(kMinVal,kMaxVal);
-    return _Return;
-}
-
-// Final Extraction
-
-Float_t             EvlIntegral     ( TGraphAsymmErrors * gTarget, Float_t & _ErrorHigh, Float_t & _ErrorLow_, Int_t kMinBin = 0, Int_t kMaxBin = nBinPT1D-4, string fName = "", Int_t kFitPrep = -1 )
-{
-    // Speeding multiple fits
-    gROOT->SetBatch();
-    
-    Float_t _Return, _Integral, _IntErrHig, _IntErrLow, _IntFit_, _IntErrFit;
-    TFitResultPtr FUtility;
-    
-    // Integrating in the known region
-    _Integral                   =   TGrAEIntegral(gTarget,_IntErrHig,_IntErrLow,kMinBin,kMaxBin);
-    
-    //Extrapolating from the Fit
-    _IntFit_                    =   LevyTsalPT1D(gTarget,_IntErrFit,FUtility,0,0.4);
-    
-    Int_t kPoints   = 3e3;
-    
-    // - // Initialising the random point mover
-    TGraphAsymmErrors*gUtility  =   new TGraphAsymmErrors();
-    Double_t * xUtility = new Double_t [kPoints];
-    Double_t * xUtilit1 = new Double_t [kPoints];
-    Double_t * xUtilit2 = new Double_t [kPoints];
-    Double_t * xUtilit3 = new Double_t [kPoints];
-    Double_t * wUtility = new Double_t [kPoints];
-    _IntFit_                    =   LevyTsalPT1D(gTarget,_IntErrFit,FUtility,0,0.4,true);
-    
-    for ( Int_t iTer = 0; iTer < kPoints; iTer++ )
-    {
-        // Inizializzare il fit sempre uguale
-        if( kFitPrep < 0  )     SetLevyTsalPT1D();
-        if( kFitPrep >= 0 )     SetLevyTsalPT2D(kFitPrep);
-        gUtility                =   SetRandPoints(gTarget);
-        SetSystErr1D_(gUtility);
-        _IntFit_                =   LevyTsalPT1D(gUtility,_IntErrFit,FUtility,0,0.4);
-        xUtilit1[iTer]          =   fLevyFit1D->GetParameter(1);
-        xUtilit2[iTer]          =   fLevyFit1D->GetParameter(2);
-        xUtilit3[iTer]          =   fLevyFit1D->GetParameter(3);
-        xUtility[iTer]          =   _IntFit_;
-        wUtility[iTer]          =   1;
-        if ( iTer%(kPoints/10) == 0 )cout << "iTer:" << iTer << endl;
-    }
-    
-    TVectorD fUtility (kPoints,xUtility);
-    TVectorD fUtilit1 (kPoints,xUtilit1);
-    TVectorD fUtilit2 (kPoints,xUtilit2);
-    TVectorD fUtilit3 (kPoints,xUtilit3);
-    
-    TH1F * hUtility             =   new TH1F (Form("gs_%s",fName.c_str()),"",75,fUtility.Min(),fUtility.Max());
-    hUtility->FillN(kPoints,xUtility,wUtility);
-    
-    TH1F * hUtilit1             =   new TH1F (Form("L1_%s",fName.c_str()),"",75,fUtilit1.Min(),fUtilit1.Max());
-    hUtilit1->FillN(kPoints,xUtilit1,wUtility);
-    
-    TH1F * hUtilit2             =   new TH1F (Form("L2_%s",fName.c_str()),"",75,fUtilit2.Min(),fUtilit2.Max());
-    hUtilit2->FillN(kPoints,xUtilit2,wUtility);
-    
-    TH1F * hUtilit3             =   new TH1F (Form("L3_%s",fName.c_str()),"",75,fUtilit3.Min(),fUtilit3.Max());
-    hUtilit3->FillN(kPoints,xUtilit3,wUtility);
-    
-    hUtility->Fit("gaus","Q");
-    _IntFit_                    =   hUtility->GetFunction("gaus")->GetParameter(1);
-    _IntErrFit                  =   hUtility->GetFunction("gaus")->GetParameter(2);
-    hUtility                    ->Write();
-    hUtilit1                    ->Write();
-    hUtilit2                    ->Write();
-    hUtilit3                    ->Write();
-    
-    _Return                     =   _Integral + _IntFit_;
-    _ErrorHigh                  =   sqrt( pow(_IntErrFit,2) + pow(_IntErrHig,2) );
-    _ErrorLow_                  =   sqrt( pow(_IntErrFit,2) + pow(_IntErrLow,2) );
-    
-    // Speeding multiple fits
-    gROOT->SetBatch(false);
-    return _Return;
-}
-
-Float_t **          EvlIntegral     ( TH2F * hTarget, Float_t **& _ErrorHig, Float_t **& _ErrorLow )
-{
-    Float_t ** _Return__    = new Float_t *[2];
-    _Return__[0]            = new Float_t [nBinPT2D+1];
-    _Return__[1]            = new Float_t [nBinPT2D+1];
-    _ErrorHig               = new Float_t *[2];
-    _ErrorHig[0]            = new Float_t [nBinPT2D+1];
-    _ErrorHig[1]            = new Float_t [nBinPT2D+1];
-    _ErrorLow               = new Float_t *[2];
-    _ErrorLow[0]            = new Float_t [nBinPT2D+1];
-    _ErrorLow[1]            = new Float_t [nBinPT2D+1];
-    TH1D *      hSliceFX_   = new TH1D("","",nBinPT2D,fArrPT2D);
-    TH1D *      hSliceFY_   = new TH1D("","",nBinPT2D,fArrPT2D);
-    TF1  **     fLevyMem_   = new TF1 * [2];
-    fLevyMem_[0]            = new TF1 [nBinPT2D+1];
-    fLevyMem_[1]            = new TF1 [nBinPT2D+1];
-    
-    TCanvas * cDrawAllX  = new TCanvas("cDrawAllX","cDrawAllX");
-    cDrawAllX->Divide(5,2);
-    TCanvas * cDrawAllY  = new TCanvas("cDrawAllY","cDrawAllY");
-    cDrawAllY->Divide(5,2);
-    TCanvas * cDrawCHXY  = new TCanvas("cDrawCHXY","cDrawCHXY");
-    cDrawCHXY->Divide(5,2);
-    
-    Int_t iHisto = 0;
-    for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
-    {
-        if ( fArrPT2D[iFit+1] <= 0.41 ) continue;
-        
-        // Prepping the Function
-        SetLevyTsalPT2D(iHisto);
-        
-        // X-Projection
-        hName = Form("XProjection_PT_%.1f_%.1f",fArrPT2D[iFit],fArrPT2D[iFit+1]);
-        TGraphAsymmErrors * g1D_ResX    =   new TGraphAsymmErrors(static_cast<TH1D*>(hTarget->ProjectionX(hName,iFit+1,iFit+1)));
-        g1D_ResX                        ->  RemovePoint(0);
-        g1D_ResX                        ->  RemovePoint(0);
-        g1D_ResX                        ->  SetTitle(Form("Slice in #phi_{1} P_{T} from %.1f to %.1f GeV",fArrPT2D[iFit],fArrPT2D[iFit+1]));
-        g1D_ResX                        ->  GetXaxis()  ->  SetTitle("#phi_{2} P_{T} GeV");
-        g1D_ResX                        ->  GetYaxis()  ->  SetTitle("#frac{d^{3}N #phi_{1} }{dydp_{T}d#phi_{2}}(GeV/c)^{-1}");
-        
-        _Return__[0][iHisto+1]  =   EvlIntegral     (g1D_ResX,_ErrorHig[0][iHisto+1],_ErrorLow[0][iHisto+1],0,nBinPT2D-2,Form("X_%i",iFit),iHisto);
-        hSliceFY_               ->  SetBinContent   (iFit+1,static_cast<Double_t>(_Return__[0][iHisto+1]));
-        hSliceFY_               ->  SetBinError     (iFit+1,static_cast<Double_t>(_ErrorHig[0][iHisto+1]));
-        fLevyMem_[0][iHisto+1]  =   *fLevyFit1D;
-        
-        // Prepping the Function
-        SetLevyTsalPT2D(iHisto);
-        
-        // Y Projection
-        hName = Form("YProjection_PT_%.1f_%.1f",fArrPT2D[iFit],fArrPT2D[iFit+1]);
-        TGraphAsymmErrors * g1D_ResY    =   new TGraphAsymmErrors(static_cast<TH1D*>(hTarget->ProjectionY(hName,iFit+1,iFit+1)));
-        g1D_ResY                        ->  RemovePoint(0);
-        g1D_ResY                        ->  RemovePoint(0);
-        g1D_ResY                        ->  SetTitle(Form("Slice in #phi_{2} P_{T} from %.1f to %.1f GeV",fArrPT2D[iFit],fArrPT2D[iFit+1]));
-        g1D_ResY                        ->  GetXaxis()  ->  SetTitle("#phi_{1} P_{T} GeV");
-        g1D_ResY                        ->  GetYaxis()  ->  SetTitle("#frac{d^{3}N #phi_{2} }{dydp_{T}d#phi_{1}}(GeV/c)^{-1}");
-        _Return__[1][iHisto+1]  =   EvlIntegral     (g1D_ResY,_ErrorHig[1][iHisto+1],_ErrorLow[1][iHisto+1],0,nBinPT2D-2,Form("Y_%i",iFit),iHisto);
-        hSliceFX_               ->  SetBinContent   (iFit+1,static_cast<Double_t>(_Return__[1][iHisto+1]));
-        hSliceFX_               ->  SetBinError     (iFit+1,static_cast<Double_t>(_ErrorHig[1][iHisto+1]));
-        fLevyMem_[1][iHisto+1]  =   *fLevyFit1D;
-        
-        cDrawAllX               ->  cd(iHisto+1);
-        gPad                    ->  SetLogy();
-        g1D_ResX                ->  Draw("AP");
-        fLevyMem_[0][iHisto+1]  .   Draw("same");
-    
-        cDrawAllY               ->  cd(iHisto+1);
-        gPad                    ->  SetLogy();
-        g1D_ResY                ->  Draw("AP");
-        fLevyMem_[1][iHisto+1]  .   Draw("same");
-        
-        
-        cDrawCHXY               ->  cd(iHisto+1);
-        cDrawCHXY               ->  SetLogy();
-        hName       = Form("XProjection_PT_%.1f_%.1f",fArrPT2D[iFit],fArrPT2D[iFit+1]);
-        TH1D * X__  = new TH1D(*static_cast<TH1D*>(hTarget->ProjectionX(hName,iFit+1,iFit+1)));
-        hName = Form("YProjection_PT_%.1f_%.1f",fArrPT2D[iFit],fArrPT2D[iFit+1]);
-        TH1D * Y__  = new TH1D(*static_cast<TH1D*>(hTarget->ProjectionY(hName,iFit+1,iFit+1)));
-        X__ ->Draw("");
-        Y__ ->Draw("same");
-        
- 
-        hFitY[iHisto]->SetNameTitle(hName,hName);
-        hFitY[iHisto]->GetYaxis()->SetTitle("#frac{d^{2}N_{#phi}}{dydp_{T}}(GeV/c)^{-1}");
-        hFitY[iHisto]->GetXaxis()->SetTitleOffset(1.);
-        hFitY[iHisto]->GetYaxis()->SetTitleOffset(1.4);
-        
-        
-        cout << "iHisto:" << iHisto << endl;
-        
-        iHisto++;
-    }
-    
-    SetLevyTsalPT2D();
-    TGraphAsymmErrors*      gSliceFX_       =   SetSystErrors(hSliceFX_);
-    _Return__[0][0]     =   EvlIntegral     (gSliceFX_,_ErrorHig[0][0],_ErrorLow[0][0],3,nBinPT2D-2,Form("AllX"));
-    fLevyMem_[0][0]     =   *fLevyFit1D;
-    TGraphAsymmErrors*      gSliceFY_       =   SetSystErrors(hSliceFY_);
-    _Return__[1][0]     =   EvlIntegral     (gSliceFX_,_ErrorHig[1][0],_ErrorLow[1][0],3,nBinPT2D-2,Form("AllY"));
-    fLevyMem_[1][0]     =   *fLevyFit1D;
-    
-    
-    TCanvas * cDrawComX  = new TCanvas("cDrawComX","cDrawComX");
-    gPad                    ->  SetLogy();
-    gSliceFX_               ->  Draw("");
-    fLevyMem_[0][0]         .   Draw("same");
-    
-    TCanvas * cDrawComY  = new TCanvas("cDrawComY","cDrawComY");
-    gPad                    ->  SetLogy();
-    gSliceFY_               ->  Draw("");
-    fLevyMem_[1][0]         .   Draw("same");
-    
-    cDrawAllX->Write();
-    cDrawAllY->Write();
-    cDrawCHXY->Write();
-    return _Return__;
-     
-}
-
-// Mean PT calculation
-
-Float_t             EvlMeanPT__     ( TGraphAsymmErrors * gTarget, Float_t & _ErrorHigh, Float_t & _ErrorLow_, Int_t kMinBin = 0, Int_t kMaxBin = 1.e3 )
-{
-    TFitResultPtr   FUtilFit__;
-    Float_t         FUtilError;
-    Float_t         FTotWeight  =   0;
-    Float_t         FTotError_  =   0;
-    Float_t         FTotYPoint  =   0;
-    Float_t         FFinalMean  =   0;
-    Int_t           FkPointFit  =   2;
-    Int_t           FkPointCmp  =   0;
-    Double_t*       FFitErrors  =   new Double_t [FkPointFit];
-    Double_t*       FFitXPoint  =   new Double_t [FkPointFit];
-    Double_t*       FFitYPoint  =   new Double_t [FkPointFit];
-    Double_t*       FXComplPnt  =   new Double_t [FkPointFit+gTarget->GetMaxSize()];
-    Double_t*       FXComplPEh  =   new Double_t [FkPointFit+gTarget->GetMaxSize()];
-    Double_t*       FXComplPEl  =   new Double_t [FkPointFit+gTarget->GetMaxSize()];
-    Double_t*       FYComplPnt  =   new Double_t [FkPointFit+gTarget->GetMaxSize()];
-    Double_t*       FYComplPEh  =   new Double_t [FkPointFit+gTarget->GetMaxSize()];
-    Double_t*       FYComplPEl  =   new Double_t [FkPointFit+gTarget->GetMaxSize()];
-    Double_t*       F_ComplWei  =   new Double_t [FkPointFit+gTarget->GetMaxSize()];
-    Double_t*       F_ComplErr  =   new Double_t [FkPointFit+gTarget->GetMaxSize()];
-    Double_t*       FXPoints__  =   gTarget->GetX();
-    Double_t*       FXPntErrH_  =   gTarget->GetEXhigh();
-    Double_t*       FXPntErrL_  =   gTarget->GetEXlow();
-    Double_t*       FYPoints__  =   gTarget->GetY();
-    Double_t*       FYPntErrH_  =   gTarget->GetEYhigh();
-    Double_t*       FYPntErrL_  =   gTarget->GetEYlow();
-    
-    // Recovering Errors from Fit
-    LevyTsalPT1D    (gTarget,FUtilError,FUtilFit__);
-    
-    // Initialising Fit Points
-    for ( Int_t iPoint = 0; iPoint < FkPointFit; iPoint++ )
-    {
-        FFitXPoint[iPoint]      =   iPoint*(0.4)/(FkPointFit) + (0.4)/(2*FkPointFit);
-        FFitYPoint[iPoint]      =   fLevyFit1D->Eval(FFitXPoint[iPoint]);
-    }
-    
-    FUtilFit__      ->  GetConfidenceIntervals(FkPointFit, 1, 1, FFitXPoint, FFitErrors, 0.683, false);
-    
-    // Evaluating all weights
-    for ( Int_t iPoint = 0; iPoint <= FkPointFit + gTarget->GetMaxSize() +10; iPoint++ )
-    {
-        
-        if ( FXPoints__[iPoint-FkPointFit] <= FXPoints__[iPoint-1-FkPointFit] && iPoint > FkPointFit) break;
-        
-        if ( iPoint < FkPointFit )
-        {
-            FXComplPnt[iPoint]  =   FFitXPoint[iPoint];
-            FXComplPEh[iPoint]  =   (0.4)/(2*FkPointFit);
-            FXComplPEl[iPoint]  =   (0.4)/(2*FkPointFit);
-            FYComplPnt[iPoint]  =   FFitYPoint[iPoint];
-            FYComplPEh[iPoint]  =   FFitErrors[iPoint];
-            FYComplPEl[iPoint]  =   FFitErrors[iPoint];
-        }
-        else
-        {
-            FXComplPnt[iPoint]  =   FXPoints__[iPoint-FkPointFit];
-            FXComplPEh[iPoint]  =   FXPntErrH_[iPoint-FkPointFit];
-            FXComplPEl[iPoint]  =   FXPntErrL_[iPoint-FkPointFit];
-            FYComplPnt[iPoint]  =   FYPoints__[iPoint-FkPointFit];
-            FYComplPEh[iPoint]  =   FYPntErrH_[iPoint-FkPointFit];
-            FYComplPEl[iPoint]  =   FYPntErrL_[iPoint-FkPointFit];
-        }
-        FTotYPoint  +=  FYComplPnt[iPoint];
-        FkPointCmp++;
-    }
-    
-    for ( Int_t iPoint = 0; iPoint < FkPointCmp; iPoint++ )
-    {
-        auto    FPart1____  =   FXComplPnt[iPoint]*FXComplPnt[iPoint]/(FTotYPoint*FTotYPoint);
-        auto    FPart2____  =   FYComplPnt[iPoint]*FYComplPnt[iPoint]*(FXComplPnt[iPoint]/FXComplPEh[iPoint])*(FXComplPnt[iPoint]/FXComplPEh[iPoint]);
-        auto    FPart3____  =   (FTotYPoint-FYComplPnt[iPoint])*(FTotYPoint-FYComplPnt[iPoint]);
-        auto    FPart4____  =   FYComplPEh[iPoint]*FYComplPEh[iPoint]/(FTotYPoint*FTotYPoint);
-        F_ComplErr[iPoint]  =   FPart1____*(FPart3____*FPart4____);
-        FTotError_          +=  F_ComplErr[iPoint];
-        F_ComplWei[iPoint]  =   FYComplPnt[iPoint]*(FXComplPEl[iPoint]+FXComplPEh[iPoint]);
-        FTotWeight          +=  F_ComplWei[iPoint];
-    }
-    
-    for ( Int_t iPoint = 0; iPoint < FkPointCmp; iPoint++ )
-    {
-        FFinalMean  +=  F_ComplWei[iPoint]*FXComplPnt[iPoint]/FTotWeight;
-    }
-    
-    _ErrorHigh  =   sqrt(FTotError_);
-    _ErrorLow_  =   sqrt(FTotError_);
-    return FFinalMean;
-}
-
-Float_t **          EvlMeanPT__     ( TH2F * hTarget, Float_t **& _ErrorHig, Float_t **& _ErrorLow )
-{
-    // Silencing TCanvas Pop-Up
-    gROOT->SetBatch();
-    
-    Float_t ** _Return__    = new Float_t *[2];
-    _Return__[0]            = new Float_t [nBinPT2D+1];
-    _Return__[1]            = new Float_t [nBinPT2D+1];
-    _ErrorHig               = new Float_t *[2];
-    _ErrorHig[0]            = new Float_t [nBinPT2D+1];
-    _ErrorHig[1]            = new Float_t [nBinPT2D+1];
-    _ErrorLow               = new Float_t *[2];
-    _ErrorLow[0]            = new Float_t [nBinPT2D+1];
-    _ErrorLow[1]            = new Float_t [nBinPT2D+1];
-    TH1D *      hSliceFX_   = new TH1D("","",nBinPT2D,fArrPT2D);
-    TH1D *      hSliceFY_   = new TH1D("","",nBinPT2D,fArrPT2D);
-    TF1  **     fLevyMem_   = new TF1 * [2];
-    fLevyMem_[0]            = new TF1 [nBinPT2D+1];
-    fLevyMem_[1]            = new TF1 [nBinPT2D+1];
-    
-    TCanvas * cDrawAllX  = new TCanvas("cDrawAllX","cDrawAllX");
-    cDrawAllX->Divide(3,3);
-    TCanvas * cDrawAllY  = new TCanvas("cDrawAllY","cDrawAllY");
-    cDrawAllY->Divide(3,3);
-    TCanvas * cDrawCHXY  = new TCanvas("cDrawCHXY","cDrawCHXY");
-    cDrawCHXY->Divide(3,3);
-    
-    Int_t iHisto = 0;
-    for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
-    {
-        if ( fArrPT2D[iFit+1] <= 0.41 ) continue;
-        
-        cout << "Case: " << iHisto << endl;
-        
-        // Prepping the Function
-        SetLevyTsalPT2D();
-        
-        // X-Projection
-        hName = Form("XProjection_PT_%.1f_%.1f",fArrPT2D[iFit],fArrPT2D[iFit+1]);
-        TGraphAsymmErrors * g1D_ResX = SetSystErrors(static_cast<TH1D*>(hTarget->ProjectionX(hName,iFit+1,iFit+1)));
-        _Return__[0][iHisto]    =   EvlIntegral     (g1D_ResX,_ErrorHig[0][iHisto],_ErrorLow[0][iHisto]);
-        hSliceFY_               ->  SetBinContent   (iFit+1,static_cast<Double_t>(_Return__[0][iHisto]));
-        hSliceFY_               ->  SetBinContent   (iFit+1,static_cast<Double_t>(_ErrorHig[0][iHisto]));
-        fLevyMem_[0][iHisto]    =   *fLevyFit1D;
-        
-        
-        cout << "X- p3: " << fLevyMem_[0][iHisto].GetParameter(3) << " INT:  " << _Return__[0][iHisto] << endl;
-        cout << "X- p3E:" << fLevyMem_[0][iHisto].GetParError(3) << " INTE: " << _ErrorHig[0][iHisto] << endl;
-        
-        // Prepping the Function
-        SetLevyTsalPT2D();
-        
-        // Y Projection
-        hName = Form("YProjection_PT_%.1f_%.1f",fArrPT2D[iFit],fArrPT2D[iFit+1]);
-        TGraphAsymmErrors * g1D_ResY = SetSystErrors(static_cast<TH1D*>(hTarget->ProjectionY(hName,iFit+1,iFit+1)));
-        _Return__[1][iHisto]    =   EvlIntegral     (g1D_ResY,_ErrorHig[1][iHisto],_ErrorLow[1][iHisto]);
-        hSliceFX_               ->  SetBinContent   (iFit+1,static_cast<Double_t>(_Return__[1][iHisto]));
-        hSliceFX_               ->  SetBinContent   (iFit+1,static_cast<Double_t>(_ErrorHig[1][iHisto]));
-        fLevyMem_[1][iHisto]    =   *fLevyFit1D;
-        
-        cout << "Y- p3: " << fLevyMem_[1][iHisto].GetParameter(3) << " INT:  " << _Return__[1][iHisto] << endl;
-        cout << "Y- p3E:" << fLevyMem_[1][iHisto].GetParError(3) << " INTE: " << _ErrorHig[1][iHisto] << endl;
-        
-        iHisto++;
-        
-        if ( iHisto+1 > 9 )     continue;
-        cDrawAllX               ->  cd(iHisto+1);
-        gPad                    ->  SetLogy();
-        g1D_ResX                ->  Draw("");
-        fLevyMem_[0][iHisto]    .   Draw("same");
-    
-        cDrawAllY               ->  cd(iHisto+1);
-        gPad                    ->  SetLogy();
-        g1D_ResY                ->  Draw("");
-        fLevyMem_[1][iHisto]    .   Draw("same");
-        
-        cDrawCHXY               ->  cd(iHisto+1);
-        cDrawCHXY               ->  SetLogy();
-        static_cast<TH1D*>(hTarget->ProjectionX(hName,iFit+1,iFit+1))   ->Draw("same");
-        static_cast<TH1D*>(hTarget->ProjectionY(hName,iFit+1,iFit+1))   ->Draw("same");
-        
-    }
-    
-    // Prepping the Function
-    SetLevyTsalPT2D();
-    _Return__[0][iHisto]    =   EvlIntegral     (SetSystErrors(hSliceFX_),_ErrorHig[0][iHisto],_ErrorLow[0][iHisto]);
-    
-    // Prepping the Function
-    SetLevyTsalPT2D();
-    _Return__[0][iHisto]    =   EvlIntegral     (SetSystErrors(hSliceFY_),_ErrorHig[0][iHisto],_ErrorLow[0][iHisto]);
-    
-    cDrawAllX->Write();
-    cDrawAllY->Write();
-    cDrawCHXY->Write();
-    
-    
-    gROOT->SetBatch(false);
-    
-    return _Return__;
-}
-*/
-
-//------------------------------//
-//                              //
-//      Trsnsv. Mom. FITs       //
-//                              //
-//------------------------------//
-
-Double_t        fLevyFunc2D ( Double_t * fVar, Double_t * fParams )
-{
-    Double_t * fParx = new Double_t [4];
-    Double_t * fPary = new Double_t [4];
-    Double_t * fVarx = new Double_t [1];
-    Double_t * fVary = new Double_t [1];
-    
-    fVarx = &fVar[0];
-    fVary = &fVar[1];
-    for ( int i = 0; i < 4; i++ )
-    {
-        fParx[i] = fParams[i];
-        fPary[i] = fParams[i+4];
-    }
-    return  fPary[0]*(LevyTsallis_Func(fVarx,fParx)*LevyTsallis_Func(fVary,fParx));
-}
-
-Double_t        fFlatFuncXD ( Double_t * fVar, Double_t * fParams )
-{
-    return fParams[0];
-}
-
-TF2 * fLevyFit2D = new TF2 ("fLevyFunc2D",fLevyFunc2D,fMinPT2D,fMaxPT2D,fMinPT2D,fMaxPT2D,8);
-
-TF1 * fFlatFit1D = new TF1 ("fLevyFunc1D",fFlatFuncXD,fMinPT1D,fMaxPT1D,1);
-
-TF2 * fFlatFit2D = new TF2 ("fLevyFunc2D",fFlatFuncXD,fMinPT2D,fMaxPT2D,fMinPT2D,fMaxPT2D,1);
 
 void fSliceCheck ( TH1F * hCheck1, TH1F * hCheck2, const char* hName1 = "1", const char* hName2 = "2", const char* fName = "-1", const char* fTitle = "" )
 {
@@ -1613,132 +715,7 @@ void fMosaicCanvas ( TH2F * hData, const char*  fDTOpt = "", const char*  fName 
     return;
 }
 
-/*
-TF1 FitModelPT1D (TH1D * data, Int_t nEntries_DT, TF1 var, Bool_t fSaveToFile = false,  const char * fName = "" )
-{
-    // Scaling the data
-    data    ->Scale(1./nEntries_DT);
-    
-    // Setting up the Fit
-    fLevyFit1D->SetParLimits(0,kPMas,kPMas);
-    fLevyFit1D->SetParameter(0,kPMas);
-    fLevyFit1D->SetParLimits(1,2.+1.e-9,1.e1);
-    fLevyFit1D->SetParameter(1,4.1);
-    fLevyFit1D->SetParLimits(2,0.,1.);
-    fLevyFit1D->SetParameter(2,0.3);
-    fLevyFit1D->SetParLimits(3,1e-9,1.);
-    fLevyFit1D->SetParameter(3,0.004);
-    
-    // Fitting
-    data    ->Fit(fLevyFit1D,"IMREQ0","",0.4,10.);
-    
-    // Final Values
-    double fInt, fErr;
-    
-    // Recovering the known yield
-    fInt =  data                    ->IntegralAndError(3,nBinPT2D,fErr,"width");
-    fErr *= fErr;
-    fInt += fLevyFit1D              ->Integral(0.,0.4,1e-12);
-    fErr += TMath::Power(fLevyFit1D  ->IntegralError(0.,0.4),2);
-    
-    // Save the results to visualise Fit goodness
-    if ( fSaveToFile )
-    {
-        data->SetName(Form("THF_%s",fName));
-        data->SetLineColor(kBlue);
-        data->SetMarkerColor(kBlack);
-        data->SetMarkerStyle(33);
-        data->Write();
-        fLevyFit1D->SetName(Form("FIT_%s",fName));
-        fLevyFit1D->Write();
-        TCanvas * c1 = new TCanvas(Form("CNV_%s",fName),fName);
-        gPad->SetLogy();
-        fLevyFit1D->SetRange(0.,10.);
-        data->Draw("same");
-        fLevyFit1D->Draw("same");
-        c1->Write();
-        delete c1;
-    }
-    
-    var = *fLevyFit1D;
-    
-    // Results
-    fLevyFit1D->SetParameter(3,fInt);
-    fLevyFit1D->SetParError(3,sqrt(fErr));
-    
-    return var;
-}
-
-TH2F * HistoModel2D (RooFitResult * utilityx, RooFitResult * utilityy, RooFitResult * input, RooRealVar varx, RooRealVar vary, char *  hName)
-{
-    // Background
-    RooRealVar ch0x     = RooRealVar ("ch0x","ch0x"     ,static_cast<RooRealVar*>(utilityx->floatParsFinal().at(ChebyPar0_))->getVal());
-    RooRealVar ch1x     = RooRealVar ("ch1x","ch1x"     ,static_cast<RooRealVar*>(utilityx->floatParsFinal().at(ChebyPar1_))->getVal());
-    RooRealVar ch2x     = RooRealVar ("ch2x","ch2x"     ,static_cast<RooRealVar*>(utilityx->floatParsFinal().at(ChebyPar2_))->getVal());
-    RooRealVar ch3x     = RooRealVar ("ch3x","ch3x"     ,static_cast<RooRealVar*>(utilityx->floatParsFinal().at(ChebyPar3_))->getVal());
-    RooRealVar ch4x     = RooRealVar ("ch4x","ch4x"     ,static_cast<RooRealVar*>(utilityx->floatParsFinal().at(ChebyPar4_))->getVal());
-    RooRealVar ch0y     = RooRealVar ("ch0y","ch0y"     ,static_cast<RooRealVar*>(utilityy->floatParsFinal().at(ChebyPar0_))->getVal());
-    RooRealVar ch1y     = RooRealVar ("ch1y","ch1y"     ,static_cast<RooRealVar*>(utilityy->floatParsFinal().at(ChebyPar1_))->getVal());
-    RooRealVar ch2y     = RooRealVar ("ch2y","ch2y"     ,static_cast<RooRealVar*>(utilityy->floatParsFinal().at(ChebyPar2_))->getVal());
-    RooRealVar ch3y     = RooRealVar ("ch3y","ch3y"     ,static_cast<RooRealVar*>(utilityy->floatParsFinal().at(ChebyPar3_))->getVal());
-    RooRealVar ch4y     = RooRealVar ("ch4y","ch4y"     ,static_cast<RooRealVar*>(utilityy->floatParsFinal().at(ChebyPar4_))->getVal());
-    
-    //Signal
-    RooRealVar pMassx   = RooRealVar ("pMassx","pMassx" ,static_cast<RooRealVar*>(utilityx->floatParsFinal().at(PhiMass_1D))->getVal());
-    RooRealVar pWidthx  = RooRealVar ("pWidtx","pWidtx" ,static_cast<RooRealVar*>(utilityx->floatParsFinal().at(PhiWidth1D))->getVal());
-    RooRealVar pSlopex;
-    if ( !bPythiaTest )  pSlopex = RooRealVar ("pSlopx","pSlopx" ,static_cast<RooRealVar*>(utilityy->floatParsFinal().at(PhiSlope1D))->getVal());
-    RooRealVar pMassy   = RooRealVar ("pMassy","pMassy" ,static_cast<RooRealVar*>(utilityy->floatParsFinal().at(PhiMass_1D))->getVal());
-    RooRealVar pWidthy  = RooRealVar ("pWidty","pWidty" ,static_cast<RooRealVar*>(utilityy->floatParsFinal().at(PhiWidth1D))->getVal());
-    RooRealVar pSlopey;
-    if ( !bPythiaTest )  pSlopey = RooRealVar ("pSlopx","pSlopx" ,static_cast<RooRealVar*>(utilityy->floatParsFinal().at(PhiSlope1D))->getVal());
-    
-    // Coefficients
-    RooRealVar n0       = RooRealVar ("nSS2D","nSS2D"   ,static_cast<RooRealVar*>(input->floatParsFinal().at(SignlSignl))->getVal());
-    RooRealVar n1       = RooRealVar ("nBB2D","nBB2D"   ,static_cast<RooRealVar*>(input->floatParsFinal().at(BackgBackg))->getVal());
-    RooRealVar n2       = RooRealVar ("nBS2D","nBS2D"   ,static_cast<RooRealVar*>(input->floatParsFinal().at(BackgSignl))->getVal());
-    RooRealVar n3       = RooRealVar ("nSB2D","nSB2D"   ,static_cast<RooRealVar*>(input->floatParsFinal().at(SignlBackg))->getVal());
-    
-    // PDFs
-    RooChebychev        fBkgx ("fBkgx","fBkgx"          ,varx,RooArgSet(ch0x,ch1x,ch2x,ch3x,ch4x));
-    RooBreitWigner      fSigx ("fSigx","fSigx"          ,varx,pMassx,pWidthx);
-    RooChebychev        fBkgy ("fBkgy","fBkgy"          ,vary,RooArgSet(ch0y,ch1y,ch2y,ch3y,ch4y));
-    RooBreitWigner      fSigy ("fSigy","fSigy"          ,vary,pMassy,pWidthy);
-    RooProdPdf          fBB   ("fBB2D","fBB2D"          ,fBkgx,fBkgy);
-    RooProdPdf          fSB   ("fSB2D","fSB2D"          ,fSigx,fBkgy);
-    RooProdPdf          fBS   ("fBS2D","fBS2D"          ,fBkgx,fSigy);
-    RooProdPdf          fSS   ("fSS2D","fSS2D"          ,fSigx,fSigy);
-    RooAddPdf           fMod  ("fMod2D","fMod2D"        ,RooArgList(fBB,fSS,fSB,fBS),RooArgList(n1,n0,n3,n2));
-    
-    auto return_histo = (TH2F *) fMod.createHistogram(hName,varx,Binning(nBinIM2D,fMinIM2D,fMaxIM2D),YVar(vary,Binning(nBinIM2D,fMinIM2D,fMaxIM2D)));
-    return_histo->SetName(hName);
-    return return_histo;
-}
-*/
-
  // Utility
-
-Double_t            fLevyFunc1D     ( Double_t * fVar, Double_t * fParams )
-{
-    Double_t    fPT     = fVar[0];
-    Double_t    fMass   = fParams[0];
-    Double_t    fEnne   = fParams[1];
-    Double_t    fSlop   = fParams[2];
-    Double_t    fdNdY   = fParams[3];
-    
-    Double_t    fNum1   = (fEnne-1)*(fEnne-2);
-    Double_t    fDen1   = fEnne*fSlop*(fEnne*fSlop+fMass*(fEnne-2));
-    Double_t    fFac1   = fNum1/fDen1;
-    
-    Double_t    fMasT   = sqrt(fMass*fMass+fPT*fPT);
-    Double_t    fNum2   = fMasT - fMass;
-    Double_t    fDen2   = fEnne*fSlop;
-    Double_t    fFac2   = TMath::Power((1 + fNum2/fDen2),(-fEnne));
-    
-    return      fPT*fdNdY*fFac1*fFac2;
-}
-
-TF1 *               fLevyFit1D      = new TF1 ("fLevyFunc1D",fLevyFunc1D,fMinPT1D,fMaxPT1D,4);
 
 void                SetLevyTsalPT1D ( )
 {
@@ -1820,212 +797,6 @@ void                SetLevyTsalis   ( )
         fLevyFit1D  ->  SetParLimits(3,1.e-9,1.);
         fLevyFit1D  ->  SetParameter(3,.04);
     }
-}
-
-Double_t            FuncIntegrals   ( TF1 * aFunction, Double_t aLowBound, Double_t aHigBound, string aOption = "", Double_t aEpsilon = 1.e-4 )
-{
-    Double_t    fResult = 0;
-    Int_t       fiTer,  fnPowr;
-    Bool_t      fWidth, fPower;
-    
-    if ( aOption.find("W") != -1 )  fWidth  =   true;
-    else                                fWidth  =   false;
-    
-    if ( aOption.find("x^") != -1 )   { fPower  =   true;   fnPowr  =   aOption.at(aOption.find("x^")+2)-'0'; }
-    else                                fPower  =   false;
-    
-    // Starting iterations at 0
-    fiTer = 0;
-    while ( true )
-    {
-        // Determining the pT point to calculate
-        auto fPoint = aLowBound + aEpsilon*fiTer;
-        
-        // Exiting the loop if out of bound
-        if ( fPoint >= aHigBound ) break;
-        
-        Double_t        fCycleAdd   =   ( aFunction->Eval(fPoint) );
-        
-        if ( fWidth )   fCycleAdd  *=   ( aEpsilon );
-        if ( fPower )   fCycleAdd  *=   pow( ( fPoint ) , fnPowr );
-        
-        fResult += fCycleAdd;
-        fiTer++;
-    }
-    
-    return fResult;
-}
-
-Double_t            HistIntegrals   ( TH1F* aHistogrm, string aOption = "", Double_t aLowBound = 0, Double_t aHigBound = 0 )
-{
-    Double_t    fResult = 0;
-    Int_t       fnPowr;
-    Bool_t      fWidth, fPower, fError;
-    
-    if ( aOption.find("W") != -1 )      fWidth  =   true;
-    else                                fWidth  =   false;
-    
-    if ( aOption.find("x^") != -1 )   { fPower  =   true;   fnPowr  =   aOption.at(aOption.find("x^")+2)-'0'; }
-    else                                fPower  =   false;
-    
-    if ( aOption.find("E") != -1 )      fError  =   true;
-    else                                fError  =   false;
-    
-    // Starting iterations at 0
-    for ( Int_t fiTer = 1; fiTer <= aHistogrm->GetNbinsX(); fiTer++ )
-    {
-        // Exiting the loop if out of bound
-        if ( aHistogrm->GetBinLowEdge(fiTer)   < aLowBound && aLowBound != aHigBound ) continue;
-        if ( aHistogrm->GetBinLowEdge(fiTer+1) > aHigBound && aLowBound != aHigBound ) break;
-        
-        Double_t        fCycleAdd   =   ( aHistogrm->GetBinContent(fiTer) );
-        if ( fError )   fCycleAdd   =   ( aHistogrm->GetBinError(fiTer) );
-        if ( fWidth )   fCycleAdd  *=   ( aHistogrm->GetBinWidth(fiTer) );
-        if ( fPower )   fCycleAdd  *=   pow( ( aHistogrm->GetBinCenter(fiTer) ) , fnPowr );
-        if ( fError )   fCycleAdd  *=   fCycleAdd;
-        
-        fResult += fCycleAdd;
-    }
-    
-    if ( fError )   return sqrt(fResult);
-    return fResult;
-}
-
-Double_t            HistIntegrals   ( TH1D* aHistogrm, string aOption = "", Double_t aLowBound = 0, Double_t aHigBound = 0 )
-{
-    
-    Double_t    fResult = 0;
-    Int_t       fnPowr;
-    Bool_t      fWidth, fPower, fError;
-    
-    if ( aOption.find("W") != -1 )      fWidth  =   true;
-    else                                fWidth  =   false;
-    
-    if ( aOption.find("x^") != -1 )   { fPower  =   true;   fnPowr  =   aOption.at(aOption.find("x^")+2)-'0'; }
-    else                                fPower  =   false;
-    
-    if ( aOption.find("E") != -1 )      fError  =   true;
-    else                                fError  =   false;
-    
-    // Starting iterations at 0
-    for ( Int_t fiTer = 1; fiTer <= aHistogrm->GetNbinsX(); fiTer++ )
-    {
-        // Determining the pT point to calculate
-        auto fPoint =   aHistogrm->GetBinCenter(fiTer);
-        
-        // Exiting the loop if out of bound
-        if ( aHistogrm->GetBinLowEdge(fiTer)   <= aLowBound && aLowBound != aHigBound ) continue;
-        if ( aHistogrm->GetBinLowEdge(fiTer+1) >= aHigBound && aLowBound != aHigBound ) break;
-        
-        Double_t        fCycleAdd   =   ( aHistogrm->GetBinContent(fiTer) );
-        if ( fError )   fCycleAdd   =   ( aHistogrm->GetBinError(fiTer) );
-        if ( fWidth )   fCycleAdd  *=   ( aHistogrm->GetBinWidth(fiTer) );
-        if ( fPower )   fCycleAdd  *=   pow( ( aHistogrm->GetBinCenter(fiTer) ) , fnPowr );
-        if ( fError )   fCycleAdd  *=   fCycleAdd;
-        fResult += fCycleAdd;
-    }
-    
-    if ( fError )   return sqrt(fResult);
-    return fResult;
-}
-
-TH1F *              SetRandPoints   ( TH1F * aTarget )
-{
-    TH1F *  fReturn =   new TH1F (*aTarget);
-    Double_t    fError,    fValue;
-    for ( Int_t iBin = 1; iBin <= aTarget->GetNbinsX(); iBin++ )
-    {
-        fError  =   aTarget ->GetBinError   (iBin);
-        fValue  =   aTarget ->GetBinContent (iBin);
-        fReturn ->  SetBinContent           (iBin,   fValue + fRandomGen->Gaus(0.,fError) );
-        fReturn ->  SetBinError             (iBin,   fError );
-    }
-    return fReturn;
-}
-
-TH1D *              SetRandPoints   ( TH1D * aTarget )
-{
-    TH1D *  fReturn =   new TH1D (*aTarget);
-    Double_t    fError,    fValue;
-    for ( Int_t iBin = 1; iBin <= aTarget->GetNbinsX(); iBin++ )
-    {
-        fError  =   aTarget ->GetBinError   (iBin);
-        fValue  =   aTarget ->GetBinContent (iBin);
-        fReturn ->  SetBinContent           (iBin,   fValue + fRandomGen->Gaus(0.,fError) );
-        fReturn ->  SetBinError             (iBin,   fError );
-    }
-    return fReturn;
-}
-
-TH1F *              SetSystErrorsh  ( TH1F * aTarget ) // Togliere l'h
-{
-    TH1F *  fReturn =   new TH1F (*aTarget);
-    Double_t    fError,    fValue;
-    for ( Int_t iBin = 1; iBin <= aTarget->GetNbinsX(); iBin++ )
-    {
-        fError  =   aTarget ->GetBinError   (iBin);
-        fValue  =   aTarget ->GetBinContent (iBin);
-        fReturn ->  SetBinContent           (iBin,   fValue );
-        fReturn ->  SetBinError             (iBin,   sqrt(fError*fError+kSystematical1D_*fValue*kSystematical1D_*fValue));
-    }
-    return fReturn;
-}
-
-TH1D *              SetSystErrorsh  ( TH1D * aTarget ) // Stat + systematics
-{
-    TH1D *  fReturn =   new TH1D (*aTarget);
-    Double_t    fError,    fValue;
-    for ( Int_t iBin = 1; iBin <= aTarget->GetNbinsX(); iBin++ )
-    {
-        fError  =   aTarget ->GetBinError   (iBin);
-        fValue  =   aTarget ->GetBinContent (iBin);
-        fReturn ->  SetBinContent           (iBin,   fValue );
-        fReturn ->  SetBinError             (iBin,   sqrt(fError*fError+kSystematical2D_*fValue*kSystematical2D_*fValue));
-    }
-    return fReturn;
-}
-
-TH1D *              SetSystErrorsh  ( TH1D * aTarget, TH1D * aTarge2 ) // Stat + systematics
-{
-    TH1D *  fReturn =   new TH1D (*aTarget);
-    Double_t    fError,    fValue,  fErro2;
-    for ( Int_t iBin = 1; iBin <= aTarget->GetNbinsX(); iBin++ )
-    {
-        fError  =   aTarget ->GetBinError   (iBin);
-        fValue  =   aTarget ->GetBinContent (iBin);
-        fErro2  =   aTarge2 ->GetBinError   (iBin);
-        fReturn ->  SetBinContent           (iBin,   fValue );
-        fReturn ->  SetBinError             (iBin,   sqrt(fError*fError+fErro2*fErro2));
-    }
-    return fReturn;
-}
-
-TH1F *              SetSystErrors2  ( TH1F * aTarget ) // Solo systematics
-{
-    TH1F *  fReturn =   new TH1F (*aTarget);
-    Double_t    fError,    fValue;
-    for ( Int_t iBin = 1; iBin <= aTarget->GetNbinsX(); iBin++ )
-    {
-        fError  =   aTarget ->GetBinError   (iBin);
-        fValue  =   aTarget ->GetBinContent (iBin);
-        fReturn ->  SetBinContent           (iBin,   fValue );
-        fReturn ->  SetBinError             (iBin,   sqrt(kSystematical1D_*fValue*kSystematical1D_*fValue));
-    }
-    return fReturn;
-}
-
-TH1D *              SetSystErrors2  ( TH1D * aTarget ) // Togliere l'h
-{
-    TH1D *  fReturn =   new TH1D (*aTarget);
-    Double_t    fError,    fValue;
-    for ( Int_t iBin = 1; iBin <= aTarget->GetNbinsX(); iBin++ )
-    {
-        fError  =   aTarget ->GetBinError   (iBin);
-        fValue  =   aTarget ->GetBinContent (iBin);
-        fReturn ->  SetBinContent           (iBin,   fValue );
-        fReturn ->  SetBinError             (iBin,   sqrt(kSystematical2D_*fValue*kSystematical2D_*fValue));
-    }
-    return fReturn;
 }
 
  // Measurements
@@ -2282,6 +1053,7 @@ Double_t *          ExtrapolateVl   ( TH1F * aTarget,   string aName__ = "", Boo
     // Prepping the FIT
     SetLevyTsalis();
     TH1F   *hTargetSyst = new TH1F (*SetSystErrorsh(aTarget));
+    TH1F   *aTarge2 = new TH1F (*SetSystErrors2(aTarget));
     hTargetSyst                     ->  Fit         (fLevyFit1D,"IMREQ0S","",0.4,10.);
     if ( bPythiaTest ) hTargetSyst  ->  Fit         (fLevyFit1D,"IMREQ0S","",0.4,1.6);
     if ( true )
@@ -2290,9 +1062,11 @@ Double_t *          ExtrapolateVl   ( TH1F * aTarget,   string aName__ = "", Boo
         fLevyFit1D  ->Write();
         TCanvas * fSaveToCanvas = new TCanvas(aName__.c_str());
         gPad->SetLogy();
+        gStyle->SetOptStat(0);
         TLegend * lLegend1 = new TLegend(0.6,0.75,0.9,0.9);
         hTargetSyst ->SetMarkerStyle(22);
         hTargetSyst ->SetMarkerColor(38);
+        hTargetSyst->SetTitle("");
         hTargetSyst->GetYaxis()->SetTitle("#frac{d^{2}N#phi}{dydp_{T}#phi}(GeV/c)^{-1}");
         hTargetSyst->GetXaxis()->SetTitle("P_{T}#phi (GeV/c)");
         hTargetSyst     ->Draw();
@@ -2302,12 +1076,13 @@ Double_t *          ExtrapolateVl   ( TH1F * aTarget,   string aName__ = "", Boo
         lLegend1->AddEntry(fLevyFit1D,"Fit","L");
         lLegend1->Draw("same");
         fSaveToCanvas->Write();
-        fSaveToCanvas->SaveAs(Form("./graphs/%s.pdf",aName__.c_str()));
-        fSaveToCanvas->SaveAs(Form("./graphs/%s.png",aName__.c_str()));
+        fSaveToCanvas->SaveAs(Form("./graphs/FITLEVY_%s.pdf",aName__.c_str()));
+        fSaveToCanvas->SaveAs(Form("./graphs/FITLEVY_%s.png",aName__.c_str()));
         delete fSaveToCanvas;
     }
-    Double_t    fHIntWidth, fHIntWidtE, fFSyst___E;
-    fHIntWidth = aTarget->IntegralAndError(-1,100,fHIntWidtE,"width");
+    Double_t    fHIntWidth, fHIntWidtE, fHIntWidSh, fHIntWidSE;
+    fHIntWidth  =   aTarget->IntegralAndError(-1,100,fHIntWidtE,"width");
+    fHIntWidSh  =   aTarge2->IntegralAndError(-1,100,fHIntWidSE,"width");
     Double_t    fHIntWidx1      =   HistIntegrals( aTarget,     "W x^1" );
     Double_t    fHIntWidxE      =   HistIntegrals( aTarget,     "WE x^1");
     Double_t    fFIntWidth      =   fLevyFit1D->Integral(0.,0.4); //FuncIntegrals( fLevyFit1D,  0.,0.4,"W");
@@ -2319,10 +1094,10 @@ Double_t *          ExtrapolateVl   ( TH1F * aTarget,   string aName__ = "", Boo
     fReturn[0]  =   fHIntWidth + fFIntWidth;
     
     //Stat Error
-    fReturn[1]  =   fStatErr[0] + fHIntWidtE;
+    fReturn[1]  =   sqrt( fStatErr[0]*fStatErr[0] + fHIntWidtE*fHIntWidtE);
     
     //Syst Error +
-    fReturn[2]  =   kSystematical1D_*fFIntWidth + fFIntWidtE;
+    fReturn[2]  =   fReturn[0]*kSystematical1D_;
     
     // Mean PT
     fReturn[3]  =   (fHIntWidx1+fFIntWidx1)/(fHIntWidth+fFIntWidth);
@@ -2353,6 +1128,7 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   string aName__ = "", Boo
     // Prepping the FIT
     SetLevyTsalis();
     TH1D   *hTargetSyst = new TH1D (*SetSystErrorsh(aTarget));
+    TH1D   *aTarge2 = new TH1D (*SetSystErrors2(aTarget));
     hTargetSyst                     ->  Fit         (fLevyFit1D,"IMREQ0S","",0.4,10.);
     if ( bPythiaTest ) hTargetSyst  ->  Fit         (fLevyFit1D,"IMREQ0S","",0.4,1.6);
     if ( true )
@@ -2364,6 +1140,7 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   string aName__ = "", Boo
         TLegend * lLegend1 = new TLegend(0.6,0.75,0.9,0.9);
         hTargetSyst ->SetMarkerStyle(22);
         hTargetSyst ->SetMarkerColor(38);
+        hTargetSyst->SetTitle("");
         hTargetSyst->GetYaxis()->SetTitle("#frac{d^{3}N#phi#phi}{dydp_{T}#phi_{1}dp_{T}#phi_{2}}(GeV/c)^{-1}");
         hTargetSyst->GetXaxis()->SetTitle("P_{T}#phi_{1} (GeV/c)");
         hTargetSyst     ->Draw();
@@ -2377,20 +1154,21 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   string aName__ = "", Boo
         fSaveToCanvas->SaveAs(Form("./graphs/FITLEVY_%s.png",aName__.c_str()));
         delete fSaveToCanvas;
     }
-    Double_t    fHIntWidth, fHIntWidtE, fFSyst___E;
-    fHIntWidth = aTarget->IntegralAndError(-1,100,fHIntWidtE,"width");
+    Double_t    fHIntWidth, fHIntWidtE, fHIntWidSh, fHIntWidSE;
+    fHIntWidth  =   aTarget->IntegralAndError(-1,100,fHIntWidtE,"width");
+    fHIntWidSh  =   aTarge2->IntegralAndError(-1,100,fHIntWidSE,"width");
     Double_t    fHIntWidx1      =   HistIntegrals( aTarget,     "W x^1" );
     Double_t    fHIntWidxE      =   HistIntegrals( aTarget,     "WE x^1");
     Double_t    fFIntWidth      =   fLevyFit1D->Integral(0.,0.4); //FuncIntegrals( fLevyFit1D,  0.,0.4,"W");
     Double_t    fFIntWidtE      =   fLevyFit1D->IntegralError(0.,0.4);
     Double_t    fFIntWidx1      =   FuncIntegrals( fLevyFit1D,  0.,0.4,"W x^1");
-    if ( aIntBin == 12  )
+    if ( aIntBin == 12 && !bPythiaTest )
     {
         fFIntWidth      =   fLevyFit1D->Integral(0.,0.68);
         fFIntWidtE      =   fLevyFit1D->IntegralError(0.,0.68);
         fFIntWidx1      =   FuncIntegrals( fLevyFit1D,  0.,0.68,"W x^1");
     }
-    if ( aIntBin == 3 )
+    if ( aIntBin == 3 && !bPythiaTest )
     {
         fFIntWidth     +=   fLevyFit1D->Integral(5.,10.);
         fFIntWidtE     +=   fLevyFit1D->IntegralError(5.,10.);
@@ -2402,10 +1180,10 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   string aName__ = "", Boo
     fReturn[0]  =   fHIntWidth + fFIntWidth;
     
     //Stat Error
-    fReturn[1]  =   fStatErr[0] + fHIntWidtE;
+    fReturn[1]  =   sqrt( fStatErr[0]*fStatErr[0] + fHIntWidtE*fHIntWidtE);
     
     //Syst Error +
-    fReturn[2]  =   kSystematical1D_*fFIntWidth + fFIntWidtE;
+    fReturn[2]  =   fReturn[0]*kSystematical2D_;
     
     // Mean PT
     fReturn[3]  =   (fHIntWidx1+fFIntWidx1)/(fHIntWidth+fFIntWidth);
@@ -2432,14 +1210,14 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   TH1D * aTarge2, string a
                                                     // 1. Mean Value    2. Stat Err     3. Syst Err     4. Mean PT
     // Prepping the FIT
     SetLevyTsalis();
-    TH1D   *hTargetSyst = new TH1D ("Total","Total",nBinPT1D,fArrPT1D);
+    TH1D   *hTargetSyst = new TH1D ("Total","Total",nBinPT2D,fArrPT2D);
     for ( Int_t i = 3; i <= nBinPT1D; i++ )
     {
         hTargetSyst->SetBinContent(i,aTarget->GetBinContent(i));
         hTargetSyst->SetBinError(i,sqrt(aTarget->GetBinError(i)*aTarget->GetBinError(i)+aTarge2->GetBinError(i)*aTarge2->GetBinError(i)));
     }
-    aTarge2                     ->  Fit         (fLevyFit1D,"IMREQ0S","",0.4,10.);
-    if ( bPythiaTest ) aTarge2  ->  Fit         (fLevyFit1D,"IMREQ0S","",0.4,1.6);
+    hTargetSyst                     ->  Fit         (fLevyFit1D,"IMREQ0S","",0.4,10.);
+    if ( bPythiaTest ) hTargetSyst  ->  Fit         (fLevyFit1D,"IMREQ0S","",0.4,1.6);
     if ( true )
     {
         aTarget     ->Write();
@@ -2449,6 +1227,7 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   TH1D * aTarge2, string a
         TLegend * lLegend1 = new TLegend(0.6,0.75,0.9,0.9);
         hTargetSyst ->SetMarkerStyle(22);
         hTargetSyst ->SetMarkerColor(38);
+        hTargetSyst->SetTitle("");
         hTargetSyst->GetYaxis()->SetTitle("#frac{d^{2}N#phi#phi}{dydp_{T}#phi_{2}}(GeV/c)^{-1}");
         hTargetSyst->GetXaxis()->SetTitle("P_{T}#phi_{2} (GeV/c)");
         hTargetSyst     ->Draw();
@@ -2462,11 +1241,11 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   TH1D * aTarge2, string a
         fSaveToCanvas->SaveAs(Form("./graphs/FITLEVY_%s.png",aName__.c_str()));
         delete fSaveToCanvas;
     }
-    Double_t    fHIntWidth, fHIntWidtE, fFSyst___E;
-    fHIntWidth = aTarget->IntegralAndError(-1,100,fHIntWidtE,"width");
+    Double_t    fHIntWidth, fHIntWidtE, fHIntWidSh, fHIntWidSE;
+    fHIntWidth  =   aTarget->IntegralAndError(-1,100,fHIntWidtE,"width");
+    fHIntWidSh  =   aTarge2->IntegralAndError(-1,100,fHIntWidSE,"width");
     Double_t    fHIntWidx1      =   HistIntegrals( aTarget,     "W x^1" );
     Double_t    fHIntWidxE      =   HistIntegrals( aTarget,     "WE x^1");
-    Double_t    fHIntWidSY      =   HistIntegrals( aTarge2,     "WE x^1");
     Double_t    fFIntWidth      =   fLevyFit1D->Integral(0.,0.4); //FuncIntegrals( fLevyFit1D,  0.,0.4,"W");
     Double_t    fFIntWidtE      =   fLevyFit1D->IntegralError(0.,0.4);
     Double_t    fFIntWidx1      =   FuncIntegrals( fLevyFit1D,  0.,0.4,"W x^1");
@@ -2476,10 +1255,10 @@ Double_t *          ExtrapolateVl   ( TH1D * aTarget,   TH1D * aTarge2, string a
     fReturn[0]  =   fHIntWidth + fFIntWidth;
     
     //Stat Error
-    fReturn[1]  =   fStatErr[0] + fHIntWidtE;
+    fReturn[1]  =   sqrt( fStatErr[0]*fStatErr[0] + fHIntWidtE*fHIntWidtE);
     
     //Syst Error +
-    fReturn[2]  =   fHIntWidSY + fFIntWidtE;
+    fReturn[2]  =   fHIntWidSE + fFIntWidtE;
     
     // Mean PT
     fReturn[3]  =   (fHIntWidx1+fFIntWidx1)/(fHIntWidth+fFIntWidth);
@@ -2593,7 +1372,7 @@ Double_t ***        ExtrapolateVl   ( TH2F * aTarget )
     hSliceFY            ->  Draw();
     fLevyMm[0][0]       .   Draw("same");
     
-    fReturn[0][0]       =   ExtrapolateVl   (hSliceFY,hSlice2Y,"Y_Full",true,-1);
+    fReturn[0][0]       =   ExtrapolateVl   (hSliceFY,"Y_Full",true,-1);
     
     fDrawFull           ->  cd(1);
     gStyle              ->  SetOptStat(0);
@@ -2606,7 +1385,7 @@ Double_t ***        ExtrapolateVl   ( TH2F * aTarget )
     hSliceFX            ->  Draw();
     fLevyMm[0][1]       .   Draw("same");
     
-    fReturn[0][1]       =   ExtrapolateVl   (hSliceFX,hSlice2X,"X_Full",true,-1);
+    fReturn[0][1]       =   ExtrapolateVl   (hSliceFX,"X_Full",true,-1);
     
     fDrawFull->Write();
     fDrawAllX->Write();
@@ -2701,627 +1480,6 @@ TGraphErrors **     BuildTGraphEr   ( Double_t * aExtrapolateVl1D, Double_t *** 
     }
     
     return fResult;
-}
-
-void                TGrCompare1D    ( TGraphAsymmErrors * gDataStat, TGraphAsymmErrors * gDataSyst, TH1F * h1D_Tru_P6, TH1F * h1D_Tru_P8, TGraphAsymmErrors * gCompare = nullptr )
-{
-    // Setting Canvas
-    TCanvas *       cCompare1D  =   new TCanvas ("cCompare1D","cCompare1D");
-    gPad->SetLogy();
-    
-    // Setting Standard Colors
-    if ( !!gCompare ) setMarker               (gCompare,3);
-    setLine                 (h1D_Tru_P6,1);
-    setLine                 (h1D_Tru_P8,2);
-    
-    // Setting Statistical error
-    gDataStat->SetMarkerStyle(22);
-    gDataStat->SetMarkerColor(38);
-    gDataStat->SetFillColorAlpha(33,0.33);
-    gDataStat->SetLineColorAlpha(33,0.66);
-    gDataSyst->SetMarkerStyle(22);
-    gDataSyst->SetMarkerColor(38);
-    gDataSyst->SetLineColor(kBlack);
-    
-    // Setting Legend
-    TLegend * lLegend1          =   new TLegend(0.65,0.65,0.85,0.85);
-    lLegend1                    ->SetFillColor(kWhite);
-    lLegend1                    ->SetLineColor(kWhite);
-    lLegend1                    ->AddEntry(gDataStat,   "Data",             "P");
-    lLegend1                    ->AddEntry(gDataStat,   "Stat. Err.",       "EF");
-    lLegend1                    ->AddEntry(gDataSyst,   "Syst. Err.",       "EP[]");
-    if ( !!gCompare ) lLegend1                    ->AddEntry(gCompare,    "Previous Paper",   "EP");
-    lLegend1                    ->AddEntry(h1D_Tru_P6,  "Pythia 6",         "EP");
-    lLegend1                    ->AddEntry(h1D_Tru_P8,  "Pythia 8",         "EP");
-
-    // Setting Multigraph
-    TMultiGraph *   mCompare1D  =   new TMultiGraph();
-    mCompare1D      ->Add   (gDataStat, "AP35");
-    mCompare1D      ->Add   (gDataSyst, "EP[]");
-    if ( !!gCompare )    mCompare1D      ->Add   (gCompare,  "P");
-    
-    mCompare1D      ->GetXaxis()->SetLimits(0.,10.);
-    //mCompare1D      ->GetYaxis()->SetLimits(3.e-6,1.e-1);
-    mCompare1D      ->SetMaximum(5.e-2);
-    mCompare1D      ->SetMinimum(3.e-6);
-    mCompare1D      ->GetXaxis()->SetTitle("P_{T}#phi (GeV/c)");
-    mCompare1D      ->GetYaxis()->SetTitle("#frac{d^{2}N#phi}{dydp_{T}#phi}(GeV/c)^{-1}");
-    
-    // Drawing
-    mCompare1D      ->Draw  ("AP");
-    h1D_Tru_P6      ->Draw  ("SAME HIST L");
-    h1D_Tru_P8      ->Draw  ("SAME HIST L");
-    lLegend1        ->Draw  ("SAME");
-    
-    cCompare1D->Write();
-    cCompare1D->SaveAs("./graphs/cCompare1D.png");
-    cCompare1D->SaveAs("./graphs/cCompare1D.pdf");
-    gPad->SetLogx();
-    cCompare1D->Write();
-    cCompare1D->SaveAs("./graphs/cCompare1D_logx.png");
-    cCompare1D->SaveAs("./graphs/cCompare1D_logx.pdf");
-    gPad->SetLogx(false);
-    delete cCompare1D;
-}
-
-void                TGrCompare2D    ( TH2F* h2D_Res, TH2F * h2D_Tru_P6, TH2F * h2D_Tru_P8)
-{
-    gROOT->SetBatch(true);
-    TCanvas*cCompare2D  =   new TCanvas("cCompare2D","cCompare2D");
-    cCompare2D->Divide(3,3);
-    TH1D  **hProfileP8  =   new TH1D*   [nBinPT2D];
-    TH1D  **hProfileP6  =   new TH1D*   [nBinPT2D];
-    TH1D  **hProfileDT  =   new TH1D*   [nBinPT2D];
-    TGraphAsymmErrors  **gProfileDT_Stat  =   new TGraphAsymmErrors*   [nBinPT2D];
-    TGraphAsymmErrors  **gProfileDT_Syst  =   new TGraphAsymmErrors*   [nBinPT2D];
-    for ( Int_t iTer = 2; iTer < nBinPT2D; iTer++ )
-    {
-        cCompare2D->cd(iTer-1);
-        hProfileP8[iTer]        =   new TH1D(*(h2D_Tru_P8  ->ProjectionX(Form("P8_%i",iTer+1),iTer+1,iTer+1)));
-        hProfileP6[iTer]        =   new TH1D(*(h2D_Tru_P6  ->ProjectionX(Form("P6_%i",iTer+1),iTer+1,iTer+1)));
-        hProfileDT[iTer]        =   new TH1D(*(h2D_Res     ->ProjectionX(Form("DT_%i",iTer+1),iTer+1,iTer+1)));
-        gProfileDT_Stat[iTer]   =   new TGraphAsymmErrors(hProfileDT[iTer]);
-        gProfileDT_Syst[iTer]   =   new TGraphAsymmErrors(SetSystErrorsh(hProfileDT[iTer]));
-        
-        for ( Int_t jTer = 0; jTer < 2; jTer++ )
-        {
-            gProfileDT_Stat[iTer]->RemovePoint(0);
-            gProfileDT_Syst[iTer]->RemovePoint(0);
-        }
-        
-        // Setting Canvas
-        TCanvas *       cCompare2D_bin  =   new TCanvas (Form("cCompare2D_%i",iTer),Form("cCompare2D_%i",iTer));
-        gPad->SetLogy();
-        
-        // Setting Standard Colors
-        setLine                 (hProfileP6[iTer],1);
-        setLine                 (hProfileP8[iTer],2);
-        
-        // Setting Statistical error
-        gProfileDT_Stat[iTer]->SetMarkerStyle(22);
-        gProfileDT_Stat[iTer]->SetMarkerColor(38);
-        gProfileDT_Stat[iTer]->SetFillColorAlpha(33,0.33);
-        gProfileDT_Stat[iTer]->SetLineColorAlpha(33,0.66);
-        gProfileDT_Syst[iTer]->SetMarkerStyle(22);
-        gProfileDT_Syst[iTer]->SetMarkerColor(38);
-        gProfileDT_Syst[iTer]->SetLineColor(kBlack);
-        
-        // Setting Legend
-        TLegend * lLegend1          =   new TLegend(0.65,0.65,0.85,0.85);
-        lLegend1                    ->SetFillColor(kWhite);
-        lLegend1                    ->SetLineColor(kWhite);
-        lLegend1                    ->AddEntry(gProfileDT_Stat[iTer],   "Data",             "P");
-        lLegend1                    ->AddEntry(gProfileDT_Stat[iTer],   "Stat. Err.",       "EF");
-        lLegend1                    ->AddEntry(gProfileDT_Syst[iTer],   "Syst. Err.",       "EP[]");
-        lLegend1                    ->AddEntry(hProfileP6[iTer],  "Pythia 6",         "EP");
-        lLegend1                    ->AddEntry(hProfileP8[iTer],  "Pythia 8",         "EP");
-
-        // Setting Multigraph
-        TMultiGraph *   mCompare1D  =   new TMultiGraph();
-        mCompare1D      ->Add   (gProfileDT_Stat[iTer], "AP35");
-        mCompare1D      ->Add   (gProfileDT_Syst[iTer], "EP[]");
-        
-        // Drawing
-        mCompare1D      ->Draw  ("AP");
-        hProfileP6[iTer]      ->Draw  ("same HIST L");
-        hProfileP8[iTer]      ->Draw  ("same HIST L");
-        lLegend1        ->Draw  ("same");
-        
-        cCompare2D_bin->Write();
-        cCompare2D_bin->SaveAs(Form("./graphs/cCompare2D_%i.png",iTer));
-        cCompare2D_bin->SaveAs(Form("./graphs/cCompare2D_%i.pdf",iTer));
-        gPad->SetLogx();
-        cCompare2D_bin->Write();
-        cCompare2D_bin->SaveAs(Form("./graphs/cCompare2D_%i_logx.png",iTer));
-        cCompare2D_bin->SaveAs(Form("./graphs/cCompare2D_%i_logx.pdf",iTer));
-        gPad->SetLogx(false);
-        
-        cCompare2D->cd(iTer-2);
-        mCompare1D      ->Draw  ("AP");
-        hProfileP6[iTer]      ->Draw  ("same HIST L");
-        hProfileP8[iTer]      ->Draw  ("same HIST L");
-        lLegend1        ->Draw  ("same");
-    }
-    cCompare2D->Write();
-    cCompare2D->SaveAs(Form("./graphs/cCompare2D.png"));
-    cCompare2D->SaveAs(Form("./graphs/cCompare2D.pdf"));
-    gROOT->SetBatch(false);
-}
-
-void  TGraphAEGeneratorPT   ( Double_t***   aInput )
-{
-    TCanvas           * c1      =   new TCanvas             ("c1_e","c1_e");
-    TLegend           * Legend  =   new TLegend             (0.6,0.15,0.9,0.3);
-    TMultiGraph       * fPTTotal=   new TMultiGraph         ("fPTTotal","fPTTotal");
-    TGraphAsymmErrors * fPTX    =   new TGraphAsymmErrors   ();
-    TGraphAsymmErrors * fPTY    =   new TGraphAsymmErrors   ();
-    TGraphAsymmErrors * fPTXSyst=   new TGraphAsymmErrors   ();
-    TGraphAsymmErrors * fPTYSyst=   new TGraphAsymmErrors   ();
-    for ( Int_t iTer = 2; iTer < nBinPT2D; iTer++ )
-    {
-        fPTX->SetPoint       (iTer-2,  (fArrPT2D[iTer]+fArrPT2D[iTer+1])*0.5,aInput[iTer-1][0][3]);
-        fPTX->SetPointError  (iTer-2, -(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,-(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,aInput[iTer-1][0][4],aInput[iTer-1][0][4]);
-        fPTY->SetPoint       (iTer-2,  (fArrPT2D[iTer]+fArrPT2D[iTer+1])*0.5,aInput[iTer-1][1][3]);
-        fPTY->SetPointError  (iTer-2, -(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,-(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,aInput[iTer-1][1][4],aInput[iTer-1][1][4]);
-        fPTXSyst->SetPoint       (iTer-2,  (fArrPT2D[iTer]+fArrPT2D[iTer+1])*0.5,aInput[iTer-1][0][3]);
-        fPTXSyst->SetPointError  (iTer-2, -(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,-(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,aInput[iTer-1][0][4],aInput[iTer-1][0][4]*1.2);
-        fPTYSyst->SetPoint       (iTer-2,  (fArrPT2D[iTer]+fArrPT2D[iTer+1])*0.5,aInput[iTer-1][1][3]);
-        fPTYSyst->SetPointError  (iTer-2, -(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,-(fArrPT2D[iTer]-fArrPT2D[iTer+1])*0.5,aInput[iTer-1][1][4],aInput[iTer-1][1][4]*1.2);
-    }
-    fPTX->SetMarkerStyle(22);
-    fPTX->SetMarkerColor(38);
-    fPTX->SetFillColorAlpha(33,0.33);
-    fPTX->SetLineColorAlpha(kRed,1.);
-    fPTTotal->SetTitle("#LT p_{T}#phi_{2} #GT as a function of p_{T} #phi_{1}");
-    fPTTotal->SetTitle("");
-    fPTTotal->GetXaxis()->SetTitle("p_{T} #phi_{1} (GeV/c)");
-    fPTTotal->GetYaxis()->SetTitle("#LT p_{T}#phi_{2} #GT (GeV/c)");
-    //Legend      ->AddEntry(fPTX,"Stat. Err.","EP");
-    fPTTotal    ->Add(fPTX,"EP");
-    fPTTotal    ->Draw("AP");
-    //Legend      ->Draw("same");
-    c1->Write();
-    c1->SaveAs("./graphs/PTTOTAL.pdf");
-    c1->SaveAs("./graphs/PTTOTAL.png");
-}
-
-TH1D * TH1DGeneratorYield ( Double_t***   aInput, Bool_t aSystBool )
-{
-    TH1D * fResult = new TH1D ("","",nBinPT2D,fArrPT2D);
-    for ( Int_t iTer = 2; iTer < nBinPT2D; iTer++ )
-    {
-        fResult->SetBinContent  (iTer+1, aInput[iTer-1][0][0] );
-        fResult->SetBinError    (iTer+1, aInput[iTer-1][0][1] );
-        if ( aSystBool ) fResult->SetBinError    (iTer+1, aInput[iTer-1][0][2] );
-    }
-    return fResult;
-}
-
-void ratioplot ( TH1D * hData, TH1D * hPythia6, TH1D * hPythia8, string aName = "" )
-{
-    // Setting Systematics
-    TGraphErrors *hDataSyst = new TGraphErrors (SetSystErrors2(hData));
-    hDataSyst->RemovePoint(0);
-    hDataSyst->RemovePoint(0);
-    
-    // Setting Aspect
-    setLine                 (hPythia6,1);
-    setLine                 (hPythia8,2);
-    
-    hData       ->SetMarkerStyle(22);
-    hData       ->SetMarkerColor(38);
-    hData       ->SetFillColorAlpha(33,0.66);
-    hData       ->SetLineColorAlpha(kRed,1.0);
-    hData       ->SetTitle("");
-    hData       ->GetYaxis()->SetTitleSize(20);
-    hData       ->GetYaxis()->SetTitleFont(43);
-    hData       ->GetYaxis()->SetTitle("#frac{d^{3}N#phi#phi}{dydp_{T}#phi_{1}dp_{T}#phi_{2}}(GeV/c)^{-1}");
-    hData       ->GetYaxis()->SetTitleOffset(1.55);
-    
-    hDataSyst       ->SetMarkerStyle(22);
-    hDataSyst       ->SetMarkerColor(38);
-    hDataSyst       ->SetLineColor(33);
-
-    
-    // Define the Canvas
-    TCanvas *cRatioPlot = new TCanvas( aName.c_str(), aName.c_str(), 800, 800);
-    
-    TLegend *Legend     = new TLegend(0.7,0.75,0.9,0.9);
-    Legend      ->AddEntry(hData, "Data", "P");
-    Legend      ->AddEntry(hData, "Stat. Err.", "E");
-    Legend      ->AddEntry(hDataSyst, "Syst. Err.", "F");
-    Legend      ->AddEntry(hPythia6, "Pythia6", "L");
-    Legend      ->AddEntry(hPythia8, "Pythia8", "L");
-    
-    // Upper plot will be in pad1
-    TPad *pad1 = new TPad("pad1", "pad1", 0.1, 0.3, 1, 1.0);
-    pad1    ->SetLogy();
-    pad1    ->SetBottomMargin(0); // Upper and lower plot are joined
-    pad1    ->Draw();             // Draw the upper pad: pad1
-    pad1    ->cd();               // pad1 becomes the current pad
-    
-    hData   ->SetStats(0);        // No statistics on upper plot
-    hData   ->Draw("EP");
-    hDataSyst->Draw("SAME P 5");// Draw h1
-    hData   ->Draw("SAME EP");
-    hPythia6->Draw("SAME HIST L");
-    hPythia8->Draw("SAME HIST L");       // Draw h2 on top of h1
-    Legend  ->Draw("same");
-    
-    //hData->GetYaxis()->SetLabelSize(0.);
-    
-    TGaxis *axis = new TGaxis( 0., 20, 10., 220, 20,220,510,"");
-    axis->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-    axis->SetLabelSize(15);
-    axis->Draw();
-
-    // lower plot will be in pad
-    cRatioPlot->cd();          // Go back to the main canvas before defining pad2
-    TPad *pad2 = new TPad("pad2", "pad2", 0.1, 0.05, 1, 0.3);
-    pad2->SetTopMargin(0);
-    pad2->SetBottomMargin(0.2);
-    pad2->Draw();
-    pad2->cd();       // pad2 becomes the current pad
-    
-    TH1F *hPythia6Ratio = (TH1F*)hPythia6->Clone("hPythia6Ratio");
-    hPythia6Ratio->Sumw2();     // No statistics on lower plot
-    hPythia6Ratio->Divide(hData);
-    hPythia6Ratio->SetLineStyle(1);
-    TH1F *hPythia8Ratio = (TH1F*)hPythia8->Clone("hPythia8Ratio");
-    hPythia8Ratio->Sumw2();
-    hPythia8Ratio->Divide(hData);
-    hPythia8Ratio->SetLineStyle(1);
-    TH1F *hDataRatio = new TH1F(Form("hDataRatio_%s",aName.c_str()),"hDataRatio",nBinPT2D,fArrPT2D);
-    for ( Int_t iTer = 1; iTer <= nBinPT1D; iTer++ )
-    {
-        auto fValue =   hData  ->GetBinContent(iTer);
-        auto fError =   hData  ->GetBinError(iTer);
-        hDataRatio->SetBinContent   (iTer,1);
-        hDataRatio->SetBinError     (iTer,0.062);
-        if ( fValue == 0 ) hDataRatio->SetBinError     (iTer,0);
-    }
-    TH1F * hDatS = SetSystErrorsh(hDataRatio);
-    for ( Int_t iTer = 1; iTer <= nBinPT1D; iTer++ )
-    {
-        auto fValu6 =   hPythia6Ratio  ->GetBinContent(iTer);
-        auto fValu8 =   hPythia8Ratio  ->GetBinContent(iTer);
-        auto fError =   hDatS  ->GetBinError(iTer);
-        hPythia6Ratio->SetBinError     (iTer,fError*fValu6);
-        hPythia8Ratio->SetBinError     (iTer,fError*fValu8);
-    }
-    
-    hDataRatio->SetStats(0);  // Define Y ..
-    hDataRatio->SetTitle("");
-    hDataRatio->SetLineColorAlpha(kBlack,1.00);
-    hDataRatio->SetFillColorAlpha(33,0.66);
-    hDataRatio->Draw("HIST L E0 SAME");
-    
-    // Setting Axes
-    // - // XAxis
-    hDataRatio->GetXaxis()->SetTitle("P_{T}#phi_{1} (GeV/c)");
-    hDataRatio->GetXaxis()->SetTitleSize(20);
-    hDataRatio->GetXaxis()->SetTitleFont(43);
-    hDataRatio->GetXaxis()->SetTitleOffset(3.);
-    hDataRatio->GetXaxis()->SetLabelFont(43);
-    hDataRatio->GetXaxis()->SetLabelSize(15);
-    hDataRatio->SetMinimum(0.);                     // Range set
-    hDataRatio->SetMaximum(2.9);
-    // - // YAxis
-    hDataRatio->GetYaxis()->SetTitle("MODEL / DATA");
-    hDataRatio->GetYaxis()->SetNdivisions(505);
-    hDataRatio->GetYaxis()->SetTitleSize(20);
-    hDataRatio->GetYaxis()->SetTitleFont(43);
-    hDataRatio->GetYaxis()->SetTitleOffset(2.);
-    hDataRatio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-    hDataRatio->GetYaxis()->SetLabelSize(15);
-    
-    // Define the ratio plot
-    hPythia6Ratio->SetMarkerStyle(0);
-    hPythia6Ratio->SetStats(0);// No statistics on lower plot
-    hPythia6Ratio->Draw("SAME EP");       // Draw the ratio plot
-    
-    hPythia8Ratio->SetMarkerStyle(0);
-    hPythia8Ratio->SetStats(0);
-    hPythia8Ratio->Draw("SAME EP");       // Draw the ratio plot
-
-    // Ratio plot (h3) settings
-    hPythia6Ratio->SetTitle(""); // Remove the first ratio title
-    hPythia8Ratio->GetXaxis()->SetTitleSize(0);
-    hPythia8Ratio->GetYaxis()->SetTitleSize(0);
-    
-    hPythia8Ratio->SetTitle(""); // Remove the second ratio presence
-    hPythia8Ratio->GetXaxis()->SetTitleSize(0);
-    hPythia8Ratio->GetYaxis()->SetTitleSize(0);
-    
-    cRatioPlot->Write();
-    cRatioPlot->SaveAs(Form("./graphs/Ratio_%s.pdf", aName.c_str()));
-    cRatioPlot->SaveAs(Form("./graphs/Ratio_%s.png", aName.c_str()));
-    delete cRatioPlot;
-}
-
-void ratioplot ( TH1F * hData, TH1F * hPythia6, TH1F * hPythia8, string aName = "" )
-{
-    // Setting Systematics
-    TGraphErrors *hDataSyst = new TGraphErrors (SetSystErrors2(hData));
-    hDataSyst->RemovePoint(0);
-    hDataSyst->RemovePoint(0);
-    
-    // Setting Aspect
-    setLine                 (hPythia6,1);
-    setLine                 (hPythia8,2);
-    
-    hData       ->SetMarkerStyle(22);
-    hData       ->SetMarkerColor(38);
-    hData       ->SetFillColorAlpha(33,0.66);
-    hData       ->SetLineColorAlpha(kRed,1.0);
-    hData       ->SetTitle("");
-    hData       ->GetYaxis()->SetTitleSize(20);
-    hData       ->GetYaxis()->SetTitleFont(43);
-    hData       ->GetYaxis()->SetTitle("#frac{d^{2}N#phi}{dydp_{T}#phi}(GeV/c)^{-1}");
-    hData       ->GetYaxis()->SetTitleOffset(1.55);
-    
-    hDataSyst       ->SetMarkerStyle(22);
-    hDataSyst       ->SetMarkerColor(38);
-    hDataSyst       ->SetLineColor(33);
-
-    
-    // Define the Canvas
-    TCanvas *cRatioPlot = new TCanvas( aName.c_str(), aName.c_str(), 800, 800);
-    
-    TLegend *Legend     = new TLegend(0.7,0.75,0.9,0.9);
-    Legend      ->AddEntry(hData, "Data", "P");
-    Legend      ->AddEntry(hData, "Stat. Err.", "E");
-    Legend      ->AddEntry(hDataSyst, "Syst. Err.", "F");
-    Legend      ->AddEntry(hPythia6, "Pythia6", "L");
-    Legend      ->AddEntry(hPythia8, "Pythia8", "L");
-    
-    // Upper plot will be in pad1
-    TPad *pad1 = new TPad("pad1", "pad1", 0.1, 0.3, 1, 1.0);
-    pad1    ->SetLogy();
-    pad1    ->SetBottomMargin(0); // Upper and lower plot are joined
-    pad1    ->Draw();             // Draw the upper pad: pad1
-    pad1    ->cd();               // pad1 becomes the current pad
-    
-    hData   ->SetStats(0);        // No statistics on upper plot
-    hData   ->Draw("EP");
-    hDataSyst->Draw("SAME P 5");// Draw h1
-    hData   ->Draw("SAME EP");
-    hPythia6->Draw("SAME HIST L");
-    hPythia8->Draw("SAME HIST L");       // Draw h2 on top of h1
-    Legend  ->Draw("same");
-    
-    //hData->GetYaxis()->SetLabelSize(0.);
-    
-    TGaxis *axis = new TGaxis( 0., 20, 10., 220, 20,220,510,"");
-    axis->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-    axis->SetLabelSize(15);
-    axis->Draw();
-
-    // lower plot will be in pad
-    cRatioPlot->cd();          // Go back to the main canvas before defining pad2
-    TPad *pad2 = new TPad("pad2", "pad2", 0.1, 0.05, 1, 0.3);
-    pad2->SetTopMargin(0);
-    pad2->SetBottomMargin(0.2);
-    pad2->Draw();
-    pad2->cd();       // pad2 becomes the current pad
-    
-    TH1F *hPythia6Ratio = (TH1F*)hPythia6->Clone("hPythia6Ratio");
-    hPythia6Ratio->Sumw2();     // No statistics on lower plot
-    hPythia6Ratio->Divide(hData);
-    hPythia6Ratio->SetLineStyle(1);
-    TH1F *hPythia8Ratio = (TH1F*)hPythia8->Clone("hPythia8Ratio");
-    hPythia8Ratio->Sumw2();
-    hPythia8Ratio->Divide(hData);
-    hPythia8Ratio->SetLineStyle(1);
-    TH1F *hDataRatio = new TH1F(Form("hDataRatio_%s",aName.c_str()),"hDataRatio",nBinPT1D,fArrPT1D);
-    for ( Int_t iTer = 1; iTer <= nBinPT1D; iTer++ )
-    {
-        auto fValue =   hData  ->GetBinContent(iTer);
-        auto fError =   hData  ->GetBinError(iTer);
-        hDataRatio->SetBinContent   (iTer,1);
-        hDataRatio->SetBinError     (iTer,0.062);
-        if ( fValue == 0 ) hDataRatio->SetBinError     (iTer,0);
-    }
-    TH1F * hDatS = SetSystErrorsh(hDataRatio);
-    for ( Int_t iTer = 1; iTer <= nBinPT1D; iTer++ )
-    {
-        auto fValu6 =   hPythia6Ratio  ->GetBinContent(iTer);
-        auto fValu8 =   hPythia8Ratio  ->GetBinContent(iTer);
-        auto fError =   hDatS  ->GetBinError(iTer);
-        hPythia6Ratio->SetBinError     (iTer,fError*fValu6);
-        hPythia8Ratio->SetBinError     (iTer,fError*fValu8);
-    }
-    
-    hDataRatio->SetStats(0);  // Define Y ..
-    hDataRatio->SetTitle("");
-    hDataRatio->SetLineColorAlpha(kBlack,1.00);
-    hDataRatio->SetFillColorAlpha(33,0.66);
-    hDataRatio->Draw("HIST L E0 SAME");
-    
-    // Setting Axes
-    // - // XAxis
-    hDataRatio->GetXaxis()->SetTitle("P_{T}#phi (GeV/c)");
-    hDataRatio->GetXaxis()->SetTitleSize(20);
-    hDataRatio->GetXaxis()->SetTitleFont(43);
-    hDataRatio->GetXaxis()->SetTitleOffset(3.);
-    hDataRatio->GetXaxis()->SetLabelFont(43);
-    hDataRatio->GetXaxis()->SetLabelSize(15);
-    hDataRatio->SetMinimum(0.);                     // Range set
-    hDataRatio->SetMaximum(2.9);
-    // - // YAxis
-    hDataRatio->GetYaxis()->SetTitle("MODEL / DATA");
-    hDataRatio->GetYaxis()->SetNdivisions(505);
-    hDataRatio->GetYaxis()->SetTitleSize(20);
-    hDataRatio->GetYaxis()->SetTitleFont(43);
-    hDataRatio->GetYaxis()->SetTitleOffset(2.);
-    hDataRatio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-    hDataRatio->GetYaxis()->SetLabelSize(15);
-    
-    // Define the ratio plot
-    hPythia6Ratio->SetMarkerStyle(0);
-    hPythia6Ratio->SetStats(0);// No statistics on lower plot
-    hPythia6Ratio->Draw("SAME EP");       // Draw the ratio plot
-    
-    hPythia8Ratio->SetMarkerStyle(0);
-    hPythia8Ratio->SetStats(0);
-    hPythia8Ratio->Draw("SAME EP");       // Draw the ratio plot
-
-    // Ratio plot (h3) settings
-    hPythia6Ratio->SetTitle(""); // Remove the first ratio title
-    hPythia8Ratio->GetXaxis()->SetTitleSize(0);
-    hPythia8Ratio->GetYaxis()->SetTitleSize(0);
-    
-    hPythia8Ratio->SetTitle(""); // Remove the second ratio presence
-    hPythia8Ratio->GetXaxis()->SetTitleSize(0);
-    hPythia8Ratio->GetYaxis()->SetTitleSize(0);
-    
-    cRatioPlot->Write();
-    cRatioPlot->SaveAs(Form("./graphs/Ratio_%s.pdf", aName.c_str()));
-    cRatioPlot->SaveAs(Form("./graphs/Ratio_%s.png", aName.c_str()));
-    delete cRatioPlot;
-}
-
-void ratioplot ( Double_t***   aInput, TH1D * hPythia6, TH1D * hPythia8, string aName = "" )
-{
-    // Setting Systematics
-    TH1D * hData            = new TH1D (*TH1DGeneratorYield(aInput,false));
-    TGraphErrors *hDataSyst = new TGraphErrors (TH1DGeneratorYield(aInput,true));
-    hDataSyst->RemovePoint(0);
-    hDataSyst->RemovePoint(0);
-    
-    // Setting Aspect
-    setLine                 (hPythia6,1);
-    setLine                 (hPythia8,2);
-    
-    hData       ->SetMarkerStyle(22);
-    hData       ->SetMarkerColor(38);
-    hData       ->SetFillColorAlpha(33,0.66);
-    hData       ->SetLineColorAlpha(kRed,1.0);
-    hData       ->SetTitle("");
-    hData       ->GetYaxis()->SetTitleSize(20);
-    hData       ->GetYaxis()->SetTitleFont(43);
-    hData       ->GetYaxis()->SetTitle("#frac{d^{2}N#phi#phi}{dydp_{T}#phi_{2}}(GeV/c)^{-1}");
-    hData       ->GetYaxis()->SetTitleOffset(2.);
-    
-    hDataSyst       ->SetMarkerStyle(22);
-    hDataSyst       ->SetMarkerColor(38);
-    hDataSyst       ->SetLineColor(33);
-
-    
-    // Define the Canvas
-    TCanvas *cRatioPlot = new TCanvas( aName.c_str(), aName.c_str(), 800, 800);
-    
-    TLegend *Legend     = new TLegend(0.7,0.75,0.9,0.9);
-    Legend      ->AddEntry(hData, "Data", "P");
-    Legend      ->AddEntry(hData, "Stat. Err.", "E");
-    Legend      ->AddEntry(hDataSyst, "Syst. Err.", "F");
-    Legend      ->AddEntry(hPythia6, "Pythia6", "L");
-    Legend      ->AddEntry(hPythia8, "Pythia8", "L");
-    
-    // Upper plot will be in pad1
-    TPad *pad1 = new TPad("pad1", "pad1", 0.1, 0.3, 1, 1.0);
-    pad1    ->SetLogy();
-    pad1    ->SetBottomMargin(0); // Upper and lower plot are joined
-    pad1    ->Draw();             // Draw the upper pad: pad1
-    pad1    ->cd();               // pad1 becomes the current pad
-    
-    hData   ->SetStats(0);        // No statistics on upper plot
-    hData   ->Draw("EP");
-    hDataSyst->Draw("SAME P 5");// Draw h1
-    hData   ->Draw("SAME EP");
-    hPythia6->Draw("SAME HIST L");
-    hPythia8->Draw("SAME HIST L");       // Draw h2 on top of h1
-    Legend  ->Draw("same");
-    
-    //hData->GetYaxis()->SetLabelSize(0.);
-    
-    TGaxis *axis = new TGaxis( 0., 20, 10., 220, 20,220,510,"");
-    axis->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-    axis->SetLabelSize(15);
-    axis->Draw();
-
-    // lower plot will be in pad
-    cRatioPlot->cd();          // Go back to the main canvas before defining pad2
-    TPad *pad2 = new TPad("pad2", "pad2", 0.1, 0.05, 1, 0.3);
-    pad2->SetTopMargin(0);
-    pad2->SetBottomMargin(0.2);
-    pad2->Draw();
-    pad2->cd();       // pad2 becomes the current pad
-    
-    TH1F *hPythia6Ratio = (TH1F*)hPythia6->Clone("hPythia6Ratio");
-    hPythia6Ratio->Sumw2();     // No statistics on lower plot
-    hPythia6Ratio->Divide(hData);
-    hPythia6Ratio->SetLineStyle(1);
-    TH1F *hPythia8Ratio = (TH1F*)hPythia8->Clone("hPythia8Ratio");
-    hPythia8Ratio->Sumw2();
-    hPythia8Ratio->Divide(hData);
-    hPythia8Ratio->SetLineStyle(1);
-    TH1F *hDataRatio = new TH1F(Form("hDataRatio_%s",aName.c_str()),"hDataRatio",nBinPT2D,fArrPT2D);
-    for ( Int_t iTer = 1; iTer <= nBinPT1D; iTer++ )
-    {
-        auto fValue =   hData  ->GetBinContent(iTer);
-        auto fError =   hData  ->GetBinError(iTer);
-        hDataRatio->SetBinContent   (iTer,1);
-        hDataRatio->SetBinError     (iTer,0.062);
-        if ( fValue == 0 ) hDataRatio->SetBinError     (iTer,0);
-    }
-    TH1F * hDatS = SetSystErrorsh(hDataRatio);
-    for ( Int_t iTer = 1; iTer <= nBinPT1D; iTer++ )
-    {
-        auto fValu6 =   hPythia6Ratio  ->GetBinContent(iTer);
-        auto fValu8 =   hPythia8Ratio  ->GetBinContent(iTer);
-        auto fError =   hDatS  ->GetBinError(iTer);
-        hPythia6Ratio->SetBinError     (iTer,fError*fValu6);
-        hPythia8Ratio->SetBinError     (iTer,fError*fValu8);
-    }
-    
-    hDataRatio->SetStats(0);  // Define Y ..
-    hDataRatio->SetTitle("");
-    hDataRatio->SetLineColorAlpha(kBlack,1.00);
-    hDataRatio->SetFillColorAlpha(33,0.66);
-    hDataRatio->Draw("HIST L E0 SAME");
-    
-    // Setting Axes
-    // - // XAxis
-    hDataRatio->GetXaxis()->SetTitle("P_{T}#phi_{2} (GeV/c)");
-    hDataRatio->GetXaxis()->SetTitleSize(20);
-    hDataRatio->GetXaxis()->SetTitleFont(43);
-    hDataRatio->GetXaxis()->SetTitleOffset(3.);
-    hDataRatio->GetXaxis()->SetLabelFont(43);
-    hDataRatio->GetXaxis()->SetLabelSize(15);
-    hDataRatio->SetMinimum(0.);                     // Range set
-    hDataRatio->SetMaximum(2.9);
-    // - // YAxis
-    hDataRatio->GetYaxis()->SetTitle("MODEL / DATA");
-    hDataRatio->GetYaxis()->SetNdivisions(505);
-    hDataRatio->GetYaxis()->SetTitleSize(20);
-    hDataRatio->GetYaxis()->SetTitleFont(43);
-    hDataRatio->GetYaxis()->SetTitleOffset(2.);
-    hDataRatio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-    hDataRatio->GetYaxis()->SetLabelSize(15);
-    
-    // Define the ratio plot
-    hPythia6Ratio->SetMarkerStyle(0);
-    hPythia6Ratio->SetStats(0);// No statistics on lower plot
-    hPythia6Ratio->Draw("SAME EP");       // Draw the ratio plot
-    
-    hPythia8Ratio->SetMarkerStyle(0);
-    hPythia8Ratio->SetStats(0);
-    hPythia8Ratio->Draw("SAME EP");       // Draw the ratio plot
-
-    // Ratio plot (h3) settings
-    hPythia6Ratio->SetTitle(""); // Remove the first ratio title
-    hPythia8Ratio->GetXaxis()->SetTitleSize(0);
-    hPythia8Ratio->GetYaxis()->SetTitleSize(0);
-    
-    hPythia8Ratio->SetTitle(""); // Remove the second ratio presence
-    hPythia8Ratio->GetXaxis()->SetTitleSize(0);
-    hPythia8Ratio->GetYaxis()->SetTitleSize(0);
-    
-    cRatioPlot->Write();
-    cRatioPlot->SaveAs(Form("./graphs/Ratio_%s.pdf", aName.c_str()));
-    cRatioPlot->SaveAs(Form("./graphs/Ratio_%s.png", aName.c_str()));
-    delete cRatioPlot;
 }
 
 #endif

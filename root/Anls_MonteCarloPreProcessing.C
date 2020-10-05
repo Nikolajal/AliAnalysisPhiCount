@@ -246,8 +246,9 @@ void Anls_MonteCarloPreProcessing ( const char * fFileName )
     TGraphAsymmErrors * gEfficiency2D =   new TGraphAsymmErrors();
     gEfficiency2D                       ->  SetName(hName);
     gEfficiency2D                       ->  SetTitle(hTitle);
-    gEfficiency2D                       ->  GetXaxis()  ->SetTitle("p_{T} #phi (GeV/c)");
-    gEfficiency2D                       ->  GetYaxis()  ->SetTitle("#varepsilon");
+    gEfficiency2D                       ->  GetXaxis()  ->SetTitle("p_{T} #phi_{1} (GeV/c)");
+    gEfficiency2D                       ->  GetYaxis()  ->SetTitle("p_{T} #phi_{2} (GeV/c)");
+    gEfficiency2D                       ->  GetZaxis()  ->SetTitle("#varepsilon");
     
     gEfficiency1D->Divide(hPhiRec_1D,hPhiGen_1D,"cl=0.683 b(1,1) mode");
     

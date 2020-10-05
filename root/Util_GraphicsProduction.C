@@ -95,6 +95,8 @@ void Util_GraphicsProduction ()
     fh_Raw_1D->Scale(1./(fh_Ent_1D->GetBinContent(1)*kPythia1DEfficien),"width");
     fh_Raw_2D->Scale(1./(fh_Ent_1D->GetBinContent(1)*kPythia2DEfficien),"width");
     
+    
+    
     // Utility (some to circumvent stupid root)
     
     TH1D       *hUtility1X,   *hUtility2X,    *hUtility1Y,    *hUtility2Y;
@@ -120,8 +122,9 @@ void Util_GraphicsProduction ()
     TCanvas     *fc_Efficiency  =   new TCanvas("","");
     gStyle->SetOptStat(0);
     hLogEffic_  ->  SetTitle(Form("1D Efficiency"));
+    hLogEffic_  ->  SetTitle(Form(""));
     hLogEffic_  ->  GetXaxis()  ->  SetTitle("p_{T}#phi (Gev/c)");
-    hLogEffic_  ->  GetYaxis()  ->  SetTitle("#varepsilon (%)");
+    hLogEffic_  ->  GetYaxis()  ->  SetTitle("#varepsilon");
     hLogEffic_  ->  SetMaximum(1.);
     hLogEffic_  ->  SetMinimum(0.);
     hLogEffic_  ->  Draw("");
@@ -146,7 +149,7 @@ void Util_GraphicsProduction ()
         hLogEfficX[iChk]    =   new TH1D    (Form("EFX_%i",iChk),Form("EFX_%i",iChk),nBinPT2D,fArrPT2D);
         hLogEfficX[iChk]    ->  SetTitle(Form("2D Efficiency for %.1f < p_{T}#phi_{1} < %.1f",fArrPT2D[iChk],fArrPT2D[iChk+1]));
         hLogEfficX[iChk]    ->  GetXaxis()  ->  SetTitle("p_{T}#phi_{2} (Gev/c)");
-        hLogEfficX[iChk]    ->  GetYaxis()  ->  SetTitle("#varepsilon (%)");
+        hLogEfficX[iChk]    ->  GetYaxis()  ->  SetTitle("#varepsilon");
         hLogEfficX[iChk]    ->  Draw("");
         hUtility1X  =   (fh_Efficiency_2D_2Dbin->ProjectionX(Form("2DEfficiency_XSlice_%i",iChk),iChk+1,iChk+1));
         hUtility1X  ->  SetMarkerColor(kBlue);
@@ -174,7 +177,7 @@ void Util_GraphicsProduction ()
         hLogEfficY[iChk]    =   new TH1D    (Form("EFY_%i",iChk),Form("EFY_%i",iChk),nBinPT2D,fArrPT2D);
         hLogEfficY[iChk]    ->  SetTitle(Form("2D Efficiency for %.1f < p_{T}#phi_{2} < %.1f",fArrPT2D[iChk],fArrPT2D[iChk+1]));
         hLogEfficY[iChk]    ->  GetXaxis()  ->  SetTitle("p_{T}#phi_{1} (Gev/c)");
-        hLogEfficY[iChk]    ->  GetYaxis()  ->  SetTitle("#varepsilon (%)");
+        hLogEfficY[iChk]    ->  GetYaxis()  ->  SetTitle("#varepsilon");
         hLogEfficY[iChk]    ->  Draw("");
         hUtility1Y  =   (fh_Efficiency_2D_2Dbin->ProjectionY(Form("2DEfficiency_YSlice_%i",iChk),iChk+1,iChk+1));
         hUtility1Y  ->  SetMarkerColor(kBlue);

@@ -78,17 +78,12 @@ auto const  kEventEfficienERP   =   0.062;
 auto const  kEventEfficienERM   =   0.030;
 
 // Total
-auto const  kSystematical1D_   =   kSyst_SigExtr1D + kSyst_BRatio1D + kSyst_TrackEff1D + kSyst_PID1D;
-auto const  kSystematical2D_   =   kSyst_SigExtr2D + kSyst_BRatio2D + kSyst_TrackEff2D + kSyst_PID2D;
+auto const  kSystematical1D_   =   sqrt(kSyst_SigExtr1D*kSyst_SigExtr1D + kSyst_BRatio1D*kSyst_BRatio1D + kSyst_TrackEff1D*kSyst_TrackEff1D + kSyst_PID1D*kSyst_PID1D);
+auto const  kSystematical2D_   =   sqrt(kSyst_SigExtr2D*kSyst_SigExtr2D + kSyst_BRatio2D*kSyst_BRatio2D + kSyst_TrackEff2D*kSyst_TrackEff2D + kSyst_PID2D*kSyst_PID2D);
 
 // Pythia8
 auto const  kPythia1DEfficien   =   0.970;
 auto const  kPythia2DEfficien   =   0.943;
-
-// Color Style and Width, Fill Marker Line
-Int_t kColor[] = {38,kBlue,kBlue+3,46,38};
-Int_t kStyle[] = {26,9,10,25,22};
-Int_t kWidth[] = {1,3,3,1,1};
 
 // TRandom
 TRandom *   fRandomGen      =   new TRandom();
@@ -184,14 +179,14 @@ typedef struct
 
 typedef struct
 {
-    Int_t   nKaonCouple, iKaon[1024], jKaon[1024];
+    Int_t   nKaonCouple, nMultipl, iKaon[1024], jKaon[1024];
     Bool_t  bPhi[1024], bRec[1024], bEta[1024];
     Float_t InvMass[1024], pT[1024];
 } EVKAONCOUPLE;
 
 typedef struct
 {
-    Int_t   nPhi, Dau1[1024], Dau2[1024], ID[1024];
+    Int_t   nPhi, nMultipl, Dau1[1024], Dau2[1024], ID[1024];
     Bool_t  bRec[1024], bEta[1024], bKdc[1024];
     Float_t pT[1024];
 } EVPHI;

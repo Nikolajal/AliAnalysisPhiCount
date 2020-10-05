@@ -69,9 +69,9 @@ void Anls_DataPreProcessing ( const char * fFileName )
     for ( Int_t iHisto = 0; iHisto < nBinPT1D; iHisto++ )
     {
         hName = Form("hIM_1D_Rec_PT_B_S_%i",iHisto);
-        hTitle= Form("m_{K_{+}K_{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT1D[iHisto],fArrPT1D[iHisto+1]);
+        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT1D[iHisto],fArrPT1D[iHisto+1]);
         hIM_1D_Rec_PT_B_S[iHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
-        hIM_1D_Rec_PT_B_S[iHisto]   ->GetXaxis()->SetTitle("m_{K_{+}K_{-}} (GeV/c^{2})");
+        hIM_1D_Rec_PT_B_S[iHisto]   ->GetXaxis()->SetTitle("m_{K^{+}K^{-}} (GeV/c^{2})");
         hIM_1D_Rec_PT_B_S[iHisto]   ->GetYaxis()->SetTitle("Entries");
         hIM_1D_Rec_PT_B_S[iHisto]   ->GetXaxis()->SetTitleOffset(1.15);
         hIM_1D_Rec_PT_B_S[iHisto]   ->GetYaxis()->SetTitleOffset(1.15);
@@ -80,9 +80,9 @@ void Anls_DataPreProcessing ( const char * fFileName )
     for ( Int_t iHisto = 0; iHisto < nBinPT2D; iHisto++ )
     {
         hName = Form("hIM_2D_Rec_PT_B_S_%i",iHisto);
-        hTitle= Form("m_{K_{+}K_{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT2D[iHisto],fArrPT2D[iHisto+1]);
+        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT2D[iHisto],fArrPT2D[iHisto+1]);
         hIM_2D_Rec_PT_B_S[iHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
-        hIM_2D_Rec_PT_B_S[iHisto]   ->GetXaxis()->SetTitle("m_{K_{+}K_{-}} (GeV/c^{2})");
+        hIM_2D_Rec_PT_B_S[iHisto]   ->GetXaxis()->SetTitle("m_{K^{+}K^{-}} (GeV/c^{2})");
         hIM_2D_Rec_PT_B_S[iHisto]   ->GetYaxis()->SetTitle("Entries");
         hIM_2D_Rec_PT_B_S[iHisto]   ->GetXaxis()->SetTitleOffset(1.15);
         hIM_2D_Rec_PT_B_S[iHisto]   ->GetYaxis()->SetTitleOffset(1.15);
@@ -92,10 +92,10 @@ void Anls_DataPreProcessing ( const char * fFileName )
         for ( Int_t jHisto = 0; jHisto < nBinPT2D; jHisto++ )
         {
             hName = Form("hIM_2D_Rec_PT_PT_BB_BS_SB_SS_%i_%i",iHisto,jHisto);
-            hTitle= Form("m_{K_{+}K_{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]);
+            hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]);
             hIM_2D_Rec_PT_PT_BB_BS_SB_SS[iHisto][jHisto]    = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
-            hIM_2D_Rec_PT_PT_BB_BS_SB_SS[iHisto][jHisto]    ->GetXaxis()->SetTitle(Form("m_{K_{+}K_{-}} (GeV/c^{2}) in p_{T} [%.1f-%.1f] GeV/c",fArrPT2D[iHisto],fArrPT2D[iHisto+1]));
-            hIM_2D_Rec_PT_PT_BB_BS_SB_SS[iHisto][jHisto]    ->GetYaxis()->SetTitle(Form("m_{K_{+}K_{-}} (GeV/c^{2}) in p_{T} [%.1f-%.1f] GeV/c",fArrPT2D[jHisto],fArrPT2D[jHisto+1]));
+            hIM_2D_Rec_PT_PT_BB_BS_SB_SS[iHisto][jHisto]    ->GetXaxis()->SetTitle(Form("m_{K^{+}K^{-}} (GeV/c^{2}) in p_{T} [%.1f-%.1f] GeV/c",fArrPT2D[iHisto],fArrPT2D[iHisto+1]));
+            hIM_2D_Rec_PT_PT_BB_BS_SB_SS[iHisto][jHisto]    ->GetYaxis()->SetTitle(Form("m_{K^{+}K^{-}} (GeV/c^{2}) in p_{T} [%.1f-%.1f] GeV/c",fArrPT2D[jHisto],fArrPT2D[jHisto+1]));
             hIM_2D_Rec_PT_PT_BB_BS_SB_SS[iHisto][jHisto]    ->GetXaxis()->SetTitleOffset(1.5);
             hIM_2D_Rec_PT_PT_BB_BS_SB_SS[iHisto][jHisto]    ->GetYaxis()->SetTitleOffset(1.5);
         }
