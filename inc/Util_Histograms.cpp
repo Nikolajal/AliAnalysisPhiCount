@@ -1,8 +1,7 @@
 //
 //  Util_Histograms.cpp
-//  
-//
-//  Created by Nicola Rubini on 05/10/2020.
+//  Utilities for Histograms and Graphs general managment in Root and Roofit
+//  Nicola Rubini (R&D)
 //
 // TODO: Set options for systematic add and square
 // TODO: Generic Ratio plot
@@ -16,7 +15,8 @@ using namespace RooFit;
 
 // Error Management
 
-template <class Tclass>     Tclass*     AddSystematics              ( Tclass* aTarget, string aOption = "" )
+template <class Tclass>                     // You should have an header file SetValues.h where the systematic uncertainties are defined.
+Tclass*         AddSystematics              ( Tclass* aTarget, string aOption = "" )
 {
     Tclass*     fReturn     =   new Tclass  (*aTarget);
     for ( Int_t iBin = 1; iBin <= aTarget->GetNbinsX(); iBin++ )
@@ -27,12 +27,24 @@ template <class Tclass>     Tclass*     AddSystematics              ( Tclass* aT
     return fReturn;
 }
 
-Double_t                                SquareSystematics           ( Double_t aTarget )
+template <class Tclass>    
+Tclass*         AddSystematics              ( Tclass* aTarget, Tclass* aTarge2 )
+{
+    Tclass*     fReturn     =   new Tclass  (*aTarget);
+    for ( Int_t iBin = 1; iBin <= aTarget->GetNbinsX(); iBin++ )
+    {
+        fReturn ->  SetBinContent           (iBin,   aTarget ->GetBinContent (iBin) );
+        fReturn ->  SetBinError             (iBin,   sqrt( pow( aTarget ->GetBinError   (iBin), 2 ) + pow( aTarge2 ->GetBinError   (iBin), 2 ) )  );
+    }
+    return fReturn;
+}
+                            
+Double_t        SquareSystematics           ( Double_t aTarget )
 {
     return 1.;
 }
-
-TH1F *              SetSystErrorsh  ( TH1F * aTarget ) // Togliere l'h
+                            
+TH1F *          SetSystErrorsh              ( TH1F * aTarget ) // Togliere l'h
 {
     TH1F *  fReturn =   new TH1F (*aTarget);
     Double_t    fError,    fValue;
@@ -45,8 +57,8 @@ TH1F *              SetSystErrorsh  ( TH1F * aTarget ) // Togliere l'h
     }
     return fReturn;
 }
-
-TH1D *              SetSystErrorsh  ( TH1D * aTarget ) // Stat + systematics
+                            
+TH1D *          SetSystErrorsh              ( TH1D * aTarget ) // Stat + systematics
 {
     TH1D *  fReturn =   new TH1D (*aTarget);
     Double_t    fError,    fValue;
@@ -60,7 +72,7 @@ TH1D *              SetSystErrorsh  ( TH1D * aTarget ) // Stat + systematics
     return fReturn;
 }
 
-TH1D *              SetSystErrorsh  ( TH1D * aTarget, TH1D * aTarge2 ) // Stat + systematics
+TH1D *          SetSystErrorsh              ( TH1D * aTarget, TH1D * aTarge2 ) // Stat + systematics
 {
     TH1D *  fReturn =   new TH1D (*aTarget);
     Double_t    fError,    fValue,  fErro2;
@@ -74,8 +86,8 @@ TH1D *              SetSystErrorsh  ( TH1D * aTarget, TH1D * aTarge2 ) // Stat +
     }
     return fReturn;
 }
-
-TH1F *              SetSystErrors2  ( TH1F * aTarget ) // Solo systematics
+                                    
+TH1F *          SetSystErrors2              ( TH1F * aTarget ) // Solo systematics
 {
     TH1F *  fReturn =   new TH1F (*aTarget);
     Double_t    fError,    fValue;
@@ -88,8 +100,8 @@ TH1F *              SetSystErrors2  ( TH1F * aTarget ) // Solo systematics
     }
     return fReturn;
 }
-
-TH1D *              SetSystErrors2  ( TH1D * aTarget ) // Togliere l'h
+                            
+TH1D *          SetSystErrors2              ( TH1D * aTarget ) // Togliere l'h
 {
     TH1D *  fReturn =   new TH1D (*aTarget);
     Double_t    fError,    fValue;
@@ -104,8 +116,8 @@ TH1D *              SetSystErrors2  ( TH1D * aTarget ) // Togliere l'h
 }
 
 // General Histogram management
-
-Double_t                                FuncIntegrals   ( TF1 * aFunction, Double_t aLowBound, Double_t aHigBound, string aOption = "", Double_t aEpsilon = 1.e-4 )
+                            
+Double_t        FuncIntegrals               ( TF1 * aFunction, Double_t aLowBound, Double_t aHigBound, string aOption = "", Double_t aEpsilon = 1.e-4 )
 {
     Double_t    fResult = 0;
     Int_t       fiTer,  fnPowr;
@@ -139,7 +151,8 @@ Double_t                                FuncIntegrals   ( TF1 * aFunction, Doubl
     return fResult;
 }
 
-template <class Tclass>     Double_t    HistIntegrals               ( Tclass* aTarget, string aOption = "", Double_t aLowBound = 0, Double_t aHigBound = 0 )
+template <class Tclass>
+Double_t        HistIntegrals               ( Tclass* aTarget, string aOption = "", Double_t aLowBound = 0, Double_t aHigBound = 0 )
 {
     
     Double_t    fResult = 0;
@@ -177,7 +190,8 @@ template <class Tclass>     Double_t    HistIntegrals               ( Tclass* aT
     return fResult;
 }
 
-template <class Tclass>     Tclass*     SetRandPoints               ( Tclass* aTarget, string aOption = "" )
+template <class Tclass>
+Tclass*         SetRandPoints               ( Tclass* aTarget, string aOption = "" )
 {
     Tclass*     fReturn     =   new Tclass  (*aTarget);
     for ( Int_t iBin = 1; iBin <= aTarget->GetNbinsX(); iBin++ )
@@ -627,7 +641,8 @@ void fMosaicCanvas ( TH2F * hData, const char*  fDTOpt = "", const char*  fName 
 
 // --- // Setters for graphical styles
 
-template < class Tclass >   void        SetGraphicStyle             ( Tclass * aTarget, string aOption = "" )
+template < class Tclass >
+void            SetGraphicStyle             ( Tclass * aTarget, string aOption = "" )
 {
     if ( aOption.find("DT") != -1 )
     {
@@ -649,7 +664,8 @@ template < class Tclass >   void        SetGraphicStyle             ( Tclass * a
     }
 }
 
-template < class Tclass >   void        SetDescription              ( Tclass * aTarget, string aOption = "" )
+template < class Tclass >
+void            SetDescription              ( Tclass * aTarget, string aOption = "" )
 {
     if ( aOption.find("IM") != -1 )
     {
@@ -711,7 +727,7 @@ template < class Tclass >   void        SetDescription              ( Tclass * a
 
 
 // --- // Generate histogram for results
-
+                            
 TH1D*           GenResultHistogram          ( Double_t***   aInput, string aOption = "" )
 {
     return nullptr;
