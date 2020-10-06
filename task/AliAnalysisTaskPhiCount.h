@@ -43,15 +43,15 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
         // Tree
         TTree*                  fOutputTree_SIG;    //! output tree for Signal
         TTree*                  fOutputTree_TRU;    //! output tree for MC Truth
-        
-        // Tree Variables
+         
+        // Tree Variables ( Signal )
         Int_t                   fnPhi;              //! Number of Phis produced found
         Bool_t                  fPbEta      [1024]; //! bEta
         Bool_t                  fPbRec      [1024]; //! bRec
         Bool_t                  fPbKdc      [1024]; //! bKdc
         Float_t                 fPpT        [1024]; //! Transverse Momentum
             
-        // Tree Variables
+        // Tree Variables ( MC Truth)
         Int_t                   fnKaonCouple;       //! Number of Kaon Couples found
         Int_t                   fiKaon      [1024]; //! iKaon
         Int_t                   fjKaon      [1024]; //! jKaon
@@ -78,6 +78,8 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
         TH2F*                   fHistTOFPID1;        //! histogram of TOF PID
         TH2F*                   fHistTPCPID2;        //! histogram of TPC PID
         TH2F*                   fHistTOFPID2;        //! histogram of TOF PID
+        TH2F*                   fHistTOFPID3;        //! histogram of TOF PID Sigma
+        TH2F*                   fHistTPCPID3;        //! histogram of TPC PID Sigma
 
         AliAnalysisTaskPhiCount   (const AliAnalysisTaskPhiCount&); // not implemented
         AliAnalysisTaskPhiCount&  operator = (const AliAnalysisTaskPhiCount&); // not implemented

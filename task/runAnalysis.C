@@ -138,7 +138,6 @@ void runAnalysis( Bool_t MCFlag = false, Bool_t local = true, Bool_t gridTest = 
     AliAnalysisTaskPhiCount *task;
     if ( MCFlag )   task = reinterpret_cast<AliAnalysisTaskPhiCount*>(gInterpreter->ExecuteMacro("AddMyTask.C(true)"));
     else            task = reinterpret_cast<AliAnalysisTaskPhiCount*>(gInterpreter->ExecuteMacro(Form("AddMyTask.C(false)")));
-    task->fSetMCFlag(MCFlag);
 #else
     gROOT                       ->LoadMacro("AliAnalysisTaskPhiCount.cxx++g");
     gROOT                       ->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
@@ -180,7 +179,7 @@ void runAnalysis( Bool_t MCFlag = false, Bool_t local = true, Bool_t gridTest = 
         // select the input data
         if ( MCFlag )   alienHandler->SetGridDataDir(Form("/alice/sim/%s/%s",RunYear,RunName));
         else            alienHandler->SetGridDataDir(Form("/alice/data/%s/%s",RunYear,RunName));
-        if ( MCFlag )   alienHandler->SetDataPattern("*/AOD222/*AOD.root");
+        if ( MCFlag )   alienHandler->SetDataPattern("*AOD222/*AOD.root");
         else            alienHandler->SetDataPattern("*pass4/AOD221/*AOD.root");
         // MC has no prefix, data has prefix 000
         if ( !MCFlag ) alienHandler->SetRunPrefix("000");

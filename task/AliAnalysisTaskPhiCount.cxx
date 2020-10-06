@@ -93,9 +93,11 @@ void AliAnalysisTaskPhiCount::UserCreateOutputObjects()
     fHistTPCPID0    = new TH2F("fHistTPCPID0", "TPC Response (ALL)"     , 100, 0, 4, 100, 0, 200);
     fHistTPCPID1    = new TH2F("fHistTPCPID1", "TPC Response (Sel1)"    , 100, 0, 4, 100, 0, 200);
     fHistTPCPID2    = new TH2F("fHistTPCPID2", "TPC Response (Sel2)"    , 100, 0, 4, 100, 0, 200);
+    fHistTPCPID3    = new TH2F("fHistTPCPID3", "TPC Response (Sel3)"    , 100, 0, 4, 200, -10, 10);
     fHistTOFPID0    = new TH2F("fHistTOFPID0", "TOF Response (ALL)"     , 100, 0, 4, 100, 0, 1.2);
     fHistTOFPID1    = new TH2F("fHistTOFPID1", "TOF Response (Sel1)"    , 100, 0, 4, 100, 0, 1.2);
     fHistTOFPID2    = new TH2F("fHistTOFPID2", "TOF Response (Sel2)"    , 100, 0, 4, 100, 0, 1.2);
+    fHistTOFPID3    = new TH2F("fHistTOFPID3", "TOF Response (Sel3)"    , 100, 0, 4, 200, -10, 10);
     fOutputList->Add(fHistVertex0);
     fOutputList->Add(fHistTPCPID0);
     fOutputList->Add(fHistTOFPID0);
@@ -104,6 +106,8 @@ void AliAnalysisTaskPhiCount::UserCreateOutputObjects()
     fOutputList->Add(fHistTOFPID1);
     fOutputList->Add(fHistTPCPID2);
     fOutputList->Add(fHistTOFPID2);
+    fOutputList->Add(fHistTPCPID3);
+    fOutputList->Add(fHistTOFPID3);
     
     PostData(1, fOutputList);
 }
@@ -154,6 +158,7 @@ bool AliAnalysisTaskPhiCount::fIsKaonCandidate ( AliAODTrack* track )
     if (  std::fabs(track->Pt()) < 0.15 ||  std::fabs(track->Eta()) > 0.80  ) return false;
     
     fFillPIDHist(track,0);
+    fFillPIDHist(track,3);
     
     // Check the PID is present and within desired parameters
     if ( !fPIDResponse ) return false;
@@ -210,18 +215,26 @@ bool AliAnalysisTaskPhiCount::fIsPhiGen ( AliAODMCParticle* particle )
 
 bool AliAnalysisTaskPhiCount::fIsPhiRec ( AliAODMCParticle* particle )
 {
+    // To be recrodable, it must come from a K^+k^- decay
     if ( !fIsPhiGen(particle) ) return false;
     
+    // Generating Daughter 1 and 2 Particles instances
     auto const Dau1                 =   static_cast<AliAODMCParticle*>  (AODMCTrackArray->At(particle->GetDaughterFirst()));
     auto const Dau2                 =   static_cast<AliAODMCParticle*>  (AODMCTrackArray->At(particle->GetDaughterLast()));
     
+    // Generating a bool check
     bool fCheckDau1                 =   false;
     bool fCheckDau2                 =   false;
     
+    // looping over all kaons
     for ( int iKaon = 0; iKaon < fnKaon; iKaon++ )
     {
+        // recovering kaon track object
         auto track  =   static_cast<AliAODTrack*>(fAOD->GetTrack(faKaon[iKaon]));
+        
+        // Sanity check it is a kaon
         if ( abs((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(abs(track->GetLabel()))))->GetPdgCode()) != 321 ) continue;
+        
         
         if ( abs(track->GetLabel()) == Dau1->GetLabel() ) fCheckDau1 = true;
         if ( abs(track->GetLabel()) == Dau2->GetLabel() ) fCheckDau2 = true;
@@ -245,12 +258,16 @@ void AliAnalysisTaskPhiCount::fFillPIDHist ( AliAODTrack * track , Int_t iIndex 
     if ( !track ) return;
     if ( (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk) )
     {
+        auto ffSigTPC    = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
         if ( iIndex == 0 ) fHistTPCPID0->Fill(track->P(), track->GetTPCsignal());
         if ( iIndex == 1 ) fHistTPCPID1->Fill(track->P(), track->GetTPCsignal());
         if ( iIndex == 2 ) fHistTPCPID2->Fill(track->P(), track->GetTPCsignal());
+        if ( iIndex == 3 ) fHistTPCPID3->Fill(track->Pt(), ffSigTPC);
     }
     if ( (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) )
     {
+        auto ffSigTOF    = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+        
         Float_t fTrackLength(track->GetIntegratedLength()*1e-2);   // Track Length in cm
         if ( fTrackLength < 0. ) return;
         
@@ -263,6 +280,7 @@ void AliAnalysisTaskPhiCount::fFillPIDHist ( AliAODTrack * track , Int_t iIndex 
         if ( iIndex == 0 ) fHistTOFPID0->Fill(track->P(), fTrackBeta);
         if ( iIndex == 1 ) fHistTOFPID1->Fill(track->P(), fTrackBeta);
         if ( iIndex == 2 ) fHistTOFPID2->Fill(track->P(), fTrackBeta);
+        if ( iIndex == 3 ) fHistTOFPID3->Fill(track->Pt(), ffSigTOF);
     }
     return;
 }

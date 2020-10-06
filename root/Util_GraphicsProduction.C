@@ -8,8 +8,6 @@ void Util_GraphicsProduction ()
     TFile   *in_RawYieldHist_Pythia8        =   new TFile   (fFitResults);
     TFile   *in_ResYieldHist_Pythia8        =   new TFile   (fAnlResHist);
     
-    
-    
     //------------------//
     //  Importing input //-----------------------------------------------------------------------------------
     //------------------//
@@ -613,6 +611,93 @@ void Util_GraphicsProduction ()
     fc_1DDataYieldReY->SaveAs("./graphs/1DDataYieldReY.pdf");
     fc_1DDataYieldReY->SaveAs("./graphs/1DDataYieldReY.png");
     */
+    
+    
+    TFile*  insFile_DT  =   new TFile   ("./result/LHC10.root");
+    TFile*  insFile_MC  =   new TFile   ("./result/LHC14j4.root");
+    
+    TList * hHistoPid = (TList*)(insFile_DT->Get("MyOutputContainerListUTL"));
+    hName = Form("fHistTOFPID0");
+    TH2F*hTOFPID     =   (TH2F*)(hHistoPid->FindObject(hName));
+    hName = Form("fHistTOFPID1");
+    TH2F*hTOFPID_1   =   (TH2F*)(hHistoPid->FindObject(hName));
+    hName = Form("fHistTOFPID2");
+    TH2F*hTOFPID_2   =   (TH2F*)(hHistoPid->FindObject(hName));
+    hName = Form("fHistTPCPID0");
+    TH2F*hTPCPID     =   (TH2F*)(hHistoPid->FindObject(hName));
+    hName = Form("fHistTPCPID1");
+    TH2F*hTPCPID_1   =   (TH2F*)(hHistoPid->FindObject(hName));
+    hName = Form("fHistTPCPID2");
+    TH2F*hTPCPID_2   =   (TH2F*)(hHistoPid->FindObject(hName));
+    
+    TList * hHistoPid_MC = (TList*)(insFile_MC->Get("MyOutputContainerListUTL"));
+    hName = Form("fHistTOFPID0");
+    TH2F*hTOFPID_MC     =   (TH2F*)(hHistoPid_MC->FindObject(hName));
+    hName = Form("fHistTOFPID1");
+    TH2F*hTOFPID_1_MC   =   (TH2F*)(hHistoPid_MC->FindObject(hName));
+    hName = Form("fHistTOFPID2");
+    TH2F*hTOFPID_2_MC   =   (TH2F*)(hHistoPid_MC->FindObject(hName));
+    hName = Form("fHistTPCPID0");
+    TH2F*hTPCPID_MC     =   (TH2F*)(hHistoPid_MC->FindObject(hName));
+    hName = Form("fHistTPCPID1");
+    TH2F*hTPCPID_1_MC   =   (TH2F*)(hHistoPid_MC->FindObject(hName));
+    hName = Form("fHistTPCPID2");
+    TH2F*hTPCPID_2_MC   =   (TH2F*)(hHistoPid_MC->FindObject(hName));
+    
+    TFile * hout = new TFile ("quick.root","recreate");
+    
+    hTOFPID  ->Write();
+    hTOFPID_MC  ->Write();
+    hTPCPID  ->Write();
+    hTPCPID_MC  ->Write();
+    
+    TH1F   *DataTOFcount  =   new TH1F ("DataTOFcount","DataTOFcount",100, 0, 4);
+    TH1F   *DataTPCcount  =   new TH1F ("DataTPCcount","DataTPCcount",100, 0, 4);
+    TH1F   *MC__TOFcount  =   new TH1F ("MC__TOFcount","MC__TOFcount",100, 0, 4);
+    TH1F   *MC__TPCcount  =   new TH1F ("MC__TPCcount","MC__TPCcount",100, 0, 4);
+    
+    for ( Int_t iBin = 1; iBin <= 100; iBin++ )
+    {
+        double error;
+        if ( iBin <= 8 ) continue;
+        auto DataTOFslice = hTOFPID->ProjectionX(Form("DT_TOF_%i",iBin),iBin,iBin);
+        DataTOFcount->SetBinContent (iBin, DataTOFslice->IntegralAndError(-1,200,error));
+        DataTOFcount->SetBinError   (iBin, error);
+        DataTOFslice->Write();
+        auto DataTPCslice = hTPCPID->ProjectionX(Form("DT_TPC_%i",iBin),iBin,iBin);
+        DataTPCcount->SetBinContent (iBin, DataTPCslice->IntegralAndError(-1,200,error));
+        DataTPCcount->SetBinError   (iBin, error);
+        DataTPCslice->Write();
+        auto DataTOFslice_MC = hTOFPID_MC->ProjectionX(Form("MC_TOF_%i",iBin),iBin,iBin);
+        MC__TOFcount->SetBinContent (iBin, DataTOFslice_MC->IntegralAndError(-1,200,error));
+        MC__TOFcount->SetBinError   (iBin, error);
+        DataTOFslice_MC->Write();
+        auto DataTPCslice_MC = hTPCPID_MC->ProjectionX(Form("MC_TPC_%i",iBin),iBin,iBin);
+        MC__TPCcount->SetBinContent (iBin, DataTPCslice_MC->IntegralAndError(-1,200,error));
+        MC__TPCcount->SetBinError   (iBin, error);
+        DataTPCslice_MC->Write();
+    }
+    
+    TH1F   *DataEfficiency  =   new TH1F ("e_Data","e_Data",100, 0, 4);
+    TH1F   *MC__Efficiency  =   new TH1F ("e_MC","e_MC",100, 0, 4);
+    DataEfficiency->Divide(DataTOFcount,DataTPCcount,1.,1.,"B");
+    MC__Efficiency->Divide(MC__TOFcount,MC__TPCcount,1.,1.,"B");
+    
+    TH1F   *hRatioEfficiency= new TH1F ("hRatioEfficiency","hRatioEfficiency",100, 0, 4);
+    hRatioEfficiency->Divide(DataEfficiency,MC__Efficiency);
+    
+    DataTOFcount->Write();
+    DataTPCcount->Write();
+    MC__TOFcount->Write();
+    MC__TPCcount->Write();
+    DataEfficiency->Write();
+    MC__Efficiency->Write();
+    hRatioEfficiency->Write();
+    
+    hout->Close();
+    insFile_DT->Close();
+    insFile_MC->Close();
+    
     //---------------------//
     //  Wrapping up to end //--------------------------------------------------------------------------------
     //---------------------//
