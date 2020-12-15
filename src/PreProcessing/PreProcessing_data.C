@@ -6,7 +6,7 @@ void PreProcessing_data ( string fFileName = "" )
     if ( fFileName == "" )
     {
         cout << "[WARNING] Must Specify an input root file" << endl;
-        cout << "[INFO] Usage Anls_PreProcessing_Data(\"Root_file_name.root\")" << endl;
+        cout << "[INFO] Usage PreProcessing_data(\"Root_file_name.root\")" << endl;
         return;
     }
     
@@ -22,12 +22,14 @@ void PreProcessing_data ( string fFileName = "" )
         cout << "Input Data Tree not found!" << endl;
         return;
     }
-    /*
     if ( !TPhiCandidate )
     {
-        cout << "[INFO] " << endl;
+        cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
     }
-    */
+    if ( !TKaonCandidate )
+    {
+        cout << "[INFO] No KaonCandidate Tree, switching to Phi Analysis" << endl;
+    }
     
     // Define tree data structures
     Struct_PhiCandidate     evPhiCandidate;
