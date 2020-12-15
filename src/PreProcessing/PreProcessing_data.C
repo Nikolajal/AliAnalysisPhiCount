@@ -1,7 +1,7 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: [INFO] About trees in input
 
-void Anls_PreProcessing_Data ( string fFileName = "" )
+void PreProcessing_data ( string fFileName = "" )
 {
     if ( fFileName == "" )
     {
