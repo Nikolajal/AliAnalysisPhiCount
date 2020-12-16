@@ -1,6 +1,12 @@
 {
     "files.associations": {
         "Anls_InvariantMassFit.C": "cpp",
-        "PreProcessing_data.C": "cpp"
+        "PreProcessing_data.C": "cpp",
+        "PresentationGraphs.C": "cpp",
+        "iostream": "cpp",
+        "AddAnalysisTaskPhiCount.C": "cpp",
+        "runAnalysis.C": "cpp",
+        "Anls_SignalCorrections.C": "cpp",
+        "PreProcessing_data2.C": "cpp"
     }
 }

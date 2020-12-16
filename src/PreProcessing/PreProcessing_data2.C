@@ -187,6 +187,8 @@ void PreProcessing_data ( string fFileName = "" )
         TPhiCandidate->GetEntry(iEvent);
         
         if ( iEvent%1000000 == 0 && iEvent != 0) fPrintLoopTimer("Analysis",iEvent,nEvents);
+        
+        //cout << "1: " << evPhiCandidate.nPhi << endl;
 
         // Skipping overflow
         if ( (int)(evPhiCandidate.nPhi) >= 153 )
@@ -243,9 +245,6 @@ void PreProcessing_data ( string fFileName = "" )
 
             for ( Int_t jPhi = 0; jPhi < U_nAccept; jPhi++ )
             {
-                // Must have at least 2 candidates
-                if ( U_nAccept < 2 ) break;
-
                 // Building Second Candidate
                 LPhi_candidate2.SetXYZM(evPhiCandidate.Px[U_AccCand[jPhi]],evPhiCandidate.Py[U_AccCand[jPhi]],evPhiCandidate.Pz[U_AccCand[jPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]]);
 
@@ -282,9 +281,6 @@ void PreProcessing_data ( string fFileName = "" )
                 */
                 for ( Int_t kPhi = 0; kPhi < U_nAccept; kPhi++ )
                 {
-                    // Must have at least 3 candidates
-                    if ( U_nAccept < 3 ) break;
-
                     // Selecting valid candidates
                     if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi, kPhi) ) continue;
                     
@@ -298,9 +294,6 @@ void PreProcessing_data ( string fFileName = "" )
 
                     for ( Int_t lPhi = 0; lPhi < U_nAccept; lPhi++ )
                     {
-                        // Must have at least 4 candidates
-                        if ( U_nAccept < 4 ) break;
-
                         // Selecting valid candidates
                         if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi, kPhi, lPhi) ) continue;
 
@@ -320,13 +313,6 @@ void PreProcessing_data ( string fFileName = "" )
     fStopTimer("Analysis");
     cout << "[INFO] The overflow events were: " << nOverflow << endl;
     cout << "[INFO] The overflow events were the " << 100*(nOverflow*1.)/(1.*nEvents) << "% of total events" << endl;
-
-    //--------------------------//
-    // PostProcessin output obj //
-    //--------------------------//
-    
-    // >> Trigger Analysis
-    hTriggerEvt->Scale(1./nEvents);
 
     //--------------------------//
     //  Printing output objects //
