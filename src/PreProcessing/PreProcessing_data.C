@@ -207,6 +207,10 @@ void PreProcessing_data ( string fFileName = "" )
         // Utilities
         TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
         U_nAccept = 0;
+        Bool_t  fCheckFill1 =   false;
+        Bool_t  fCheckFill2 =   false;
+        Bool_t  fCheckFill3 =   false;
+        Bool_t  fCheckFill4 =   false;
 
         for ( Int_t iPhi = 0; iPhi < (int)(evPhiCandidate.nPhi); iPhi++ )
         {
@@ -221,6 +225,13 @@ void PreProcessing_data ( string fFileName = "" )
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[U_AccCand[iPhi]],evPhiCandidate.Py[U_AccCand[iPhi]],evPhiCandidate.Pz[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[iPhi]]);
 
             // >>->> 1-Dimensional Analysis Fill
+            // Trigger
+            if ( !fCheckFill1 )
+            {
+                hTriggerEvt->Fill(1);
+                fCheckFill1 = true;
+            }
+
             // Full Yield
             hREC_1D                                                     ->  Fill(evPhiCandidate.InvMass[iPhi]);
 
@@ -240,6 +251,14 @@ void PreProcessing_data ( string fFileName = "" )
                 if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi) ) continue;
                 
                 // >>->> 2-Dimensional Analysis Fill
+                // Trigger
+                if ( !fCheckFill2 )
+                {
+                    hTriggerEvt->Fill(2);
+                    fCheckFill2 = true;
+                }
+
+                // Full Yield
                 hREC_2D_in_PT[fGetBinPT2D(LPhi_candidate1.Pt())][fGetBinPT2D(LPhi_candidate2.Pt())] ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
                 hREC_2D                                                                             ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
                 
@@ -263,11 +282,27 @@ void PreProcessing_data ( string fFileName = "" )
                 {
                     // Selecting valid candidates
                     if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi, kPhi) ) continue;
+                    
+                    // >>->> 3-Dimensional Analysis Fill
+                    // Trigger
+                    if ( !fCheckFill3 )
+                    {
+                        hTriggerEvt->Fill(3);
+                        fCheckFill3 = true;
+                    }
 
                     for ( Int_t lPhi = 0; lPhi < U_nAccept; lPhi++ )
                     {
                         // Selecting valid candidates
                         if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi, kPhi, lPhi) ) continue;
+
+                        // >>->> 4-Dimensional Analysis Fill
+                        // Trigger
+                        if ( !fCheckFill4 )
+                        {
+                            hTriggerEvt->Fill(4);
+                            fCheckFill4 = true;
+                        }
                     }
                 }
             }
