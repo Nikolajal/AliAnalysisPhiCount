@@ -29,7 +29,7 @@ void PreProcessing_data ( string fFileName = "" )
     if ( !TPhiCandidate )
     {
         cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
-        TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
+        TKaonCandidate-> SetBranchAddress   ("fMultiplicity",    &evKaonCandidate.Multiplicity);
         TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
         TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
         TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
@@ -41,7 +41,7 @@ void PreProcessing_data ( string fFileName = "" )
     else if ( !TKaonCandidate )
     {
         cout << "[INFO] No KaonCandidate Tree, switching to Phi Analysis" << endl;
-        TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiCandidate.Multiplicity);
+        TPhiCandidate-> SetBranchAddress    ("fMultiplicity",    &evPhiCandidate.Multiplicity);
         TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
         TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
         TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
@@ -52,7 +52,7 @@ void PreProcessing_data ( string fFileName = "" )
     }
     else
     {
-        TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiCandidate.Multiplicity);
+        TPhiCandidate-> SetBranchAddress    ("fMultiplicity",    &evPhiCandidate.Multiplicity);
         TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
         TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
         TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
@@ -61,7 +61,7 @@ void PreProcessing_data ( string fFileName = "" )
         TPhiCandidate-> SetBranchAddress    ("iKaon",           &evPhiCandidate.iKaon);
         TPhiCandidate-> SetBranchAddress    ("jKaon",           &evPhiCandidate.jKaon);
         
-        TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
+        TKaonCandidate-> SetBranchAddress   ("fMultiplicity",    &evKaonCandidate.Multiplicity);
         TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
         TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
         TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
@@ -113,11 +113,11 @@ void PreProcessing_data ( string fFileName = "" )
     
     hName = "hREC_1D";
     hTitle= "--";
-    hREC_1D  =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+    hREC_1D  =   new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
     
     hName = "hREC_2D";
     hTitle= "--";
-    hREC_2D  =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    hREC_2D  =   new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
     
     for ( Int_t iHisto = 0; iHisto < nBinPT1D; iHisto++ )
     {
@@ -169,6 +169,7 @@ void PreProcessing_data ( string fFileName = "" )
     // Evaluating entries and saving them for later
     Int_t nEvents = TPhiCandidate->GetEntries();
     hUtlEntry     ->SetBinContent(1,nEvents);
+    Int_t nOverflow = 0;
 
     // Starting cycle
     for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
@@ -178,10 +179,17 @@ void PreProcessing_data ( string fFileName = "" )
         
         if ( iEvent%1000000 == 0 && iEvent != 0) fPrintLoopTimer("Analysis",iEvent,nEvents);
         
+        if ( (int)(evPhiCandidate.nPhi) >= 153 )
+        {
+            cout << "[INFO] Skipping overflow event" << endl;
+            nOverflow++;
+            continue;
+        }
+
         TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
         U_nAccept = 0;
 
-        for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )
+        for ( Int_t iPhi = 0; iPhi < (int)(evPhiCandidate.nPhi); iPhi++ )
         {
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
             if ( !fCutRapidity      ( LPhi_candidate1.Rapidity() )  )   continue;
@@ -233,8 +241,10 @@ void PreProcessing_data ( string fFileName = "" )
             }
         }
     }
-    
+
     fStopTimer("Analysis");
+    cout << "[INFO] The overflow events were: " << nOverflow << endl;
+    cout << "[INFO] The overflow events were the " << 100*(nOverflow*1.)/(1.*nEvents) << "% of total events" << endl;
 
     //--------------------------//
     //  Printing output objects //
