@@ -26,6 +26,7 @@ enum            fitresults2D
 auto const  bPythiaTest             =   kTRUE;
 
 //-// File Names
+auto const  fTrgPreProc             =   "./result/trigger/PPHistograms.root";
 auto const  fInvMasHist             =   "./result/InvariantMassHistograms.root";
 auto const  fEfficiHist             =   "./result/Efficiencies_MCTruth.root";
 auto const  fFitResHist             =   "./result/InvariantMassFitResultsPlots.root";

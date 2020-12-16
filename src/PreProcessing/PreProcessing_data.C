@@ -181,7 +181,7 @@ void PreProcessing_data ( string fFileName = "" )
     Int_t nOverflow = 0;
 
     // Starting cycle
-    for ( Int_t iEvent = 0; iEvent < nEvents*0+3; iEvent++ )
+    for ( Int_t iEvent = 0; iEvent < nEvents*0+1.e7; iEvent++ )
     {
         gROOT->SetBatch(true);
         // Recovering events
@@ -316,8 +316,16 @@ void PreProcessing_data ( string fFileName = "" )
     //--------------------------//
     //  Printing output objects //
     //--------------------------//
+
+    // >> Trigger Analysis
+    TFile *outFil1  =   new TFile   (fTrgPreProc,"recreate");
     
-    TFile *outFile  =   new TFile   (fInvMasHist,"recreate");
+    hTriggerEvt->Write();
+    
+    outFil1->Close();
+
+    // >> Yield Analysis
+    TFile *outFil2  =   new TFile   (fInvMasHist,"recreate");
     
     hUtlEntry->Write();
     hREF_1D_in_Rap->Write();
@@ -343,6 +351,7 @@ void PreProcessing_data ( string fFileName = "" )
         }
     }
     
-    outFile->Close();
+    outFil2->Close();
+    
     insFileDT->Close();
 }
