@@ -87,6 +87,8 @@ void PreProcessing_data ( string fFileName = "" )
     Int_t       U_nAccept;
     
     // Creating the histograms-------------------------------------------------------------------------------
+
+    // >>->> YIELD ANALYSIS //
     // 1D
     TH1F       *hREC_1D;
     TH1F      **hREC_1D_in_PT               = new TH1F     *[nBinPT1D];
@@ -98,7 +100,7 @@ void PreProcessing_data ( string fFileName = "" )
     TH2F      **hREC_1D_in_Rap_2D_Bin       = new TH2F     *[nBinRap_];
     TH2F      **hREC_2D_in_Rap              = new TH2F     *[nBinRap_];
     TH2F     ***hREC_2D_in_PT               = new TH2F    **[nBinPT2D];
-    
+
     hName = "hREC_1D_in_Rap";
     hTitle= "Rapidity difference for #phi meson candidates";
     hREC_1D_in_Rap  =   new TH1F (hName,hTitle,100,-1.,1.);
@@ -152,6 +154,13 @@ void PreProcessing_data ( string fFileName = "" )
             SetAxis(hREC_2D_in_PT[iHisto][jHisto],"IM 2D");
         }
     }
+
+    // >>->> CORRELATION ANALYSIS //
+
+    // >>->> TRIGGER ANALYSIS //
+    hName   =   "";
+    hTitle  =   "";
+    TH1F   *hTriggerEvt =   new TH1F (hName,hTitle,5,-0.5,4.5);
     
     // Creating the Number of events Result Histogram------------------------------------------------------------------
     hName                       = "Entry_DT";
@@ -172,10 +181,12 @@ void PreProcessing_data ( string fFileName = "" )
     Int_t nOverflow = 0;
 
     // Starting cycle
-    for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
+    for ( Int_t iEvent = 0; iEvent < nEvents*0+3; iEvent++ )
     {
+        gROOT->SetBatch(true);
         // Recovering events
         TPhiCandidate->GetEntry(iEvent);
+        gROOT->SetBatch(false);
         
         if ( iEvent%1000000 == 0 && iEvent != 0) fPrintLoopTimer("Analysis",iEvent,nEvents);
         
@@ -192,33 +203,35 @@ void PreProcessing_data ( string fFileName = "" )
         for ( Int_t iPhi = 0; iPhi < (int)(evPhiCandidate.nPhi); iPhi++ )
         {
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
-            if ( !fCutRapidity      ( LPhi_candidate1.Rapidity() )  )   continue;
-            if ( !fCutTransverseMom ( LPhi_candidate1.Pt() )        )   continue;
-            if ( !fCutMultiplicity  ( evPhiCandidate.Multiplicity ) )   continue;
+            if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),LPhi_candidate1.Pt(),evPhiCandidate.Multiplicity) ) continue;
             U_AccCand[U_nAccept] = iPhi;
             U_nAccept++;
         }
         for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )
         {
+            // Building First Candidate
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[U_AccCand[iPhi]],evPhiCandidate.Py[U_AccCand[iPhi]],evPhiCandidate.Pz[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[iPhi]]);
-            
+
+            // >>->> 1-Dimensional Analysis Fill
+            // Full Yield
             hREC_1D                                                     ->  Fill(evPhiCandidate.InvMass[iPhi]);
+
+            // pT-Differential Yield
             hREC_1D_in_PT[fGetBinPT1D(LPhi_candidate1.Pt())]            ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]]);
             hREC_1D_in_PT_2D_bin[fGetBinPT2D(LPhi_candidate1.Pt())]     ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]]);
+
+            // Correlation
             hREF_1D_in_Rap                                              ->  Fill(LPhi_candidate1.Rapidity());
+
             for ( Int_t jPhi = 0; jPhi < U_nAccept; jPhi++ )
             {
-                // Non equal candidates
-                if ( iPhi == jPhi ) continue;
-                
+                // Building Second Candidate
                 LPhi_candidate2.SetXYZM(evPhiCandidate.Px[U_AccCand[jPhi]],evPhiCandidate.Py[U_AccCand[jPhi]],evPhiCandidate.Pz[U_AccCand[jPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]]);
+
+                // Selecting valid candidates
+                if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi) ) continue;
                 
-                // Only non overlapping couples of Kaons
-                if ( evPhiCandidate.iKaon[U_AccCand[iPhi]] == evPhiCandidate.iKaon[U_AccCand[jPhi]] ) continue;
-                if ( evPhiCandidate.jKaon[U_AccCand[iPhi]] == evPhiCandidate.jKaon[U_AccCand[jPhi]] ) continue;
-                if ( evPhiCandidate.iKaon[U_AccCand[iPhi]] == evPhiCandidate.jKaon[U_AccCand[jPhi]] ) continue;
-                if ( evPhiCandidate.jKaon[U_AccCand[iPhi]] == evPhiCandidate.iKaon[U_AccCand[jPhi]] ) continue;
-                
+                // >>->> 2-Dimensional Analysis Fill
                 hREC_2D_in_PT[fGetBinPT2D(LPhi_candidate1.Pt())][fGetBinPT2D(LPhi_candidate2.Pt())] ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
                 hREC_2D                                                                             ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
                 
@@ -238,6 +251,17 @@ void PreProcessing_data ( string fFileName = "" )
                 }
                 hREC_2D_in_Rap[fGetBinRap_(fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity()))]->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
                 */
+                for ( Int_t kPhi = 0; kPhi < U_nAccept; kPhi++ )
+                {
+                    // Selecting valid candidates
+                    if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi, kPhi) ) continue;
+
+                    for ( Int_t lPhi = 0; lPhi < U_nAccept; lPhi++ )
+                    {
+                        // Selecting valid candidates
+                        if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi, kPhi, lPhi) ) continue;
+                    }
+                }
             }
         }
     }

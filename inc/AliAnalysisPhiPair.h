@@ -331,6 +331,95 @@ Int_t   fGetBinNTup (Float_t input_value )
 }
 
 //------------------------------//
+//      CUTS UTILITIES          //
+//------------------------------//
+
+bool    fCutRapidity        ( Double_t  dRapidity )
+{
+    if ( fabs(dRapidity) <= 0.5 ) return true;
+    return false;
+}
+
+bool    fCutTransverseMom   ( Double_t  dTransverseMom )
+{
+    if ( dTransverseMom <= fMinPT1D ) return false;
+    if ( dTransverseMom >= fMaxPT1D ) return false;
+    return true;
+}
+
+bool    fCutMultiplicity    ( Double_t  dMultiplicity )
+{
+    if ( dMultiplicity <= fMinMult ) return false;
+    if ( dMultiplicity >= fMaxMult ) return false;
+    return true;
+}
+
+bool    fAcceptCandidate ( Double_t  dRapidity, Double_t dTransverseMom, Double_t  dMultiplicity )
+{
+    if ( !fCutRapidity(dRapidity)           ) return false;
+    if ( !fCutTransverseMom(dTransverseMom) ) return false;
+    if ( !fCutMultiplicity(dMultiplicity)   ) return false;
+    return true;
+}
+
+bool    fCheckCoupleKaons( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandidates[], Int_t iPhi, Int_t jPhi )
+{
+    if ( SPhiCandidates.iKaon[aAccCandidates[iPhi]] == SPhiCandidates.iKaon[aAccCandidates[jPhi]] ) return false;
+    if ( SPhiCandidates.jKaon[aAccCandidates[iPhi]] == SPhiCandidates.jKaon[aAccCandidates[jPhi]] ) return false;
+    if ( SPhiCandidates.iKaon[aAccCandidates[iPhi]] == SPhiCandidates.jKaon[aAccCandidates[jPhi]] ) return false;
+    if ( SPhiCandidates.jKaon[aAccCandidates[iPhi]] == SPhiCandidates.iKaon[aAccCandidates[jPhi]] ) return false;
+    return true;
+}
+
+bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandidates[], Int_t iPhi, Int_t jPhi )
+{
+    // Non equal candidates
+    if ( iPhi == jPhi ) return false;
+                
+    // Only non overlapping couples of Kaons
+    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,iPhi,jPhi) ) return false;
+
+    return true;
+}
+
+bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandidates[], Int_t iPhi, Int_t jPhi, Int_t kPhi )
+{
+    if ( !fAcceptCandidate(SPhiCandidates,aAccCandidates,iPhi,jPhi) ) return false;
+
+    // Non equal candidates
+    if ( iPhi == kPhi ) return false;
+    if ( jPhi == kPhi ) return false;
+                
+    // Only non overlapping couples of Kaons
+    // >> iPhi vs kPhi
+    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,iPhi,kPhi) ) return false;
+    // >> jPhi vs kPhi
+    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,jPhi,kPhi) ) return false;
+    
+    return true;
+}
+
+bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandidates[], Int_t iPhi, Int_t jPhi, Int_t kPhi, Int_t lPhi )
+{
+    if ( !fAcceptCandidate(SPhiCandidates,aAccCandidates,iPhi,jPhi,kPhi) ) return false;
+    
+    // Non equal candidates
+    if ( iPhi == lPhi ) return false;
+    if ( jPhi == lPhi ) return false;
+    if ( kPhi == lPhi ) return false;
+                
+    // Only non overlapping couples of Kaons
+    // >> iPhi vs lPhi
+    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,iPhi,lPhi) ) return false;
+    // >> jPhi vs lPhi
+    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,jPhi,lPhi) ) return false;
+    // >> kPhi vs lPhi
+    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,kPhi,lPhi) ) return false;
+    
+    return true;
+}
+
+//------------------------------//
 //    HISTOGRAM UTILITIES       //
 //------------------------------//
 
@@ -393,26 +482,6 @@ void    SetAxis             ( Tclass * aTarget, string aOption = "" )
             aTarget->GetYaxis()->SetTitleOffset(1.15);
         }
     }
-}
-
-bool    fCutRapidity        ( Double_t  dRapidity )
-{
-    if ( fabs(dRapidity) <= 0.5 ) return true;
-    return false;
-}
-
-bool    fCutTransverseMom   ( Double_t  dTransverseMom )
-{
-    if ( dTransverseMom <= fMinPT1D ) return false;
-    if ( dTransverseMom >= fMaxPT1D ) return false;
-    return true;
-}
-
-bool    fCutMultiplicity    ( Double_t  dMultiplicity )
-{
-    if ( dMultiplicity <= fMinMult ) return false;
-    if ( dMultiplicity >= fMaxMult ) return false;
-    return true;
 }
 
 //------------------------------//
