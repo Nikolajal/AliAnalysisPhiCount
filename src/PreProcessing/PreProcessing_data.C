@@ -17,6 +17,10 @@ void PreProcessing_data ( string fFileName = "" )
     TTree   *TPhiCandidate  =   (TTree*)insFileDT->Get(fPhiCandidate_Tree);
     TTree   *TKaonCandidate =   (TTree*)insFileDT->Get(fKaonCandidate_Tree);
     
+    // Define tree data structures
+    Struct_PhiCandidate     evPhiCandidate;
+    Struct_KaonCandidate    evKaonCandidate;
+
     if ( !TPhiCandidate && !TKaonCandidate )
     {
         cout << "Input Data Tree not found!" << endl;
@@ -25,33 +29,49 @@ void PreProcessing_data ( string fFileName = "" )
     if ( !TPhiCandidate )
     {
         cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
+        TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
+        TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
+        TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
+        TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
+        TKaonCandidate-> SetBranchAddress   ("Pz",              &evKaonCandidate.Pz);
+        TKaonCandidate-> SetBranchAddress   ("Charge",          &evKaonCandidate.Charge);
+        TKaonCandidate-> SetBranchAddress   ("TOFSigma",        &evKaonCandidate.SigmaTOF);
+        TKaonCandidate-> SetBranchAddress   ("TPCSigma",        &evKaonCandidate.SigmaTPC);
     }
-    if ( !TKaonCandidate )
+    else if ( !TKaonCandidate )
     {
         cout << "[INFO] No KaonCandidate Tree, switching to Phi Analysis" << endl;
+        TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiCandidate.Multiplicity);
+        TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
+        TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
+        TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
+        TPhiCandidate-> SetBranchAddress    ("Pz",              &evPhiCandidate.Pz);
+        TPhiCandidate-> SetBranchAddress    ("InvMass",         &evPhiCandidate.InvMass);
+        TPhiCandidate-> SetBranchAddress    ("iKaon",           &evPhiCandidate.iKaon);
+        TPhiCandidate-> SetBranchAddress    ("jKaon",           &evPhiCandidate.jKaon);
+    }
+    else
+    {
+        TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiCandidate.Multiplicity);
+        TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
+        TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
+        TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
+        TPhiCandidate-> SetBranchAddress    ("Pz",              &evPhiCandidate.Pz);
+        TPhiCandidate-> SetBranchAddress    ("InvMass",         &evPhiCandidate.InvMass);
+        TPhiCandidate-> SetBranchAddress    ("iKaon",           &evPhiCandidate.iKaon);
+        TPhiCandidate-> SetBranchAddress    ("jKaon",           &evPhiCandidate.jKaon);
+        
+        TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
+        TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
+        TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
+        TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
+        TKaonCandidate-> SetBranchAddress   ("Pz",              &evKaonCandidate.Pz);
+        TKaonCandidate-> SetBranchAddress   ("Charge",          &evKaonCandidate.Charge);
+        TKaonCandidate-> SetBranchAddress   ("TOFSigma",        &evKaonCandidate.SigmaTOF);
+        TKaonCandidate-> SetBranchAddress   ("TPCSigma",        &evKaonCandidate.SigmaTPC);
+    
     }
     
-    // Define tree data structures
-    Struct_PhiCandidate     evPhiCandidate;
-    Struct_KaonCandidate    evKaonCandidate;
-    
-    TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiCandidate.Multiplicity);
-    TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
-    TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
-    TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
-    TPhiCandidate-> SetBranchAddress    ("Pz",              &evPhiCandidate.Pz);
-    TPhiCandidate-> SetBranchAddress    ("InvMass",         &evPhiCandidate.InvMass);
-    TPhiCandidate-> SetBranchAddress    ("iKaon",           &evPhiCandidate.iKaon);
-    TPhiCandidate-> SetBranchAddress    ("jKaon",           &evPhiCandidate.jKaon);
-    
-    TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
-    TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
-    TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
-    TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
-    TKaonCandidate-> SetBranchAddress   ("Pz",              &evKaonCandidate.Pz);
-    TKaonCandidate-> SetBranchAddress   ("Charge",          &evKaonCandidate.Charge);
-    TKaonCandidate-> SetBranchAddress   ("TOFSigma",        &evKaonCandidate.SigmaTOF);
-    TKaonCandidate-> SetBranchAddress   ("TPCSigma",        &evKaonCandidate.SigmaTPC);
     
     //---------------------//
     //  Setting up output  //
