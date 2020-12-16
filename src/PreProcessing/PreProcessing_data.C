@@ -190,13 +190,21 @@ void PreProcessing_data ( string fFileName = "" )
         
         if ( iEvent%1000000 == 0 && iEvent != 0) fPrintLoopTimer("Analysis",iEvent,nEvents);
         
+        // Skipping overflow
         if ( (int)(evPhiCandidate.nPhi) >= 153 )
         {
             cout << "[INFO] Skipping overflow event" << endl;
             nOverflow++;
             continue;
         }
+        // Skipping non candidate events
+        if ( (int)(evPhiCandidate.nPhi) == 0 )
+        {
+            hTriggerEvt->Fill(0);
+            continue;
+        } 
 
+        // Utilities
         TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
         U_nAccept = 0;
 
