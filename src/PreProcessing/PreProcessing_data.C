@@ -147,13 +147,82 @@ void PreProcessing_data ( string fFileName = "" )
         }
     }
 
-    // >>->> CORRELATION ANALYSIS //
+    // >> MULTIPLICITY ANALYSIS //
 
-    // >>->> TRIGGER ANALYSIS //
-    hName   =   "";
-    hTitle  =   "";
+    // >>-->> 1-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH1F      **hREC_1D_in_MT               = new TH1F     *[nBinMult];
+    TH1F     ***hREC_1D_in_PT_MT            = new TH1F    **[nBinMult];
+    //
+    //  Defining cumulative histogram over measurable pT
+    //  Defining pT-Differential histograms over measurable pT
+    //
+    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    {
+        hName = Form("hREC_1D_in_MT_%i",iHisto);
+        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fMinPT1D,fMaxPT1D,fArrMult[iHisto],fArrMult[iHisto+1]);
+        hREC_1D_in_MT[iHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+        SetAxis(hREC_1D_in_MT[iHisto],"IM 1D");
+
+        hREC_1D_in_PT_MT[iHisto] = new TH1F     *[nBinPT1D];
+
+        for ( Int_t jHisto = 0; jHisto < nBinPT1D; jHisto++ )
+        {
+            hName = Form("hREC_1D_in_MT_PT_%i_%i",iHisto,jHisto);
+            hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fArrPT1D[jHisto],fArrPT1D[jHisto+1],fArrMult[iHisto],fArrMult[iHisto+1]);
+            hREC_1D_in_PT_MT[iHisto][jHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+            SetAxis(hREC_1D_in_PT_MT[iHisto][jHisto],"IM 1D");
+        }
+    }
+
+    // >>-->> 2-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH2F      **hREC_2D_in_MT               = new TH2F     *[nBinMult];
+    TH1F     ***hREC_1D_in_MT_in_PT_2D_bin  = new TH1F    **[nBinMult];
+    TH2F    ****hREC_2D_in_MT_in_PT         = new TH2F   ***[nBinMult];
+    //
+    //  Defining cumulative histogram over measurable pT
+    //  Defining pT-Differential histograms over measurable pT
+    //
+    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    {
+        hName   =   Form("hREC_2D_in_MT_%i",iHisto);
+        hTitle  =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fMinPT2D,fMaxPT2D,fMinPT2D,fMaxPT2D,fArrMult[iHisto],fArrMult[iHisto+1]);
+        hREC_2D_in_MT[iHisto]   =   new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+
+        hREC_1D_in_MT_in_PT_2D_bin[iHisto]  = new TH1F     *[nBinPT2D];
+        hREC_2D_in_MT_in_PT[iHisto]         = new TH2F    **[nBinPT2D];
+        for ( Int_t jHisto = 0; jHisto < nBinPT2D; jHisto++ )
+        {
+            hName = Form("hREC_1D_in_PT_2D_bin_%i_%i",iHisto,jHisto);
+            hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrMult[iHisto],fArrMult[iHisto+1]);
+            hREC_1D_in_MT_in_PT_2D_bin[iHisto][jHisto]  = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+            SetAxis(hREC_1D_in_MT_in_PT_2D_bin[iHisto][jHisto],"IM 1D");
+            
+            hREC_2D_in_MT_in_PT[iHisto][jHisto]         = new TH2F     *[nBinPT2D];
+            
+            for ( Int_t kHisto = 0; kHisto < nBinPT2D; kHisto++ )
+            {
+                hName = Form("hREC_2D_in_PT_%i_%i_%i",iHisto,jHisto,kHisto);
+                hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1],fArrMult[iHisto],fArrMult[iHisto+1]);
+                hREC_2D_in_MT_in_PT[iHisto][jHisto][kHisto]    = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+                SetAxis(hREC_2D_in_MT_in_PT[iHisto][jHisto][kHisto],"IM 2D");
+            }
+        }
+    }
+
+    // >> TRIGGER ANALYSIS //
+    //
+    //  Overall Triggering in Events
+    //
+    hName   =   "hTrigger";
+    hTitle  =   "Triggered events for NTuples candidates";
     TH1F   *hTriggerEvt =   new TH1F (hName,hTitle,5,-0.5,4.5);
-    
+
     //-------------------------//
     //  Filling output objects //
     //-------------------------//
@@ -311,16 +380,20 @@ void PreProcessing_data ( string fFileName = "" )
     //--------------------------//
     //  Printing output objects //
     //--------------------------//
-
+    //
     // >> Trigger Analysis
+    //
     TFile *outFil1  =   new TFile   (fTrgPreProc,"recreate");
     
     hTriggerEvt->Write();
     
     outFil1->Close();
 
+    //
     // >> Yield Analysis
+    //
     TFile *outFil2  =   new TFile   (fYldPreProc,"recreate");
+    
     hREC_1D->Write();
     for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)
     {
@@ -336,8 +409,34 @@ void PreProcessing_data ( string fFileName = "" )
             hREC_2D_in_PT[iHisto][jHisto]->Write();
         }
     }
-    
     outFil2->Close();
+
+    //
+    // >> Multiplicity Analysis
+    //
+    TFile *outFil3  =   new TFile   (fMltPreProc,"recreate");
+    
+    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    {
+        hREC_1D_in_MT[iHisto]->Write();
+        hREC_2D_in_MT[iHisto]->Write();
+
+        for ( Int_t jHisto = 0; jHisto < nBinPT1D; jHisto++ )
+        {
+            hREC_1D_in_PT_MT[iHisto][jHisto]->Write();
+        }
+        for ( Int_t jHisto = 0; jHisto < nBinPT2D; jHisto++ )
+        {
+            hREC_1D_in_MT_in_PT_2D_bin[iHisto][jHisto]->Write();
+            
+            for ( Int_t kHisto = 0; kHisto < nBinPT2D; kHisto++ )
+            {
+                hREC_2D_in_MT_in_PT[iHisto][jHisto][kHisto]->Write();
+            }
+        }
+    }
+
+    outFil3->Close();
 
     insFileDT->Close();
 }

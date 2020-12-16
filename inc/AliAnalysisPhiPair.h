@@ -30,6 +30,7 @@ auto const  bPythiaTest             =   kTRUE;
 //-//-// PreProcessing
 auto const  fTrgPreProc             =   "./result/trigger/PPHistograms.root";
 auto const  fYldPreProc             =   "./result/yield/PPHistograms.root";
+auto const  fMltPreProc             =   "./result/multiplicity/PPHistograms.root";
 
 //-//-// Others
 auto const  fInvMasHist             =   "./result/InvariantMassHistograms.root";
