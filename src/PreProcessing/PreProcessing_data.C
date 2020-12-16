@@ -217,7 +217,7 @@ void PreProcessing_data ( string fFileName = "" )
                 hREC_1D_in_Rap->    Fill(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity(),0.5);
                 hREC_1D_in_Rap->    Fill( fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity()) ,0.5);
                 hREC_1D_in_Rap_All->Fill( (LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity()) ,0.5);
-                
+                 /*
                 if ( fGetBinRap_(fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity())) == -1 )
                 {
                     cout << endl;
@@ -227,7 +227,7 @@ void PreProcessing_data ( string fFileName = "" )
                     cout << "DRap:" << fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity()) << endl;
                     cout << endl;
                     continue;
-                }
+                }*/
                 hREC_2D_in_Rap[fGetBinRap_(fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity()))]->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
                 
             }
