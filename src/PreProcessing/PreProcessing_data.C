@@ -167,20 +167,20 @@ void PreProcessing_data ( string fFileName = "" )
     fStartTimer("Analysis");
     
     // Evaluating entries and saving them for later
-    Int_t nEntries = TPhiCandidate->GetEntries();
-    hUtlEntry     ->SetBinContent(1,nEntries);
-    
+    Int_t nEvents = TPhiCandidate->GetEntries();
+    hUtlEntry     ->SetBinContent(1,nEvents);
+
     // Starting cycle
-    for ( Int_t iEvent = 0; iEvent < nEntries; iEvent++ )
+    for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
     {
         // Recovering events
         TPhiCandidate->GetEntry(iEvent);
         
-        if ( iEvent%1000000 == 0 && iEvent != 0) fPrintLoopTimer("Analysis",iEvent,nEntries);
+        if ( iEvent%1000000 == 0 && iEvent != 0) fPrintLoopTimer("Analysis",iEvent,nEvents);
         
         TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
         U_nAccept = 0;
-        
+
         for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )
         {
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
@@ -227,9 +227,9 @@ void PreProcessing_data ( string fFileName = "" )
                     cout << "DRap:" << fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity()) << endl;
                     cout << endl;
                     continue;
-                }*/
+                }
                 hREC_2D_in_Rap[fGetBinRap_(fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity()))]->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
-                
+                */
             }
         }
     }
