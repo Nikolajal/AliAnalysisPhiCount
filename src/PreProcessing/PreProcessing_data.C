@@ -88,39 +88,23 @@ void PreProcessing_data ( string fFileName = "" )
     
     // Creating the histograms-------------------------------------------------------------------------------
 
-    // >>->> YIELD ANALYSIS //
-    // 1D
+    // >> YIELD ANALYSIS //
+
+    // >>-->> 1-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
     TH1F       *hREC_1D;
     TH1F      **hREC_1D_in_PT               = new TH1F     *[nBinPT1D];
-    TH1F       *hREC_1D_in_Rap, *hREC_1D_in_Rap_All, *hREF_1D_in_Rap;
-    
-    // 2D
-    TH2F       *hREC_2D;
-    TH1F      **hREC_1D_in_PT_2D_bin        = new TH1F     *[nBinPT2D];
-    TH2F      **hREC_1D_in_Rap_2D_Bin       = new TH2F     *[nBinRap_];
-    TH2F      **hREC_2D_in_Rap              = new TH2F     *[nBinRap_];
-    TH2F     ***hREC_2D_in_PT               = new TH2F    **[nBinPT2D];
-
-    hName = "hREC_1D_in_Rap";
-    hTitle= "Rapidity difference for #phi meson candidates";
-    hREC_1D_in_Rap  =   new TH1F (hName,hTitle,100,-1.,1.);
-    
-    hName = "hREC_1D_in_Rap_All";
-    hTitle= "Rapidity difference for #phi meson candidates";
-    hREC_1D_in_Rap_All  =   new TH1F (hName,hTitle,100,-1.,1.);
-    
-    hName = "hREF_1D_in_Rap";
-    hTitle= "Rapidity distribution for #phi meson candidates";
-    hREF_1D_in_Rap  =   new TH1F (hName,hTitle,100,-.5,.5);
-    
-    hName = "hREC_1D";
-    hTitle= "--";
-    hREC_1D  =   new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
-    
-    hName = "hREC_2D";
-    hTitle= "--";
-    hREC_2D  =   new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
-    
+    //
+    //  Defining cumulative histogram over measurable pT
+    //
+    hName       =   Form("hREC_1D_in_PT");
+    hTitle      =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fMinPT1D,fMaxPT1D);
+    hREC_1D     =   new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+    //
+    //  Defining pT-Differential histograms over measurable pT
+    //
     for ( Int_t iHisto = 0; iHisto < nBinPT1D; iHisto++ )
     {
         hName = Form("hREC_1D_in_PT_%i",iHisto);
@@ -128,15 +112,23 @@ void PreProcessing_data ( string fFileName = "" )
         hREC_1D_in_PT[iHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
         SetAxis(hREC_1D_in_PT[iHisto],"IM 1D");
     }
-    
-    for ( Int_t iHisto = 0; iHisto < nBinRap_; iHisto++ )
-    {
-        hName = Form("hREC_2D_in_Rap_%i",iHisto);
-        hTitle= Form("m_{K^{+}K^{-}} in |#Delta y| range [%.1f-%.1f]",fArrRap_[iHisto],fArrRap_[iHisto+1]);
-        hREC_2D_in_Rap[iHisto]   = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
-        SetAxis(hREC_2D_in_Rap[iHisto],"IM 2D");
-    }
-    
+
+    // >>-->> 2-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH2F       *hREC_2D;
+    TH1F      **hREC_1D_in_PT_2D_bin        = new TH1F     *[nBinPT2D];
+    TH2F     ***hREC_2D_in_PT               = new TH2F    **[nBinPT2D];
+    //
+    //  Defining cumulative histogram over measurable pT
+    //
+    hName       =   Form("hREC_2D_in_PT");
+    hTitle      =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fMinPT2D,fMaxPT2D,fMinPT2D,fMaxPT2D);
+    hREC_2D     =   new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+    //
+    //  Defining pT-Differential histograms over measurable pT
+    //
     for ( Int_t iHisto = 0; iHisto < nBinPT2D; iHisto++ )
     {
         hName = Form("hREC_1D_in_PT_2D_bin_%i",iHisto);
@@ -162,13 +154,6 @@ void PreProcessing_data ( string fFileName = "" )
     hTitle  =   "";
     TH1F   *hTriggerEvt =   new TH1F (hName,hTitle,5,-0.5,4.5);
     
-    // Creating the Number of events Result Histogram------------------------------------------------------------------
-    hName                       = "Entry_DT";
-    hTitle                      = "Events in DT";
-    TH1F *          hUtlEntry   = new TH1F (hName,hTitle,1,0.5,1.5);
-    hUtlEntry                   ->GetXaxis()->SetTitle("");
-    hUtlEntry                   ->GetYaxis()->SetTitle("Events");
-    
     //-------------------------//
     //  Filling output objects //
     //-------------------------//
@@ -177,7 +162,6 @@ void PreProcessing_data ( string fFileName = "" )
     
     // Evaluating entries and saving them for later
     Int_t nEvents = TPhiCandidate->GetEntries();
-    hUtlEntry     ->SetBinContent(1,nEvents);
     Int_t nOverflow = 0;
 
     // Starting cycle
@@ -186,7 +170,7 @@ void PreProcessing_data ( string fFileName = "" )
         // Recovering events
         TPhiCandidate->GetEntry(iEvent);
         
-        if ( iEvent%1000000 == 0 && iEvent != 0) fPrintLoopTimer("Analysis",iEvent,nEvents);
+        fPrintLoopTimer("Analysis",iEvent,nEvents,1000000);
 
         // Skipping overflow
         if ( (int)(evPhiCandidate.nPhi) >= 153 )
@@ -220,66 +204,62 @@ void PreProcessing_data ( string fFileName = "" )
         }
         for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )
         {
+            // Must have at least 1 candidate
+            if ( U_nAccept < 1 ) break;
+        
+            // Selecting valid candidates
+            if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi) ) continue;
+
             // Building First Candidate
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[U_AccCand[iPhi]],evPhiCandidate.Py[U_AccCand[iPhi]],evPhiCandidate.Pz[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[iPhi]]);
 
-            // >>->> 1-Dimensional Analysis Fill
-            // Trigger
+            // >> 1-Dimensional Analysis Fill   //
+            //
+            // >>-->> Trigger
+            //
             if ( !fCheckFill1 )
             {
                 hTriggerEvt->Fill(1);
                 fCheckFill1 = true;
             }
-
-            // Full Yield
+            // 
+            // >>-->> Yield
+            //
+            Int_t indexPT1D =   fGetBinPT1D(LPhi_candidate1.Pt());
+            Int_t indexPT2D =   fGetBinPT2D(LPhi_candidate1.Pt());
             hREC_1D                                                     ->  Fill(evPhiCandidate.InvMass[iPhi]);
-
-            // pT-Differential Yield
-            hREC_1D_in_PT[fGetBinPT1D(LPhi_candidate1.Pt())]            ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]]);
-            hREC_1D_in_PT_2D_bin[fGetBinPT2D(LPhi_candidate1.Pt())]     ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]]);
-
-            // Correlation
-            hREF_1D_in_Rap                                              ->  Fill(LPhi_candidate1.Rapidity());
+            hREC_1D_in_PT[indexPT1D]                                    ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]]);
+            hREC_1D_in_PT_2D_bin[indexPT2D]                             ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]]);
 
             for ( Int_t jPhi = 0; jPhi < U_nAccept; jPhi++ )
             {
                 // Must have at least 2 candidates
                 if ( U_nAccept < 2 ) break;
 
-                // Building Second Candidate
-                LPhi_candidate2.SetXYZM(evPhiCandidate.Px[U_AccCand[jPhi]],evPhiCandidate.Py[U_AccCand[jPhi]],evPhiCandidate.Pz[U_AccCand[jPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]]);
-
                 // Selecting valid candidates
                 if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi) ) continue;
                 
-                // >>->> 2-Dimensional Analysis Fill
-                // Trigger
+                // Building Second Candidate
+                LPhi_candidate2.SetXYZM(evPhiCandidate.Px[U_AccCand[jPhi]],evPhiCandidate.Py[U_AccCand[jPhi]],evPhiCandidate.Pz[U_AccCand[jPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]]);
+
+
+                // >> 2-Dimensional Analysis Fill   //
+                //
+                // >>-->> Trigger
+                //
                 if ( !fCheckFill2 )
                 {
                     hTriggerEvt->Fill(2);
                     fCheckFill2 = true;
                 }
-
-                // Full Yield
-                hREC_2D_in_PT[fGetBinPT2D(LPhi_candidate1.Pt())][fGetBinPT2D(LPhi_candidate2.Pt())] ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
-                hREC_2D                                                                             ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
+                // 
+                // >>-->> Yield
+                //
+                Int_t indexPT2D =   fGetBinPT2D(LPhi_candidate1.Pt());
+                Int_t jndexPT2D =   fGetBinPT2D(LPhi_candidate2.Pt());
+                hREC_2D                                                     ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
+                hREC_2D_in_PT[indexPT2D][jndexPT2D]                         ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
                 
-                hREC_1D_in_Rap->    Fill(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity(),0.5);
-                hREC_1D_in_Rap->    Fill( fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity()) ,0.5);
-                hREC_1D_in_Rap_All->Fill( (LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity()) ,0.5);
-                 /*
-                if ( fGetBinRap_(fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity())) == -1 )
-                {
-                    cout << endl;
-                    cout << fGetBinRap_(fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity())) << endl;
-                    cout << "Rap1:" << LPhi_candidate1.Rapidity() << endl;
-                    cout << "Rap2:" << LPhi_candidate2.Rapidity() << endl;
-                    cout << "DRap:" << fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity()) << endl;
-                    cout << endl;
-                    continue;
-                }
-                hREC_2D_in_Rap[fGetBinRap_(fabs(LPhi_candidate1.Rapidity()-LPhi_candidate2.Rapidity()))]->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
-                */
                 for ( Int_t kPhi = 0; kPhi < U_nAccept; kPhi++ )
                 {
                     // Must have at least 3 candidates
@@ -326,7 +306,7 @@ void PreProcessing_data ( string fFileName = "" )
     //--------------------------//
     
     // >> Trigger Analysis
-    hTriggerEvt->Scale(1./nEvents);
+    hTriggerEvt->Scale(100./nEvents);
 
     //--------------------------//
     //  Printing output objects //
@@ -340,22 +320,13 @@ void PreProcessing_data ( string fFileName = "" )
     outFil1->Close();
 
     // >> Yield Analysis
-    TFile *outFil2  =   new TFile   (fInvMasHist,"recreate");
-    
-    hUtlEntry->Write();
-    hREF_1D_in_Rap->Write();
-    hREC_1D_in_Rap->Write();
-    hREC_1D_in_Rap_All->Write();
+    TFile *outFil2  =   new TFile   (fYldPreProc,"recreate");
     hREC_1D->Write();
-    hREC_2D->Write();
     for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)
     {
         hREC_1D_in_PT[iHisto]   ->Write();
     }
-    for (int iHisto = 0; iHisto < nBinRap_; iHisto++)
-    {
-        hREC_2D_in_Rap[iHisto]   ->Write();
-    }
+    hREC_2D->Write();
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
     {
         hREC_1D_in_PT_2D_bin[iHisto]   ->Write();

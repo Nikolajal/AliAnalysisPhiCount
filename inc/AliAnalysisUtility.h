@@ -79,21 +79,24 @@ auto const  TeV             =   1e-3;
 
 void    fStartTimer( string fTimerName )    {
     fBenchmark->Start(fTimerName.c_str());
-    cout << "Starting " << fTimerName.c_str() << endl;
+    cout << "[INFO] Starting " << fTimerName.c_str() << endl;
 }
 
 void    fStopTimer( string fTimerName )     {
     fBenchmark->Stop(fTimerName.c_str());
-    cout << "Stopping " << fTimerName.c_str() << endl;
+    cout << "[INFO] Stopping " << fTimerName.c_str() << endl;
+    Float_t elapsed = fBenchmark->GetRealTime(fTimerName.c_str());
+    printf("[INFO] It took %02.0f:%02.0f \n",elapsed / 60., ((int)(elapsed) % 60)*1. );
 }
 
-void    fPrintLoopTimer( string fTimerName, Int_t iEvent, Int_t nEntries )   {
+void    fPrintLoopTimer( string fTimerName, Int_t iEvent, Int_t nEntries, Int_t iPrintInterval )   {
+    if ( iEvent%iPrintInterval != 0 || iEvent == 0 ) return;
     fBenchmark->Stop(fTimerName.c_str());
     Float_t frac = (Float_t)iEvent / (Float_t)nEntries;
     Float_t elapsed = fBenchmark->GetRealTime(fTimerName.c_str());
     Float_t speed = (Float_t)iEvent / elapsed;
     Float_t eta = (Float_t)nEntries / speed - elapsed;
-    printf("[INFO] Event # %4.d mln | %02.0f %% | %7.f events/s | Time: %02.0f:%02.0f | ETA: %02.0f:%02.0f \n", iEvent/1000000, 100. * frac, speed, elapsed / 60., ((int)(elapsed) % 60)*0.6 , eta / 60., ((int)(eta) % 60)*0.6 );
+    printf("[INFO] Event # %4.d mln | %02.0f %% | %7.f events/s | Time: %02.0f:%02.0f | ETA: %02.0f:%02.0f \n", iEvent/iPrintInterval, 100. * frac, speed, elapsed / 60., ((int)(elapsed) % 60)*1. , eta / 60., ((int)(eta) % 60)*1. );
     fflush(stdout);
     fBenchmark->Start(fTimerName.c_str());
 }

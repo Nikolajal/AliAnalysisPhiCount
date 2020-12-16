@@ -26,7 +26,12 @@ enum            fitresults2D
 auto const  bPythiaTest             =   kTRUE;
 
 //-// File Names
+
+//-//-// PreProcessing
 auto const  fTrgPreProc             =   "./result/trigger/PPHistograms.root";
+auto const  fYldPreProc             =   "./result/yield/PPHistograms.root";
+
+//-//-// Others
 auto const  fInvMasHist             =   "./result/InvariantMassHistograms.root";
 auto const  fEfficiHist             =   "./result/Efficiencies_MCTruth.root";
 auto const  fFitResHist             =   "./result/InvariantMassFitResultsPlots.root";
@@ -372,6 +377,11 @@ bool    fCheckCoupleKaons( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandida
     return true;
 }
 
+bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandidates[], Int_t iPhi )
+{
+    return true;
+}
+
 bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandidates[], Int_t iPhi, Int_t jPhi )
 {
     // Non equal candidates
@@ -385,8 +395,6 @@ bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandida
 
 bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandidates[], Int_t iPhi, Int_t jPhi, Int_t kPhi )
 {
-    if ( !fAcceptCandidate(SPhiCandidates,aAccCandidates,iPhi,jPhi) ) return false;
-
     // Non equal candidates
     if ( iPhi == kPhi ) return false;
     if ( jPhi == kPhi ) return false;
@@ -402,8 +410,6 @@ bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandida
 
 bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandidates[], Int_t iPhi, Int_t jPhi, Int_t kPhi, Int_t lPhi )
 {
-    if ( !fAcceptCandidate(SPhiCandidates,aAccCandidates,iPhi,jPhi,kPhi) ) return false;
-    
     // Non equal candidates
     if ( iPhi == lPhi ) return false;
     if ( jPhi == lPhi ) return false;
