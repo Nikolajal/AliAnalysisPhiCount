@@ -1,0 +1,6 @@
+[submodule "AliAnalysisQA"]
+	path = AliAnalysisQA
+	url = https://github.com/Nikolajal/AliAnalysisQA.git
+[submodule "AliAnalysisTaskPhiCount"]
+	path = AliAnalysisTaskPhiCount
+	url = https://github.com/Nikolajal/AliAnalysisTaskPhiCount.git
