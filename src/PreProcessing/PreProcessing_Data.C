@@ -229,8 +229,24 @@ void PreProcessing_Data ( string fFileName = "" )
     //
     hName   =   "hTrigger";
     hTitle  =   "Triggered events for NTuples candidates";
-    TH1F   *hTriggerEvt =   new TH1F (hName,hTitle,5,-0.5,4.5);
+    TH1D   *hTriggerEvt =   new TH1D (hName,hTitle,5,-0.5,4.5);
     hTriggerEvt->GetYaxis()->SetTitle("% of events accepted");
+    //
+    //  Triggering in Events in pT
+    //
+    hName   =   "hTrigger1D";
+    hTitle  =   "Triggered events for Single Phis in PT";
+    TH1D   *hTriggerEvt1D =   new TH1D (hName,hTitle,nBinPT1D,fArrPT1D);
+    SetAxis(hTriggerEvt1D,"PT 1D");
+    hTriggerEvt1D->GetYaxis()->SetTitle("% of events accepted");
+    //
+    //  Triggering in Events in pT
+    //
+    hName   =   "hTrigger2D";
+    hTitle  =   "Triggered events for Double Phis in PT";
+    TH2D   *hTriggerEvt2D =   new TH2D (hName,hTitle,nBinPT1D,fArrPT1D,nBinPT1D,fArrPT1D);
+    SetAxis(hTriggerEvt2D,"PT 2D");
+    hTriggerEvt2D->GetZaxis()->SetTitle("% of events accepted");
 
     //-------------------------//
     //  Filling output objects //
@@ -307,6 +323,7 @@ void PreProcessing_Data ( string fFileName = "" )
                 hTriggerEvt->Fill(1);
                 fCheckFill1 = true;
             }
+            hTriggerEvt1D->Fill(LPhi_candidate1.Pt());
             // 
             // >->-->-> Yield
             //
@@ -345,6 +362,7 @@ void PreProcessing_Data ( string fFileName = "" )
                     hTriggerEvt->Fill(2);
                     fCheckFill2 = true;
                 }
+                hTriggerEvt2D->Fill(LPhi_candidate1.Pt(),LPhi_candidate2.Pt()));
                 // 
                 // >->-->-> Yield
                 //
@@ -391,7 +409,7 @@ void PreProcessing_Data ( string fFileName = "" )
 
     fStopTimer("Analysis");
     cout << "[INFO] The overflow events were: " << nOverflow << endl;
-    cout << "[INFO] The overflow events were the " << 100*(nOverflow*1.)/(1.*nEvents) << "% of total events" << endl;
+    cout << "[INFO] The overflow events were the " << 100*(nOverflow*1.)/(1.*nEvents) << "% of total events ( Total: " << nEvents << ")" << endl;
 
     //--------------------------//
     // PostProcessin output obj //
@@ -409,6 +427,8 @@ void PreProcessing_Data ( string fFileName = "" )
     TFile *outFil1  =   new TFile   (fTrgPreProc,"recreate");
     //
     hTriggerEvt->Write();
+    hTriggerEvt1D->Write();
+    hTriggerEvt2D->Write();
     //
     outFil1->Close();
     //

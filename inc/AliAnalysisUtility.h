@@ -126,16 +126,17 @@ void    fPrintLoopTimer         ( TString fTimerName, Int_t iEvent, Int_t nEntri
     fBenchmark->Stop(fTimerName.Data());
     
     // Evaluating informations
-    Float_t fFraction   =   (float)iEvent/(1.*nEntries);
+    Float_t fFraction   =   (float)iEvent/((float)nEntries);
     Float_t fElapsedS   =   (float)(fBenchmark->GetRealTime(fTimerName.Data()));
     Float_t fElapsedM   =   (float)(fElapsedS/60.);
-    Float_t fSpeedvsS   =   (float)iEvent/fElapsedS;
+    Float_t fSpeedvsS   =   (float)iEvent/((float)fElapsedS);
     Float_t fSpeedvsM   =   (float)fSpeedvsS*60.;
-    Float_t fEta____S   =   (float)(1.*nEntries/fSpeedvsS - fElapsedS);
+    Float_t fEta____S   =   (float)nEntries/((float)fSpeedvsS) - (float)fElapsedS;
     Float_t fEta____M   =   (float)(fEta____S/60.);
-    Float_t fPrintEvt   =   (float)iEvent*fSfxCor/(iPrintInterval);
+    Float_t fPrintEvt   =   (float)iEvent*(float)fSfxCor/((float)iPrintInterval);
     
     // Printing
+    "[INFO] Event # %4.f %s | %02.0f %% | %2.2f %s events/s | Time: %02.0f:%02.0f | ETA: %02.0f:%02.0f \n";
     printf(fMSG_PrintTimer.Data(),  fPrintEvt,  fSuffix.Data(), 100.*fFraction, fSpeedvsS,  fSuffix.Data(), fElapsedM,  (int)fElapsedS%60,  fEta____M,  (int)fEta____S%60);
     fflush(stdout);
     
