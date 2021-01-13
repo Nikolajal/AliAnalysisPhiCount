@@ -418,8 +418,8 @@ void PreProcessing_Data ( string fFileName = "" )
     // >-> Trigger Analysis
     //
     // >->-> Bin Normalisation
-    hTriggerEvt1D->Scale(100./nEvents);
-    hTriggerEvt2D->Scale(100./nEvents);
+    hTriggerEvt1D->Scale(1.,"width");
+    hTriggerEvt2D->Scale(1.,"width");
     //
     // >->-> Event Normalisation
     //
