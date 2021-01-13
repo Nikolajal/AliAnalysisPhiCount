@@ -1,6 +1,6 @@
 #! /bin/bash
 
-./bash/GeneratorMC.sh
+./GeneratorMC.sh
 mkdir result || exit 1
 
 strun=0
@@ -25,9 +25,7 @@ for run in $(seq $strun $(($strun + $nruns - 1))); do
     
     echo "[---] starting run: $runid"
 
-    ./exe/GeneratorMC result/outGeneratorMC_$runid.root $nevents >& /dev/null && \
-	./dropbox_uploader.sh upload result/outGeneratorMC_$runid.root Rubini/. && \
-	rm -rf result/outGeneratorMC_$runid.root & 
+    ./GeneratorMC result/outGeneratorMC_$runid.root $nevents $runid >& /dev/null
 
     sleep 1s
 

@@ -31,6 +31,15 @@ auto const  bPythiaTest             =   kTRUE;
 auto const  fTrgPreProc             =   "./result/trigger/PPHistograms.root";
 auto const  fYldPreProc             =   "./result/yield/PPHistograms.root";
 auto const  fMltPreProc             =   "./result/multiplicity/PPHistograms.root";
+auto const  fTrgPrePrMC             =   "./result/trigger/PPReference.root";
+auto const  fYldPrePrMC             =   "./result/yield/PPReference.root";
+auto const  fMltPrePrMC             =   "./result/multiplicity/PPReference.root";
+
+//-//-// SignalExtraction
+auto const  fYldSigExtr             =   "./result/yield/SEHistograms.root";
+auto const  fYldSigChek             =   "./result/yield/FitCheckHisto.root";
+auto const  fMltSigExtr             =   "./result/multiplicity/SEHistograms.root";
+auto const  fMltSigChek             =   "./result/yield/FitCheckHisto.root";
 
 //-//-// Others
 auto const  fInvMasHist             =   "./result/InvariantMassHistograms.root";
@@ -50,6 +59,9 @@ auto const  fKaonCandidateEff_Tree  =   "KaonEfficiency";
 auto const  kParticleMass_          =   1.019455;   //  1.019455    +- 0.000020
 auto const  kParticleWidth          =   0.00426;    //  0.00426     +- 0.00004
 auto const  kDetectorSlope          =   1.;
+auto const  kBranchingRtio          =   0.5;
+auto const  kVertexEfficnc          =   0.01;
+auto const  kRapidityIntvl          =   1.;
 
 auto const  kPMas                   =   1.019455;   //  1.019455    +- 0.000020
 auto const  kPWid                   =   0.00426;    //  0.00426     +- 0.00004
@@ -71,7 +83,7 @@ const   Float_t   fMaxIM2D  =   1.05;
         Float_t  *fArrIM2D  =   new Float_t [nBinIM2D+1];
 
 //-// pT bins 1D
-const   Int_t     nBinPT1D  =   32;
+const   Int_t     nBinPT1D  =   28;
 const   Float_t   fMinPT1D  =   0.0;
 const   Float_t   fMaxPT1D  =   10.0;
         Float_t  *fArrPT1D  =   new Float_t [nBinPT1D+1];
@@ -85,7 +97,7 @@ const   Float_t   fMaxPT2D  =   10.0;
 //-// Muliplicity bins
 const   Int_t     nBinMult  =   10;
 const   Float_t   fMinMult  =   0.0;
-const   Float_t   fMaxMult  =   500.0;
+const   Float_t   fMaxMult  =   100.0;
         Float_t  *fArrMult  =   new Float_t [nBinMult+1];
 
 //-// Rapidity bins
@@ -159,39 +171,35 @@ void    fSetBinNTup ()
 
 void    fSetBinPT1D ()
 {
-    fArrPT1D[0] =   0.0;
-    fArrPT1D[1] =   0.1;
-    fArrPT1D[2] =   0.2;
-    fArrPT1D[3] =   0.3;
-    fArrPT1D[4] =   0.4;
-    fArrPT1D[5] =   0.5;
-    fArrPT1D[6] =   0.6;
-    fArrPT1D[7] =   0.7;
-    fArrPT1D[8] =   0.8;
-    fArrPT1D[9] =   0.9;
-    fArrPT1D[10]=   1.0;
-    fArrPT1D[11]=   1.1;
-    fArrPT1D[12]=   1.2;
-    fArrPT1D[13]=   1.3;
-    fArrPT1D[14]=   1.4;
-    fArrPT1D[15]=   1.5;
-    fArrPT1D[16]=   1.6;
-    fArrPT1D[17]=   1.7;
-    fArrPT1D[18]=   1.8;
-    fArrPT1D[19]=   1.9;
-    fArrPT1D[20]=   2.0;
-    fArrPT1D[21]=   2.2;
-    fArrPT1D[22]=   2.4;
-    fArrPT1D[23]=   2.6;
-    fArrPT1D[24]=   2.8;
-    fArrPT1D[25]=   3.0;
-    fArrPT1D[26]=   3.5;
-    fArrPT1D[27]=   4.0;
-    fArrPT1D[28]=   4.5;
-    fArrPT1D[29]=   5.0;
-    fArrPT1D[30]=   6.0;
-    fArrPT1D[31]=   8.0;
-    fArrPT1D[32]=   10.;
+    fArrPT1D[0]     =   0.0;
+    fArrPT1D[1]     =   0.4;
+    fArrPT1D[2]     =   0.5;
+    fArrPT1D[3]     =   0.6;
+    fArrPT1D[4]     =   0.7;
+    fArrPT1D[5]     =   0.8;
+    fArrPT1D[6]     =   0.9;
+    fArrPT1D[7]     =   1.0;
+    fArrPT1D[8]     =   1.1;
+    fArrPT1D[9]     =   1.2;
+    fArrPT1D[10]    =   1.3;
+    fArrPT1D[11]    =   1.4;
+    fArrPT1D[12]    =   1.5;
+    fArrPT1D[13]    =   1.6;
+    fArrPT1D[14]    =   1.7;
+    fArrPT1D[15]    =   1.8;
+    fArrPT1D[16]    =   1.9;
+    fArrPT1D[17]    =   2.0;
+    fArrPT1D[18]    =   2.2;
+    fArrPT1D[19]    =   2.4;
+    fArrPT1D[20]    =   2.6;
+    fArrPT1D[21]    =   2.8;
+    fArrPT1D[22]    =   3.0;
+    fArrPT1D[23]    =   3.5;
+    fArrPT1D[24]    =   4.0;
+    fArrPT1D[25]    =   5.0;
+    fArrPT1D[26]    =   6.0;
+    fArrPT1D[27]    =   8.0;
+    fArrPT1D[28]    =   10.0;
 }
 
 void    fSetBinPT2D ()
@@ -213,17 +221,17 @@ void    fSetBinPT2D ()
 
 void    fSetBinMult ()
 {
-    fArrMult[0]  =  0.0;
-    fArrMult[1]  =  42.;
-    fArrMult[2]  =  46.;
-    fArrMult[3]  =  52.;
-    fArrMult[4]  =  57.;
-    fArrMult[5]  =  72.;
-    fArrMult[6]  =  94.;
-    fArrMult[7]  =  120.;
-    fArrMult[8]  =  156.;
-    fArrMult[9]  =  208.;
-    fArrMult[10] =  500.;
+    fArrMult[0]  =  0.;
+    fArrMult[1]  =  10.;
+    fArrMult[2]  =  20.;
+    fArrMult[3]  =  30.;
+    fArrMult[4]  =  40.;
+    fArrMult[5]  =  50.;
+    fArrMult[6]  =  60.;
+    fArrMult[7]  =  70.;
+    fArrMult[8]  =  80.;
+    fArrMult[9]  =  90.;
+    fArrMult[10] =  100.;
 }
 
 void    fSetBinRap_ ()
@@ -347,6 +355,13 @@ bool    fCutRapidity        ( Double_t  dRapidity )
     return false;
 }
 
+bool    fCutInvariantMass    ( Double_t  dInvariantMass )
+{
+    if ( dInvariantMass <= fMinIM1D ) return false;
+    if ( dInvariantMass >= fMaxIM1D ) return false;
+    return true;
+}
+
 bool    fCutTransverseMom   ( Double_t  dTransverseMom )
 {
     if ( dTransverseMom <= fMinPT1D ) return false;
@@ -361,9 +376,10 @@ bool    fCutMultiplicity    ( Double_t  dMultiplicity )
     return true;
 }
 
-bool    fAcceptCandidate ( Double_t  dRapidity, Double_t dTransverseMom, Double_t  dMultiplicity )
+bool    fAcceptCandidate ( Double_t  dRapidity, Double_t  dInvariantMass, Double_t dTransverseMom, Double_t  dMultiplicity )
 {
     if ( !fCutRapidity(dRapidity)           ) return false;
+    if ( !fCutInvariantMass(dInvariantMass) ) return false;
     if ( !fCutTransverseMom(dTransverseMom) ) return false;
     if ( !fCutMultiplicity(dMultiplicity)   ) return false;
     return true;
@@ -502,11 +518,11 @@ Int_t kWidth[] = {1,3,3,1,1};
 
 int             fLegendSelect                   ( string fOption )
 {
-    if ( !fOption.compare("InvMass1D") )   return 1;
-    if ( !fOption.compare("RapTru") )   return 1;
-    if ( !fOption.compare("Rap") )   return 3;
-    if ( !fOption.compare("xInvMass2D") )  return 2;
-    if ( !fOption.compare("yInvMass2D") )  return 2;
+    if ( !fOption.compare("InvMass1D") )    return 1;
+    if ( !fOption.compare("RapTru") )       return 1;
+    if ( !fOption.compare("Rap") )          return 3;
+    if ( !fOption.compare("xInvMass2D") )   return 2;
+    if ( !fOption.compare("yInvMass2D") )   return 2;
     else return -1;
 }
 
@@ -1014,6 +1030,122 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     return result;
 }
 
+RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSaveToFile = false, Int_t PTindex = -1, Int_t PTDimension = 1, string fOption = "" )
+{
+    // Retrieve entries to check is worth fitting
+    Int_t nEntries      = THdata->GetEntries();
+    if ( nEntries <= 3*nBinIM1D )
+    {
+        cout << "[WARNING] Skipping empty or scarsely populated histogram!" << endl;
+        return nullptr;
+    }
+    
+    // Silencing TCanvas Pop-Up
+    gROOT->SetBatch();
+    
+    Bool_t  fCheb3  =   false;
+    if  ( fOption.find("CH3") != -1 )   fCheb3  =   true;
+    
+    Bool_t  fCheb5  =   false;
+    if  ( fOption.find("CH5") != -1 )   fCheb5  =   true;
+    
+    Bool_t  fWidth  =   false;
+    if  ( fOption.find("W") != -1 )     fWidth  =   true;
+    
+    Bool_t  fMass_  =   false;
+    if  ( fOption.find("M") != -1 )     fMass_  =   true;
+    
+    Double_t fInvMassValMax, fInvMassValMin;
+    SetBoundaries(fOption,fInvMassValMin,fInvMassValMax);
+    
+    // Global Variables
+    RooRealVar InvMass  = RooRealVar        ("InvMass","InvMass",fInvMassValMin,fInvMassValMax);
+    RooDataHist* data   = new RooDataHist   (fName.Data(),fName.Data(),InvMass,Import(*THdata));
+    Int_t kNCycle       = 1;
+    
+    // Background PDF Coefficients
+    RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,-1,1);//,0.5,-1,1);
+    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,0.,-1,1);//,-0.1,-1,1);
+    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.,-1,1);//,0.01,-1,1);
+    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,0.,-1,1);//,-0.05,-1,1);
+    
+    RooRealVar ch4, ch5;
+    if ( fCheb3 && !fCheb5 )    ch4     = RooRealVar        ("ch4","ch4"        ,0.);
+    else                        ch4     = RooRealVar        ("ch4","ch4"        ,0.,-1,1);
+    
+    if ( fCheb5 )               ch5     = RooRealVar        ("ch5","ch5"        ,0.,-1,1);
+    else                        ch5     = RooRealVar        ("ch5","ch5"        ,0.);
+    
+    //Signal
+    RooRealVar sMass, sWidt, sSlop;
+    if ( fWidth )               sWidt   = RooRealVar        ("sWidt","sWidt"    ,kPWid);
+    else                        sWidt   = RooRealVar        ("sWidt","sWidt"    ,kPWid,kPWid*0.9,kPWid*1.1);
+    
+    if ( fMass_ )               sMass   = RooRealVar        ("sMass","sMass"    ,kPMas);
+    else                        sMass   = RooRealVar        ("sMass","sMass"    ,kPMas,kPMas*0.9,kPMas*1.1);
+    
+    if ( bPythiaTest )          sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.);
+    else                        sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.5,0.,1.);
+    
+    // Coefficients
+    RooRealVar nSS      = RooRealVar        ("1nSS","1nSS"      ,0.5*nEntries,0.,nEntries);
+    RooRealVar nBB      = RooRealVar        ("1nBB","1nBB"      ,0.5*nEntries,0.,nEntries);
+    
+    // PDFs
+    RooVoigtian     fSig= RooVoigtian      ("fSig","fSig"      ,InvMass,sMass,sWidt,sSlop);
+    RooChebychev    fBkg= RooChebychev     ("fBkg","fBkg"      ,InvMass,RooArgSet(ch0,ch1,ch2,ch3,ch4,ch5));
+    RooAddPdf       fMod= RooAddPdf        ("fMod","fMod"      ,RooArgList(fBkg,fSig),RooArgList(nBB,nSS));
+    
+    
+    RooFitResult* result;
+    for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
+    {
+        result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save());
+    }
+    
+    if ( fSaveToFile )
+    {
+        hName                       = "InvMass";
+        hTitle                      = "Invariant Mass of Kaons in pT 0-6 GeV";
+        if ( PTindex != -1 && !bPythiaTest )
+        {
+            if ( PTDimension == 1 ) hTitle = Form("Invariant Mass of Kaons in pT %.1f-%.1f GeV",fArrPT1D[PTindex],fArrPT1D[PTindex+1]);
+            if ( PTDimension == 2 ) hTitle = Form("Invariant Mass of Kaons in pT %.1f-%.1f GeV",fArrPT2D[PTindex],fArrPT2D[PTindex+1]);
+        }
+        if ( PTindex != -1 &&  bPythiaTest )
+        {
+            if ( PTDimension == 1 ) hTitle = Form("Invariant Mass of Kaons in pT %.1f-%.1f GeV for MC",fArrPT1D[PTindex],fArrPT1D[PTindex+1]);
+            if ( PTDimension == 2 ) hTitle = Form("Invariant Mass of Kaons in pT %.1f-%.1f GeV for MC",fArrPT2D[PTindex],fArrPT2D[PTindex+1]);
+        }
+        
+        TCanvas * fSaveToCanvas;
+        if ( PTDimension == 1 )fSaveToCanvas   =   new TCanvas(
+                                                Form("PT_%.1f_%.1f_1D_%s",fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data()),
+                                                Form("PT_%.1f_%.1f_1D_%s",fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data())
+                                                );
+        
+        if ( PTDimension == 2 )fSaveToCanvas   =   new TCanvas(
+                                                Form("PT_%.1f_%.1f_2D_%s",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fName.Data()),
+                                                Form("PT_%.1f_%.1f_2D_%s",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fName.Data())
+                                                );
+        
+        RooPlot * fSaveToFrame      = InvMass.frame(Name(hName),Title(hTitle));
+        TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
+        
+        fRooPlotMaker(fSaveToFrame,fLegend,fMod,data,"InvMass1D");
+        
+        fSaveToFrame                ->Draw("same");
+        fLegend                     ->Draw("same");
+        fSaveToCanvas               ->Write ();
+        delete fSaveToCanvas;
+    }
+    
+    // Un-Silencing TCanvas Pop-Up
+    gROOT->SetBatch(false);
+    
+    return result;
+}
+
 RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooFitResult * fFitShapeY, string fHistName = "", Bool_t fSaveToFile = false, Int_t PTindex = -1, Int_t PTjndex = -1, string fOption = "" )
 {
     // Silencing TCanvas Pop-Up
@@ -1196,6 +1328,58 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     
     // Fit
     return FitResults;
+}
+
+
+RooFitResult*   fExtrapolateModel               ( TH1F *HData, TString fName = "ExtrapolateSignal" ) {
+    
+    // Check is worth fitting
+    if ( !fIsWorthFitting( HData ) ) return nullptr;
+    
+    auto nEntries = HData->GetEntries();
+    HData->Scale(0.032/nEntries);
+    
+    // Silencing TCanvas Pop-Up
+    gROOT->SetBatch();
+    
+    // Global Variables
+    RooRealVar TransMom = RooRealVar        ("TransMom","TransMom",0.,10.);
+    RooDataHist* RData  = new RooDataHist   (fName.Data(),fName.Data(),TransMom,Import(*HData));
+    
+    // Signal PDF Parameters
+    RooRealVar          n_value ("n_value", "n_value",  6.7,    6.0,    7.4);
+    RooRealVar          exp_par ("exp_par", "exp_par",  .272,   .25,    .30);
+    RooRealVar          prt_mss ("prt_mss", "prt_mss",  kParticleMass_);
+    
+    // Normalisation Coefficients
+    RooRealVar          Sig_str ("Sig_str", "Sig_str",  0., 0., HData->GetEntries());
+    
+    // Formulas
+    TString             LevyTsl ("((x[0]-1)*(x[0]-2))/(x[0]*x[1]*(x[0]*x[1]+x[2]*(x[0]-2)))*x[3]*(TMath::Power(1+(sqrt(x[2]*x[2]+x[3]*x[3])-x[2])/(x[0]*x[1]),(-x[0])))");
+
+    // PDFs
+    RooGenericPdf       fModel  ("fModel",  "fModel",   LevyTsl.Data(), RooArgList( n_value,    exp_par,    prt_mss,  TransMom));
+    
+    RooFitResult *result;
+    
+    result = fModel.chi2FitTo(*RData,SumW2Error(kTRUE),Save(),Minos(true),NumCPU(8));
+    result = fModel.fitTo(*RData,SumW2Error(kTRUE),Save(),Minos(true),NumCPU(8));
+    
+    auto fSaveToCanvas   =   new TCanvas();
+    //gPad->SetLogy();
+    
+    RooPlot * fSaveToFrame      = TransMom.frame(Name(fName.Data()),Title(fName.Data()));
+    
+    RData                           ->plotOn(fSaveToFrame,      MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
+    fModel                          .plotOn (fSaveToFrame,      LineColor(4),                   LineStyle(kDashed), Name("RooMod"));
+    
+    fSaveToFrame                ->Draw("same");
+    fSaveToCanvas               ->Write();
+    
+    // Un-Silencing TCanvas Pop-Up
+    gROOT->SetBatch(false);
+    
+    return result;
 }
 
 #endif

@@ -1,45 +1,79 @@
-#include "../inc/SetValues.h"
-// !TODO: Rebooting the selection process
+#include "../../inc/AliAnalysisPhiPair.h"
+// !TODO: All Set!
 
-void Anls_MonteCarloPreProcessing ( const char * fFileName )
+void PreProcessing_MC ( string fFileName = "" )
 {
-    if ( !fFileName )
+    //---------------------//
+    //  Setting up input   //
+    //---------------------//
+    
+    // >-> OPTIONS
+    
+    if ( fFileName == "" )
     {
-        cout << "Must Specify an input root file" << endl;
+        cout << "[WARNING] Must Specify an input root file" << endl;
+        cout << "[INFO] Usage PreProcessing_MC(\"Root_file_name.root\")" << endl;
         return;
     }
     
     //Retrieving Event data
-    TFile *insFileMC     =   new TFile   (fFileName);
+    TFile *insFileMC        =   new TFile   (fFileName.c_str());
     
     //Retrieving Event data TTree
-    TTree *PTreePTru    =   (TTree*)insFileMC->Get(fTreeTruName);
+    TTree   *TPhiCandidate  =   (TTree*)insFileMC->Get(fPhiCandidateEff_Tree);
+    TTree   *TKaonCandidate =   (TTree*)insFileMC->Get(fKaonCandidateEff_Tree);
+    TTree   *TPhi_Multref   =   (TTree*)insFileMC->Get(fPhiCandidate_Tree);
+    TTree   *TKaon_Multref  =   (TTree*)insFileMC->Get(fKaonCandidate_Tree);
     
-    if ( !PTreePTru )
+    // Define tree data structures
+    Struct_PhiEfficiency    evPhiEfficiency;
+    Struct_KaonEfficiency   evKaonEfficiency;
+    Float_t                 evMultiplicityP;
+    Float_t                 evMultiplicityK;
+
+    if ( !TPhiCandidate && !TKaonCandidate )
     {
         cout << "Input Data Tree not found!" << endl;
         return;
     }
-        
-    // Define some simple data structures to Set Branch Addresses
-    // Phi decay Kaon +- Couples S
-    EVPHI               evPhi_Tru;
-    if ( bPythiaTest == false )
+    if ( !TPhiCandidate )
     {
-        PTreePTru  ->SetBranchAddress    ("nPhi",           &evPhi_Tru.nPhi);
-        PTreePTru  ->SetBranchAddress    ("bRec",           &evPhi_Tru.bRec);
-        PTreePTru  ->SetBranchAddress    ("bEta",           &evPhi_Tru.bEta);
-        PTreePTru  ->SetBranchAddress    ("bKdc",           &evPhi_Tru.bKdc);
-        PTreePTru  ->SetBranchAddress    ("pT",             &evPhi_Tru.pT);
+        cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
+        TKaonCandidate->SetBranchAddress    ("nPhi",            &evKaonEfficiency.nKaon);
+        TKaonCandidate->SetBranchAddress    ("Px",              &evKaonEfficiency.Px);
+        TKaonCandidate->SetBranchAddress    ("Py",              &evKaonEfficiency.Py);
+        TKaonCandidate->SetBranchAddress    ("Pz",              &evKaonEfficiency.Pz);
+        TKaonCandidate->SetBranchAddress    ("Selection",       &evKaonEfficiency.Selection);
+        TKaon_Multref ->SetBranchAddress    ("fMultiplicit2",   &evKaonEfficiency.Multiplicity);
+    }
+    else if ( !TKaonCandidate )
+    {
+        cout << "[INFO] No KaonCandidate Tree, switching to Phi Analysis" << endl;
+        TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiEfficiency.nPhi);
+        TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiEfficiency.Px);
+        TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiEfficiency.Py);
+        TPhiCandidate-> SetBranchAddress    ("Pz",              &evPhiEfficiency.Pz);
+        TPhiCandidate-> SetBranchAddress    ("Selection",       &evPhiEfficiency.Selection);
+        TPhi_Multref -> SetBranchAddress    ("fMultiplicit2",   &evPhiEfficiency.Multiplicity);
     }
     else
     {
-        PTreePTru  ->SetBranchAddress    ("evPhi.nPhi",           &evPhi_Tru.nPhi);
-        PTreePTru  ->SetBranchAddress    ("evPhi.bRec",           &evPhi_Tru.bRec);
-        PTreePTru  ->SetBranchAddress    ("evPhi.bEta",           &evPhi_Tru.bEta);
-        PTreePTru  ->SetBranchAddress    ("evPhi.bKdc",           &evPhi_Tru.bKdc);
-        PTreePTru  ->SetBranchAddress    ("evPhi.pT",             &evPhi_Tru.pT);
+        TKaonCandidate->SetBranchAddress    ("nPhi",            &evKaonEfficiency.nKaon);
+        TKaonCandidate->SetBranchAddress    ("Px",              &evKaonEfficiency.Px);
+        TKaonCandidate->SetBranchAddress    ("Py",              &evKaonEfficiency.Py);
+        TKaonCandidate->SetBranchAddress    ("Pz",              &evKaonEfficiency.Pz);
+        TKaonCandidate->SetBranchAddress    ("Selection",       &evKaonEfficiency.Selection);
+        TKaon_Multref ->SetBranchAddress    ("fMultiplicit2",   &evKaonEfficiency.Multiplicity);
+        
+        TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiEfficiency.nPhi);
+        TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiEfficiency.Px);
+        TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiEfficiency.Py);
+        TPhiCandidate-> SetBranchAddress    ("Pz",              &evPhiEfficiency.Pz);
+        TPhiCandidate-> SetBranchAddress    ("Selection",       &evPhiEfficiency.Selection);
+        TPhi_Multref -> SetBranchAddress    ("fMultiplicit2",   &evPhiEfficiency.Multiplicity);
     }
+    
+    
     
     //---------------------//
     //  Setting up output  //
@@ -50,251 +84,431 @@ void Anls_MonteCarloPreProcessing ( const char * fFileName )
     fSetBinIM1D();
     fSetBinPT2D();
     fSetBinIM2D();
-    Int_t       S_ArrpT[1024];
+    fSetBinRap_();
+    fSetBinMult();
+    fSetBinNTup();
+    Int_t       U_AccCand[1024];
+    Int_t       U_nAccept;
     
-    // Creating 1D Efficiency histograms---------------------------------------------------------------------
-    hName   = "hNP_1D_Gen_PT_S";
-    hTitle  = "Generated #phi per |y|<5 in K_{+}K_{-} Decay mode, 1D analysis";
-    TH1F * hPhiGen_1D   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
-    hPhiGen_1D->GetXaxis()->SetTitle("p_{T} #phi (GeV/c)");
-    hPhiGen_1D->GetYaxis()->SetTitle("#frac{d^{2}N_{#phi}}{dydp_{T}}(GeV/c)^{-1}");
-    hPhiGen_1D->GetXaxis()->SetTitleOffset(1.15);
-    hPhiGen_1D->GetYaxis()->SetTitleOffset(1.15);
-    
-    hName   = "hNP_1D_Rec_PT_S";
-    hTitle  = "Generated #phi per |y|<5 in K_{+}K_{-} Decay mode, recordable in ALICE exp, 1D analysis";
-    TH1F * hPhiRec_1D   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
-    hPhiRec_1D->GetXaxis()->SetTitle("p_{T} #phi (GeV/c)");
-    hPhiRec_1D->GetYaxis()->SetTitle("#frac{d^{2}N_{#phi}}{dydp_{T}}(GeV/c)^{-1}");
-    hPhiRec_1D->GetXaxis()->SetTitleOffset(1.15);
-    hPhiRec_1D->GetYaxis()->SetTitleOffset(1.15);
-    
-    hName   = "hNP_1D_Gen_X2_S";
-    hTitle  = "Generated #phi per |y|<5 in K_{+}K_{-} Decay mode, 1D analysis";
-    TH1F * hPhiG1D_2X   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-    hPhiG1D_2X->GetXaxis()->SetTitle("p_{T} #phi (GeV/c)");
-    hPhiG1D_2X->GetYaxis()->SetTitle("#frac{d^{2}N_{#phi}}{dydp_{T}}(GeV/c)^{-1}");
-    hPhiG1D_2X->GetXaxis()->SetTitleOffset(1.15);
-    hPhiG1D_2X->GetYaxis()->SetTitleOffset(1.15);
-    
-    hName   = "hNP_1D_Rec_X2_S";
-    hTitle  = "Generated #phi per |y|<5 in K_{+}K_{-} Decay mode, recordable in ALICE exp, 1D analysis";
-    TH1F * hPhiR1D_2X   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-    hPhiR1D_2X->GetXaxis()->SetTitle("p_{T} #phi (GeV/c)");
-    hPhiR1D_2X->GetYaxis()->SetTitle("#frac{d^{2}N_{#phi}}{dydp_{T}}(GeV/c)^{-1}");
-    hPhiR1D_2X->GetXaxis()->SetTitleOffset(1.15);
-    hPhiR1D_2X->GetYaxis()->SetTitleOffset(1.15);
-    
-    hName   = "hNP_1D_Tru_PT_S";
-    hTitle  = "Generated #phi per |y|<5, 1D analysis";
-    TH1F * hPhiTru_1D   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
-    hPhiTru_1D->GetXaxis()->SetTitle("p_{T} #phi (GeV/c)");
-    hPhiTru_1D->GetYaxis()->SetTitle("#frac{d^{2}N_{#phi}}{dydp_{T}}(GeV/c)^{-1}");
-    hPhiTru_1D->GetXaxis()->SetTitleOffset(1.15);
-    hPhiTru_1D->GetYaxis()->SetTitleOffset(1.15);
-    
-    hName   = "hNP_1D_Eff_PT_S";
-    hTitle  = "#phi acceptance in ALICE exp (|y|<5), 1D analysis";
-    TH1F * hPhiEff_1D   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
-    hPhiEff_1D->GetXaxis()->SetTitle("p_{T} #phi (GeV/c)");
-    hPhiEff_1D->GetXaxis()->SetTitleOffset(1.15);
-    hPhiEff_1D->GetYaxis()->SetTitleOffset(1.15);
-    
-    hName   = "hNP_1D_Eff_X2_S";
-    hTitle  = "#phi acceptance in ALICE exp (|y|<5), 1D analysis";
-    TH1F * hPEff1D_2X   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-    hPEff1D_2X->GetXaxis()->SetTitle("p_{T} #phi (GeV/c)");
-    hPEff1D_2X->GetXaxis()->SetTitleOffset(1.15);
-    hPEff1D_2X->GetYaxis()->SetTitleOffset(1.15);
-    
-    // Creating 2D Efficiency histograms---------------------------------------------------------------------
-    hName   = "hNP_2D_Gen_PT_S";
-    hTitle  = "Generated #phi per |y|<5 in K_{+}K_{-} Decay mode, 2D analysis";
-    TH2F * hPhiGen_2D   = new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    hPhiGen_2D->GetXaxis()->SetTitle("p_{T} #phi_{1} (GeV/c)");
-    hPhiGen_2D->GetYaxis()->SetTitle("p_{T} #phi_{2} (GeV/c)");
-    hPhiGen_2D->GetXaxis()->SetTitleOffset(1.5);
-    hPhiGen_2D->GetYaxis()->SetTitleOffset(1.5);
-    
-    hName   = "hNP_2D_Rec_PT_S";
-    hTitle  = "Generated #phi per |y|<5 in K_{+}K_{-} Decay mode, recordable in ALICE exp, 2D analysis";
-    TH2F * hPhiRec_2D   = new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    hPhiRec_2D->GetXaxis()->SetTitle("p_{T} #phi_{1} (GeV/c)");
-    hPhiRec_2D->GetYaxis()->SetTitle("p_{T} #phi_{2} (GeV/c)");
-    hPhiRec_2D->GetXaxis()->SetTitleOffset(1.5);
-    hPhiRec_2D->GetYaxis()->SetTitleOffset(1.5);
-    
-    hName   = "hNP_2D_Tru_PT_S";
-    hTitle  = "Generated #phi per |y|<5, 2D analysis";
-    TH2F * hPhiTru_2D   = new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    hPhiTru_2D->GetXaxis()->SetTitle("p_{T} #phi_{1} (GeV/c)");
-    hPhiTru_2D->GetYaxis()->SetTitle("p_{T} #phi_{2} (GeV/c)");
-    hPhiTru_2D->GetXaxis()->SetTitleOffset(1.5);
-    hPhiTru_2D->GetYaxis()->SetTitleOffset(1.5);
-    
-    hName   = "hNP_2D_Eff_PT_S";
-    hTitle  = "#phi acceptance in ALICE exp (|y|<5), 2D analysis";
-    TH2F * hPhiEff_2D   = new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    hPhiEff_2D->GetXaxis()->SetTitle("p_{T} #phi_{1} (GeV/c)");
-    hPhiEff_2D->GetYaxis()->SetTitle("p_{T} #phi_{2} (GeV/c)");
-    hPhiEff_2D->GetXaxis()->SetTitleOffset(1.5);
-    hPhiEff_2D->GetYaxis()->SetTitleOffset(1.5);
-    
-    hName   = "hNP_2D_Eff_X2_S";
-    hTitle  = "#phi acceptance in ALICE exp (|y|<5), 1D analysis in 2D";
-    TH2F * hPEff2D_2X   = new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    hPEff2D_2X->GetXaxis()->SetTitle("p_{T} #phi_{1} (GeV/c)");
-    hPEff2D_2X->GetYaxis()->SetTitle("p_{T} #phi_{2} (GeV/c)");
-    hPEff2D_2X->GetXaxis()->SetTitleOffset(1.5);
-    hPEff2D_2X->GetYaxis()->SetTitleOffset(1.5);
-    
-    // Creating the Target Result Histogram------------------------------------------------------------------
-    hName   = "MC_Results";
-    hTitle  = "Multidimensional #phi production statistics";
-    TH1F *          hUtlTarget  = new TH1F (hName,hTitle,2,0.5,2.5);
-    hUtlTarget->GetXaxis()->SetTitle("N-Tuples");
-    hUtlTarget->GetYaxis()->SetTitle("#frac{1}{N_{evs}}#times#frac{dN_{#phi}}{dy}");
-    
-    hName   = "Entry_MC";
-    hTitle  = "Events in MC";
-    TH1F *          hUtlEntry   = new TH1F (hName,hTitle,2,0.5,2.5);
-    hUtlEntry                   ->GetXaxis()->SetTitle("");
-    hUtlEntry                   ->GetYaxis()->SetTitle("Events");
-    
+    // Creating the histograms-------------------------------------------------------------------------------
+
+    // >> YIELD ANALYSIS //
+
+    // >>-->> 1-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH1F       *hREC_1D;
+    TH1F       *hGEN_1D;
+    TH1F       *hTRU_1D;
+    TH1F       *hREC_1D_in_2Dbin;
+    TH1F       *hGEN_1D_in_2Dbin;
+    TH1F       *hTRU_1D_in_2Dbin;
+    TH1F       *hEFF_1D;
+    TH1F       *hEFF_1D_in_2Dbin;
+    //
+    //  Defining Efficiency and check utilities
+    //
+    hName       =   Form("hREC_1D");
+    hTitle      =   Form("hREC_1D");
+    hREC_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+    SetAxis(hREC_1D,"PT 1D");
+    //
+    hName       =   Form("hGEN_1D");
+    hTitle      =   Form("hGEN_1D");
+    hGEN_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+    SetAxis(hGEN_1D,"PT 1D");
+    //
+    hName       =   Form("hTRU_1D");
+    hTitle      =   Form("hTRU_1D");
+    hTRU_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+    SetAxis(hTRU_1D,"PT 1D");
+    //
+    hName       =   Form("hEFF_1D");
+    hTitle      =   Form("hEFF_1D");
+    hEFF_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+    SetAxis(hEFF_1D,"PT 1D");
+    //
+    hName       =   Form("hREC_1D_in_2Dbin");
+    hTitle      =   Form("hREC_1D_in_2Dbin");
+    hREC_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hREC_1D_in_2Dbin,"PT 1D");
+    //
+    hName       =   Form("hGEN_1D_in_2Dbin");
+    hTitle      =   Form("hGEN_1D_in_2Dbin");
+    hGEN_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hGEN_1D_in_2Dbin,"PT 1D");
+    //
+    hName       =   Form("hTRU_1D_in_2Dbin");
+    hTitle      =   Form("hTRU_1D_in_2Dbin");
+    hTRU_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hTRU_1D_in_2Dbin,"PT 1D");
+    //
+    hName       =   Form("hEFF_1D_in_2Dbin");
+    hTitle      =   Form("hEFF_1D_in_2Dbin");
+    hEFF_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hEFF_1D_in_2Dbin,"PT 1D");
+    //
+    // >>-->> 2-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH2F       *hREC_2D;
+    TH2F       *hGEN_2D;
+    TH2F       *hTRU_2D;
+    TH2F       *hEFF_2D;
+    TH2F       *hEFF_2D_fr_1D;
+    //
+    //  Defining Efficiency and check utilities
+    //
+    hName       =   Form("hREC_2D");
+    hTitle      =   Form("hREC_2D");
+    hREC_2D     =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    SetAxis(hREC_2D,"PT 2D");
+    //
+    hName       =   Form("hGEN_2D");
+    hTitle      =   Form("hGEN_2D");
+    hGEN_2D     =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    SetAxis(hGEN_2D,"PT 1D");
+    //
+    hName       =   Form("hTRU_2D");
+    hTitle      =   Form("hTRU_2D");
+    hTRU_2D     =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    SetAxis(hTRU_2D,"PT 2D");
+    //
+    hName       =   Form("hEFF_2D");
+    hTitle      =   Form("hEFF_2D");
+    hEFF_2D     =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    SetAxis(hEFF_2D,"PT 2D");
+    //
+    hName       =   Form("hEFF_2D_fr_1D");
+    hTitle      =   Form("hEFF_2D_fr_1D");
+    hEFF_2D_fr_1D     =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    SetAxis(hEFF_2D_fr_1D,"PT 2D");
+    //
+
+    // >> MULTIPLICITY ANALYSIS //
+
+    // >>-->> 1-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH1F      **hREC_1D_in_MT               = new TH1F     *[nBinMult];
+    TH1F      **hGEN_1D_in_MT               = new TH1F     *[nBinMult];
+    TH1F      **hTRU_1D_in_MT               = new TH1F     *[nBinMult];
+    TH1F      **hEFF_1D_in_MT               = new TH1F     *[nBinMult];
+    TH1F      **hREC_1D_in_MT_in_2Dbin      = new TH1F     *[nBinMult];
+    TH1F      **hGEN_1D_in_MT_in_2Dbin      = new TH1F     *[nBinMult];
+    TH1F      **hTRU_1D_in_MT_in_2Dbin      = new TH1F     *[nBinMult];
+    TH1F      **hEFF_1D_in_MT_in_2Dbin      = new TH1F     *[nBinMult];
+    //
+    //  Defining MT-Differential histograms
+    //
+    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    {
+        hName = Form("hREC_1D_in_MT_%i",iHisto);
+        hTitle= Form("hREC_1D_in_MT Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hREC_1D_in_MT[iHisto]   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+        SetAxis(hREC_1D_in_MT[iHisto],"PT 1D");
+        
+        hName = Form("hGEN_1D_in_MT_%i",iHisto);
+        hTitle= Form("hGEN_1D_in_MT Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hGEN_1D_in_MT[iHisto]   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+        SetAxis(hGEN_1D_in_MT[iHisto],"PT 1D");
+        
+        hName = Form("hTRU_1D_in_MT_%i",iHisto);
+        hTitle= Form("hTRU_1D_in_MT Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hTRU_1D_in_MT[iHisto]   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+        SetAxis(hTRU_1D_in_MT[iHisto],"PT 1D");
+        
+        hName = Form("hEFF_1D_in_MT_%i",iHisto);
+        hTitle= Form("hEFF_1D_in_MT Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hEFF_1D_in_MT[iHisto]   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+        SetAxis(hEFF_1D_in_MT[iHisto],"PT 1D");
+        
+        hName = Form("hREC_1D_in_MT_in_2Dbin_%i",iHisto);
+        hTitle= Form("hREC_1D_in_MT_in_2Dbin Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hREC_1D_in_MT_in_2Dbin[iHisto]   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+        SetAxis(hREC_1D_in_MT_in_2Dbin[iHisto],"PT 1D");
+            
+        hName = Form("hGEN_1D_in_MT_in_2Dbin_%i",iHisto);
+        hTitle= Form("hGEN_1D_in_MT_in_2Dbin Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hGEN_1D_in_MT_in_2Dbin[iHisto]   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+        SetAxis(hGEN_1D_in_MT_in_2Dbin[iHisto],"PT 1D");
+        
+        hName = Form("hTRU_1D_in_MT_in_2Dbin_%i",iHisto);
+        hTitle= Form("hTRU_1D_in_MT_in_2Dbin Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hTRU_1D_in_MT_in_2Dbin[iHisto]   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+        SetAxis(hTRU_1D_in_MT_in_2Dbin[iHisto],"PT 1D");
+        
+        hName = Form("hEFF_1D_in_MT_in_2Dbin_%i",iHisto);
+        hTitle= Form("hEFF_1D_in_MT_in_2Dbin Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hEFF_1D_in_MT_in_2Dbin[iHisto]   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+        SetAxis(hEFF_1D_in_MT_in_2Dbin[iHisto],"PT 1D");
+    }
+    //
+    // >>-->> 2-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH2F      **hREC_2D_in_MT               = new TH2F     *[nBinMult];
+    TH2F      **hGEN_2D_in_MT               = new TH2F     *[nBinMult];
+    TH2F      **hTRU_2D_in_MT               = new TH2F     *[nBinMult];
+    TH2F      **hEFF_2D_in_MT               = new TH2F     *[nBinMult];
+    TH2F      **hEFF_2D_in_MT_fr_1D         = new TH2F     *[nBinMult];
+    //
+    //  Defining MT-Differential histograms
+    //
+    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    {
+        hName = Form("hREC_2D_in_MT_%i",iHisto);
+        hTitle= Form("hREC_2D_in_MT Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hREC_2D_in_MT[iHisto]   = new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+        SetAxis(hREC_2D_in_MT[iHisto],"PT 2D");
+        
+        hName = Form("hGEN_2D_in_MT_%i",iHisto);
+        hTitle= Form("hGEN_2D_in_MT Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hGEN_2D_in_MT[iHisto]   = new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+        SetAxis(hGEN_2D_in_MT[iHisto],"PT 2D");
+        
+        hName = Form("hTRU_2D_in_MT_%i",iHisto);
+        hTitle= Form("hTRU_2D_in_MT Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hTRU_2D_in_MT[iHisto]   = new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+        SetAxis(hTRU_2D_in_MT[iHisto],"PT 2D");
+        
+        hName = Form("hEFF_2D_in_MT_%i",iHisto);
+        hTitle= Form("hEFF_2D_in_MT Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hEFF_2D_in_MT[iHisto]   = new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+        SetAxis(hEFF_2D_in_MT[iHisto],"PT 2D");
+        
+        hName = Form("hEFF_2D_in_MT_fr_1D_%i",iHisto);
+        hTitle= Form("hEFF_2D_in_MT_fr_1D Multiplicity [%.1f-%.1f]",fArrMult[iHisto],fArrMult[iHisto+1]);
+        hEFF_2D_in_MT_fr_1D[iHisto]   = new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+        SetAxis(hEFF_2D_in_MT_fr_1D[iHisto],"PT 2D");
+    }
+    //
+
+    // >> TRIGGER ANALYSIS //
+
     //-------------------------//
     //  Filling output objects //
     //-------------------------//
     
+    fStartTimer("Analysis");
+    
     // Evaluating entries
-    Int_t nEntries = PTreePTru->GetEntries();
-    for ( Int_t iEvent = 0; iEvent < nEntries; iEvent++ )
+    Int_t nEvents = TPhiCandidate->GetEntries();
+    
+    // Starting cycle
+    for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
     {
-        PTreePTru->GetEntry(iEvent);
-        for (Int_t iPhi = 0; iPhi < evPhi_Tru.nPhi; iPhi++ )
+        // Recovering events
+        TPhiCandidate->GetEntry(iEvent);
+        TPhi_Multref ->GetEntry(iEvent);
+        
+        fPrintLoopTimer("Analysis",iEvent,nEvents,1000000);
+
+        // Skipping overflow
+        if ( (int)(evPhiEfficiency.nPhi) >= 153 )
         {
-            // Region of Physical interest
-            if ( !evPhi_Tru.bEta[iPhi] )  continue;
-            
-            // All True Phi                                                                 #TRU
-            hPhiTru_1D-> Fill(evPhi_Tru.pT[iPhi]);
-            hUtlTarget-> Fill(1);
-            
-            // Only |y| < 0.5 Phi in K+- Candidates                                         #GEN
-            if ( evPhi_Tru.bKdc[iPhi] )    {hPhiGen_1D-> Fill(evPhi_Tru.pT[iPhi]);  hPhiG1D_2X ->  Fill(evPhi_Tru.pT[iPhi]); }
+            cout << "[INFO] Skipping overflow event" << endl;
+            continue;
+        }
 
-            // Only Recordable Phi in K+- Candidates                                        #REC
-            if ( evPhi_Tru.bRec[iPhi] )    {hPhiRec_1D-> Fill(evPhi_Tru.pT[iPhi]);  hPhiR1D_2X ->  Fill(evPhi_Tru.pT[iPhi]); }
+        // Skipping non candidate events
+        if ( (int)(evPhiEfficiency.nPhi) == 0 )
+        {
+            continue;
+        }
+
+        // Utilities
+        TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
+        U_nAccept = 0;
+
+        for ( Int_t iPhi = 0; iPhi < evPhiEfficiency.nPhi; iPhi++ )
+        {
+            LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[iPhi],evPhiEfficiency.Py[iPhi],evPhiEfficiency.Pz[iPhi],evPhiEfficiency.InvMass[iPhi]);
+            if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),5.,evPhiEfficiency.Multiplicity) ) continue;
+            U_AccCand[U_nAccept] = iPhi;
+            U_nAccept++;
+        }
+        for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )
+        {
+            // Must have at least 1 candidate
+            if ( U_nAccept < 1 ) break;
+
+            // Building First Candidate
+            LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[U_AccCand[iPhi]],evPhiEfficiency.Py[U_AccCand[iPhi]],evPhiEfficiency.Pz[U_AccCand[iPhi]],evPhiEfficiency.InvMass[U_AccCand[iPhi]]);
+
+            // >> 1-Dimensional Analysis Fill   //
+            //
+            // >>-->> Utilities
+            //
+            Int_t   indexMult = fGetBinMult(evPhiEfficiency.Multiplicity);
+            Int_t   indexSele = evPhiEfficiency.Selection[U_AccCand[iPhi]];
+            Float_t indexTMom = LPhi_candidate1.Pt();
+            //
+            // >>-->> Yield
+            //
+            if ( indexSele >= 0 ) hTRU_1D                           ->  Fill(indexTMom);
+            if ( indexSele >= 1 ) hGEN_1D                           ->  Fill(indexTMom);
+            if ( indexSele >= 2 ) hREC_1D                           ->  Fill(indexTMom);
+            if ( indexSele >= 0 ) hTRU_1D_in_2Dbin                  ->  Fill(indexTMom);
+            if ( indexSele >= 1 ) hGEN_1D_in_2Dbin                  ->  Fill(indexTMom);
+            if ( indexSele >= 2 ) hREC_1D_in_2Dbin                  ->  Fill(indexTMom);
+            //
+            // >>-->> Multiplicity
+            //
+            if ( indexSele >= 0 ) hTRU_1D_in_MT[indexMult]          ->  Fill(indexTMom);
+            if ( indexSele >= 1 ) hGEN_1D_in_MT[indexMult]          ->  Fill(indexTMom);
+            if ( indexSele >= 2 ) hREC_1D_in_MT[indexMult]          ->  Fill(indexTMom);
+            if ( indexSele >= 0 ) hTRU_1D_in_MT_in_2Dbin[indexMult] ->  Fill(indexTMom);
+            if ( indexSele >= 1 ) hGEN_1D_in_MT_in_2Dbin[indexMult] ->  Fill(indexTMom);
+            if ( indexSele >= 2 ) hREC_1D_in_MT_in_2Dbin[indexMult] ->  Fill(indexTMom);
             
-            for (Int_t jPhi = 0; jPhi < evPhi_Tru.nPhi; jPhi++ )
+            for ( Int_t jPhi = 0; jPhi < U_nAccept; jPhi++ )
             {
-                // Auto-correlation protection
-                if ( iPhi == jPhi ) continue;
-                
-                // Region of Physical interest
-                if ( !evPhi_Tru.bEta[jPhi] ) continue;
-                
-                // All True Phi                                                             #TRU
-                hPhiTru_2D-> Fill(evPhi_Tru.pT[iPhi],evPhi_Tru.pT[jPhi],0.5);
-                hUtlTarget->Fill(2,0.5);
+                // Must have at least 2 candidates
+                if ( U_nAccept < 2 ) break;
 
-                // Only |y| < 0.5 Phi  in K+- Candidates                                    #GEN
-                if ( evPhi_Tru.bKdc[iPhi] && evPhi_Tru.bKdc[jPhi] ) hPhiGen_2D-> Fill(evPhi_Tru.pT[iPhi],evPhi_Tru.pT[jPhi],0.5);
+                // Building Second Candidate
+                LPhi_candidate2.SetXYZM(evPhiEfficiency.Px[U_AccCand[jPhi]],evPhiEfficiency.Py[U_AccCand[jPhi]],evPhiEfficiency.Pz[U_AccCand[jPhi]],evPhiEfficiency.InvMass[U_AccCand[jPhi]]);
+
+
+                // >> 2-Dimensional Analysis Fill   //
+                //
+                // >>-->> Utilities
+                //
+                Int_t   jndexSele = evPhiEfficiency.Selection[U_AccCand[jPhi]];
+                Float_t jndexTMom = LPhi_candidate2.Pt();
+                //
+                // >>-->> Yield
+                //
+                if ( indexSele >= 0 && jndexSele >= 0 ) hTRU_2D                     ->  Fill(indexTMom,jndexTMom,0.5);
+                if ( indexSele >= 1 && jndexSele >= 1 ) hGEN_2D                     ->  Fill(indexTMom,jndexTMom,0.5);
+                if ( indexSele >= 2 && jndexSele >= 2 ) hREC_2D                     ->  Fill(indexTMom,jndexTMom,0.5);
+                //
+                // >>-->> Multiplicity
+                //
+                if ( indexSele >= 0 && jndexSele >= 0 ) hTRU_2D_in_MT[indexMult]    ->  Fill(indexTMom,jndexTMom,0.5);
+                if ( indexSele >= 1 && jndexSele >= 1 ) hGEN_2D_in_MT[indexMult]    ->  Fill(indexTMom,jndexTMom,0.5);
+                if ( indexSele >= 2 && jndexSele >= 2 ) hREC_2D_in_MT[indexMult]    ->  Fill(indexTMom,jndexTMom,0.5);
                 
-                // Only Recordable Phi in K+- Candidates                                    #REC
-                if ( evPhi_Tru.bRec[iPhi] && evPhi_Tru.bRec[jPhi] ) hPhiRec_2D-> Fill(evPhi_Tru.pT[iPhi],evPhi_Tru.pT[jPhi],0.5);
+                for ( Int_t kPhi = 0; kPhi < U_nAccept; kPhi++ )
+                {
+                    // Must have at least 3 candidates
+                    if ( U_nAccept < 3 ) break;
+                    
+                    // >>->> 3-Dimensional Analysis Fill
+
+                    for ( Int_t lPhi = 0; lPhi < U_nAccept; lPhi++ )
+                    {
+                        // Must have at least 4 candidates
+                        if ( U_nAccept < 4 ) break;
+
+                        // >>->> 4-Dimensional Analysis Fill
+                        
+                    }
+                }
             }
         }
     }
     
-    // Evaluating the Target value
-    hUtlTarget->Scale(1./(nEntries));
-
-    // Fixing the Histograms per binwidth
-    hPhiGen_1D    ->Scale(1.,"width");
-    hPhiRec_1D    ->Scale(1.,"width");
-    hPhiTru_1D    ->Scale(1.,"width");
-    hPhiG1D_2X    ->Scale(1.,"width");
-    hPhiR1D_2X    ->Scale(1.,"width");
-    hPhiGen_2D    ->Scale(1.,"width");
-    hPhiRec_2D    ->Scale(1.,"width");
-    hPhiTru_2D    ->Scale(1.,"width");
+    fStopTimer("Analysis");
     
-    // Fixing the Histograms per Events
-    hPhiGen_1D    ->Scale(1./(nEntries));
-    hPhiRec_1D    ->Scale(1./(nEntries));
-    hPhiTru_1D    ->Scale(1./(nEntries));
-    hPhiG1D_2X    ->Scale(1./(nEntries));
-    hPhiR1D_2X    ->Scale(1./(nEntries));
-    hPhiGen_2D    ->Scale(1./(nEntries));
-    hPhiRec_2D    ->Scale(1./(nEntries));
-    hPhiTru_2D    ->Scale(1./(nEntries));
+    //--------------------------//
+    // PostProcessin output obj //
+    //--------------------------//
     
-    nEntries      = PTreePTru->GetEntries();
-    hUtlEntry     ->SetBinContent(1,nEntries);
+    // >> YIELD ANALYSIS //
+    //
+    hEFF_1D                             ->Divide(hREC_1D,           hGEN_1D,            1.,1.,"b");
+    hEFF_1D_in_2Dbin                    ->Divide(hREC_1D_in_2Dbin,  hGEN_1D_in_2Dbin,   1.,1.,"b");
+    hEFF_2D                             ->Divide(hREC_2D,           hGEN_2D,            1.,1.,"b");
+    hREC_1D->Scale(1.,"width");
+    hGEN_1D->Scale(1.,"width");
+    hTRU_1D->Scale(1.,"width");
+    hREC_1D_in_2Dbin->Scale(1.,"width");
+    hGEN_1D_in_2Dbin->Scale(1.,"width");
+    hTRU_1D_in_2Dbin->Scale(1.,"width");
+    hREC_2D->Scale(1.,"width");
+    hGEN_2D->Scale(1.,"width");
+    hTRU_2D->Scale(1.,"width");
+    //
     
-    // Evaluating the Efficiencies
-    hName   = "1D_Eff";
-    hTitle  = "#phi acceptance in ALICE exp (|y|<5), 1D analysis";
-    TGraphAsymmErrors * gEfficiency1D   =   new TGraphAsymmErrors();
-    gEfficiency1D                       ->  SetName(hName);
-    gEfficiency1D                       ->  SetTitle(hTitle);
-    gEfficiency1D                       ->GetXaxis()    ->SetTitle("p_{T} #phi (GeV/c)");
-    gEfficiency1D                       ->GetYaxis()    ->SetTitle("#varepsilon");
-    
-    hName   = "2D_Eff";
-    hTitle  = "#phi acceptance in ALICE exp (|y|<5), 2D analysis";
-    TGraphAsymmErrors * gEfficiency2D =   new TGraphAsymmErrors();
-    gEfficiency2D                       ->  SetName(hName);
-    gEfficiency2D                       ->  SetTitle(hTitle);
-    gEfficiency2D                       ->  GetXaxis()  ->SetTitle("p_{T} #phi_{1} (GeV/c)");
-    gEfficiency2D                       ->  GetYaxis()  ->SetTitle("p_{T} #phi_{2} (GeV/c)");
-    gEfficiency2D                       ->  GetZaxis()  ->SetTitle("#varepsilon");
-    
-    gEfficiency1D->Divide(hPhiRec_1D,hPhiGen_1D,"cl=0.683 b(1,1) mode");
-    
-    gEfficiency2D->Divide(hPhiR1D_2X,hPhiG1D_2X,"cl=0.683 b(1,1) mode");
-    
-    // Evalutaing the Efficiencies
-    hPhiEff_1D->Divide(hPhiRec_1D,hPhiGen_1D,1.,1.,"b");
-    hPhiEff_2D->Divide(hPhiRec_2D,hPhiGen_2D,1.,1.,"b");
-    hPEff1D_2X->Divide(hPhiR1D_2X,hPhiG1D_2X,1.,1.,"b");
-    for ( Int_t iEff = 0; iEff <= nBinPT2D; iEff++ )
+    // >> MULTIPLICITY ANALYSIS //
+    //
+    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
     {
-        for ( Int_t jEff = 0; jEff <= nBinPT2D; jEff++ )
-        {
-            auto Val1 = hPEff1D_2X->GetBinContent(iEff+1);
-            auto Val2 = hPEff1D_2X->GetBinContent(jEff+1);
-            auto Err1 = hPEff1D_2X->GetBinError(iEff+1);
-            auto Err2 = hPEff1D_2X->GetBinError(jEff+1);
-            hPEff2D_2X  ->SetBinContent (hPEff2D_2X->GetBin(iEff+1,jEff+1),Val1*Val2);
-            hPEff2D_2X  ->SetBinError   (hPEff2D_2X->GetBin(iEff+1,jEff+1),Err1+Err2);
-        }
+        hEFF_1D_in_MT[iHisto]               ->Divide(hREC_1D_in_MT[iHisto],         hGEN_1D_in_MT[iHisto],          1.,1.,"b");
+        hEFF_1D_in_MT_in_2Dbin[iHisto]      ->Divide(hREC_1D_in_MT_in_2Dbin[iHisto],hGEN_1D_in_MT_in_2Dbin[iHisto], 1.,1.,"b");
+        hEFF_2D_in_MT[iHisto]               ->Divide(hREC_2D_in_MT[iHisto],         hGEN_2D_in_MT[iHisto],          1.,1.,"b");
+        hREC_1D_in_MT[iHisto]->Scale(1.,"width");
+        hGEN_1D_in_MT[iHisto]->Scale(1.,"width");
+        hTRU_1D_in_MT[iHisto]->Scale(1.,"width");
+        hREC_1D_in_MT_in_2Dbin[iHisto]->Scale(1.,"width");
+        hGEN_1D_in_MT_in_2Dbin[iHisto]->Scale(1.,"width");
+        hTRU_1D_in_MT_in_2Dbin[iHisto]->Scale(1.,"width");
+        hREC_2D_in_MT[iHisto]->Scale(1.,"width");
+        hGEN_2D_in_MT[iHisto]->Scale(1.,"width");
+        hTRU_2D_in_MT[iHisto]->Scale(1.,"width");
     }
+    //
+    
+    // >> TRIGGER ANALYSIS //
     
     //--------------------------//
     //  Printing output objects //
     //--------------------------//
-    TFile * outFile         =   new TFile   (fEfficiHist,"recreate");
-    
-    // Writing Histograms to Output File
-    hUtlEntry       ->Write();
-    hPhiGen_1D      ->Write();
-    hPhiG1D_2X      ->Write();
-    hPhiGen_2D      ->Write();
-    hPhiRec_1D      ->Write();
-    hPhiR1D_2X      ->Write();
-    hPhiRec_2D      ->Write();
-    hPhiTru_1D      ->Write();
-    hPhiTru_2D      ->Write();
-    hPhiEff_1D      ->Write();
-    hPhiEff_2D      ->Write();
-    hPEff2D_2X      ->Write();
-    hUtlTarget      ->Write();
-    gEfficiency1D   ->Write();
-    gEfficiency2D   ->Write();
-    //(hPhiRec_1D->Divide(hPhiRec_1D,hPhiGen_1D));
-    hPhiRec_1D->Write();
-    
-    outFile->Close();
+    //
+    // >> Trigger Analysis
+    //
+    TFile *outFil1  =   new TFile   (fTrgPrePrMC,"recreate");
+    //
+    outFil1->Close();
+    //
+    // >> Yield Analysis
+    //
+    TFile *outFil2  =   new TFile   (fYldPrePrMC,"recreate");
+    //
+    hGEN_1D->Write();
+    hTRU_1D->Write();
+    hEFF_1D->Write();
+    hREC_1D_in_2Dbin->Write();
+    hGEN_1D_in_2Dbin->Write();
+    hTRU_1D_in_2Dbin->Write();
+    hEFF_1D_in_2Dbin->Write();
+    hREC_2D->Write();
+    hGEN_2D->Write();
+    hTRU_2D->Write();
+    hEFF_2D->Write();
+    //
+    outFil2->Close();
+    //
+    // >> Multiplicity Analysis
+    //
+    TFile *outFil3  =   new TFile   (fMltPrePrMC,"recreate");
+    //
+    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    {
+        hREC_1D_in_MT[iHisto]->Write();
+        hGEN_1D_in_MT[iHisto]->Write();
+        hTRU_1D_in_MT[iHisto]->Write();
+        hEFF_1D_in_MT[iHisto]->Write();
+        hREC_1D_in_MT_in_2Dbin[iHisto]->Write();
+        hGEN_1D_in_MT_in_2Dbin[iHisto]->Write();
+        hTRU_1D_in_MT_in_2Dbin[iHisto]->Write();
+        hEFF_1D_in_MT_in_2Dbin[iHisto]->Write();
+        hREC_2D_in_MT[iHisto]->Write();
+        hGEN_2D_in_MT[iHisto]->Write();
+        hTRU_2D_in_MT[iHisto]->Write();
+        hEFF_2D_in_MT[iHisto]->Write();
+    }
+    //
+    outFil3->Close();
+    //
+    // >-> Close input File
+    //
     insFileMC->Close();
+    //
 }

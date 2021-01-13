@@ -1,15 +1,12 @@
 // File for 1-Dimensional Analysis:
 // !TODO: All Set!
-
-
-#include "../inc/SetValues.h"
-#include "../inc/SetFunctions.h"
+#include "../../inc/AliAnalysisPhiPair.h"
 #include "RooMsgService.h"
 
-void Anls_SignalCorrections ( bool fSilent = false )
+void Analysis_SignalCorrections ( bool fSilent = false )
 {
     //---------------------//
-    //  Setting up input   //-------------------------------------------------------------------------------
+    //  Setting up input   //
     //---------------------//
     
     //-// OPTIONS
@@ -21,18 +18,200 @@ void Anls_SignalCorrections ( bool fSilent = false )
         RooMsgService::instance().setSilentMode(fSilent);
     }
     
+    // Retrieving PreProcessed data histograms
+    TFile*  insFile_DT_Yield            =   new TFile   (fYldSigExtr);
+    TFile*  insFile_DT_Mult             =   new TFile   (fMltSigExtr);
+    TFile*  insFile_EF_Yield            =   new TFile   (fYldPrePrMC);
+    TFile*  insFile_EF_Mult             =   new TFile   (fMltPrePrMC);
+    
+    /*
     // Opening Data and Efficiencies File
     TFile*  insFile_DT              =   new TFile   (fFitResults);
     TFile*  insFile_EF              =   new TFile   (fEfficiHist);
     TFile*  insCheck_               =   new TFile   ("./result/HEPData-ins1182213-v1-root.root");
     TFile*  insFile_MC_P6           =   new TFile   ("./result/MCTruth_Pythia6.root");
     TFile*  insFile_MC_P8           =   new TFile   ("./result/MCTruth_Pythia8.root");
+    */
     
-    // Fit Variables for Roofit
-    RooRealVar  xTransverseMom1D("xTransverseMom1D","xTransverseMom1D", fMinPT1D,fMaxPT1D);
-    RooRealVar  xTransverseMom2D("xTransverseMom2D","xTransverseMom2D", fMinPT2D,fMaxPT2D);
-    RooRealVar  yTransverseMom2D("yTransverseMom2D","yTransverseMom2D", fMinPT2D,fMaxPT2D);
+    // Recovering the histograms-------------------------------------------------------------------------------
+
+    // >-> YIELD ANALYSIS //
+
+    // >->-->-> 1-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH1F       *hRAW_1D;
+    TH1F       *hEFF_1D;
+    //
+    //  Defining cumulative histogram over measurable pT
+    //
+    hName       =   "hRAW_1D";
+    hRAW_1D     =   (TH1F*)(insFile_DT_Yield->Get(hName));
+    //
+    hName       =   "hEFF_1D";
+    hEFF_1D     =   (TH1F*)(insFile_EF_Yield->Get(hName));
+    //
+    // >->-->-> 2-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH2F       *hRAW_2D;
+    TH2F       *hEFF_2D;
+    //
+    //  Defining cumulative histogram over measurable pT
+    //
+    hName       =   "hRAW_2D";
+    hRAW_2D     =   (TH2F*)(insFile_DT_Yield->Get(hName));
+    //
+    hName       =   "hEFF_2D";
+    hEFF_2D     =   (TH2F*)(insFile_EF_Yield->Get(hName));
+    //
+
+    // >-> MULTIPLICITY ANALYSIS //
+
+    // >->-->-> 1-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH1F      **hRAW_1D_in_MT               = new TH1F     *[nBinMult];
+    //
+    //  Defining MT-Differential histograms over measurable pT
+    //
+    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    {
+        hName = Form("hRAW_1D_in_MT_%i",iHisto);
+        hRAW_1D_in_MT[iHisto]   =   (TH1F*)(insFile_DT_Mult->Get(hName));
+    }
+
+    // >->-->-> 2-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH2F      **hRAW_2D_in_MT               = new TH2F     *[nBinMult];
+    //
+    //  Defining MT-Differential histograms over measurable pT
+    //
+    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    {
+        hName   =   Form("hRAW_2D_in_MT_%i",iHisto);
+        hRAW_2D_in_MT[iHisto]   =   (TH2F*)(insFile_DT_Mult->Get(hName));
+    }
     
+    //---------------------//
+    //  Setting up output  //
+    //---------------------//
+    
+    // Generating the binning array--------------------------------------------------------------------------
+    fSetBinPT1D();
+    fSetBinIM1D();
+    fSetBinPT2D();
+    fSetBinIM2D();
+    fSetBinRap_();
+    fSetBinMult();
+    fSetBinNTup();
+    Int_t       U_AccCand[1024];
+    Int_t       U_nAccept;
+    
+    // Creating the histograms-------------------------------------------------------------------------------
+
+    // >-> YIELD ANALYSIS //
+
+    // >->-->-> 1-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH1F       *hRES_1D;
+    //
+    hName       =   Form("hRES_1D");
+    hTitle      =   Form("hRES_1D");
+    hRES_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+    SetAxis(hRES_1D,"PT 1D");
+    //
+    // >->-->-> 2-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    TH2F       *hRES_2D;
+    //
+    hName       =   Form("hRES_2D");
+    hTitle      =   Form("hRES_2D");
+    hRES_2D     =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    SetAxis(hRES_2D,"PT 2D");
+    //
+    
+    // >-> MULTIPLICITY ANALYSIS //
+
+    // >->-->-> 1-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    // >->-->-> 2-Dimension analysis //
+    //
+    //  Declaring all histograms
+    //
+    
+    //---------------------//
+    // Preprocessing input //
+    //---------------------//
+    
+    //         N_raw    1     1    Eff    1     1
+    // N_res = ----- X --- X --- X --- X --- X ---
+    //          eff    DpT   Dy    Evn   BR    Vrt
+    
+    // Error propagation
+    hRES_1D->Sumw2();
+    hRES_2D->Sumw2();
+    
+    // Scaling for efficiencies
+    hRES_1D->Divide(hRAW_1D,hEFF_1D,1.,1.,"");
+    hRES_2D->Divide(hRAW_2D,hEFF_2D,1.,1.,"");
+    
+    // Scaling in pT [Done in PreProcessing]
+    
+    // Scaling in Rapidity Interval
+    hRES_1D->Scale(1./kRapidityIntvl);
+    hRES_2D->Scale(1./kRapidityIntvl);
+    
+    // Scaling for events
+    hRES_1D->Scale(1.);
+    hRES_2D->Scale(1.);
+    
+    // Scaling for Branching Ratio
+    hRES_1D->Scale(1./kBranchingRtio);
+    hRES_2D->Scale(1./(kBranchingRtio*kBranchingRtio));
+    
+    // Scaling for Vertex Selection Efficiency
+    hRES_1D->Scale(1./kVertexEfficnc);
+    hRES_2D->Scale(1./kVertexEfficnc);
+    
+    //-------------------------//
+    //  Filling output objects //
+    //-------------------------//
+    
+    fStartTimer("Fit_for_extrapolation");
+    
+    // Output File for Fit Check
+    TFile*  outCheckFitYld  =   new TFile("Example.root","recreate");
+    
+    fPrintLoopTimer("Fit_for_extrapolation",1,2,1);
+    
+    // Fit
+    auto fResults = fExtrapolateModel(hRAW_1D);
+    
+    //hRES_1D->Draw();
+    
+    // Building N_Raw histogram
+    //auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(Signal));
+    //hRAW_1D->SetBinContent      (iFit+1,N_Raw->getVal());
+    //hRAW_1D->SetBinError        (iFit+1,N_Raw->getError());
+    
+    outCheckFitYld->Close();
+    
+    fStopTimer("Fit_for_extrapolation");
+}
+    /*
+
     //-// Recovering Data histograms
     
     //------ 1D Histograms Recovery ------//
@@ -104,12 +283,13 @@ void Anls_SignalCorrections ( bool fSilent = false )
     hTitle  = "Number of #phi in |y|<5";
     TH2F*   h2D_Res     =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
     TH2_SetDescription (h2D_Res);
+    */
     
     
     /*------------*/
     /*  ANALYSIS  */
     /*------------*/
-    
+    /*
     // Output File for Fit Check
     TFile*  outFile_FT  =   new TFile(fAnlResHist,"recreate");
     
@@ -162,9 +342,10 @@ void Anls_SignalCorrections ( bool fSilent = false )
         h2D_Res->Scale(1./kVertexEfficiency);
     }
     
+    
+    
     //------- Histograms Fitting  -------//
     
-    /*
     SetLevyTsalis();
     gCheck_->Fit(fLevyFit1D,"IMRE0S","",0.4,6.0);
     cout << "M:" << fLevyFit1D->Mean(0.,10.) << endl;
@@ -175,7 +356,6 @@ void Anls_SignalCorrections ( bool fSilent = false )
     h1D_Res->Divide(fLevyFit1D);
     h1D_Res->Draw();
     c133->SaveAs("./graphs/eeee.pdf");
-    */
     
     // 1D PT Eval
     Double_t *  fResults1D = new Double_t [6];
@@ -558,7 +738,7 @@ void Anls_SignalCorrections ( bool fSilent = false )
     lLegend1->Draw("SAME");
     cCompareFinal->SaveAs("./graphs/cCompareFinal.pdf");
     ratioplot(fResults2D,hSlice6,hSlice8);
-    
+     
     //---------------------//
     // Output and wrap up  //-------------------------------------------------------------------------------
     //---------------------//
@@ -576,4 +756,6 @@ void Anls_SignalCorrections ( bool fSilent = false )
     outFile_RS->Close();
     insFile_DT->Close();
     insFile_EF->Close();
+    
 }
+*/

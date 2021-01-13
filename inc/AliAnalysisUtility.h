@@ -51,54 +51,112 @@ using namespace RooFit;
 //------------------------------//
 //      GLOBAL VARIABLES        //
 //------------------------------//
-
+//
 // Random Generator
+//
 TRandom    *fRandomGen      =   new TRandom();
-
+//
 // Benchmark
+//
 TBenchmark *fBenchmark      =   new TBenchmark();
-
+//
 // Title and Name for histograms
+//
 auto        hName           =   "Name";
 auto        hTitle          =   "Title";
-
+//
 //---------------------------------------//
 //- Physics is by defualt in GeV, we    -//
 //- define some constants to evaluate   -//
 //- results in other units              -//
 //---------------------------------------//
-
+//
 auto const  KeV             =   1e6;
 auto const  MeV             =   1e3;
 auto const  GeV             =   1;
 auto const  TeV             =   1e-3;
-
+//
 //--------------------------------//
 //      BENCHMARK UTILITIES       //
 //--------------------------------//
-
-void    fStartTimer( string fTimerName )    {
-    fBenchmark->Start(fTimerName.c_str());
-    cout << "[INFO] Starting " << fTimerName.c_str() << endl;
-}
-
-void    fStopTimer( string fTimerName )     {
-    fBenchmark->Stop(fTimerName.c_str());
-    cout << "[INFO] Stopping " << fTimerName.c_str() << endl;
-    Float_t elapsed = fBenchmark->GetRealTime(fTimerName.c_str());
-    printf("[INFO] It took %02.0f:%02.0f \n",elapsed / 60., ((int)(elapsed) % 60)*1. );
-}
-
-void    fPrintLoopTimer( string fTimerName, Int_t iEvent, Int_t nEntries, Int_t iPrintInterval )   {
-    if ( iEvent%iPrintInterval != 0 || iEvent == 0 ) return;
-    fBenchmark->Stop(fTimerName.c_str());
-    Float_t frac = (Float_t)iEvent / (Float_t)nEntries;
-    Float_t elapsed = fBenchmark->GetRealTime(fTimerName.c_str());
-    Float_t speed = (Float_t)iEvent / elapsed;
-    Float_t eta = (Float_t)nEntries / speed - elapsed;
-    printf("[INFO] Event # %4.d mln | %02.0f %% | %7.f events/s | Time: %02.0f:%02.0f | ETA: %02.0f:%02.0f \n", iEvent/iPrintInterval, 100. * frac, speed, elapsed / 60., ((int)(elapsed) % 60)*1. , eta / 60., ((int)(eta) % 60)*1. );
+//
+TString     fMSG_PrintTimer =   "[INFO] Event # %4.f %s | %02.0f %% | %2.2f %s events/s | Time: %02.0f:%02.0f | ETA: %02.0f:%02.0f \n";
+//
+//_____________________________________________________________________________
+//
+void    fStartTimer             ( TString fTimerName )    {
+    fBenchmark->Start(fTimerName.Data());
+    printf("[INFO] Starting %s \n", fTimerName.Data());
     fflush(stdout);
-    fBenchmark->Start(fTimerName.c_str());
 }
+//
+//_____________________________________________________________________________
+//
+void    fStopTimer              ( TString fTimerName )     {
+    fBenchmark->Stop(fTimerName.Data());
+    printf("[INFO] Stopping %s \n", fTimerName.Data());
+    Float_t fElapsedS   = (int)(fBenchmark->GetRealTime(fTimerName.Data()));
+    Float_t fElapsedM   = (int)(fElapsedS/60.);
+    printf("[INFO] It took %02.0f:%02.0f \n",   fElapsedM,  fElapsedS);
+    fflush(stdout);
+}
+//
+//_____________________________________________________________________________
+//
+void    fPrintLoopTimer         ( TString fTimerName, Int_t iEvent, Int_t nEntries, Int_t iPrintInterval )   {
+    if ( iEvent%iPrintInterval != 0 || iEvent == 0 ) return;
+    
+    // Suffix for events
+    TString     fSuffix =   "";
+    Int_t       fSfxCor =   iPrintInterval;
+    if ( iPrintInterval == 1000 )       {
+        fSuffix =   "k";
+        fSfxCor =   iPrintInterval%1000;
+    }
+    if ( iPrintInterval == 1000000 )    {
+        fSuffix =   "mln";
+        fSfxCor =   iPrintInterval%1000000;
+    }
+    if ( iPrintInterval == 1000000000 ) {
+        fSuffix =   "mld";
+        fSfxCor =   iPrintInterval%1000000000;
+    }
+    
+    // Stopping timer
+    fBenchmark->Stop(fTimerName.Data());
+    
+    // Evaluating informations
+    Float_t fFraction   =   (float)iEvent/(1.*nEntries);
+    Float_t fElapsedS   =   (float)(fBenchmark->GetRealTime(fTimerName.Data()));
+    Float_t fElapsedM   =   (float)(fElapsedS/60.);
+    Float_t fSpeedvsS   =   (float)iEvent/fElapsedS;
+    Float_t fSpeedvsM   =   (float)fSpeedvsS*60.;
+    Float_t fEta____S   =   (float)(1.*nEntries/fSpeedvsS - fElapsedS);
+    Float_t fEta____M   =   (float)(fEta____S/60.);
+    Float_t fPrintEvt   =   (float)iEvent*fSfxCor/(iPrintInterval);
+    
+    // Printing
+    printf(fMSG_PrintTimer.Data(),  fPrintEvt,  fSuffix.Data(), 100.*fFraction, fSpeedvsS,  fSuffix.Data(), fElapsedM,  (int)fElapsedS%60,  fEta____M,  (int)fEta____S%60);
+    fflush(stdout);
+    
+    // Resuming timer
+    fBenchmark->Start(fTimerName.Data());
+}
+//
+//------------------------------//
+//    HISTOGRAM UTILITIES       //
+//------------------------------//
+//
+template < class Tclass >
+bool    fIsWorthFitting         ( Tclass * aTarget )    {
+    if ( aTarget->GetEntries() <= 2.*aTarget->GetNbinsX()*aTarget->GetNbinsY()*aTarget->GetNbinsZ() )
+    {
+        cout << "[WARNING] Skipping empty or scarsely populated histogram!" << endl;
+        return false;
+    }
+    return true;
+}
+//
+//_____________________________________________________________________________
 
 #endif

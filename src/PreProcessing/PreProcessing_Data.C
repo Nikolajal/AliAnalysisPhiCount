@@ -1,12 +1,18 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: [INFO] About trees in input
 
-void PreProcessing_data ( string fFileName = "" )
+void PreProcessing_Data ( string fFileName = "" )
 {
+    //---------------------//
+    //  Setting up input   //
+    //---------------------//
+    
+    // >-> OPTIONS
+    
     if ( fFileName == "" )
     {
         cout << "[WARNING] Must Specify an input root file" << endl;
-        cout << "[INFO] Usage PreProcessing_data(\"Root_file_name.root\")" << endl;
+        cout << "[INFO] Usage PreProcessing_Data(\"Root_file_name.root\")" << endl;
         return;
     }
     
@@ -29,7 +35,7 @@ void PreProcessing_data ( string fFileName = "" )
     if ( !TPhiCandidate )
     {
         cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
-        TKaonCandidate-> SetBranchAddress   ("fMultiplicity",    &evKaonCandidate.Multiplicity);
+        TKaonCandidate-> SetBranchAddress   ("fMultiplicit2",   &evKaonCandidate.Multiplicity);
         TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
         TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
         TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
@@ -41,7 +47,7 @@ void PreProcessing_data ( string fFileName = "" )
     else if ( !TKaonCandidate )
     {
         cout << "[INFO] No KaonCandidate Tree, switching to Phi Analysis" << endl;
-        TPhiCandidate-> SetBranchAddress    ("fMultiplicity",    &evPhiCandidate.Multiplicity);
+        TPhiCandidate-> SetBranchAddress    ("fMultiplicity",   &evPhiCandidate.Multiplicity);
         TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
         TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
         TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
@@ -52,7 +58,7 @@ void PreProcessing_data ( string fFileName = "" )
     }
     else
     {
-        TPhiCandidate-> SetBranchAddress    ("fMultiplicity",    &evPhiCandidate.Multiplicity);
+        TPhiCandidate-> SetBranchAddress    ("fMultiplicit2",   &evPhiCandidate.Multiplicity);
         TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
         TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
         TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
@@ -83,14 +89,16 @@ void PreProcessing_data ( string fFileName = "" )
     fSetBinPT2D();
     fSetBinIM2D();
     fSetBinRap_();
+    fSetBinMult();
+    fSetBinNTup();
     Int_t       U_AccCand[1024];
     Int_t       U_nAccept;
     
     // Creating the histograms-------------------------------------------------------------------------------
 
-    // >> YIELD ANALYSIS //
+    // >-> YIELD ANALYSIS //
 
-    // >>-->> 1-Dimension analysis //
+    // >->-->-> 1-Dimension analysis //
     //
     //  Declaring all histograms
     //
@@ -99,7 +107,7 @@ void PreProcessing_data ( string fFileName = "" )
     //
     //  Defining cumulative histogram over measurable pT
     //
-    hName       =   Form("hREC_1D_in_PT");
+    hName       =   Form("hREC_1D");
     hTitle      =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fMinPT1D,fMaxPT1D);
     hREC_1D     =   new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
     //
@@ -113,7 +121,7 @@ void PreProcessing_data ( string fFileName = "" )
         SetAxis(hREC_1D_in_PT[iHisto],"IM 1D");
     }
 
-    // >>-->> 2-Dimension analysis //
+    // >->-->-> 2-Dimension analysis //
     //
     //  Declaring all histograms
     //
@@ -123,7 +131,7 @@ void PreProcessing_data ( string fFileName = "" )
     //
     //  Defining cumulative histogram over measurable pT
     //
-    hName       =   Form("hREC_2D_in_PT");
+    hName       =   Form("hREC_2D");
     hTitle      =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fMinPT2D,fMaxPT2D,fMinPT2D,fMaxPT2D);
     hREC_2D     =   new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
     //
@@ -147,14 +155,14 @@ void PreProcessing_data ( string fFileName = "" )
         }
     }
 
-    // >> MULTIPLICITY ANALYSIS //
+    // >-> MULTIPLICITY ANALYSIS //
 
-    // >>-->> 1-Dimension analysis //
+    // >->-->-> 1-Dimension analysis //
     //
     //  Declaring all histograms
     //
     TH1F      **hREC_1D_in_MT               = new TH1F     *[nBinMult];
-    TH1F     ***hREC_1D_in_PT_MT            = new TH1F    **[nBinMult];
+    TH1F     ***hREC_1D_in_MT_in_PT         = new TH1F    **[nBinMult];
     //
     //  Defining cumulative histogram over measurable pT
     //  Defining pT-Differential histograms over measurable pT
@@ -166,18 +174,18 @@ void PreProcessing_data ( string fFileName = "" )
         hREC_1D_in_MT[iHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
         SetAxis(hREC_1D_in_MT[iHisto],"IM 1D");
 
-        hREC_1D_in_PT_MT[iHisto] = new TH1F     *[nBinPT1D];
+        hREC_1D_in_MT_in_PT[iHisto] = new TH1F     *[nBinPT1D];
 
         for ( Int_t jHisto = 0; jHisto < nBinPT1D; jHisto++ )
         {
             hName = Form("hREC_1D_in_MT_PT_%i_%i",iHisto,jHisto);
             hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fArrPT1D[jHisto],fArrPT1D[jHisto+1],fArrMult[iHisto],fArrMult[iHisto+1]);
-            hREC_1D_in_PT_MT[iHisto][jHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
-            SetAxis(hREC_1D_in_PT_MT[iHisto][jHisto],"IM 1D");
+            hREC_1D_in_MT_in_PT[iHisto][jHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+            SetAxis(hREC_1D_in_MT_in_PT[iHisto][jHisto],"IM 1D");
         }
     }
 
-    // >>-->> 2-Dimension analysis //
+    // >->-->-> 2-Dimension analysis //
     //
     //  Declaring all histograms
     //
@@ -215,13 +223,14 @@ void PreProcessing_data ( string fFileName = "" )
         }
     }
 
-    // >> TRIGGER ANALYSIS //
+    // >-> TRIGGER ANALYSIS //
     //
     //  Overall Triggering in Events
     //
     hName   =   "hTrigger";
     hTitle  =   "Triggered events for NTuples candidates";
     TH1F   *hTriggerEvt =   new TH1F (hName,hTitle,5,-0.5,4.5);
+    hTriggerEvt->GetYaxis()->SetTitle("% of events accepted");
 
     //-------------------------//
     //  Filling output objects //
@@ -267,7 +276,7 @@ void PreProcessing_data ( string fFileName = "" )
         for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )
         {
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
-            if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),LPhi_candidate1.Pt(),evPhiCandidate.Multiplicity) ) continue;
+            if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),evPhiCandidate.InvMass[iPhi],LPhi_candidate1.Pt(),evPhiCandidate.Multiplicity) ) continue;
             U_AccCand[U_nAccept] = iPhi;
             U_nAccept++;
         }
@@ -282,9 +291,16 @@ void PreProcessing_data ( string fFileName = "" )
             // Building First Candidate
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[U_AccCand[iPhi]],evPhiCandidate.Py[U_AccCand[iPhi]],evPhiCandidate.Pz[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[iPhi]]);
 
-            // >> 1-Dimensional Analysis Fill   //
+            // >-> 1-Dimensional Analysis Fill   //
             //
-            // >>-->> Trigger
+            // >->-->-> Utilities
+            //
+            Int_t   indexPT1D = fGetBinPT1D(LPhi_candidate1.Pt());
+            Int_t   indexPT2D = fGetBinPT2D(LPhi_candidate1.Pt());
+            Int_t   indexMult = fGetBinMult(evPhiCandidate.Multiplicity);
+            Float_t iInvMass_ = evPhiCandidate.InvMass[U_AccCand[iPhi]];
+            //
+            // >->-->-> Trigger
             //
             if ( !fCheckFill1 )
             {
@@ -292,14 +308,18 @@ void PreProcessing_data ( string fFileName = "" )
                 fCheckFill1 = true;
             }
             // 
-            // >>-->> Yield
+            // >->-->-> Yield
             //
-            Int_t indexPT1D =   fGetBinPT1D(LPhi_candidate1.Pt());
-            Int_t indexPT2D =   fGetBinPT2D(LPhi_candidate1.Pt());
-            hREC_1D                                                     ->  Fill(evPhiCandidate.InvMass[iPhi]);
-            hREC_1D_in_PT[indexPT1D]                                    ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]]);
-            hREC_1D_in_PT_2D_bin[indexPT2D]                             ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]]);
-
+            hREC_1D                                             ->  Fill(iInvMass_);
+            hREC_1D_in_PT[indexPT1D]                            ->  Fill(iInvMass_);
+            hREC_1D_in_PT_2D_bin[indexPT2D]                     ->  Fill(iInvMass_);
+            //
+            // >->-->-> Multiplicity
+            //
+            hREC_1D_in_MT[indexMult]                            ->  Fill(iInvMass_);
+            hREC_1D_in_MT_in_PT[indexMult][indexPT1D]           ->  Fill(iInvMass_);
+            hREC_1D_in_MT_in_PT_2D_bin[indexMult][indexPT2D]    ->  Fill(iInvMass_);
+            
             for ( Int_t jPhi = 0; jPhi < U_nAccept; jPhi++ )
             {
                 // Must have at least 2 candidates
@@ -312,9 +332,15 @@ void PreProcessing_data ( string fFileName = "" )
                 LPhi_candidate2.SetXYZM(evPhiCandidate.Px[U_AccCand[jPhi]],evPhiCandidate.Py[U_AccCand[jPhi]],evPhiCandidate.Pz[U_AccCand[jPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]]);
 
 
-                // >> 2-Dimensional Analysis Fill   //
+                // >-> 2-Dimensional Analysis Fill   //
                 //
-                // >>-->> Trigger
+                // >->-->-> Utilities
+                //
+                Int_t   jndexPT1D = fGetBinPT1D(LPhi_candidate2.Pt());
+                Int_t   jndexPT2D = fGetBinPT2D(LPhi_candidate2.Pt());
+                Float_t jInvMass_ = evPhiCandidate.InvMass[U_AccCand[jPhi]];
+                //
+                // >->-->-> Trigger
                 //
                 if ( !fCheckFill2 )
                 {
@@ -322,12 +348,15 @@ void PreProcessing_data ( string fFileName = "" )
                     fCheckFill2 = true;
                 }
                 // 
-                // >>-->> Yield
+                // >->-->-> Yield
                 //
-                Int_t indexPT2D =   fGetBinPT2D(LPhi_candidate1.Pt());
-                Int_t jndexPT2D =   fGetBinPT2D(LPhi_candidate2.Pt());
-                hREC_2D                                                     ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
-                hREC_2D_in_PT[indexPT2D][jndexPT2D]                         ->  Fill(evPhiCandidate.InvMass[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]],0.5);
+                hREC_2D                                                 ->  Fill(iInvMass_,jInvMass_,0.5);
+                hREC_2D_in_PT[indexPT2D][jndexPT2D]                     ->  Fill(iInvMass_,jInvMass_,0.5);
+                //
+                // >->-->-> Multiplicity
+                //
+                hREC_2D_in_MT[indexMult]                                ->  Fill(iInvMass_,jInvMass_,0.5);
+                hREC_2D_in_MT_in_PT[indexMult][indexPT2D][jndexPT2D]    ->  Fill(iInvMass_,jInvMass_,0.5);
                 
                 for ( Int_t kPhi = 0; kPhi < U_nAccept; kPhi++ )
                 {
@@ -337,7 +366,7 @@ void PreProcessing_data ( string fFileName = "" )
                     // Selecting valid candidates
                     if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi, kPhi) ) continue;
                     
-                    // >>->> 3-Dimensional Analysis Fill
+                    // >->->-> 3-Dimensional Analysis Fill
                     // Trigger
                     if ( !fCheckFill3 )
                     {
@@ -353,7 +382,7 @@ void PreProcessing_data ( string fFileName = "" )
                         // Selecting valid candidates
                         if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi, kPhi, lPhi) ) continue;
 
-                        // >>->> 4-Dimensional Analysis Fill
+                        // >->->-> 4-Dimensional Analysis Fill
                         // Trigger
                         if ( !fCheckFill4 )
                         {
@@ -374,32 +403,33 @@ void PreProcessing_data ( string fFileName = "" )
     // PostProcessin output obj //
     //--------------------------//
     
-    // >> Trigger Analysis
+    // >-> Trigger Analysis
     hTriggerEvt->Scale(100./nEvents);
 
     //--------------------------//
     //  Printing output objects //
     //--------------------------//
     //
-    // >> Trigger Analysis
+    // >-> Trigger Analysis
     //
     TFile *outFil1  =   new TFile   (fTrgPreProc,"recreate");
-    
-    hTriggerEvt->Write();
-    
-    outFil1->Close();
-
     //
-    // >> Yield Analysis
+    hTriggerEvt->Write();
+    //
+    outFil1->Close();
+    //
+    // >-> Yield Analysis
     //
     TFile *outFil2  =   new TFile   (fYldPreProc,"recreate");
-    
+    //
     hREC_1D->Write();
     for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)
     {
         hREC_1D_in_PT[iHisto]   ->Write();
     }
+    //
     hREC_2D->Write();
+    //
     for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
     {
         hREC_1D_in_PT_2D_bin[iHisto]   ->Write();
@@ -409,13 +439,13 @@ void PreProcessing_data ( string fFileName = "" )
             hREC_2D_in_PT[iHisto][jHisto]->Write();
         }
     }
-    outFil2->Close();
-
     //
-    // >> Multiplicity Analysis
+    outFil2->Close();
+    //
+    // >-> Multiplicity Analysis
     //
     TFile *outFil3  =   new TFile   (fMltPreProc,"recreate");
-    
+    //
     for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
     {
         hREC_1D_in_MT[iHisto]->Write();
@@ -423,7 +453,7 @@ void PreProcessing_data ( string fFileName = "" )
 
         for ( Int_t jHisto = 0; jHisto < nBinPT1D; jHisto++ )
         {
-            hREC_1D_in_PT_MT[iHisto][jHisto]->Write();
+            hREC_1D_in_MT_in_PT[iHisto][jHisto]->Write();
         }
         for ( Int_t jHisto = 0; jHisto < nBinPT2D; jHisto++ )
         {
@@ -435,8 +465,11 @@ void PreProcessing_data ( string fFileName = "" )
             }
         }
     }
-
+    //
     outFil3->Close();
-
+    //
+    // >-> Close input File
+    //
     insFileDT->Close();
+    //
 }
