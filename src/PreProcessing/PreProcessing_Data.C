@@ -273,15 +273,16 @@ void PreProcessing_Data ( string fFileName = "" )
         Bool_t  fCheckFill3 =   false;
         Bool_t  fCheckFill4 =   false;
 
-        for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )
-        {
+        for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )  {
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
             if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),evPhiCandidate.InvMass[iPhi],LPhi_candidate1.Pt(),evPhiCandidate.Multiplicity) ) continue;
             U_AccCand[U_nAccept] = iPhi;
             U_nAccept++;
         }
-        for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )
-        {
+        
+        if ( U_nAccept == 0 )   hTriggerEvt->Fill(0);
+        
+        for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )    {
             // Must have at least 1 candidate
             if ( U_nAccept < 1 ) break;
         
@@ -302,8 +303,7 @@ void PreProcessing_Data ( string fFileName = "" )
             //
             // >->-->-> Trigger
             //
-            if ( !fCheckFill1 )
-            {
+            if ( !fCheckFill1 ) {
                 hTriggerEvt->Fill(1);
                 fCheckFill1 = true;
             }
@@ -320,8 +320,7 @@ void PreProcessing_Data ( string fFileName = "" )
             hREC_1D_in_MT_in_PT[indexMult][indexPT1D]           ->  Fill(iInvMass_);
             hREC_1D_in_MT_in_PT_2D_bin[indexMult][indexPT2D]    ->  Fill(iInvMass_);
             
-            for ( Int_t jPhi = 0; jPhi < U_nAccept; jPhi++ )
-            {
+            for ( Int_t jPhi = 0; jPhi < U_nAccept; jPhi++ )    {
                 // Must have at least 2 candidates
                 if ( U_nAccept < 2 ) break;
 
@@ -342,8 +341,7 @@ void PreProcessing_Data ( string fFileName = "" )
                 //
                 // >->-->-> Trigger
                 //
-                if ( !fCheckFill2 )
-                {
+                if ( !fCheckFill2 ) {
                     hTriggerEvt->Fill(2);
                     fCheckFill2 = true;
                 }
@@ -358,8 +356,7 @@ void PreProcessing_Data ( string fFileName = "" )
                 hREC_2D_in_MT[indexMult]                                ->  Fill(iInvMass_,jInvMass_,0.5);
                 hREC_2D_in_MT_in_PT[indexMult][indexPT2D][jndexPT2D]    ->  Fill(iInvMass_,jInvMass_,0.5);
                 
-                for ( Int_t kPhi = 0; kPhi < U_nAccept; kPhi++ )
-                {
+                for ( Int_t kPhi = 0; kPhi < U_nAccept; kPhi++ )    {
                     // Must have at least 3 candidates
                     if ( U_nAccept < 3 ) break;
 
@@ -368,14 +365,12 @@ void PreProcessing_Data ( string fFileName = "" )
                     
                     // >->->-> 3-Dimensional Analysis Fill
                     // Trigger
-                    if ( !fCheckFill3 )
-                    {
+                    if ( !fCheckFill3 ) {
                         hTriggerEvt->Fill(3);
                         fCheckFill3 = true;
                     }
 
-                    for ( Int_t lPhi = 0; lPhi < U_nAccept; lPhi++ )
-                    {
+                    for ( Int_t lPhi = 0; lPhi < U_nAccept; lPhi++ )    {
                         // Must have at least 4 candidates
                         if ( U_nAccept < 4 ) break;
 
@@ -384,8 +379,7 @@ void PreProcessing_Data ( string fFileName = "" )
 
                         // >->->-> 4-Dimensional Analysis Fill
                         // Trigger
-                        if ( !fCheckFill4 )
-                        {
+                        if ( !fCheckFill4 ) {
                             hTriggerEvt->Fill(4);
                             fCheckFill4 = true;
                         }
