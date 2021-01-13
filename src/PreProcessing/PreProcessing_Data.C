@@ -362,7 +362,7 @@ void PreProcessing_Data ( string fFileName = "" )
                     hTriggerEvt->Fill(2);
                     fCheckFill2 = true;
                 }
-                hTriggerEvt2D->Fill(LPhi_candidate1.Pt(),LPhi_candidate2.Pt()));
+                hTriggerEvt2D->Fill(LPhi_candidate1.Pt(),LPhi_candidate2.Pt());
                 // 
                 // >->-->-> Yield
                 //
@@ -416,7 +416,16 @@ void PreProcessing_Data ( string fFileName = "" )
     //--------------------------//
     
     // >-> Trigger Analysis
+    //
+    // >->-> Bin Normalisation
+    hTriggerEvt1D->Scale(100./nEvents);
+    hTriggerEvt2D->Scale(100./nEvents);
+    //
+    // >->-> Event Normalisation
+    //
     hTriggerEvt->Scale(100./nEvents);
+    hTriggerEvt1D->Scale(100./nEvents);
+    hTriggerEvt2D->Scale(100./nEvents);
 
     //--------------------------//
     //  Printing output objects //
