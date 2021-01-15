@@ -268,13 +268,6 @@ void PreProcessing_Data ( string fFileName = "" )
         
         fPrintLoopTimer("Analysis",iEvent,nEvents,1000000);
 
-        // Skipping non candidate events
-        if ( (int)(evPhiCandidate.nPhi) == 0 )
-        {
-            hTriggerEvt->Fill(0);
-            continue;
-        }
-
         // Utilities
         TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
         U_nAccept = 0;
@@ -405,18 +398,22 @@ void PreProcessing_Data ( string fFileName = "" )
     //--------------------------//
     // PostProcessin output obj //
     //--------------------------//
-    
+    //
+    // >-> Event count recovery
+    //
+    nEvents =   fHEventCount->GetBinContent(9);
+    //
     // >-> Trigger Analysis
     //
     // >->-> Bin Normalisation
-    hTriggerEvt1D->Scale(1.,"width");
-    hTriggerEvt2D->Scale(1.,"width");
+    hTriggerEvt1D   ->Scale(1.,"width");
+    hTriggerEvt2D   ->Scale(1.,"width");
     //
     // >->-> Event Normalisation
     //
-    hTriggerEvt->Scale(100./nEvents);
-    hTriggerEvt1D->Scale(100./nEvents);
-    hTriggerEvt2D->Scale(100./nEvents);
+    hTriggerEvt     ->Scale(100./nEvents);
+    hTriggerEvt1D   ->Scale(100./nEvents);
+    hTriggerEvt2D   ->Scale(100./nEvents);
 
     //--------------------------//
     //  Printing output objects //
@@ -426,10 +423,10 @@ void PreProcessing_Data ( string fFileName = "" )
     //
     TFile *outFil1  =   new TFile   (fTrgPreProc,"recreate");
     //
-    fHEventCount->Write();
-    hTriggerEvt->Write();
-    hTriggerEvt1D->Write();
-    hTriggerEvt2D->Write();
+    fHEventCount    ->Write();
+    hTriggerEvt     ->Write();
+    hTriggerEvt1D   ->Write();
+    hTriggerEvt2D   ->Write();
     //
     outFil1->Close();
     //
@@ -437,7 +434,7 @@ void PreProcessing_Data ( string fFileName = "" )
     //
     TFile *outFil2  =   new TFile   (fYldPreProc,"recreate");
     //
-    fHEventCount->Write();
+    fHEventCount    ->Write();
     hREC_1D->Write();
     for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)
     {
