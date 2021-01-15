@@ -1,8 +1,120 @@
-#include "../inc/AliAnalysisPhiPair.h"
-// !TODO: All set!
 
 // Pythia
 #include "Pythia8/Pythia.h"
+#include "TTree.h"
+#include "TFile.h"
+#include "TH1D.h"
+#include "TLorentzVector.h"
+#include "TString.h"
+#include "TBenchmark.h"
+
+using namespace std;
+using namespace ROOT;
+using namespace Pythia8;
+TBenchmark *fBenchmark      =   new TBenchmark();
+
+typedef struct
+{
+    unsigned char nPhi,           iKaon[1024],    jKaon[1024];
+    float Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+} Struct_PhiCandidate;
+
+typedef struct
+{
+    unsigned char nKaon,          Charge[1024];
+    char  SigmaTOF[1024], SigmaTPC[1024];
+    float Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+} Struct_KaonCandidate;
+
+typedef struct
+{
+    unsigned char nPhi,           Selection[1024];
+    float Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    bool  fTru,           fGen,           fRec;
+} Struct_PhiEfficiency;
+
+typedef struct
+{
+    unsigned char nKaon,          Charge[1024],   Selection[1024];
+    float Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    bool  ftru;
+} Struct_KaonEfficiency;
+
+//-// InvMass range Pythia MC
+const   float   fMinIMMC  =   0.75;
+const   float   fMaxIMMC  =   1.25;
+
+//-// Tree Names
+auto const  fPhiCandidate_Tree      =   "PhiCandidate";
+auto const  fPhiCandidateEff_Tree   =   "PhiEfficiency";
+auto const  fKaonCandidate_Tree     =   "KaonCandidate";
+auto const  fKaonCandidateEff_Tree  =   "KaonEfficiency";
+
+TString     fMSG_PrintTimer =   "[INFO] Event # %4.f %s | %02.0f %% | %2.2f %s events/s | Time: %02.0f:%02.0f | ETA: %02.0f:%02.0f \n";
+//
+//_____________________________________________________________________________
+//
+void    fStartTimer             ( TString fTimerName )    {
+    fBenchmark->Start(fTimerName.Data());
+    printf("[INFO] Starting %s \n", fTimerName.Data());
+    fflush(stdout);
+}
+//
+//_____________________________________________________________________________
+//
+void    fStopTimer              ( TString fTimerName )     {
+    fBenchmark->Stop(fTimerName.Data());
+    printf("[INFO] Stopping %s \n", fTimerName.Data());
+    Float_t fElapsedS   = (float)(fBenchmark->GetRealTime(fTimerName.Data()));
+    Float_t fElapsedM   = (Int_t)(fElapsedS/60.);
+    printf("[INFO] It took %02.0f:%02.0f \n",   fElapsedM,  fElapsedS - 60.*fElapsedM);
+    fflush(stdout);
+}
+//
+//_____________________________________________________________________________
+//
+void    fPrintLoopTimer         ( TString fTimerName, Int_t iEvent, Int_t nEntries, Int_t iPrintInterval )   {
+    if ( iEvent%iPrintInterval != 0 || iEvent == 0 ) return;
+    
+    // Suffix for events
+    TString     fSuffix =   "";
+    Int_t       fSfxCor =   iPrintInterval;
+    if ( iPrintInterval/1e3 < 1e3         && iPrintInterval/1e3 >= 1 )       {
+        fSuffix =   "k";
+        fSfxCor =   (int)(iPrintInterval/1e3) + iPrintInterval%(int)1e3;
+    }
+    if ( iPrintInterval/1e6 < 1e6         && iPrintInterval/1e6 >= 1 )       {
+        fSuffix =   "mln";
+        fSfxCor =   (int)(iPrintInterval/1e6) + iPrintInterval%(int)1e6;
+        cout << fSfxCor << endl;
+    }
+    if ( iPrintInterval/1e9 < 1e9         && iPrintInterval/1e9 >= 1 )       {
+        fSuffix =   "mld";
+        fSfxCor =   (int)(iPrintInterval/1e9) + iPrintInterval%(int)1e9;
+        cout << fSfxCor << endl;
+    }
+    
+    // Stopping timer
+    fBenchmark->Stop(fTimerName.Data());
+    
+    // Evaluating informations
+    Float_t fFraction   =   (float)iEvent/((float)nEntries);
+    Float_t fElapsedS   =   (float)(fBenchmark->GetRealTime(fTimerName.Data()));
+    Float_t fElapsedM   =   (Int_t)(fElapsedS/60.);
+    Float_t fPrintEvt   =   (float)iEvent*(float)fSfxCor/((float)iPrintInterval);
+    Float_t fSpeedvsS   =   fPrintEvt/fElapsedS;
+    Float_t fEta____S   =   (Int_t)(fElapsedS*((float)nEntries/((float)iEvent) -1));
+    Float_t fEta____M   =   (Int_t)(fEta____S/60.);
+    
+    // Printing
+    "[INFO] Event # %4.f %s | %02.0f %% | %1.2f %s events/s | Time: %02.0f:%02.0f | ETA: %02.0f:%02.0f \n";
+    printf(fMSG_PrintTimer.Data(),  fPrintEvt,  fSuffix.Data(), 100.*fFraction, fSpeedvsS,  fSuffix.Data(), fElapsedM,  fElapsedS -60.*fElapsedM,  fEta____M,  fEta____S -60.*fEta____M);
+    fflush(stdout);
+    
+    // Resuming timer
+    fBenchmark->Start(fTimerName.Data());
+}
+
 
 int main (int argc, char *argv[])
 {
@@ -15,7 +127,7 @@ int main (int argc, char *argv[])
     }
     
     // Definition of number of events
-    Int_t   nEvents = atoi(argv[2]);
+    int   nEvents = atoi(argv[2]);
     
     // Output File
     TFile * outFile     = new   TFile   (Form("%s.root",argv[1]),   "recreate", "", 101);
@@ -68,6 +180,8 @@ int main (int argc, char *argv[])
     fKaonEfficiency->Branch     ("Charge",          &evKaonEfficiency.Charge,       "Charge[nKaon]/B");
     fKaonEfficiency->Branch     ("Selection",       &evKaonEfficiency.Selection,    "Selection[nKaon]/b");
     
+    TH1D   *hEventCount =   new TH1D    ("hEventCount","hEventCount",2,-0.5,1.5);
+    
     // PYTHIA INITIALISATION
     Pythia8::Pythia pythia;
     
@@ -77,7 +191,9 @@ int main (int argc, char *argv[])
     pythia.readString(Form("333:mMin = %f",fMinIMMC));
     pythia.readString(Form("333:mMax = %f",fMaxIMMC));
     pythia.readString("Random:setSeed = on");
+    pythia.readString("Print:quiet = on");
     pythia.readString(Form("Random:seed = %i",atoi(argv[3])));
+    pythia.settings.listAll();
     pythia.init();
     
     // Save the ID of kaons here
@@ -86,13 +202,17 @@ int main (int argc, char *argv[])
     
     // Utility variables
     TLorentzVector  iKaon_p,    jKaon_p,    Phi_p;
-    Int_t           fMultiplicityCouter;
+    int           fMultiplicityCouter;
+    
+    fStartTimer("Production");
     
     // Cycling through events
     for ( int iEvent = 0; iEvent < nEvents; iEvent++ )
     {
         // Next event
         pythia.next();
+        hEventCount->Fill(0);
+        fPrintLoopTimer("Production",iEvent,nEvents,10000);
         
         // Set counters to zero
         evPhiCandidate.nPhi     =   0;
@@ -235,11 +355,20 @@ int main (int argc, char *argv[])
         evPhiCandidate.Multiplicity     =   fMultiplicityCouter;
         evKaonCandidate.Multiplicity    =   fMultiplicityCouter;
         
-        fPhiCandidate   ->Fill();
-        fPhiEfficiency  ->Fill();
-        fKaonCandidate  ->Fill();
-        fKaonEfficiency ->Fill();
+        if ( evPhiCandidate.nPhi <= 0 )  {
+            hEventCount->Fill(1);
+        }
+        else    {
+            fPhiCandidate   ->Fill();
+            fPhiEfficiency  ->Fill();
+            fKaonCandidate  ->Fill();
+            fKaonEfficiency ->Fill();
+        }
     }
+    
+    fStopTimer("Production");
+    
+    hEventCount     ->Write();
     fPhiCandidate   ->Write();
     fPhiEfficiency  ->Write();
     fKaonCandidate  ->Write();

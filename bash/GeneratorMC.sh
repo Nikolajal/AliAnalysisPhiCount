@@ -14,14 +14,10 @@ if [ `hostname` == "bownalice07.bo.infn.it" ]; then
     
 else
   
-    g++ ./src/Utilities/Anls_MonteCarloGeneratorPhiCount.C \
-	-o ./exe/GeneratorMC \
+    g++ ./src/Utilities/MCG_PhiAnalysis.C \
+	-o ./exe/MCG_PhiAnalysis \
 	-std=c++11 \
-	-lpythia8 \
-	-L/Applications/pythia8303/lib/ \
-	-I/Applications/pythia8303/include/ \
-    -L/usr/local/Cellar/root/6.22.06_1/lib/root \
-    -I/usr/local/Cellar/root/6.22.06_1/include/root \
-	-lCore -lImt -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lROOTVecOps -lTree -lTreePlayer -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lMultiProc -lROOTDataFrame  -lm -ldl -stdlib=libc++
+    `root-config --cflags --ldflags --libs --glibs --evelibs` \
+    `/Applications/pythia8303/bin/pythia8-config --cflags --libs`
   
 fi

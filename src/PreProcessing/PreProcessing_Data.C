@@ -323,7 +323,7 @@ void PreProcessing_Data ( string fFileName = "" )
                 hTriggerEvt->Fill(1);
                 fCheckFill1 = true;
             }
-            hTriggerEvt1D->Fill(LPhi_candidate1.Pt());
+            hTriggerEvt1D                                       ->Fill(LPhi_candidate1.Pt());
             // 
             // >->-->-> Yield
             //
@@ -347,8 +347,7 @@ void PreProcessing_Data ( string fFileName = "" )
                 // Building Second Candidate
                 LPhi_candidate2.SetXYZM(evPhiCandidate.Px[U_AccCand[jPhi]],evPhiCandidate.Py[U_AccCand[jPhi]],evPhiCandidate.Pz[U_AccCand[jPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]]);
 
-
-                // >-> 2-Dimensional Analysis Fill   //
+                // >-> 2-Dimensional Analysis Fill
                 //
                 // >->-->-> Utilities
                 //
@@ -362,7 +361,7 @@ void PreProcessing_Data ( string fFileName = "" )
                     hTriggerEvt->Fill(2);
                     fCheckFill2 = true;
                 }
-                hTriggerEvt2D->Fill(LPhi_candidate1.Pt(),LPhi_candidate2.Pt());
+                hTriggerEvt2D                                           ->Fill(LPhi_candidate1.Pt(),LPhi_candidate2.Pt(),0.5);
                 // 
                 // >->-->-> Yield
                 //
@@ -423,7 +422,7 @@ void PreProcessing_Data ( string fFileName = "" )
     //
     // >->-> Event Normalisation
     //
-    hTriggerEvt->Scale(100./nEvents);
+    hTriggerEvt->Scale(kT 100./nEvents);
     hTriggerEvt1D->Scale(100./nEvents);
     hTriggerEvt2D->Scale(100./nEvents);
 
