@@ -180,7 +180,7 @@ int main (int argc, char *argv[])
     fKaonEfficiency->Branch     ("Charge",          &evKaonEfficiency.Charge,       "Charge[nKaon]/B");
     fKaonEfficiency->Branch     ("Selection",       &evKaonEfficiency.Selection,    "Selection[nKaon]/b");
     
-    TH1D   *hEventCount =   new TH1D    ("hEventCount","hEventCount",2,-0.5,1.5);
+    TH1D   *hEventCount =   new TH1D    ("fQC_Event_Enumerate","fQC_Event_Enumerate",17, 0.5, 17.5);
     
     // PYTHIA INITIALISATION
     Pythia8::Pythia pythia;
@@ -212,6 +212,17 @@ int main (int argc, char *argv[])
         // Next event
         pythia.next();
         hEventCount->Fill(0);
+        hEventCount->Fill(1);
+        hEventCount->Fill(2);
+        hEventCount->Fill(3);
+        hEventCount->Fill(4);
+        hEventCount->Fill(5);
+        hEventCount->Fill(6);
+        hEventCount->Fill(7);
+        hEventCount->Fill(8);
+        hEventCount->Fill(9);
+        hEventCount->Fill(12);
+        hEventCount->Fill(16);
         fPrintLoopTimer("Production",iEvent,nEvents,10000);
         
         // Set counters to zero
@@ -356,7 +367,7 @@ int main (int argc, char *argv[])
         evKaonCandidate.Multiplicity    =   fMultiplicityCouter;
         
         if ( evPhiCandidate.nPhi <= 0 )  {
-            hEventCount->Fill(1);
+            hEventCount->Fill(10);
         }
         else    {
             fPhiCandidate   ->Fill();

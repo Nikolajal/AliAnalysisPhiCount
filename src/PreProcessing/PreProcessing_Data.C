@@ -16,12 +16,15 @@ void PreProcessing_Data ( string fFileName = "" )
         return;
     }
     
-    //Retrieving Event data
+    // Retrieving Event data
     TFile *insFileDT        =   new TFile   (fFileName.c_str());
     
-    //Retrieving Event data TTree
+    // Retrieving Event data TTree
     TTree   *TPhiCandidate  =   (TTree*)insFileDT->Get(fPhiCandidate_Tree);
     TTree   *TKaonCandidate =   (TTree*)insFileDT->Get(fKaonCandidate_Tree);
+    
+    // Retrieving Event Count Histogram
+    TH1D   *fHEventCount    =   (TH1D*)insFileDT->Get("fQC_Event_Enumerate");
     
     // Define tree data structures
     Struct_PhiCandidate     evPhiCandidate;
@@ -423,6 +426,7 @@ void PreProcessing_Data ( string fFileName = "" )
     //
     TFile *outFil1  =   new TFile   (fTrgPreProc,"recreate");
     //
+    fHEventCount->Write();
     hTriggerEvt->Write();
     hTriggerEvt1D->Write();
     hTriggerEvt2D->Write();
@@ -433,6 +437,7 @@ void PreProcessing_Data ( string fFileName = "" )
     //
     TFile *outFil2  =   new TFile   (fYldPreProc,"recreate");
     //
+    fHEventCount->Write();
     hREC_1D->Write();
     for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)
     {
@@ -457,6 +462,7 @@ void PreProcessing_Data ( string fFileName = "" )
     //
     TFile *outFil3  =   new TFile   (fMltPreProc,"recreate");
     //
+    fHEventCount->Write();
     for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
     {
         hREC_1D_in_MT[iHisto]->Write();
