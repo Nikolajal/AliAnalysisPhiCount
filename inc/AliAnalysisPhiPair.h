@@ -5,7 +5,7 @@
 #define ALIANALYSISPHIPAIR_H
 
 // Analysis Utility
-#include "AliAnalysisUtility.h"
+#include "./AliAnalysisUtility/AliAnalysisUtility.h"
 
 //------------------------------//
 //      GLOBAL VARIABLES        //
