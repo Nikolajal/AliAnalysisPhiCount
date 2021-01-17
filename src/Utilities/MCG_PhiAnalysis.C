@@ -182,7 +182,7 @@ int main (int argc, char *argv[])
     fKaonEfficiency->Branch     ("Charge",          &evKaonEfficiency.Charge,       "Charge[nKaon]/B");
     fKaonEfficiency->Branch     ("Selection",       &evKaonEfficiency.Selection,    "Selection[nKaon]/b");
     
-    TList  *fQCOutputList   = new TList("fQCOutputList");
+    TList  *fQCOutputList   = new TList();
     fQCOutputList   ->SetOwner(kTRUE);
     TH1D   *hEventCount =   new TH1D    ("fQC_Event_Enumerate","fQC_Event_Enumerate",17, 0.5, 17.5);
     fQCOutputList   ->Add(hEventCount);
