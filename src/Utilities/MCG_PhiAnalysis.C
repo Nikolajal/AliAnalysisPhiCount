@@ -368,8 +368,10 @@ int main (int argc, char *argv[])
         }
         
         // Assigning Mutliplicity
-        evPhiCandidate.Multiplicity     =   fMultiplicityCouter;
-        evKaonCandidate.Multiplicity    =   fMultiplicityCouter;
+        evPhiCandidate.Multiplicity     =   (1./4.)*fMultiplicityCouter;
+        evKaonCandidate.Multiplicity    =   (1./4.)*fMultiplicityCouter;
+        evPhiEfficiency.Multiplicity    =   (1./4.)*fMultiplicityCouter;
+        evKaonEfficiency.Multiplicity   =   (1./4.)*fMultiplicityCouter;
         
         if ( evPhiCandidate.nPhi <= 0 )  {
             hEventCount->Fill(10);
