@@ -28,8 +28,6 @@ void PreProcessing_MC ( string fFileName = "" )
     // Define tree data structures
     Struct_PhiEfficiency    evPhiEfficiency;
     Struct_KaonEfficiency   evKaonEfficiency;
-    Float_t                 evMultiplicityP;
-    Float_t                 evMultiplicityK;
 
     if ( !TPhiCandidate && !TKaonCandidate )
     {
@@ -39,12 +37,12 @@ void PreProcessing_MC ( string fFileName = "" )
     if ( !TPhiCandidate )
     {
         cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
-        TKaonCandidate->SetBranchAddress    ("nPhi",            &evKaonEfficiency.nKaon);
+        TKaonCandidate->SetBranchAddress    ("nKaon",           &evKaonEfficiency.nKaon);
         TKaonCandidate->SetBranchAddress    ("Px",              &evKaonEfficiency.Px);
         TKaonCandidate->SetBranchAddress    ("Py",              &evKaonEfficiency.Py);
         TKaonCandidate->SetBranchAddress    ("Pz",              &evKaonEfficiency.Pz);
         TKaonCandidate->SetBranchAddress    ("Selection",       &evKaonEfficiency.Selection);
-        TKaon_Multref ->SetBranchAddress    ("fMultiplicit2",   &evKaonEfficiency.Multiplicity);
+        TKaon_Multref ->SetBranchAddress    ("Multiplicity",    &evKaonEfficiency.Multiplicity);
     }
     else if ( !TKaonCandidate )
     {
@@ -54,26 +52,24 @@ void PreProcessing_MC ( string fFileName = "" )
         TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiEfficiency.Py);
         TPhiCandidate-> SetBranchAddress    ("Pz",              &evPhiEfficiency.Pz);
         TPhiCandidate-> SetBranchAddress    ("Selection",       &evPhiEfficiency.Selection);
-        TPhi_Multref -> SetBranchAddress    ("fMultiplicit2",   &evPhiEfficiency.Multiplicity);
+        TPhi_Multref -> SetBranchAddress    ("Multiplicity",    &evPhiEfficiency.Multiplicity);
     }
     else
     {
-        TKaonCandidate->SetBranchAddress    ("nPhi",            &evKaonEfficiency.nKaon);
+        TKaonCandidate->SetBranchAddress    ("nKaon",           &evKaonEfficiency.nKaon);
         TKaonCandidate->SetBranchAddress    ("Px",              &evKaonEfficiency.Px);
         TKaonCandidate->SetBranchAddress    ("Py",              &evKaonEfficiency.Py);
         TKaonCandidate->SetBranchAddress    ("Pz",              &evKaonEfficiency.Pz);
         TKaonCandidate->SetBranchAddress    ("Selection",       &evKaonEfficiency.Selection);
-        TKaon_Multref ->SetBranchAddress    ("fMultiplicit2",   &evKaonEfficiency.Multiplicity);
+        TKaon_Multref ->SetBranchAddress    ("Multiplicity",    &evKaonEfficiency.Multiplicity);
         
         TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiEfficiency.nPhi);
         TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiEfficiency.Px);
         TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiEfficiency.Py);
         TPhiCandidate-> SetBranchAddress    ("Pz",              &evPhiEfficiency.Pz);
         TPhiCandidate-> SetBranchAddress    ("Selection",       &evPhiEfficiency.Selection);
-        TPhi_Multref -> SetBranchAddress    ("fMultiplicit2",   &evPhiEfficiency.Multiplicity);
+        TPhi_Multref -> SetBranchAddress    ("Multiplicity",    &evPhiEfficiency.Multiplicity);
     }
-    
-    
     
     //---------------------//
     //  Setting up output  //
@@ -297,7 +293,7 @@ void PreProcessing_MC ( string fFileName = "" )
     fStartTimer("Analysis");
     
     // Evaluating entries
-    Int_t nEvents = TPhiCandidate->GetEntries();
+    Int_t nEvents = 1000000; //TPhiCandidate->GetEntries();
     
     // Starting cycle
     for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
@@ -306,20 +302,12 @@ void PreProcessing_MC ( string fFileName = "" )
         TPhiCandidate->GetEntry(iEvent);
         TPhi_Multref ->GetEntry(iEvent);
         
+        evKaonEfficiency.Multiplicity    *= 1./4.;
+        evPhiEfficiency.Multiplicity     *= 1./4.;
+        
         fPrintLoopTimer("Analysis",iEvent,nEvents,1000000);
-
-        // Skipping overflow
-        if ( (int)(evPhiEfficiency.nPhi) >= 153 )
-        {
-            cout << "[INFO] Skipping overflow event" << endl;
-            continue;
-        }
-
-        // Skipping non candidate events
-        if ( (int)(evPhiEfficiency.nPhi) == 0 )
-        {
-            continue;
-        }
+        
+        cout << evPhiEfficiency.Selection[iPhi] << endl;
 
         // Utilities
         TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
@@ -328,8 +316,9 @@ void PreProcessing_MC ( string fFileName = "" )
         for ( Int_t iPhi = 0; iPhi < evPhiEfficiency.nPhi; iPhi++ )
         {
             LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[iPhi],evPhiEfficiency.Py[iPhi],evPhiEfficiency.Pz[iPhi],evPhiEfficiency.InvMass[iPhi]);
-            if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),5.,evPhiEfficiency.Multiplicity) ) continue;
+            if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),evPhiEfficiency.InvMass[iPhi],LPhi_candidate1.Pt(),evPhiEfficiency.Multiplicity) ) continue;
             U_AccCand[U_nAccept] = iPhi;
+            cout << evPhiEfficiency.Selection[iPhi] << endl;
             U_nAccept++;
         }
         for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )
@@ -373,7 +362,6 @@ void PreProcessing_MC ( string fFileName = "" )
 
                 // Building Second Candidate
                 LPhi_candidate2.SetXYZM(evPhiEfficiency.Px[U_AccCand[jPhi]],evPhiEfficiency.Py[U_AccCand[jPhi]],evPhiEfficiency.Pz[U_AccCand[jPhi]],evPhiEfficiency.InvMass[U_AccCand[jPhi]]);
-
 
                 // >> 2-Dimensional Analysis Fill   //
                 //

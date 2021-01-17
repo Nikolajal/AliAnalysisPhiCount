@@ -214,7 +214,7 @@ void Analysis_SignalExtraction ( bool fSilent = false )
     TFile*  outCheckFitYld  =   new TFile(fYldSigChek,"recreate");
     
     // Storing Results for shape
-    RooFitResult  **fShapeStore =   new RooFitResult    [nBinPT2D];
+    RooFitResult  **fShapeStore =   new RooFitResult   *[nBinPT2D];
     
     // Total Fit number abnd progressive
     
@@ -222,7 +222,7 @@ void Analysis_SignalExtraction ( bool fSilent = false )
     for ( Int_t iFit = 0; iFit < nBinPT1D; iFit++ )
     {
         // Print Progress
-        fPrintLoopTimer("Yield Analysis Signal Extrapolation",iFit,,2);
+        fPrintLoopTimer("Yield Analysis Signal Extrapolation",iFit,1,1);
         
         // Fit
         auto fResults       =   FitModel(hREC_1D_in_PT[iFit],"",true,iFit,1);
@@ -236,15 +236,10 @@ void Analysis_SignalExtraction ( bool fSilent = false )
     for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
     {
         // Print Progress
-        fPrintLoopTimer("Yield Analysis Signal Extrapolation",iFit,,2);
+        fPrintLoopTimer("Yield Analysis Signal Extrapolation",iFit,1,1);
         
         // Fit
         fShapeStore[iFit]   =   FitModel(hREC_1D_in_PT_2D_bin[iFit],"",true,iFit,1);
-        
-        // Building N_Raw histogram
-        auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(Signal));
-        hRAW_1D->SetBinContent      (iFit+1,N_Raw->getVal());
-        hRAW_1D->SetBinError        (iFit+1,N_Raw->getError());
     }
     
     fStopTimer("Yield Analysis Signal Extrapolation");

@@ -165,6 +165,7 @@ int main (int argc, char *argv[])
     
     // PhiEfficiency Tree Set-Up
     fPhiEfficiency = new TTree  (fPhiCandidateEff_Tree, "MC Tree for Phi Efficiency");
+    fPhiEfficiency->Branch      ("Multiplicity",    &evPhiEfficiency.Multiplicity,  "Multiplicity/F");
     fPhiEfficiency->Branch      ("nPhi",            &evPhiEfficiency.nPhi,          "nPhi/b");
     fPhiEfficiency->Branch      ("Px",              &evPhiEfficiency.Px,            "Px[nPhi]/F");
     fPhiEfficiency->Branch      ("Py",              &evPhiEfficiency.Py,            "Py[nPhi]/F");
@@ -173,6 +174,7 @@ int main (int argc, char *argv[])
     
     // KaonEfficiency Tree Set-Up
     fKaonEfficiency = new TTree (fKaonCandidateEff_Tree,"MC Tree for Kaon Efficiency");
+    fKaonEfficiency->Branch     ("Multiplicity",    &evKaonEfficiency.Multiplicity, "Multiplicity/F");
     fKaonEfficiency->Branch     ("nKaon",           &evKaonEfficiency.nKaon,        "nKaon/b");
     fKaonEfficiency->Branch     ("Px",              &evKaonEfficiency.Px,           "Px[nKaon]/F");
     fKaonEfficiency->Branch     ("Py",              &evKaonEfficiency.Py,           "Py[nKaon]/F");
@@ -180,7 +182,10 @@ int main (int argc, char *argv[])
     fKaonEfficiency->Branch     ("Charge",          &evKaonEfficiency.Charge,       "Charge[nKaon]/B");
     fKaonEfficiency->Branch     ("Selection",       &evKaonEfficiency.Selection,    "Selection[nKaon]/b");
     
+    TList  *fQCOutputList   = new TList();
+    fQCOutputList   ->SetOwner(kTRUE);
     TH1D   *hEventCount =   new TH1D    ("fQC_Event_Enumerate","fQC_Event_Enumerate",17, 0.5, 17.5);
+    fQCOutputList   ->Add(hEventCount);
     
     // PYTHIA INITIALISATION
     Pythia8::Pythia pythia;
@@ -379,7 +384,7 @@ int main (int argc, char *argv[])
     
     fStopTimer("Production");
     
-    hEventCount     ->Write();
+    fQCOutputList   ->Write();
     fPhiCandidate   ->Write();
     fPhiEfficiency  ->Write();
     fKaonCandidate  ->Write();

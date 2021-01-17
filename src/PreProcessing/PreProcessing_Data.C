@@ -20,11 +20,13 @@ void PreProcessing_Data ( string fFileName = "" )
     TFile *insFileDT        =   new TFile   (fFileName.c_str());
     
     // Retrieving Event data TTree
-    TTree   *TPhiCandidate  =   (TTree*)insFileDT->Get(fPhiCandidate_Tree);
-    TTree   *TKaonCandidate =   (TTree*)insFileDT->Get(fKaonCandidate_Tree);
+    TTree   *TPhiCandidate  =   (TTree*)insFileDT       ->Get(fPhiCandidate_Tree);
+    TTree   *TKaonCandidate =   (TTree*)insFileDT       ->Get(fKaonCandidate_Tree);
     
     // Retrieving Event Count Histogram
-    TH1D   *fHEventCount    =   (TH1D*)insFileDT->Get("fQC_Event_Enumerate");
+    TH1D   *fHEventCount    =   (TH1D*) insFileDT   ->Get("fQC_Event_Enumerate");
+    //TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList");
+    //TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enumerate");
     
     // Define tree data structures
     Struct_PhiCandidate     evPhiCandidate;
@@ -38,7 +40,7 @@ void PreProcessing_Data ( string fFileName = "" )
     if ( !TPhiCandidate )
     {
         cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
-        TKaonCandidate-> SetBranchAddress   ("Multiplicity",   &evKaonCandidate.Multiplicity);
+        TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
         TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
         TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
         TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
@@ -50,7 +52,7 @@ void PreProcessing_Data ( string fFileName = "" )
     else if ( !TKaonCandidate )
     {
         cout << "[INFO] No KaonCandidate Tree, switching to Phi Analysis" << endl;
-        TPhiCandidate-> SetBranchAddress    ("Multiplicity",   &evPhiCandidate.Multiplicity);
+        TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiCandidate.Multiplicity);
         TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
         TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
         TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
@@ -61,7 +63,7 @@ void PreProcessing_Data ( string fFileName = "" )
     }
     else
     {
-        TPhiCandidate-> SetBranchAddress    ("Multiplicity",   &evPhiCandidate.Multiplicity);
+        TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiCandidate.Multiplicity);
         TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
         TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
         TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
@@ -80,7 +82,6 @@ void PreProcessing_Data ( string fFileName = "" )
         TKaonCandidate-> SetBranchAddress   ("TPCSigma",        &evKaonCandidate.SigmaTPC);
     
     }
-    
     
     //---------------------//
     //  Setting up output  //
@@ -265,6 +266,8 @@ void PreProcessing_Data ( string fFileName = "" )
     {
         // Recovering events
         TPhiCandidate->GetEntry(iEvent);
+        evKaonCandidate.Multiplicity    *= 1./4.;
+        evPhiCandidate.Multiplicity     *= 1./4.;
         
         fPrintLoopTimer("Analysis",iEvent,nEvents,1000000);
 
@@ -275,7 +278,7 @@ void PreProcessing_Data ( string fFileName = "" )
         Bool_t  fCheckFill2 =   false;
         Bool_t  fCheckFill3 =   false;
         Bool_t  fCheckFill4 =   false;
-
+        
         for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )  {
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
             if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),evPhiCandidate.InvMass[iPhi],LPhi_candidate1.Pt(),evPhiCandidate.Multiplicity) ) continue;
@@ -402,6 +405,7 @@ void PreProcessing_Data ( string fFileName = "" )
     // >-> Event count recovery
     //
     nEvents =   fHEventCount->GetBinContent(9);
+    hTriggerEvt ->  Fill(0., (double)fHEventCount->GetBinContent(10) );
     //
     // >-> Trigger Analysis
     //
