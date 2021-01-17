@@ -24,9 +24,9 @@ void PreProcessing_Data ( string fFileName = "" )
     TTree   *TKaonCandidate =   (TTree*)insFileDT       ->Get(fKaonCandidate_Tree);
     
     // Retrieving Event Count Histogram
-    TH1D   *fHEventCount    =   (TH1D*) insFileDT   ->Get("fQC_Event_Enumerate");
-    //TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList");
-    //TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enumerate");
+    //TH1D   *fHEventCount    =   (TH1D*) insFileDT   ->Get("fQC_Event_Enumerate");
+    TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList");
+    TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enumerate");
     
     // Define tree data structures
     Struct_PhiCandidate     evPhiCandidate;
@@ -266,8 +266,6 @@ void PreProcessing_Data ( string fFileName = "" )
     {
         // Recovering events
         TPhiCandidate->GetEntry(iEvent);
-        evKaonCandidate.Multiplicity    *= 1./4.;
-        evPhiCandidate.Multiplicity     *= 1./4.;
         
         fPrintLoopTimer("Analysis",iEvent,nEvents,1000000);
 
