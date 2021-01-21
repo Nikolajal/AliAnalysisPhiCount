@@ -199,7 +199,7 @@ void Analysis_SignalCorrections ( bool fSilent = false )
     // Fit
     auto fResults = fExtrapolateModel(hRAW_1D);
     
-    //hRES_1D->Draw();
+    cout <<
     
     // Building N_Raw histogram
     //auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(Signal));

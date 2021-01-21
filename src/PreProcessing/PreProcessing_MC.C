@@ -23,6 +23,11 @@ void PreProcessing_MC ( string fFileName = "" )
     TTree   *TPhiCandidate  =   (TTree*)insFileMC->Get(fPhiCandidateEff_Tree);
     TTree   *TKaonCandidate =   (TTree*)insFileMC->Get(fKaonCandidateEff_Tree);
     
+    // Retrieving Event Count Histogram
+    TH1D   *fHEventCount    =   (TH1D*) insFileMC   ->Get("fQC_Event_Enumerate");
+    //TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList");
+    //TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enumerate");
+    
     // Define tree data structures
     Struct_PhiEfficiency    evPhiEfficiency;
     Struct_KaonEfficiency   evKaonEfficiency;
@@ -291,7 +296,7 @@ void PreProcessing_MC ( string fFileName = "" )
     fStartTimer("Analysis");
     
     // Evaluating entries
-    Int_t nEvents = 1000000; //TPhiCandidate->GetEntries();
+    Int_t nEvents = TPhiCandidate->GetEntries();
     
     // Starting cycle
     for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
@@ -304,11 +309,11 @@ void PreProcessing_MC ( string fFileName = "" )
         // Utilities
         TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
         U_nAccept = 0;
-
+        
         for ( Int_t iPhi = 0; iPhi < evPhiEfficiency.nPhi; iPhi++ )
         {
-            LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[iPhi],evPhiEfficiency.Py[iPhi],evPhiEfficiency.Pz[iPhi],evPhiEfficiency.InvMass[iPhi]);
-            if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),evPhiEfficiency.InvMass[iPhi],LPhi_candidate1.Pt(),evPhiEfficiency.Multiplicity) ) continue;
+            LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[iPhi],evPhiEfficiency.Py[iPhi],evPhiEfficiency.Pz[iPhi],kParticleMass_);
+            if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),kParticleMass_,LPhi_candidate1.Pt(),evPhiEfficiency.Multiplicity) ) continue;
             U_AccCand[U_nAccept] = iPhi;
             U_nAccept++;
         }
@@ -318,14 +323,14 @@ void PreProcessing_MC ( string fFileName = "" )
             if ( U_nAccept < 1 ) break;
 
             // Building First Candidate
-            LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[U_AccCand[iPhi]],evPhiEfficiency.Py[U_AccCand[iPhi]],evPhiEfficiency.Pz[U_AccCand[iPhi]],evPhiEfficiency.InvMass[U_AccCand[iPhi]]);
+            LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[U_AccCand[iPhi]],evPhiEfficiency.Py[U_AccCand[iPhi]],evPhiEfficiency.Pz[U_AccCand[iPhi]],kParticleMass_);
 
             // >> 1-Dimensional Analysis Fill   //
             //
             // >>-->> Utilities
             //
             Int_t   indexMult = fGetBinMult(evPhiEfficiency.Multiplicity);
-            Int_t   indexSele = evPhiEfficiency.Selection[U_AccCand[iPhi]];
+            Int_t   indexSele = (int)evPhiEfficiency.Selection[U_AccCand[iPhi]];
             Float_t indexTMom = LPhi_candidate1.Pt();
             //
             // >>-->> Yield
@@ -352,13 +357,13 @@ void PreProcessing_MC ( string fFileName = "" )
                 if ( U_nAccept < 2 ) break;
 
                 // Building Second Candidate
-                LPhi_candidate2.SetXYZM(evPhiEfficiency.Px[U_AccCand[jPhi]],evPhiEfficiency.Py[U_AccCand[jPhi]],evPhiEfficiency.Pz[U_AccCand[jPhi]],evPhiEfficiency.InvMass[U_AccCand[jPhi]]);
+                LPhi_candidate2.SetXYZM(evPhiEfficiency.Px[U_AccCand[jPhi]],evPhiEfficiency.Py[U_AccCand[jPhi]],evPhiEfficiency.Pz[U_AccCand[jPhi]],kParticleMass_);
 
                 // >> 2-Dimensional Analysis Fill   //
                 //
                 // >>-->> Utilities
                 //
-                Int_t   jndexSele = evPhiEfficiency.Selection[U_AccCand[jPhi]];
+                Int_t   jndexSele = (int)evPhiEfficiency.Selection[U_AccCand[jPhi]];
                 Float_t jndexTMom = LPhi_candidate2.Pt();
                 //
                 // >>-->> Yield

@@ -1,7 +1,7 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: [INFO] About trees in input
 
-void Analysis_SignalExtraction ( bool fSilent = false )
+void Analysis_SignalExtraction ( bool fSilent = true )
 {
     //---------------------//
     //  Setting up input   //
@@ -217,15 +217,18 @@ void Analysis_SignalExtraction ( bool fSilent = false )
     RooFitResult  **fShapeStore =   new RooFitResult   *[nBinPT2D];
     
     // Total Fit number abnd progressive
+    Int_t   fTotalCount = nBinPT1D+(1+nBinPT2D)*nBinPT2D;
     
     // Starting cycle
     for ( Int_t iFit = 0; iFit < nBinPT1D; iFit++ )
     {
         // Print Progress
-        fPrintLoopTimer("Yield Analysis Signal Extrapolation",iFit,1,1);
+        fPrintLoopTimer("Yield Analysis Signal Extrapolation",iFit,fTotalCount,1);
         
         // Fit
-        auto fResults       =   FitModel(hREC_1D_in_PT[iFit],"",true,iFit,1);
+        auto fResults       =   FitModel(hREC_1D_in_PT[iFit],"CH3",true,iFit,1);
+        
+        if ( !fResults ) continue;
         
         // Building N_Raw histogram
         auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(Signal));
@@ -236,16 +239,38 @@ void Analysis_SignalExtraction ( bool fSilent = false )
     for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
     {
         // Print Progress
-        fPrintLoopTimer("Yield Analysis Signal Extrapolation",iFit,1,1);
+        fPrintLoopTimer("Yield Analysis Signal Extrapolation",iFit+nBinPT1D,fTotalCount,1);
         
         // Fit
-        fShapeStore[iFit]   =   FitModel(hREC_1D_in_PT_2D_bin[iFit],"",true,iFit,1);
+        fShapeStore[iFit]   =   FitModel(hREC_1D_in_PT_2D_bin[iFit],"CH3",true,iFit,2);
+    }
+    
+    for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
+    {
+        for ( Int_t jFit = 0; jFit < nBinPT2D; jFit++ )
+        {
+            // Print Progress
+            fPrintLoopTimer("Yield Analysis Signal Extrapolation",iFit*nBinPT2D+jFit+nBinPT1D+nBinPT2D,fTotalCount,1);
+            
+            if ( !fShapeStore[iFit] ) continue;
+            if ( !fShapeStore[jFit] ) continue;
+            
+            // Fit
+            auto fResults       =   FitModel(hREC_2D_in_PT[iFit][jFit],fShapeStore[iFit],fShapeStore[jFit],"CH3",true,iFit,jFit);
+            
+            if ( !fResults ) continue;
+            
+            // Building N_Raw histogram
+            auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(Signal));
+            hRAW_2D->SetBinContent      (iFit+1,jFit+1,N_Raw->getVal());
+            hRAW_2D->SetBinError        (iFit+1,jFit+1,N_Raw->getError());
+        }
     }
     
     fStopTimer("Yield Analysis Signal Extrapolation");
     
     outCheckFitYld->Close();
-    
+    /*
     fStartTimer("Fit_on_PT_1D_in_Mult");
     
     // Output File for Fit Check
@@ -255,7 +280,7 @@ void Analysis_SignalExtraction ( bool fSilent = false )
     for ( Int_t iFit = 0; iFit < nBinPT1D; iFit++ )
     {
         // Print Progress
-        fPrintLoopTimer("Fit_on_PT_1D_in_Mult",iFit,nBinPT1D,1);
+        fPrintLoopTimer("Fit_on_PT_1D_in_Mult",iFit,fTotalCount,1);
         
         for ( Int_t jFit = 0; jFit < nBinMult; jFit++ )
         {
@@ -269,12 +294,43 @@ void Analysis_SignalExtraction ( bool fSilent = false )
             hRAW_1D_in_MT[jFit]->SetBinContent      (iFit+1,N_Raw->getVal());
             hRAW_1D_in_MT[jFit]->SetBinError        (iFit+1,N_Raw->getError());
         }
+        
+        for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
+        {
+            // Print Progress
+            fPrintLoopTimer("Fit_on_PT_1D_in_Mult",iFit,1,1);
+            
+            // Fit
+            fShapeStore[iFit]   =   FitModel(hREC_1D_in_MT_in_PT_2D_bin[iFit],"",true,iFit,2);
+        }
+        
+        for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
+        {
+            for ( Int_t jFit = 0; jFit < nBinPT2D; jFit++ )
+            {
+                // Print Progress
+                fPrintLoopTimer("Fit_on_PT_1D_in_Mult",iFit+jFit,nBinPT2D*nBinPT2D,1);
+                
+                if ( !fShapeStore[iFit] ) continue;
+                if ( !fShapeStore[jFit] ) continue;
+                
+                // Fit
+                auto fResults       =   FitModel(hREC_2D_in_MT_in_PT[iFit][jFit],fShapeStore[iFit],fShapeStore[jFit],"",true,iFit,jFit);
+                
+                if ( !fResults ) continue;
+                
+                // Building N_Raw histogram
+                auto N_Raw      = static_cast<RooRealVar*>(fResults->floatParsFinal().at(Signal));
+                hRAW_1D->SetBinContent      (iFit+1,N_Raw->getVal());
+                hRAW_1D->SetBinError        (iFit+1,N_Raw->getError());
+            }
+        }
     }
     
     outCheckFitMlt->Close();
     
     fStopTimer("Fit_on_PT_1D_in_Mult");
-    
+    */
     //--------------------------//
     // PostProcessin output obj //
     //--------------------------//

@@ -403,7 +403,7 @@ void PreProcessing_Data ( string fFileName = "" )
     // >-> Event count recovery
     //
     nEvents =   fHEventCount->GetBinContent(9);
-    hTriggerEvt ->  Fill(0., (double)fHEventCount->GetBinContent(10) );
+    for ( int i = 0; i <= fHEventCount->GetBinContent(10); i++ ) { hTriggerEvt ->  Fill(0); }
     //
     // >-> Trigger Analysis
     //
@@ -413,7 +413,7 @@ void PreProcessing_Data ( string fFileName = "" )
     //
     // >->-> Event Normalisation
     //
-    hTriggerEvt     ->Scale(100./nEvents);
+    hTriggerEvt     ->Scale(100./fHEventCount->GetBinContent(1));
     hTriggerEvt1D   ->Scale(100./nEvents);
     hTriggerEvt2D   ->Scale(100./nEvents);
 

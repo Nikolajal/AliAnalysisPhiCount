@@ -22,8 +22,12 @@ enum            fitresults2D
     BackgBackg, BackgSignl, SignlBackg, SignlSignl
 };
 
+// Performance Values
+auto const  kCPU_use                =   3;
+auto const  kNCycle_                =   2;
+
 // Analysis Values
-auto const  bPythiaTest             =   kTRUE;
+auto const  bPythiaTest             =   kFALSE;
 
 //-// File Names
 
@@ -39,7 +43,7 @@ auto const  fMltPrePrMC             =   "./result/multiplicity/PPReference.root"
 auto const  fYldSigExtr             =   "./result/yield/SEHistograms.root";
 auto const  fYldSigChek             =   "./result/yield/FitCheckHisto.root";
 auto const  fMltSigExtr             =   "./result/multiplicity/SEHistograms.root";
-auto const  fMltSigChek             =   "./result/yield/FitCheckHisto.root";
+auto const  fMltSigChek             =   "./result/multiplicity/FitCheckHisto.root";
 
 //-//-// Others
 auto const  fInvMasHist             =   "./result/InvariantMassHistograms.root";
@@ -95,7 +99,7 @@ const   Float_t   fMaxPT2D  =   10.0;
         Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
 
 //-// Muliplicity bins
-const   Int_t     nBinMult  =   10;
+const   Int_t     nBinMult  =   9;
 const   Float_t   fMinMult  =   0.0;
 const   Float_t   fMaxMult  =   100.0;
         Float_t  *fArrMult  =   new Float_t [nBinMult+1];
@@ -116,28 +120,28 @@ const   Float_t   fMaxNTup  =   4.5;
 
 typedef struct
 {
-    UChar_t nPhi,           iKaon[1024],    jKaon[1024];
-    Float_t Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    UChar_t nPhi,           Multiplicity,   iKaon[1024],    jKaon[1024];
+    Float_t Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
 } Struct_PhiCandidate;
 
 typedef struct
 {
-    UChar_t nKaon,          Charge[1024];
+    UChar_t nKaon,          Multiplicity,   Charge[1024];
     Char_t  SigmaTOF[1024], SigmaTPC[1024];
-    Float_t Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    Float_t Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
 } Struct_KaonCandidate;
 
 typedef struct
 {
-    UChar_t nPhi,           Selection[1024];
-    Float_t Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    UChar_t nPhi,           Multiplicity,   Selection[1024];
+    Float_t Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
     Bool_t  fTru,           fGen,           fRec;
 } Struct_PhiEfficiency;
 
 typedef struct
 {
-    UChar_t nKaon,          Charge[1024],   Selection[1024];
-    Float_t Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    UChar_t nKaon,          Multiplicity,   Charge[1024],   Selection[1024];
+    Float_t Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
     Bool_t  ftru;
 } Struct_KaonEfficiency;
 
@@ -222,16 +226,15 @@ void    fSetBinPT2D ()
 void    fSetBinMult ()
 {
     fArrMult[0]  =  0.;
-    fArrMult[1]  =  10.;
-    fArrMult[2]  =  20.;
-    fArrMult[3]  =  30.;
-    fArrMult[4]  =  40.;
-    fArrMult[5]  =  50.;
-    fArrMult[6]  =  60.;
-    fArrMult[7]  =  70.;
-    fArrMult[8]  =  80.;
-    fArrMult[9]  =  90.;
-    fArrMult[10] =  100.;
+    fArrMult[1]  =  1.;
+    fArrMult[2]  =  5.;
+    fArrMult[3]  =  10.;
+    fArrMult[4]  =  20.;
+    fArrMult[5]  =  30.;
+    fArrMult[6]  =  40.;
+    fArrMult[7]  =  50.;
+    fArrMult[8]  =  70.;
+    fArrMult[9]  =  100.;
 }
 
 void    fSetBinRap_ ()
@@ -945,13 +948,13 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     Int_t nEntries      = THdata->GetEntries();
     RooRealVar InvMass  = RooRealVar        ("InvMass","InvMass",fInvMassValMin,fInvMassValMax);
     RooDataHist* data   = new RooDataHist   (fName,fName,InvMass,Import(*THdata));
-    Int_t kNCycle       = 5;
+    Int_t kNCycle       = kNCycle_;
     
     // Background PDF Coefficients
     RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,-1,1);//,0.5,-1,1);
-    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,0.,-1,1);//,-0.1,-1,1);
-    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.,-1,1);//,0.01,-1,1);
-    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,0.,-1,1);//,-0.05,-1,1);
+    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,0.1,-1,1);//,-0.1,-1,1);
+    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.01,-1,1);//,0.01,-1,1);
+    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,0.05,-1,1);//,-0.05,-1,1);
     
     RooRealVar ch4, ch5;
     if ( fCheb3 && !fCheb5 )    ch4     = RooRealVar        ("ch4","ch4"        ,0.);
@@ -984,7 +987,7 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     RooFitResult* result;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save());
+        result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
     }
     
     if ( fSaveToFile )
@@ -1100,7 +1103,7 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     RooFitResult* result;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save());
+        result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
     }
     
     if ( fSaveToFile )
@@ -1162,7 +1165,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     RooRealVar varx     = RooRealVar        ("xInvMass2D","xInvMass2D",fInvMassValMin,fInvMassValMax);
     RooRealVar vary     = RooRealVar        ("yInvMass2D","yInvMass2D",fInvMassValMin,fInvMassValMax);
     RooDataHist* data   = new RooDataHist   (fHistName.c_str(),fHistName.c_str(),RooArgList(varx,vary),Import(*THdata));
-    Int_t kNCycle       = 5;
+    Int_t kNCycle       = 1;
     
     RooArgSet  *utilityx    =   new RooArgSet(fFitShapeX->floatParsFinal(),fFitShapeX->constPars());
     RooArgSet  *utilityy    =   new RooArgSet(fFitShapeY->floatParsFinal(),fFitShapeY->constPars());
@@ -1236,7 +1239,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     RooFitResult* FitResults;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-       FitResults = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save());
+       FitResults = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
     }
     
     // Save to file
@@ -1362,8 +1365,8 @@ RooFitResult*   fExtrapolateModel               ( TH1F *HData, TString fName = "
     
     RooFitResult *result;
     
-    result = fModel.chi2FitTo(*RData,SumW2Error(kTRUE),Save(),Minos(true),NumCPU(8));
-    result = fModel.fitTo(*RData,SumW2Error(kTRUE),Save(),Minos(true),NumCPU(8));
+    result = fModel.chi2FitTo(*RData,SumW2Error(kTRUE),Save(),Minos(true),NumCPU(kCPU_use));
+    result = fModel.fitTo(*RData,SumW2Error(kTRUE),Save(),Minos(true),NumCPU(kCPU_use));
     
     auto fSaveToCanvas   =   new TCanvas();
     //gPad->SetLogy();
