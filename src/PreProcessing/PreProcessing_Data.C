@@ -1,7 +1,7 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: [INFO] About trees in input
 
-void PreProcessing_Data ( string fFileName = "" )
+void PreProcessing_Data ( string fFileName = "", string fOption = "" )
 {
     //---------------------//
     //  Setting up input   //
@@ -41,7 +41,7 @@ void PreProcessing_Data ( string fFileName = "" )
     {
         cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
         TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
-        TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
+        TKaonCandidate-> SetBranchAddress   ("nPhi",            &evKaonCandidate.nKaon);
         TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
         TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
         TKaonCandidate-> SetBranchAddress   ("Pz",              &evKaonCandidate.Pz);
@@ -73,7 +73,7 @@ void PreProcessing_Data ( string fFileName = "" )
         TPhiCandidate-> SetBranchAddress    ("jKaon",           &evPhiCandidate.jKaon);
         
         TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
-        TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
+        TKaonCandidate-> SetBranchAddress   ("nPhi",           &evKaonCandidate.nKaon);
         TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
         TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
         TKaonCandidate-> SetBranchAddress   ("Pz",              &evKaonCandidate.Pz);
@@ -256,18 +256,18 @@ void PreProcessing_Data ( string fFileName = "" )
     //  Filling output objects //
     //-------------------------//
     
-    fStartTimer("Analysis");
-    
     // Evaluating entries and saving them for later
-    Int_t nEvents = TPhiCandidate->GetEntries();
+    Int_t nEvents = (!TPhiCandidate) ? 0 : 0;//TPhiCandidate->GetEntries();
 
+    if ( nEvents > 0 )  fStartTimer("Phi Analysis");
+    
     // Starting cycle
     for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
     {
         // Recovering events
         TPhiCandidate->GetEntry(iEvent);
         
-        fPrintLoopTimer("Analysis",iEvent,nEvents,1000000);
+        fPrintLoopTimer("Phi Analysis",iEvent,nEvents,1000000);
 
         // Utilities
         TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
@@ -393,8 +393,34 @@ void PreProcessing_Data ( string fFileName = "" )
             }
         }
     }
+    
+    if ( nEvents > 0 )  fStopTimer("Phi Analysis");
+    
+    // Evaluating entries and saving them for later
+    nEvents = (!TKaonCandidate) ? 0 : TKaonCandidate->GetEntries();
 
-    fStopTimer("Analysis");
+    if ( nEvents > 0 )  fStartTimer("Kaon Analysis");
+    
+    Struct_KaonCandidate evKaonCandidateEvMix1;
+    evKaonCandidateEvMix1.nKaon = 0;
+    
+    // Starting cycle
+    for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
+    {
+        // Recovering events
+        TKaonCandidate->GetEntry(iEvent);
+        
+        fPrintLoopTimer("Kaon Analysis",iEvent,nEvents,1000000);
+
+        // Utilities
+        TLorentzVector  LKaon1,    LKaon2,    LPhi_candidate1,    LPhi_candidate2;
+        
+        for ( Int_t iKaon = 0; iKaon < evKaonCandidate.nKaon; iKaon++ )  {
+            evKaonCandidateEvMix1 = evKaonCandidate;
+        }
+    }
+    
+    if ( nEvents > 0 )  fStopTimer("Kaon Analysis");
 
     //--------------------------//
     // PostProcessin output obj //

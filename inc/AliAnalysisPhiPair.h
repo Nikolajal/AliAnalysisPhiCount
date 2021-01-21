@@ -116,7 +116,9 @@ const   Float_t   fMinNTup  =   -0.5;
 const   Float_t   fMaxNTup  =   4.5;
         Float_t  *fArrNTup  =   new Float_t [nBinNTup+1];
 
-// Data Structures
+//------------------------------//
+//    DATA STRUCTURES           //
+//------------------------------//
 
 typedef struct
 {
@@ -518,7 +520,23 @@ void    SetAxis             ( Tclass * aTarget, string aOption = "" )
 Int_t kColor[] = {38,kBlue,kBlue+3,46,38};
 Int_t kStyle[] = {26,9,10,25,22};
 Int_t kWidth[] = {1,3,3,1,1};
-
+//
+//_____________________________________________________________________________
+//
+Double_t        fGammaPhiValue                  ( Double_t fYieldPhi, Double_t fYieldPhiPhi )  {
+    return  2*fYieldPhiPhi/fYieldPhi -fYieldPhi;
+}
+//
+//_____________________________________________________________________________
+//
+Double_t        fGammaPhiError                  ( Double_t fYieldPhi, Double_t fYieldPhiPhi, Double_t fErrorPhi, Double_t fErrorPhiPhi)  {
+    auto    fPar1   =   2*fErrorPhiPhi/fYieldPhi;
+    auto    fPar2   =   (2*fYieldPhiPhi/(fYieldPhi*fYieldPhi)+1)*fErrorPhi;
+    return  fPar1 + fPar2;
+}
+//
+//_____________________________________________________________________________
+//
 int             fLegendSelect                   ( string fOption )
 {
     if ( !fOption.compare("InvMass1D") )    return 1;
