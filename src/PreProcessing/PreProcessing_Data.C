@@ -24,7 +24,6 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     TTree   *TKaonCandidate =   (TTree*)insFileDT       ->Get(fKaonCandidate_Tree);
     
     // Retrieving Event Count Histogram
-    //TH1D   *fHEventCount    =   (TH1D*) insFileDT   ->Get("fQC_Event_Enumerate");
     TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList");
     TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enumerate");
     
@@ -60,6 +59,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
         TPhiCandidate-> SetBranchAddress    ("InvMass",         &evPhiCandidate.InvMass);
         TPhiCandidate-> SetBranchAddress    ("iKaon",           &evPhiCandidate.iKaon);
         TPhiCandidate-> SetBranchAddress    ("jKaon",           &evPhiCandidate.jKaon);
+        TPhiCandidate-> SetBranchAddress    ("Nature",          &evPhiCandidate.Nature);
     }
     else
     {
@@ -71,6 +71,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
         TPhiCandidate-> SetBranchAddress    ("InvMass",         &evPhiCandidate.InvMass);
         TPhiCandidate-> SetBranchAddress    ("iKaon",           &evPhiCandidate.iKaon);
         TPhiCandidate-> SetBranchAddress    ("jKaon",           &evPhiCandidate.jKaon);
+        TPhiCandidate-> SetBranchAddress    ("Nature",          &evPhiCandidate.Nature);
         
         TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
         TKaonCandidate-> SetBranchAddress   ("nPhi",           &evKaonCandidate.nKaon);
@@ -117,12 +118,12 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     //
     //  Defining pT-Differential histograms over measurable pT
     //
-    for ( Int_t iHisto = 0; iHisto < nBinPT1D; iHisto++ )
+    for ( Int_t iPT1D = 0; iPT1D < nBinPT1D; iPT1D++ )
     {
-        hName = Form("hREC_1D_in_PT_%i",iHisto);
-        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT1D[iHisto],fArrPT1D[iHisto+1]);
-        hREC_1D_in_PT[iHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
-        SetAxis(hREC_1D_in_PT[iHisto],"IM 1D");
+        hName = Form("hREC_1D_in_PT_%i",iPT1D);
+        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT1D[iPT1D],fArrPT1D[iPT1D+1]);
+        hREC_1D_in_PT[iPT1D]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+        SetAxis(hREC_1D_in_PT[iPT1D],"IM 1D");
     }
 
     // >->-->-> 2-Dimension analysis //
@@ -141,21 +142,21 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     //
     //  Defining pT-Differential histograms over measurable pT
     //
-    for ( Int_t iHisto = 0; iHisto < nBinPT2D; iHisto++ )
+    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )
     {
-        hName = Form("hREC_1D_in_PT_2D_bin_%i",iHisto);
-        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT2D[iHisto],fArrPT2D[iHisto+1]);
-        hREC_1D_in_PT_2D_bin[iHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
-        SetAxis(hREC_1D_in_PT_2D_bin[iHisto],"IM 1D");
+        hName = Form("hREC_1D_in_PT_2D_bin_%i",iPT2D);
+        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1]);
+        hREC_1D_in_PT_2D_bin[iPT2D]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+        SetAxis(hREC_1D_in_PT_2D_bin[iPT2D],"IM 1D");
         
-        hREC_2D_in_PT[iHisto]    = new TH2F *    [nBinPT2D];
+        hREC_2D_in_PT[iPT2D]    = new TH2F *    [nBinPT2D];
         
-        for ( Int_t jHisto = 0; jHisto < nBinPT2D; jHisto++ )
+        for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )
         {
-            hName = Form("hREC_2D_in_PT_%i_%i",iHisto,jHisto);
-            hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]);
-            hREC_2D_in_PT[iHisto][jHisto]    = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
-            SetAxis(hREC_2D_in_PT[iHisto][jHisto],"IM 2D");
+            hName = Form("hREC_2D_in_PT_%i_%i",iPT2D,jPT2D);
+            hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1],fArrPT2D[jPT2D],fArrPT2D[jPT2D+1]);
+            hREC_2D_in_PT[iPT2D][jPT2D]    = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+            SetAxis(hREC_2D_in_PT[iPT2D][jPT2D],"IM 2D");
         }
     }
 
@@ -171,21 +172,21 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     //  Defining cumulative histogram over measurable pT
     //  Defining pT-Differential histograms over measurable pT
     //
-    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    for ( Int_t iMult = 0; iMult < nBinMult; iMult++ )
     {
-        hName = Form("hREC_1D_in_MT_%i",iHisto);
-        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fMinPT1D,fMaxPT1D,fArrMult[iHisto],fArrMult[iHisto+1]);
-        hREC_1D_in_MT[iHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
-        SetAxis(hREC_1D_in_MT[iHisto],"IM 1D");
+        hName = Form("hREC_1D_in_MT_%i",iMult);
+        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fMinPT1D,fMaxPT1D,fArrMult[iMult],fArrMult[iMult+1]);
+        hREC_1D_in_MT[iMult]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+        SetAxis(hREC_1D_in_MT[iMult],"IM 1D");
 
-        hREC_1D_in_MT_in_PT[iHisto] = new TH1F     *[nBinPT1D];
+        hREC_1D_in_MT_in_PT[iMult] = new TH1F     *[nBinPT1D];
 
-        for ( Int_t jHisto = 0; jHisto < nBinPT1D; jHisto++ )
+        for ( Int_t iPT1D = 0; iPT1D < nBinPT1D; iPT1D++ )
         {
-            hName = Form("hREC_1D_in_MT_PT_%i_%i",iHisto,jHisto);
-            hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fArrPT1D[jHisto],fArrPT1D[jHisto+1],fArrMult[iHisto],fArrMult[iHisto+1]);
-            hREC_1D_in_MT_in_PT[iHisto][jHisto]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
-            SetAxis(hREC_1D_in_MT_in_PT[iHisto][jHisto],"IM 1D");
+            hName = Form("hREC_1D_in_MT_PT_%i_%i",iMult,iPT1D);
+            hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fArrPT1D[iPT1D],fArrPT1D[iPT1D+1],fArrMult[iMult],fArrMult[iMult+1]);
+            hREC_1D_in_MT_in_PT[iMult][iPT1D]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+            SetAxis(hREC_1D_in_MT_in_PT[iMult][iPT1D],"IM 1D");
         }
     }
 
@@ -200,29 +201,29 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     //  Defining cumulative histogram over measurable pT
     //  Defining pT-Differential histograms over measurable pT
     //
-    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    for ( Int_t iMult = 0; iMult < nBinMult; iMult++ )
     {
-        hName   =   Form("hREC_2D_in_MT_%i",iHisto);
-        hTitle  =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fMinPT2D,fMaxPT2D,fMinPT2D,fMaxPT2D,fArrMult[iHisto],fArrMult[iHisto+1]);
-        hREC_2D_in_MT[iHisto]   =   new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+        hName   =   Form("hREC_2D_in_MT_%i",iMult);
+        hTitle  =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fMinPT2D,fMaxPT2D,fMinPT2D,fMaxPT2D,fArrMult[iMult],fArrMult[iMult+1]);
+        hREC_2D_in_MT[iMult]   =   new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
 
-        hREC_1D_in_MT_in_PT_2D_bin[iHisto]  = new TH1F     *[nBinPT2D];
-        hREC_2D_in_MT_in_PT[iHisto]         = new TH2F    **[nBinPT2D];
-        for ( Int_t jHisto = 0; jHisto < nBinPT2D; jHisto++ )
+        hREC_1D_in_MT_in_PT_2D_bin[iMult]  = new TH1F     *[nBinPT2D];
+        hREC_2D_in_MT_in_PT[iMult]         = new TH2F    **[nBinPT2D];
+        for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )
         {
-            hName = Form("hREC_1D_in_PT_2D_bin_%i_%i",iHisto,jHisto);
-            hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrMult[iHisto],fArrMult[iHisto+1]);
-            hREC_1D_in_MT_in_PT_2D_bin[iHisto][jHisto]  = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
-            SetAxis(hREC_1D_in_MT_in_PT_2D_bin[iHisto][jHisto],"IM 1D");
+            hName = Form("hREC_1D_in_PT_2D_bin_%i_%i",iMult,iPT2D);
+            hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1],fArrMult[iMult],fArrMult[iMult+1]);
+            hREC_1D_in_MT_in_PT_2D_bin[iMult][iPT2D]  = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+            SetAxis(hREC_1D_in_MT_in_PT_2D_bin[iMult][iPT2D],"IM 1D");
             
-            hREC_2D_in_MT_in_PT[iHisto][jHisto]         = new TH2F     *[nBinPT2D];
+            hREC_2D_in_MT_in_PT[iMult][iPT2D]         = new TH2F     *[nBinPT2D];
             
-            for ( Int_t kHisto = 0; kHisto < nBinPT2D; kHisto++ )
+            for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )
             {
-                hName = Form("hREC_2D_in_PT_%i_%i_%i",iHisto,jHisto,kHisto);
-                hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1],fArrMult[iHisto],fArrMult[iHisto+1]);
-                hREC_2D_in_MT_in_PT[iHisto][jHisto][kHisto]    = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
-                SetAxis(hREC_2D_in_MT_in_PT[iHisto][jHisto][kHisto],"IM 2D");
+                hName = Form("hREC_2D_in_PT_%i_%i_%i",iMult,iPT2D,jPT2D);
+                hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c, Multiplicity [%.1f-%.1f]",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1],fArrPT2D[jPT2D],fArrPT2D[jPT2D+1],fArrMult[iMult],fArrMult[iMult+1]);
+                hREC_2D_in_MT_in_PT[iMult][iPT2D][jPT2D]    = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+                SetAxis(hREC_2D_in_MT_in_PT[iMult][iPT2D][jPT2D],"IM 2D");
             }
         }
     }
@@ -257,7 +258,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     //-------------------------//
     
     // Evaluating entries and saving them for later
-    Int_t nEvents = (!TPhiCandidate) ? 0 : 0;//TPhiCandidate->GetEntries();
+    Int_t nEvents = (!TPhiCandidate) ? 0 : TPhiCandidate->GetEntries();
 
     if ( nEvents > 0 )  fStartTimer("Phi Analysis");
     
@@ -279,7 +280,9 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
         
         for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )  {
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
-            if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),evPhiCandidate.InvMass[iPhi],LPhi_candidate1.Pt(),evPhiCandidate.Multiplicity) ) continue;
+            evPhiCandidate.pT[iPhi]     =   LPhi_candidate1.Pt();
+            evPhiCandidate.Rap[iPhi]    =   LPhi_candidate1.Rapidity();
+            if ( !fAcceptCandidate(evPhiCandidate.Rap[iPhi],evPhiCandidate.InvMass[iPhi],evPhiCandidate.pT[iPhi],evPhiCandidate.Multiplicity) ) continue;
             U_AccCand[U_nAccept] = iPhi;
             U_nAccept++;
         }
@@ -292,18 +295,15 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
         
             // Selecting valid candidates
             if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi) ) continue;
-
-            // Building First Candidate
-            LPhi_candidate1.SetXYZM(evPhiCandidate.Px[U_AccCand[iPhi]],evPhiCandidate.Py[U_AccCand[iPhi]],evPhiCandidate.Pz[U_AccCand[iPhi]],evPhiCandidate.InvMass[U_AccCand[iPhi]]);
-
+            
             // >-> 1-Dimensional Analysis Fill   //
             //
             // >->-->-> Utilities
             //
-            Int_t   indexPT1D = fGetBinPT1D(LPhi_candidate1.Pt());
-            Int_t   indexPT2D = fGetBinPT2D(LPhi_candidate1.Pt());
-            Int_t   indexMult = fGetBinMult(evPhiCandidate.Multiplicity);
-            Float_t iInvMass_ = evPhiCandidate.InvMass[U_AccCand[iPhi]];
+            Int_t   iPT1D       = fGetBinPT1D(evPhiCandidate.pT[U_AccCand[iPhi]]);
+            Int_t   iPT2D       = fGetBinPT2D(evPhiCandidate.pT[U_AccCand[iPhi]]);
+            Int_t   iMult       = fGetBinMult(evPhiCandidate.Multiplicity);
+            Float_t iInvMass_   = evPhiCandidate.InvMass[U_AccCand[iPhi]];
             //
             // >->-->-> Trigger
             //
@@ -311,19 +311,19 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
                 hTriggerEvt->Fill(1);
                 fCheckFill1 = true;
             }
-            hTriggerEvt1D                                       ->Fill(LPhi_candidate1.Pt());
+            hTriggerEvt1D                                   ->  Fill(LPhi_candidate1.Pt());
             // 
             // >->-->-> Yield
             //
-            hREC_1D                                             ->  Fill(iInvMass_);
-            hREC_1D_in_PT[indexPT1D]                            ->  Fill(iInvMass_);
-            hREC_1D_in_PT_2D_bin[indexPT2D]                     ->  Fill(iInvMass_);
+            hREC_1D                                         ->  Fill(iInvMass_);
+            hREC_1D_in_PT[iPT1D]                            ->  Fill(iInvMass_);
+            hREC_1D_in_PT_2D_bin[iPT2D]                     ->  Fill(iInvMass_);
             //
             // >->-->-> Multiplicity
             //
-            hREC_1D_in_MT[indexMult]                            ->  Fill(iInvMass_);
-            hREC_1D_in_MT_in_PT[indexMult][indexPT1D]           ->  Fill(iInvMass_);
-            hREC_1D_in_MT_in_PT_2D_bin[indexMult][indexPT2D]    ->  Fill(iInvMass_);
+            hREC_1D_in_MT[iMult]                            ->  Fill(iInvMass_);
+            hREC_1D_in_MT_in_PT[iMult][iPT1D]               ->  Fill(iInvMass_);
+            hREC_1D_in_MT_in_PT_2D_bin[iMult][iPT2D]        ->  Fill(iInvMass_);
             
             for ( Int_t jPhi = 0; jPhi < U_nAccept; jPhi++ )    {
                 // Must have at least 2 candidates
@@ -332,16 +332,13 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
                 // Selecting valid candidates
                 if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi) ) continue;
                 
-                // Building Second Candidate
-                LPhi_candidate2.SetXYZM(evPhiCandidate.Px[U_AccCand[jPhi]],evPhiCandidate.Py[U_AccCand[jPhi]],evPhiCandidate.Pz[U_AccCand[jPhi]],evPhiCandidate.InvMass[U_AccCand[jPhi]]);
-
                 // >-> 2-Dimensional Analysis Fill
                 //
                 // >->-->-> Utilities
                 //
-                Int_t   jndexPT1D = fGetBinPT1D(LPhi_candidate2.Pt());
-                Int_t   jndexPT2D = fGetBinPT2D(LPhi_candidate2.Pt());
-                Float_t jInvMass_ = evPhiCandidate.InvMass[U_AccCand[jPhi]];
+                Int_t   jPT1D       = fGetBinPT1D(evPhiCandidate.pT[U_AccCand[jPhi]]);
+                Int_t   jPT2D       = fGetBinPT2D(evPhiCandidate.pT[U_AccCand[jPhi]]);
+                Float_t jInvMass_   = evPhiCandidate.InvMass[U_AccCand[jPhi]];
                 //
                 // >->-->-> Trigger
                 //
@@ -349,17 +346,17 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
                     hTriggerEvt->Fill(2);
                     fCheckFill2 = true;
                 }
-                hTriggerEvt2D                                           ->Fill(LPhi_candidate1.Pt(),LPhi_candidate2.Pt(),0.5);
+                hTriggerEvt2D                                           ->  Fill(LPhi_candidate1.Pt(),LPhi_candidate2.Pt(),0.5);
                 // 
                 // >->-->-> Yield
                 //
                 hREC_2D                                                 ->  Fill(iInvMass_,jInvMass_,0.5);
-                hREC_2D_in_PT[indexPT2D][jndexPT2D]                     ->  Fill(iInvMass_,jInvMass_,0.5);
+                hREC_2D_in_PT[iPT2D][jPT2D]                             ->  Fill(iInvMass_,jInvMass_,0.5);
                 //
                 // >->-->-> Multiplicity
                 //
-                hREC_2D_in_MT[indexMult]                                ->  Fill(iInvMass_,jInvMass_,0.5);
-                hREC_2D_in_MT_in_PT[indexMult][indexPT2D][jndexPT2D]    ->  Fill(iInvMass_,jInvMass_,0.5);
+                hREC_2D_in_MT[iMult]                                    ->  Fill(iInvMass_,jInvMass_,0.5);
+                hREC_2D_in_MT_in_PT[iMult][iPT2D][jPT2D]                ->  Fill(iInvMass_,jInvMass_,0.5);
                 
                 for ( Int_t kPhi = 0; kPhi < U_nAccept; kPhi++ )    {
                     // Must have at least 3 candidates
@@ -397,7 +394,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     if ( nEvents > 0 )  fStopTimer("Phi Analysis");
     
     // Evaluating entries and saving them for later
-    nEvents = (!TKaonCandidate) ? 0 : TKaonCandidate->GetEntries();
+    nEvents = (!TKaonCandidate) ? 0 : 0;//TKaonCandidate->GetEntries();
 
     if ( nEvents > 0 )  fStartTimer("Kaon Analysis");
     
@@ -421,15 +418,17 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     }
     
     if ( nEvents > 0 )  fStopTimer("Kaon Analysis");
-
+    
     //--------------------------//
     // PostProcessin output obj //
     //--------------------------//
     //
+    fStartTimer("post-processing output objects");
+    //
     // >-> Event count recovery
     //
     nEvents =   fHEventCount->GetBinContent(9);
-    for ( int i = 0; i <= fHEventCount->GetBinContent(10); i++ ) { hTriggerEvt ->  Fill(0); }
+    //for ( int i = 0; i <= fHEventCount->GetBinContent(10); i++ ) { hTriggerEvt ->  Fill(0); }
     //
     // >-> Trigger Analysis
     //
@@ -442,10 +441,14 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     hTriggerEvt     ->Scale(100./fHEventCount->GetBinContent(1));
     hTriggerEvt1D   ->Scale(100./nEvents);
     hTriggerEvt2D   ->Scale(100./nEvents);
-
+    //
+    fStopTimer("post-processing output objects");
+    //
     //--------------------------//
     //  Printing output objects //
     //--------------------------//
+    //
+    fStartTimer("writing output objects to file(s)");
     //
     // >-> Trigger Analysis
     //
@@ -510,6 +513,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     //
     outFil3->Close();
     //
+    fStopTimer("writing output objects to file(s)");
     // >-> Close input File
     //
     insFileDT->Close();

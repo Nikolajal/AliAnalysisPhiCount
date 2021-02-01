@@ -25,25 +25,35 @@ enum            fitresults2D
 // Performance Values
 auto const  kCPU_use                =   3;
 auto const  kNCycle_                =   2;
+auto const  kStatEvalCycles         =   10000;
 
 // Analysis Values
 auto const  bPythiaTest             =   kFALSE;
 
 //-// File Names
 
-//-//-// PreProcessing
-auto const  fTrgPreProc             =   "./result/trigger/PPHistograms.root";
-auto const  fYldPreProc             =   "./result/yield/PPHistograms.root";
-auto const  fMltPreProc             =   "./result/multiplicity/PPHistograms.root";
-auto const  fTrgPrePrMC             =   "./result/trigger/PPReference.root";
+//-//-// Yield Analysis
+    //PreProcessing
+auto const  fYldPreProc             =   "./result/yield/InvariantMassHistograms.root";
 auto const  fYldPrePrMC             =   "./result/yield/PPReference.root";
-auto const  fMltPrePrMC             =   "./result/multiplicity/PPReference.root";
-
-//-//-// SignalExtraction
 auto const  fYldSigExtr             =   "./result/yield/SEHistograms.root";
 auto const  fYldSigChek             =   "./result/yield/FitCheckHisto.root";
+auto const  fYldSigCorr             =   "./result/yield/SCHistograms.root";
+auto const  fYldSigCh2k             =   "./result/yield/FitCheckHist2.root";
+
+//-//-// Yield in Multiplicity Analysis
+    //PreProcessing
+auto const  fMltPreProc             =   "./result/multiplicity/InvariantMassHistograms.root";
+auto const  fMltPrePrMC             =   "./result/multiplicity/PPReference.root";
 auto const  fMltSigExtr             =   "./result/multiplicity/SEHistograms.root";
 auto const  fMltSigChek             =   "./result/multiplicity/FitCheckHisto.root";
+auto const  fMltSigCorr             =   "./result/multiplicity/SCHistograms.root";
+auto const  fMltSigCh2k             =   "./result/multiplicity/FitCheckHist2.root";
+
+//-//-// Trigger Analysis
+    //PreProcessing
+auto const  fTrgPreProc             =   "./result/trigger/DifferentialCandidateEventsHistograms.root";
+auto const  fTrgPrePrMC             =   "./result/trigger/PPReference.root";
 
 //-//-// Others
 auto const  fInvMasHist             =   "./result/InvariantMassHistograms.root";
@@ -63,8 +73,8 @@ auto const  fKaonCandidateEff_Tree  =   "KaonEfficiency";
 auto const  kParticleMass_          =   1.019455;   //  1.019455    +- 0.000020
 auto const  kParticleWidth          =   0.00426;    //  0.00426     +- 0.00004
 auto const  kDetectorSlope          =   1.;
-auto const  kBranchingRtio          =   0.5;
-auto const  kVertexEfficnc          =   0.01;
+auto const  kBranchingRtio          =   0.489;
+auto const  kVertexEfficnc          =   0.99;
 auto const  kRapidityIntvl          =   1.;
 
 auto const  kPMas                   =   1.019455;   //  1.019455    +- 0.000020
@@ -75,16 +85,16 @@ const   Float_t   fMinIMMC  =   0.75;
 const   Float_t   fMaxIMMC  =   1.25;
 
 //-// InvMass bins 1D
-const   Int_t     nBinIM1D  =   200;
-const   Float_t   fMinIM1D  =   0.99;
-const   Float_t   fMaxIM1D  =   1.05;
-        Float_t  *fArrIM1D  =   new Float_t [nBinIM1D+1];
+const   Int_t     nBinIM1D  = 135;
+const   Float_t   fMinIM1D  = 0.99;
+const   Float_t   fMaxIM1D  = 1.08;
+        Float_t * fArrIM1D  = new Float_t [nBinIM1D+1];
 
 //-// InvMass bins 2D
-const   Int_t     nBinIM2D  =   100;
-const   Float_t   fMinIM2D  =   0.99;
-const   Float_t   fMaxIM2D  =   1.05;
-        Float_t  *fArrIM2D  =   new Float_t [nBinIM2D+1];
+const   Int_t     nBinIM2D  = 135;
+const   Float_t   fMinIM2D  = 0.99;
+const   Float_t   fMaxIM2D  = 1.08;
+        Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];
 
 //-// pT bins 1D
 const   Int_t     nBinPT1D  =   28;
@@ -99,7 +109,7 @@ const   Float_t   fMaxPT2D  =   10.0;
         Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
 
 //-// Muliplicity bins
-const   Int_t     nBinMult  =   9;
+const   Int_t     nBinMult  =   4;
 const   Float_t   fMinMult  =   0.0;
 const   Float_t   fMaxMult  =   100.0;
         Float_t  *fArrMult  =   new Float_t [nBinMult+1];
@@ -122,8 +132,8 @@ const   Float_t   fMaxNTup  =   4.5;
 
 typedef struct
 {
-    UChar_t nPhi,           Multiplicity,   iKaon[1024],    jKaon[1024];
-    Float_t Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    UChar_t nPhi,           Multiplicity,   iKaon[1024],    jKaon[1024],   Nature[1024];
+    Float_t Px[1024],       Py[1024],       Pz[1024],       pT[1024],      Rap[1024],        InvMass[1024];
 } Struct_PhiCandidate;
 
 typedef struct
@@ -223,20 +233,15 @@ void    fSetBinPT2D ()
     fArrPT2D[10] =  3.0;
     fArrPT2D[11] =  5.0;
     fArrPT2D[12] =  10.;
- }
+}
 
 void    fSetBinMult ()
 {
     fArrMult[0]  =  0.;
-    fArrMult[1]  =  1.;
-    fArrMult[2]  =  5.;
-    fArrMult[3]  =  10.;
-    fArrMult[4]  =  20.;
-    fArrMult[5]  =  30.;
-    fArrMult[6]  =  40.;
-    fArrMult[7]  =  50.;
-    fArrMult[8]  =  70.;
-    fArrMult[9]  =  100.;
+    fArrMult[1]  =  10.;
+    fArrMult[2]  =  30.;
+    fArrMult[3]  =  50.;
+    fArrMult[4]  =  100.;
 }
 
 void    fSetBinRap_ ()
@@ -318,6 +323,7 @@ Int_t   fGetBinMult (Float_t input_value )
 {
     for ( Int_t iBin = 0; iBin <= nBinMult; iBin++ )
     {
+        if ( input_value == fMinMult ) return 0;
         if ( input_value <= fArrMult[iBin] )
         {
             return iBin -1;
@@ -362,22 +368,22 @@ bool    fCutRapidity        ( Double_t  dRapidity )
 
 bool    fCutInvariantMass    ( Double_t  dInvariantMass )
 {
-    if ( dInvariantMass <= fMinIM1D ) return false;
-    if ( dInvariantMass >= fMaxIM1D ) return false;
+    if ( dInvariantMass < fMinIM1D ) return false;
+    if ( dInvariantMass > fMaxIM1D ) return false;
     return true;
 }
 
 bool    fCutTransverseMom   ( Double_t  dTransverseMom )
 {
-    if ( dTransverseMom <= fMinPT1D ) return false;
+    if ( dTransverseMom <= 0.4 ) return false;
     if ( dTransverseMom >= fMaxPT1D ) return false;
     return true;
 }
 
 bool    fCutMultiplicity    ( Double_t  dMultiplicity )
 {
-    if ( dMultiplicity <= fMinMult ) return false;
-    if ( dMultiplicity >= fMaxMult ) return false;
+    if ( dMultiplicity < fMinMult ) return false;
+    if ( dMultiplicity > fMaxMult ) return false;
     return true;
 }
 
@@ -410,7 +416,7 @@ bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandida
     if ( iPhi == jPhi ) return false;
                 
     // Only non overlapping couples of Kaons
-    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,iPhi,jPhi) ) return false;
+    if ( !fCheckCoupleKaons(SPhiCandidates,aAccCandidates,iPhi,jPhi) ) return false;
 
     return true;
 }
@@ -423,9 +429,9 @@ bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandida
                 
     // Only non overlapping couples of Kaons
     // >> iPhi vs kPhi
-    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,iPhi,kPhi) ) return false;
+    if ( !fCheckCoupleKaons(SPhiCandidates,aAccCandidates,iPhi,kPhi) ) return false;
     // >> jPhi vs kPhi
-    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,jPhi,kPhi) ) return false;
+    if ( !fCheckCoupleKaons(SPhiCandidates,aAccCandidates,jPhi,kPhi) ) return false;
     
     return true;
 }
@@ -439,11 +445,11 @@ bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandida
                 
     // Only non overlapping couples of Kaons
     // >> iPhi vs lPhi
-    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,iPhi,lPhi) ) return false;
+    if ( !fCheckCoupleKaons(SPhiCandidates,aAccCandidates,iPhi,lPhi) ) return false;
     // >> jPhi vs lPhi
-    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,jPhi,lPhi) ) return false;
+    if ( !fCheckCoupleKaons(SPhiCandidates,aAccCandidates,jPhi,lPhi) ) return false;
     // >> kPhi vs lPhi
-    if ( fCheckCoupleKaons(SPhiCandidates,aAccCandidates,kPhi,lPhi) ) return false;
+    if ( !fCheckCoupleKaons(SPhiCandidates,aAccCandidates,kPhi,lPhi) ) return false;
     
     return true;
 }
@@ -451,10 +457,9 @@ bool    fAcceptCandidate ( Struct_PhiCandidate SPhiCandidates, Int_t aAccCandida
 //------------------------------//
 //    HISTOGRAM UTILITIES       //
 //------------------------------//
-
+//
 template < class Tclass >
-void    SetAxis             ( Tclass * aTarget, string aOption = "" )
-{
+void    SetAxis             ( Tclass * aTarget, string aOption = "" )   {
     if ( aOption.find("IM") != -1 )
     {
         if ( aOption.find("2D") != -1 )
@@ -512,7 +517,47 @@ void    SetAxis             ( Tclass * aTarget, string aOption = "" )
         }
     }
 }
-
+//
+//--
+//
+template < class Tclass >
+Double_t        HistIntegrals               ( Tclass* aTarget, string aOption = "", Double_t aLowBound = 0, Double_t aHigBound = 0 )    {
+    
+    Double_t    fResult = 0;
+    Int_t       fnPowr;
+    Bool_t      fWidth, fPower, fError;
+    
+    if ( aOption.find("W") != -1 )      fWidth  =   true;
+    else                                fWidth  =   false;
+    
+    if ( aOption.find("x^") != -1 )   { fPower  =   true;   fnPowr  =   aOption.at(aOption.find("x^")+2)-'0'; }
+    else                                fPower  =   false;
+    
+    if ( aOption.find("E") != -1 )      fError  =   true;
+    else                                fError  =   false;
+    
+    // Starting iterations at 0
+    for ( Int_t fiTer = 1; fiTer <= aTarget->GetNbinsX(); fiTer++ )
+    {
+        // Determining the pT point to calculate
+        auto fPoint =   aTarget->GetBinCenter(fiTer);
+        
+        // Exiting the loop if out of bound
+        if ( aTarget->GetBinLowEdge(fiTer)   <= aLowBound && aLowBound != aHigBound ) continue;
+        if ( aTarget->GetBinLowEdge(fiTer+1) >= aHigBound && aLowBound != aHigBound ) break;
+        
+        Double_t        fCycleAdd   =   ( aTarget->GetBinContent(fiTer) );
+        if ( fError )   fCycleAdd   =   ( aTarget->GetBinError(fiTer) );
+        if ( fWidth )   fCycleAdd  *=   ( aTarget->GetBinWidth(fiTer) );
+        if ( fPower )   fCycleAdd  *=   pow( ( aTarget->GetBinCenter(fiTer) ) , fnPowr );
+        if ( fError )   fCycleAdd  *=   fCycleAdd;
+        fResult += fCycleAdd;
+    }
+    
+    if ( fError )   return sqrt(fResult);
+    return fResult;
+}
+//
 //------------------------------//
 //    ANALYSISI SEPCIFIC Fncs   //
 //------------------------------//
@@ -537,6 +582,266 @@ Double_t        fGammaPhiError                  ( Double_t fYieldPhi, Double_t f
 //
 //_____________________________________________________________________________
 //
+void            fSetLevyTsalis                  ( ) {
+    // - // Setting up Fit parameters
+    
+    // Mass
+    fLevyFit1D  ->  SetParLimits(0,kPMas,kPMas);
+    fLevyFit1D  ->  SetParameter(0,kPMas);
+    
+    // n-Parameter
+    fLevyFit1D  ->  SetParLimits(1,2.1,7.5);
+    fLevyFit1D  ->  SetParameter(1,6.); // 6.7
+    
+    // T-Parameter
+    fLevyFit1D  ->  SetParLimits(2,.21,.750);
+    fLevyFit1D  ->  SetParameter(2,.272); // .272
+    
+    // dN/dy
+    fLevyFit1D  ->  SetParLimits(3,1.e-7,1.e-1);
+    fLevyFit1D  ->  SetParameter(3,0.032);
+}
+//
+//_____________________________________________________________________________
+//
+void            fSetSystErr                     ( ) {
+    // - // Setting up Fit parameters
+    
+    // Mass
+    fLevyFit1D  ->  SetParLimits(0,kPMas,kPMas);
+    fLevyFit1D  ->  SetParameter(0,kPMas);
+    
+    // n-Parameter
+    fLevyFit1D  ->  SetParLimits(1,2.1,7.5);
+    fLevyFit1D  ->  SetParameter(1,6.); // 6.7
+    
+    // T-Parameter
+    fLevyFit1D  ->  SetParLimits(2,.21,.750);
+    fLevyFit1D  ->  SetParameter(2,.272); // .272
+    
+    // dN/dy
+    fLevyFit1D  ->  SetParLimits(3,1.e-7,1.e-1);
+    fLevyFit1D  ->  SetParameter(3,0.032);
+}
+//_____________________________________________________________________________
+//
+template < class Tclass >
+Double_t*       fExtrapolateModel               ( Tclass *THdata, TString fName = "ExtrapolateSignal" ) {
+    // Optimisation mode
+    gROOT->SetBatch(true);
+    
+    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
+    Double_t   *fResult = new   Double_t    [6];
+    
+    // Setting -1. for the default
+    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
+    
+    // Set Standard Fit
+    fSetLevyTsalis();
+    
+    // Fit the Spectra
+    THdata->Fit(fLevyFit1D,"IMREQ0S","",0.4,10.);
+    
+    // Save to further checks
+    TCanvas * fCheckFit = new TCanvas();
+    gPad->SetLogy();
+    THdata      ->Draw("same");
+    fLevyFit1D  ->Draw("same");
+    fCheckFit   ->Write();
+    fCheckFit   ->SaveAs(Form("tmp/%s.pdf",fName.Data()));
+    
+    fResult[0]  =   fLevyFit1D->Integral(0.,0.4);
+    fResult[1]  =   fLevyFit1D->IntegralError(0.,0.4);
+    
+    return fResult;
+    
+    // End Optimisation mode
+    gROOT->SetBatch(false);
+}
+//
+//_____________________________________________________________________________
+//
+template < class Tclass >
+Double_t*       fIntegrateModel                 ( Tclass *THdata, TString fName = "IntegrateSignal" )    {
+    // Optimisation mode
+    gROOT->SetBatch(true);
+    
+    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
+    Double_t   *fResult = new   Double_t    [6];
+    
+    // Setting -1. for the default
+    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
+    
+    fResult[0]  =   THdata  ->IntegralAndError(-1.,100,fResult[1],"width");
+    //fSetSystErr(THdata)     ->IntegralAndError(-1.,100,fResult[2],"width");
+    
+    return fResult;
+    
+    // End Optimisation mode
+    gROOT->SetBatch(false);
+}
+//
+//_____________________________________________________________________________
+//
+template < class Tclass >
+Double_t*       fMeasureFullYield               ( Tclass *THdata, TString fName = "MeasureFullYield" ) {
+    // Optimisation mode
+    gROOT->SetBatch(true);
+    
+    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
+    Double_t   *fResult             =   new Double_t        [6];
+    
+    // Setting -1. for the default
+    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
+    
+    auto        fIntegralResults    =   fIntegrateModel     (THdata,fName);
+    auto        fExtrapolResults    =   fExtrapolateModel   (THdata,fName);
+    
+    fResult[0]  =   fIntegralResults[0] +   fExtrapolResults[0];
+    fResult[1]  =   fIntegralResults[1] +   fExtrapolResults[1];
+    
+    return fResult;
+    
+    // End Optimisation mode
+    gROOT->SetBatch(false);
+}
+//
+//_____________________________________________________________________________
+//
+Double_t*       fExtrapolateModel               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "ExtrapolateSignal" )    {
+    //  Optimisation mode
+    gROOT->SetBatch(true);
+    
+    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err, Syst err
+    Double_t   *fResult = new   Double_t    [10];
+    
+    //  Checking the consistency of TGraphs
+    Int_t   fNPoints =   gStatistics ->  GetN();
+    if  ( fNPoints  != gSystematics ->  GetN() )
+    {
+        cout << "[ERROR] Systematics and Statistics do not have the same number of points! Skipping this one..." << endl;
+        return nullptr;
+    }
+    
+    //
+    TH1D*   hStatIntegral   =   new TH1D(Form("hStatIntegral_%s",fName.Data()),"hStatIntegral",1000,0.0035,.0045);
+    TH1D*   hSystIntegral   =   new TH1D(Form("hSystIntegral_%s",fName.Data()),"hSystIntegral",1000,0.0035,.0045);
+    
+    //  Evaluating the Statistical Errors
+    for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
+        //  Set Standard Fit
+        fSetLevyTsalis();
+        //
+        //  Generating the Fit TGraph
+        auto fSubject   =   fRandomizePoints(gStatistics,gSystematics);
+        //
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0");
+        //
+        hStatIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
+    }
+    
+    //  Evaluating the Statistical Errors
+    for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
+        //  Set Standard Fit
+        fSetLevyTsalis();
+        //
+        //  Generating the Fit TGraph
+        auto fSubject   =   fRandomizePoints(gSystematics,gStatistics);
+        //
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0");
+        //
+        hSystIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
+    }
+    
+    hStatIntegral->Write();
+    hSystIntegral->Write();
+
+    fResult[0]  =   hStatIntegral->GetMean();
+    fResult[1]  =   hStatIntegral->GetRMS();
+    fResult[2]  =   hSystIntegral->GetRMS();
+    
+    return fResult;
+    
+    //  End Optimisation mode
+    gROOT->SetBatch(false);
+}
+//
+//_____________________________________________________________________________
+//
+Double_t*       fIntegrateModel                 ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "IntegrateSignal" )    {
+    //  Optimisation mode
+    gROOT->SetBatch(true);
+    
+    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err, Syst err
+    Double_t   *fResult = new   Double_t    [10];
+    
+    //  Checking the consistency of TGraphs
+    Int_t   fNPoints =   gStatistics ->  GetN();
+    if  ( fNPoints  != gSystematics ->  GetN() )
+    {
+        cout << "[ERROR] Systematics and Statistics do not have the same number of points! Skipping this one..." << endl;
+        return nullptr;
+    }
+    
+    //  Calculate Integral and mean pT
+    for ( Int_t iFill = 0; iFill < 5; iFill++ ) fResult[iFill]  =   0;
+    for ( Int_t iFit = 0; iFit < fNPoints; iFit++ ) {
+        auto    fXBinCentr      =   ( gStatistics ->  GetPointX(iFit) );
+        auto    fYValue         =   ( gStatistics ->  GetPointY(iFit) );
+        auto    fXBinWidth      =   ( gStatistics ->  GetErrorXhigh(iFit)    +   gStatistics ->  GetErrorXlow(iFit) );
+        auto    fYErrStatLow    =   ( gStatistics ->  GetErrorYlow(iFit) );
+        auto    fYErrStatHigh   =   ( gStatistics ->  GetErrorYhigh(iFit) );
+        auto    fYErrSystLow    =   ( gSystematics ->  GetErrorYlow(iFit) );
+        auto    fYErrSystHigh   =   ( gSystematics ->  GetErrorYhigh(iFit) );
+        
+        fResult[0]             +=   fXBinWidth*fYValue;
+        fResult[1]             +=   fXBinWidth*fYErrStatLow;
+        fResult[2]             +=   fXBinWidth*fYErrStatHigh;
+        fResult[3]             +=   fXBinWidth*fYErrSystLow;
+        fResult[4]             +=   fXBinWidth*fYErrSystHigh;
+        /*
+        fResult[5]             +=   fXBinWidth*fYValue;
+        fResult[6]             +=   fXBinWidth*fYErrStatLow;
+        fResult[7]             +=   fXBinWidth*fYErrStatHigh;
+        fResult[8]             +=   fXBinWidth*fYErrSystLow;
+        fResult[9]             +=   fXBinWidth*fYErrSystHigh;
+        */
+    }
+    
+    return fResult;
+    
+    //  End Optimisation mode
+    gROOT->SetBatch(false);
+}
+//
+//_____________________________________________________________________________
+//
+Double_t*       fMeasureFullYield               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "MeasureFullYield" ) {
+    // Optimisation mode
+    gROOT->SetBatch(true);
+    
+    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
+    Double_t   *fResult             =   new Double_t        [6];
+    
+    // Setting -1. for the default
+    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
+    
+    auto        fIntegralResults    =   fIntegrateModel     (gStatistics,gSystematics,fName);
+    auto        fExtrapolResults    =   fExtrapolateModel   (gStatistics,gSystematics,fName);
+    
+    fResult[0]  =   fIntegralResults[0] +   fExtrapolResults[0];
+    fResult[1]  =   fIntegralResults[1] +   fExtrapolResults[1];
+    
+    return fResult;
+    
+    // End Optimisation mode
+    gROOT->SetBatch(false);
+}
+//
+//------------------------------//
+//    ANALYSISI LEGACY Fncs     //
+//------------------------------//
+
 int             fLegendSelect                   ( string fOption )
 {
     if ( !fOption.compare("InvMass1D") )    return 1;
@@ -947,6 +1252,9 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     // Silencing TCanvas Pop-Up
     gROOT->SetBatch();
     
+    // Check there is a reasonable amount of entries
+    if ( !fIsWorthFitting( THdata ) ) return nullptr;
+    
     Bool_t  fCheb3  =   false;
     if  ( fOption.find("CH3") != -1 )   fCheb3  =   true;
     
@@ -1053,16 +1361,11 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
 
 RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSaveToFile = false, Int_t PTindex = -1, Int_t PTDimension = 1, string fOption = "" )
 {
-    // Retrieve entries to check is worth fitting
-    Int_t nEntries      = THdata->GetEntries();
-    if ( nEntries <= 3*nBinIM1D )
-    {
-        cout << "[WARNING] Skipping empty or scarsely populated histogram!" << endl;
-        return nullptr;
-    }
-    
     // Silencing TCanvas Pop-Up
     gROOT->SetBatch();
+    
+    // Check there is a reasonable amount of entries
+    if ( !fIsWorthFitting( THdata ) ) return nullptr;
     
     Bool_t  fCheb3  =   false;
     if  ( fOption.find("CH3") != -1 )   fCheb3  =   true;
@@ -1080,6 +1383,7 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     SetBoundaries(fOption,fInvMassValMin,fInvMassValMax);
     
     // Global Variables
+    Int_t nEntries      = THdata->GetEntries();
     RooRealVar InvMass  = RooRealVar        ("InvMass","InvMass",fInvMassValMin,fInvMassValMax);
     RooDataHist* data   = new RooDataHist   (fName.Data(),fName.Data(),InvMass,Import(*THdata));
     Int_t kNCycle       = 1;
@@ -1171,6 +1475,9 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
 {
     // Silencing TCanvas Pop-Up
     gROOT->SetBatch();
+    
+    // Check there is a reasonable amount of entries
+    if ( !fIsWorthFitting( THdata ) ) return nullptr;
     
     Bool_t  fBackg  =   false;
     if  ( fOption.find("BK") != -1 )     fBackg  =   true;
@@ -1351,29 +1658,27 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     return FitResults;
 }
 
-
-RooFitResult*   fExtrapolateModel               ( TH1F *HData, TString fName = "ExtrapolateSignal" ) {
+RooFitResult*   fExtrapolateModelLEGACYROOFIT               ( TH1F *HData, TString fName = "ExtrapolateSignal" ) {
     
     // Check is worth fitting
     if ( !fIsWorthFitting( HData ) ) return nullptr;
     
     auto nEntries = HData->GetEntries();
-    HData->Scale(0.032/nEntries);
     
     // Silencing TCanvas Pop-Up
     gROOT->SetBatch();
     
     // Global Variables
-    RooRealVar TransMom = RooRealVar        ("TransMom","TransMom",0.,10.);
+    RooRealVar TransMom = RooRealVar        ("TransMom","TransMom",0.4,1.6);
     RooDataHist* RData  = new RooDataHist   (fName.Data(),fName.Data(),TransMom,Import(*HData));
     
     // Signal PDF Parameters
-    RooRealVar          n_value ("n_value", "n_value",  6.7,    6.0,    7.4);
-    RooRealVar          exp_par ("exp_par", "exp_par",  .272,   .25,    .30);
+    RooRealVar          n_value ("n_value", "n_value",  6.7,    2.01,    20.);
+    RooRealVar          exp_par ("exp_par", "exp_par",  .272,   0.1,    2.);
     RooRealVar          prt_mss ("prt_mss", "prt_mss",  kParticleMass_);
     
     // Normalisation Coefficients
-    RooRealVar          Sig_str ("Sig_str", "Sig_str",  0., 0., HData->GetEntries());
+    RooRealVar          Sig_str ("Sig_str", "Sig_str",  0.033, 0.2, 0.4);
     
     // Formulas
     TString             LevyTsl ("((x[0]-1)*(x[0]-2))/(x[0]*x[1]*(x[0]*x[1]+x[2]*(x[0]-2)))*x[3]*(TMath::Power(1+(sqrt(x[2]*x[2]+x[3]*x[3])-x[2])/(x[0]*x[1]),(-x[0])))");
@@ -1383,11 +1688,16 @@ RooFitResult*   fExtrapolateModel               ( TH1F *HData, TString fName = "
     
     RooFitResult *result;
     
+    //TransMom.setRange("FitRange",0.4,1.6);
     result = fModel.chi2FitTo(*RData,SumW2Error(kTRUE),Save(),Minos(true),NumCPU(kCPU_use));
     result = fModel.fitTo(*RData,SumW2Error(kTRUE),Save(),Minos(true),NumCPU(kCPU_use));
     
+    // Un-Silencing TCanvas Pop-Up
+    gROOT->SetBatch(false);
+    
+    
     auto fSaveToCanvas   =   new TCanvas();
-    //gPad->SetLogy();
+    gPad->SetLogy();
     
     RooPlot * fSaveToFrame      = TransMom.frame(Name(fName.Data()),Title(fName.Data()));
     
@@ -1396,11 +1706,10 @@ RooFitResult*   fExtrapolateModel               ( TH1F *HData, TString fName = "
     
     fSaveToFrame                ->Draw("same");
     fSaveToCanvas               ->Write();
-    
-    // Un-Silencing TCanvas Pop-Up
-    gROOT->SetBatch(false);
+    fSaveToCanvas               ->SaveAs("check.pdf");
     
     return result;
 }
+
 
 #endif

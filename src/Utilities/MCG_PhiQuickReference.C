@@ -141,6 +141,9 @@ int main (int argc, char *argv[])
     //
     pythia.readString("SoftQCD:nonDiffractive = on");
     pythia.readString("ParticleDecays:limitTau0 = on");
+    pythia.readString("Beams:idA = 2212");
+    pythia.readString("Beams:idB = 2212");
+    pythia.readString("Beams:eCM = 5000");
     pythia.readString(Form("333:mMin = %f",0.75));
     pythia.readString(Form("333:mMax = %f",1.25));
     switch (fOption)

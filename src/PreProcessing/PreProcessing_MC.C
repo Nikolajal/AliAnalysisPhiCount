@@ -24,9 +24,9 @@ void PreProcessing_MC ( string fFileName = "" )
     TTree   *TKaonCandidate =   (TTree*)insFileMC->Get(fKaonCandidateEff_Tree);
     
     // Retrieving Event Count Histogram
-    TH1D   *fHEventCount    =   (TH1D*) insFileMC   ->Get("fQC_Event_Enumerate");
-    //TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList");
-    //TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enumerate");
+    //TH1D   *fHEventCount    =   (TH1D*) insFileMC   ->Get("fQC_Event_Enumerate");
+    TList  *fQCOutputList   =   (TList*)insFileMC       ->Get("fQCOutputList");
+    TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enumerate");
     
     // Define tree data structures
     Struct_PhiEfficiency    evPhiEfficiency;
@@ -325,7 +325,7 @@ void PreProcessing_MC ( string fFileName = "" )
             // Building First Candidate
             LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[U_AccCand[iPhi]],evPhiEfficiency.Py[U_AccCand[iPhi]],evPhiEfficiency.Pz[U_AccCand[iPhi]],kParticleMass_);
 
-            // >> 1-Dimensional Analysis Fill   //
+            // >> 1-Dimensional Analysis Fill
             //
             // >>-->> Utilities
             //
@@ -359,7 +359,7 @@ void PreProcessing_MC ( string fFileName = "" )
                 // Building Second Candidate
                 LPhi_candidate2.SetXYZM(evPhiEfficiency.Px[U_AccCand[jPhi]],evPhiEfficiency.Py[U_AccCand[jPhi]],evPhiEfficiency.Pz[U_AccCand[jPhi]],kParticleMass_);
 
-                // >> 2-Dimensional Analysis Fill   //
+                // >> 2-Dimensional Analysis Fill
                 //
                 // >>-->> Utilities
                 //
@@ -406,10 +406,10 @@ void PreProcessing_MC ( string fFileName = "" )
     
     // >> YIELD ANALYSIS //
     //
+    auto fNormEvent = fHEventCount->GetBinContent(9);
     hEFF_1D                             ->Divide(hREC_1D,           hGEN_1D,            1.,1.,"b");
     hEFF_1D_in_2Dbin                    ->Divide(hREC_1D_in_2Dbin,  hGEN_1D_in_2Dbin,   1.,1.,"b");
     hEFF_2D                             ->Divide(hREC_2D,           hGEN_2D,            1.,1.,"b");
-    hREC_1D->Scale(1.,"width");
     hGEN_1D->Scale(1.,"width");
     hTRU_1D->Scale(1.,"width");
     hREC_1D_in_2Dbin->Scale(1.,"width");
@@ -418,6 +418,14 @@ void PreProcessing_MC ( string fFileName = "" )
     hREC_2D->Scale(1.,"width");
     hGEN_2D->Scale(1.,"width");
     hTRU_2D->Scale(1.,"width");
+    hGEN_1D->Scale(1./fNormEvent);
+    hTRU_1D->Scale(1./fNormEvent);
+    hREC_1D_in_2Dbin->Scale(1./fNormEvent);
+    hGEN_1D_in_2Dbin->Scale(1./fNormEvent);
+    hTRU_1D_in_2Dbin->Scale(1./fNormEvent);
+    hREC_2D->Scale(1./fNormEvent);
+    hGEN_2D->Scale(1./fNormEvent);
+    hTRU_2D->Scale(1./fNormEvent);
     //
     
     // >> MULTIPLICITY ANALYSIS //
@@ -436,6 +444,15 @@ void PreProcessing_MC ( string fFileName = "" )
         hREC_2D_in_MT[iHisto]->Scale(1.,"width");
         hGEN_2D_in_MT[iHisto]->Scale(1.,"width");
         hTRU_2D_in_MT[iHisto]->Scale(1.,"width");
+        hREC_1D_in_MT[iHisto]->Scale(1./fNormEvent);
+        hGEN_1D_in_MT[iHisto]->Scale(1./fNormEvent);
+        hTRU_1D_in_MT[iHisto]->Scale(1./fNormEvent);
+        hREC_1D_in_MT_in_2Dbin[iHisto]->Scale(1./fNormEvent);
+        hGEN_1D_in_MT_in_2Dbin[iHisto]->Scale(1./fNormEvent);
+        hTRU_1D_in_MT_in_2Dbin[iHisto]->Scale(1./fNormEvent);
+        hREC_2D_in_MT[iHisto]->Scale(1./fNormEvent);
+        hGEN_2D_in_MT[iHisto]->Scale(1./fNormEvent);
+        hTRU_2D_in_MT[iHisto]->Scale(1./fNormEvent);
     }
     //
     
@@ -455,6 +472,10 @@ void PreProcessing_MC ( string fFileName = "" )
     //
     TFile *outFil2  =   new TFile   (fYldPrePrMC,"recreate");
     //
+    hREC_1D->Scale(1.,"width");
+    hREC_1D->Write();
+    hREC_1D->Scale(1./fNormEvent);
+    hREC_1D->Write();
     hGEN_1D->Write();
     hTRU_1D->Write();
     hEFF_1D->Write();
