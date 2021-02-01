@@ -7,7 +7,7 @@ mkdir result_MCG_PhiQuickReference/logs
 strun=0
 nruns=1
 njobs=5
-nevents=100000
+nevents=1000000
 
 echo "[INFO] Starting production"
         
