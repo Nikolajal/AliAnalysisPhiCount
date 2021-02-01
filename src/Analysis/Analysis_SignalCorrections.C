@@ -51,6 +51,12 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     hName       =   "hEFF_1D";
     hEFF_1D     =   (TH1F*)(insFile_EF_Yield->Get(hName));
     //
+    hName       =   "hREC_1D";
+    hREC_1D     =   (TH1F*)(insFile_EF_Yield->Get(hName));
+    //
+    hName       =   "hGEN_1D";
+    hGEN_1D     =   (TH1F*)(insFile_EF_Yield->Get(hName));
+    //
     // >->-->-> 2-Dimension analysis //
     //
     //  Declaring all histograms
@@ -143,12 +149,22 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     //
     //  Declaring all histograms
     //
+    TGraphAsymmErrors   *gRES_1D_Stat       =   new TGraphAsymmErrors();
+    TGraphAsymmErrors   *gRES_1D_Syst       =   new TGraphAsymmErrors();
     TH1F       *hRES_1D;
     //
     hName       =   Form("hRES_1D");
     hTitle      =   Form("hRES_1D");
     hRES_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
     SetAxis(hRES_1D,"PT 1D");
+    //
+    hName       =   Form("gRES_1D_Stat");
+    hTitle      =   Form("gRES_1D_Stat");
+    gRES_1D_Stat->SetNameTitle(hName,hTitle);
+    //
+    hName       =   Form("gRES_1D_Syst");
+    hTitle      =   Form("gRES_1D_Syst");
+    gRES_1D_Syst->SetNameTitle(hName,hTitle);
     //
     // >->-->-> 2-Dimension analysis //
     //
@@ -193,16 +209,28 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     //
     //  Declaring all histograms
     //
+    TGraphAsymmErrors  **gRES_1D_Stat_in_MT =   new TGraphAsymmErrors  *[nBinMult];
+    TGraphAsymmErrors  **gRES_1D_Syst_in_MT =   new TGraphAsymmErrors  *[nBinMult];
     TH1F      **hRES_1D_in_MT               = new TH1F     *[nBinMult];
     //
     //  Defining MT-Differential histograms over measurable pT
     //
-    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    for ( Int_t iMult = 0; iMult < nBinMult; iMult++ )
     {
-        hName = Form("hRES_1D_in_MT_%i",iHisto);
-        hTitle = Form("hRES_1D_in_MT_%i",iHisto);
-        hRES_1D_in_MT[iHisto]   =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
-        SetAxis(hRES_1D_in_MT[iHisto],"PT 1D");
+        hName = Form("hRES_1D_in_MT_%i",iMult);
+        hTitle = Form("hRES_1D_in_MT_%i",iMult);
+        hRES_1D_in_MT[iMult]   =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+        SetAxis(hRES_1D_in_MT[iMult],"PT 1D");
+        //
+        gRES_1D_Stat_in_MT[iMult]           =   new TGraphAsymmErrors();
+        hName                               =   Form("gRES_1D_Stat_in_MT_%i",iMult);
+        hTitle                              =   Form("gRES_1D_Stat_in_MT_%i",iMult);
+        gRES_1D_Stat_in_MT[iMult]           ->  SetNameTitle(hName,hTitle);
+        //
+        fYield_Syst_in_MT[iMult]            =   new TGraphAsymmErrors();
+        hName                               =   Form("gRES_1D_Syst_in_MT_%i",iMult);
+        hTitle                              =   Form("gRES_1D_Syst_in_MT_%i",iMult);
+        fYield_Syst_in_MT[iMult]            ->  SetNameTitle(hName,hTitle);
     }
 
     // >->-->-> 2-Dimension analysis //
@@ -247,16 +275,6 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     hRES_1D->Sumw2();
     hRES_2D->Sumw2();
     //
-    // Scaling for efficiencies
-    //
-    hRES_1D->Divide(hRAW_1D,hEFF_1D,1.,1.,"");
-    hRES_2D->Divide(hRAW_2D,hEFF_2D,1.,1.,"");
-    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
-    {
-        hRES_1D_in_MT[iHisto]->Divide(hRAW_1D_in_MT[iHisto],hEFF_1D_in_MT[iHisto],1.,1.,"");
-        hRES_2D_in_MT[iHisto]->Divide(hRAW_2D_in_MT[iHisto],hEFF_2D_in_MT[iHisto],1.,1.,"");
-    }
-    //
     // Scaling in pT [Done in PreProcessing]
     //
     // Scaling in Rapidity Interval
@@ -296,6 +314,17 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     {
         hRES_1D_in_MT[iHisto]->Scale(1./kVertexEfficnc);
         hRES_2D_in_MT[iHisto]->Scale(1./kVertexEfficnc);
+    }
+    // Scaling for efficiencies
+    //
+    gRES_1D_Stat    =   fEfficiencycorrection(hRES_1D,hREC_1D,hGEN_1D);
+    //
+    hRES_1D->Divide(hRAW_1D,hEFF_1D,1.,1.,"");
+    hRES_2D->Divide(hRAW_2D,hEFF_2D,1.,1.,"");
+    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    {
+        hRES_1D_in_MT[iHisto]->Divide(hRAW_1D_in_MT[iHisto],hEFF_1D_in_MT[iHisto],1.,1.,"");
+        hRES_2D_in_MT[iHisto]->Divide(hRAW_2D_in_MT[iHisto],hEFF_2D_in_MT[iHisto],1.,1.,"");
     }
     //
     //-------------------------//
@@ -397,6 +426,7 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     TFile *outFil2  =   new TFile   (fYldSigCorr,"recreate");
     //
     hEvntEff                ->Write();
+    gRES_1D_Stat            ->Write();
     hRES_1D                 ->Write();
     fYield_Stat             ->Write();
     fYield_Syst             ->Write();

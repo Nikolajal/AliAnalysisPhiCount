@@ -20,6 +20,7 @@ void PreProcessing ( string fFileNameMC = "", string fFileNameDT = "", string fO
     if ( fFileNameMC != "" && fFileNameDT == "" )
     {
         cout << "[WARNING] Data File not specified, will try to use the MC file provided" << endl;
+        fFileNameDT = fFileNameMC;
     }
     
     cout << "[INFO] Starting with the Monte Carlo PreProcessing" << endl;
