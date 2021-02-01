@@ -724,8 +724,8 @@ Double_t*       fExtrapolateModel               ( TGraphAsymmErrors* gStatistics
     }
     
     //
-    TH1D*   hStatIntegral   =   new TH1D(Form("hStatIntegral_%s",fName.Data()),"hStatIntegral",1000,0.0035,.0045);
-    TH1D*   hSystIntegral   =   new TH1D(Form("hSystIntegral_%s",fName.Data()),"hSystIntegral",1000,0.0035,.0045);
+    TH1D*   hStatIntegral   =   new TH1D(Form("hStatIntegral_%s",fName.Data()),"hStatIntegral",100000,0.0,.1);
+    TH1D*   hSystIntegral   =   new TH1D(Form("hSystIntegral_%s",fName.Data()),"hSystIntegral",100000,0.0,.1);
     
     //  Evaluating the Statistical Errors
     for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
