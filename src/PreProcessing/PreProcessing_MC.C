@@ -296,7 +296,7 @@ void PreProcessing_MC ( string fFileName = "" )
     fStartTimer("Analysis");
     
     // Evaluating entries
-    Int_t nEvents = TPhiCandidate->GetEntries();
+    Int_t nEvents = (!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : nEventsCut);
     
     // Starting cycle
     for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
@@ -400,13 +400,17 @@ void PreProcessing_MC ( string fFileName = "" )
     
     fStopTimer("Analysis");
     
+    //
+    //Int_t nEvents = (!TKaonCandidate) ? 0 : ( nEventsCut == -1.? TKaonCandidate->GetEntries() : nEventsCut);
+    //
+    
     //--------------------------//
     // PostProcessin output obj //
     //--------------------------//
     
     // >> YIELD ANALYSIS //
     //
-    auto fNormEvent = fHEventCount->GetBinContent(9);
+    auto fNormEvent = fHEventCount->GetBinContent(1);
     hEFF_1D                             ->Divide(hREC_1D,           hGEN_1D,            1.,1.,"b");
     hEFF_1D_in_2Dbin                    ->Divide(hREC_1D_in_2Dbin,  hGEN_1D_in_2Dbin,   1.,1.,"b");
     hEFF_2D                             ->Divide(hREC_2D,           hGEN_2D,            1.,1.,"b");

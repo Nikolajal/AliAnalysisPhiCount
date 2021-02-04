@@ -1,7 +1,7 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: [INFO] About trees in input
 
-void PreProcessing_Data ( string fFileName = "", string fOption = "" )
+void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEventsCut = -1. )
 {
     //---------------------//
     //  Setting up input   //
@@ -258,9 +258,11 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     //-------------------------//
     
     // Evaluating entries and saving them for later
-    Int_t nEvents = (!TPhiCandidate) ? 0 : TPhiCandidate->GetEntries();
+    Int_t nEvents = (!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : nEventsCut);
 
     if ( nEvents > 0 )  fStartTimer("Phi Analysis");
+    
+    TH1F * check = new TH1F ("TEST","TEST",nBinPT1D,fArrPT1D);
     
     // Starting cycle
     for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
@@ -283,6 +285,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
             evPhiCandidate.pT[iPhi]     =   LPhi_candidate1.Pt();
             evPhiCandidate.Rap[iPhi]    =   LPhi_candidate1.Rapidity();
             if ( !fAcceptCandidate(evPhiCandidate.Rap[iPhi],evPhiCandidate.InvMass[iPhi],evPhiCandidate.pT[iPhi],evPhiCandidate.Multiplicity) ) continue;
+            if ( evPhiCandidate.Nature[iPhi] == 1 ) check->Fill(LPhi_candidate1.Pt());
             U_AccCand[U_nAccept] = iPhi;
             U_nAccept++;
         }
@@ -394,7 +397,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     if ( nEvents > 0 )  fStopTimer("Phi Analysis");
     
     // Evaluating entries and saving them for later
-    nEvents = (!TKaonCandidate) ? 0 : 0;//TKaonCandidate->GetEntries();
+    Int_t nEvents = (!TKaonCandidate) ? 0 : ( nEventsCut == -1.? TKaonCandidate->GetEntries() : nEventsCut);
 
     if ( nEvents > 0 )  fStartTimer("Kaon Analysis");
     
@@ -465,6 +468,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "" )
     //
     TFile *outFil2  =   new TFile   (fYldPreProc,"recreate");
     //
+    check->Write();
     fHEventCount    ->Write();
     hREC_1D->Write();
     for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)

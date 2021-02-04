@@ -70,12 +70,17 @@ auto const  fPhiCandidateEff_Tree   =   "PhiEfficiency";
 auto const  fKaonCandidate_Tree     =   "KaonCandidate";
 auto const  fKaonCandidateEff_Tree  =   "KaonEfficiency";
 
+// Analysis Values
+//-// Analysis constants
 auto const  kParticleMass_          =   1.019455;   //  1.019455    +- 0.000020
 auto const  kParticleWidth          =   0.00426;    //  0.00426     +- 0.00004
 auto const  kDetectorSlope          =   1.;
 auto const  kBranchingRtio          =   0.489;
 auto const  kVertexEfficnc          =   0.99;
 auto const  kRapidityIntvl          =   1.;
+
+//-// Analysis systematics (%)
+auto const  kBRSystematics          =   (0.5/48.9);
 
 auto const  kPMas                   =   1.019455;   //  1.019455    +- 0.000020
 auto const  kPWid                   =   0.00426;    //  0.00426     +- 0.00004
@@ -97,15 +102,15 @@ const   Float_t   fMaxIM2D  = 1.08;
         Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];
 
 //-// pT bins 1D
-const   Int_t     nBinPT1D  =   28;
+const   Int_t     nBinPT1D  =   23;
 const   Float_t   fMinPT1D  =   0.0;
-const   Float_t   fMaxPT1D  =   10.0;
+const   Float_t   fMaxPT1D  =   21;
         Float_t  *fArrPT1D  =   new Float_t [nBinPT1D+1];
 
 //-// pT bins 2D
 const   Int_t     nBinPT2D  =   12;
 const   Float_t   fMinPT2D  =   0.0;
-const   Float_t   fMaxPT2D  =   10.0;
+const   Float_t   fMaxPT2D  =   21;
         Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
 
 //-// Muliplicity bins
@@ -187,52 +192,47 @@ void    fSetBinNTup ()
 
 void    fSetBinPT1D ()
 {
-    fArrPT1D[0]     =   0.0;
-    fArrPT1D[1]     =   0.4;
-    fArrPT1D[2]     =   0.5;
-    fArrPT1D[3]     =   0.6;
-    fArrPT1D[4]     =   0.7;
-    fArrPT1D[5]     =   0.8;
-    fArrPT1D[6]     =   0.9;
-    fArrPT1D[7]     =   1.0;
-    fArrPT1D[8]     =   1.1;
-    fArrPT1D[9]     =   1.2;
-    fArrPT1D[10]    =   1.3;
-    fArrPT1D[11]    =   1.4;
-    fArrPT1D[12]    =   1.5;
-    fArrPT1D[13]    =   1.6;
-    fArrPT1D[14]    =   1.7;
-    fArrPT1D[15]    =   1.8;
-    fArrPT1D[16]    =   1.9;
-    fArrPT1D[17]    =   2.0;
-    fArrPT1D[18]    =   2.2;
-    fArrPT1D[19]    =   2.4;
-    fArrPT1D[20]    =   2.6;
-    fArrPT1D[21]    =   2.8;
-    fArrPT1D[22]    =   3.0;
-    fArrPT1D[23]    =   3.5;
-    fArrPT1D[24]    =   4.0;
-    fArrPT1D[25]    =   5.0;
-    fArrPT1D[26]    =   6.0;
-    fArrPT1D[27]    =   8.0;
-    fArrPT1D[28]    =   10.0;
+    fArrPT1D[0]     =   0.00;
+    fArrPT1D[1]     =   0.20;
+    fArrPT1D[2]     =   0.40;
+    fArrPT1D[3]     =   0.60;
+    fArrPT1D[4]     =   0.80;
+    fArrPT1D[5]     =   1.00;
+    fArrPT1D[6]     =   1.20;
+    fArrPT1D[7]     =   1.40;
+    fArrPT1D[8]     =   1.60;
+    fArrPT1D[9]     =   1.80;
+    fArrPT1D[10]    =   2.00;
+    fArrPT1D[11]    =   2.50;
+    fArrPT1D[12]    =   3.00;
+    fArrPT1D[13]    =   3.50;
+    fArrPT1D[14]    =   4.00;
+    fArrPT1D[15]    =   4.50;
+    fArrPT1D[16]    =   5.00;
+    fArrPT1D[17]    =   6.00;
+    fArrPT1D[18]    =   7.00;
+    fArrPT1D[19]    =   8.00;
+    fArrPT1D[20]    =   10.0;
+    fArrPT1D[21]    =   13.0;
+    fArrPT1D[22]    =   16.0;
+    fArrPT1D[23]    =   21.0;
 }
 
 void    fSetBinPT2D ()
 {
-    fArrPT2D[0]  =  0.0;
-    fArrPT2D[1]  =  0.2;
+    fArrPT2D[0]  =  0.00;
+    fArrPT2D[1]  =  0.20;
     fArrPT2D[2]  =  0.40;
-    fArrPT2D[3]  =  0.68;
-    fArrPT2D[4]  =  0.82;
-    fArrPT2D[5]  =  0.95;
-    fArrPT2D[6]  =  1.1;
-    fArrPT2D[7]  =  1.3;
-    fArrPT2D[8]  =  1.6;
-    fArrPT2D[9]  =  2.3;
-    fArrPT2D[10] =  3.0;
-    fArrPT2D[11] =  5.0;
-    fArrPT2D[12] =  10.;
+    fArrPT2D[3]  =  0.60;
+    fArrPT2D[4]  =  0.80;
+    fArrPT2D[5]  =  1.00;
+    fArrPT2D[6]  =  1.20;
+    fArrPT2D[7]  =  1.40;
+    fArrPT2D[8]  =  1.60;
+    fArrPT2D[9]  =  3.20;
+    fArrPT2D[10] =  5.00;
+    fArrPT2D[11] =  10.0;
+    fArrPT2D[12] =  21.0;
 }
 
 void    fSetBinMult ()
@@ -568,13 +568,13 @@ Int_t kWidth[] = {1,3,3,1,1};
 //
 //_____________________________________________________________________________
 //
-Double_t        fGammaPhiValue                  ( Double_t fYieldPhi, Double_t fYieldPhiPhi )  {
+Double_t            fGammaPhiValue                  ( Double_t fYieldPhi, Double_t fYieldPhiPhi )  {
     return  2*fYieldPhiPhi/fYieldPhi -fYieldPhi;
 }
 //
 //_____________________________________________________________________________
 //
-Double_t        fGammaPhiError                  ( Double_t fYieldPhi, Double_t fYieldPhiPhi, Double_t fErrorPhi, Double_t fErrorPhiPhi)  {
+Double_t            fGammaPhiError                  ( Double_t fYieldPhi, Double_t fYieldPhiPhi, Double_t fErrorPhi, Double_t fErrorPhiPhi)  {
     auto    fPar1   =   2*fErrorPhiPhi/fYieldPhi;
     auto    fPar2   =   (2*fYieldPhiPhi/(fYieldPhi*fYieldPhi)+1)*fErrorPhi;
     return  fPar1 + fPar2;
@@ -582,7 +582,7 @@ Double_t        fGammaPhiError                  ( Double_t fYieldPhi, Double_t f
 //
 //_____________________________________________________________________________
 //
-void            fSetLevyTsalis                  ( ) {
+void                fSetLevyTsalis                  ( ) {
     // - // Setting up Fit parameters
     
     // Mass
@@ -604,29 +604,13 @@ void            fSetLevyTsalis                  ( ) {
 //
 //_____________________________________________________________________________
 //
-void            fSetSystErr                     ( ) {
-    // - // Setting up Fit parameters
-    
-    // Mass
-    fLevyFit1D  ->  SetParLimits(0,kPMas,kPMas);
-    fLevyFit1D  ->  SetParameter(0,kPMas);
-    
-    // n-Parameter
-    fLevyFit1D  ->  SetParLimits(1,2.1,7.5);
-    fLevyFit1D  ->  SetParameter(1,6.); // 6.7
-    
-    // T-Parameter
-    fLevyFit1D  ->  SetParLimits(2,.21,.750);
-    fLevyFit1D  ->  SetParameter(2,.272); // .272
-    
-    // dN/dy
-    fLevyFit1D  ->  SetParLimits(3,1.e-7,1.e-1);
-    fLevyFit1D  ->  SetParameter(3,0.032);
+TGraphAsymmErrors*  fSetSystErr                     ( ) {
+    return nullptr;
 }
 //_____________________________________________________________________________
 //
 template < class Tclass >
-Double_t*       fExtrapolateModel               ( Tclass *THdata, TString fName = "ExtrapolateSignal" ) {
+Double_t*           fExtrapolateModel               ( Tclass *THdata, TString fName = "ExtrapolateSignal" ) {
     // Optimisation mode
     gROOT->SetBatch(true);
     
@@ -662,7 +646,7 @@ Double_t*       fExtrapolateModel               ( Tclass *THdata, TString fName 
 //_____________________________________________________________________________
 //
 template < class Tclass >
-Double_t*       fIntegrateModel                 ( Tclass *THdata, TString fName = "IntegrateSignal" )    {
+Double_t*           fIntegrateModel                 ( Tclass *THdata, TString fName = "IntegrateSignal" )    {
     // Optimisation mode
     gROOT->SetBatch(true);
     
@@ -684,7 +668,7 @@ Double_t*       fIntegrateModel                 ( Tclass *THdata, TString fName 
 //_____________________________________________________________________________
 //
 template < class Tclass >
-Double_t*       fMeasureFullYield               ( Tclass *THdata, TString fName = "MeasureFullYield" ) {
+Double_t*           fMeasureFullYield               ( Tclass *THdata, TString fName = "MeasureFullYield" ) {
     // Optimisation mode
     gROOT->SetBatch(true);
     
@@ -708,7 +692,7 @@ Double_t*       fMeasureFullYield               ( Tclass *THdata, TString fName 
 //
 //_____________________________________________________________________________
 //
-Double_t*       fExtrapolateModel               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "ExtrapolateSignal" )    {
+Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "ExtrapolateSignal" )    {
     //  Optimisation mode
     gROOT->SetBatch(true);
     
@@ -768,7 +752,7 @@ Double_t*       fExtrapolateModel               ( TGraphAsymmErrors* gStatistics
 //
 //_____________________________________________________________________________
 //
-Double_t*       fIntegrateModel                 ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "IntegrateSignal" )    {
+Double_t*           fIntegrateModel                 ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "IntegrateSignal" )    {
     //  Optimisation mode
     gROOT->SetBatch(true);
     
@@ -816,7 +800,7 @@ Double_t*       fIntegrateModel                 ( TGraphAsymmErrors* gStatistics
 //
 //_____________________________________________________________________________
 //
-Double_t*       fMeasureFullYield               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "MeasureFullYield" ) {
+Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "MeasureFullYield" ) {
     // Optimisation mode
     gROOT->SetBatch(true);
     

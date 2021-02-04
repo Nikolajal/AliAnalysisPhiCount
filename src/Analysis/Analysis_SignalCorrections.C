@@ -42,6 +42,8 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     //
     TH1F       *hRAW_1D;
     TH1F       *hEFF_1D;
+    TH1F       *hREC_1D;
+    TH1F       *hGEN_1D;
     //
     //  Defining cumulative histogram over measurable pT
     //
@@ -277,6 +279,18 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     //
     // Scaling in pT [Done in PreProcessing]
     //
+    // Scaling for efficiencies
+    //
+    gRES_1D_Stat    =   fEfficiencycorrection(hRAW_1D,hREC_1D,hGEN_1D,1./((hEvntEff->GetBinContent(9))*kRapidityIntvl*kBranchingRtio*kVertexEfficnc));
+    //
+    hRES_1D->Divide(hRAW_1D,hEFF_1D,1.,1.,"");
+    hRES_2D->Divide(hRAW_2D,hEFF_2D,1.,1.,"");
+    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+    {
+        hRES_1D_in_MT[iHisto]->Divide(hRAW_1D_in_MT[iHisto],hEFF_1D_in_MT[iHisto],1.,1.,"");
+        hRES_2D_in_MT[iHisto]->Divide(hRAW_2D_in_MT[iHisto],hEFF_2D_in_MT[iHisto],1.,1.,"");
+    }
+    //
     // Scaling in Rapidity Interval
     hRES_1D->Scale(1./kRapidityIntvl);
     hRES_2D->Scale(1./kRapidityIntvl);
@@ -315,22 +329,12 @@ void Analysis_SignalCorrections ( bool fSilent = true )
         hRES_1D_in_MT[iHisto]->Scale(1./kVertexEfficnc);
         hRES_2D_in_MT[iHisto]->Scale(1./kVertexEfficnc);
     }
-    // Scaling for efficiencies
-    //
-    gRES_1D_Stat    =   fEfficiencycorrection(hRES_1D,hREC_1D,hGEN_1D);
-    //
-    hRES_1D->Divide(hRAW_1D,hEFF_1D,1.,1.,"");
-    hRES_2D->Divide(hRAW_2D,hEFF_2D,1.,1.,"");
-    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
-    {
-        hRES_1D_in_MT[iHisto]->Divide(hRAW_1D_in_MT[iHisto],hEFF_1D_in_MT[iHisto],1.,1.,"");
-        hRES_2D_in_MT[iHisto]->Divide(hRAW_2D_in_MT[iHisto],hEFF_2D_in_MT[iHisto],1.,1.,"");
-    }
     //
     //-------------------------//
     //  Filling output objects //
     //-------------------------//
     //
+    /*
     fStartTimer("Fit_for_extrapolation");
     //
     // Output File for Fit Check
@@ -410,6 +414,7 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     fStopTimer("Fit_for_extrapolation");
     //
     outCheckFitMlt->Close();
+    */
     //
     //--------------------------//
     //  Printing output objects //

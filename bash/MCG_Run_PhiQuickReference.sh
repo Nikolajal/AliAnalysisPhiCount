@@ -14,7 +14,7 @@ echo "[INFO] Starting production"
 
 for run in $(seq $strun $(($strun + $nruns - 1))); do
     
-    for option in {-1,0,1,2,3,4,5,6,7}; do
+    for option in {-1,1,2,3,4,5,6,7}; do
 
     ### wait if there are too many jobs running
     while true; do

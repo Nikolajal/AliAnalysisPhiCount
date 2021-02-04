@@ -1,8 +1,28 @@
-//
-//  Check_sub_dataset.cpp
-//  
-//
-//  Created by Nicola Rubini on 03/02/21.
-//
+#include "../../inc/AliAnalysisPhiPair.h"
+// !TODO: Split
 
-#include <stdio.h>
+void Check_sub_dataset ( TString fFileNames ... )
+{
+    //---------------------//
+    //  Setting up input   //
+    //---------------------//
+    
+    // >-> OPTIONS
+    
+    va_list args;
+    const size_t fNumberOfFiles = sizeof...(fFileNames);
+    va_start(args,);
+    for ( Int_t iFile = 0; iFile <= fNumberOfFiles; iFile++ )   {
+        if ( fFileNames.IsNull() )
+        {
+            cout << "[ERROR] Must Specify an input root file" << endl;
+            cout << "[INFO] Usage PreProcessing(\"file1.root\",\"file2.root\",...)" << endl;
+            return;
+        }
+    }
+    
+    std::vector<TString>
+    
+    return;
+}
+

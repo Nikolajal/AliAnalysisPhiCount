@@ -108,12 +108,11 @@ int main (int argc, char *argv[])
     // Definition of number of events
     int   nEvents = atoi(argv[2]);
     
-    int kMultBin    = 10;
+    int kMultBin    = 500;
     Double_t * fArrMult = new Double_t [kMultBin+1];
-    Float_t fUtility [11] = {0,20,40,60,80,100,120,140,160,180,200};
     for ( int i = 0; i <= kMultBin; i++ )
     {
-        fArrMult[i] =   fUtility[i];
+        fArrMult[i] =   i;
     }
     
     // Definition of option
@@ -143,7 +142,7 @@ int main (int argc, char *argv[])
     pythia.readString("ParticleDecays:limitTau0 = on");
     pythia.readString("Beams:idA = 2212");
     pythia.readString("Beams:idB = 2212");
-    pythia.readString("Beams:eCM = 5000");
+    pythia.readString("Beams:eCM = 7000");
     pythia.readString(Form("333:mMin = %f",0.75));
     pythia.readString(Form("333:mMax = %f",1.25));
     switch (fOption)
@@ -310,6 +309,12 @@ int main (int argc, char *argv[])
         hPhiCountMult   ->  Fill(nPhiMesons,nMultiplicity);
         hEventCountMult ->  Fill(nMultiplicity);
     }
+    
+    hPhiCount       ->Write();
+    hPhiCountMult   ->Write();
+    
+    hPhiCount       ->SetName("hPhiCount_norm");
+    hPhiCountMult   ->SetName("hPhiCountMult_norm");
     
     hPhiCount       ->Scale(1./nEvents);
     hPhiCountMult   ->Scale(1./nEvents);
