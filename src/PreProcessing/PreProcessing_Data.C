@@ -457,16 +457,11 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
     if ( nEvents > 0 )  fStopTimer("Phi Analysis");
     
     // Evaluating entries and saving them for later
-    nEvents = (!TKaonCandidate) ? 0 : ( nEventsCut == -1.? TKaonCandidate->GetEntries() : nEventsCut);
+    nEvents = 0;// (!TKaonCandidate) ? 0 : ( nEventsCut == -1.? TKaonCandidate->GetEntries() : nEventsCut);
 
+    /*
     if ( nEvents > 0 )  fStartTimer("Kaon Analysis");
-    
-    Struct_KaonCandidate    evKaonCandidateEvMix1;
-    Struct_KaonCandidate    evKaonCandidateEvMix2;
-    Struct_KaonCandidate    evKaonCandidateEvMix3;
-    Struct_PhiCandidate     evPhiCandidate_EvMix1;
-    Struct_PhiCandidate     evPhiCandidate_EvMix2;
-    
+
     // Starting cycle
     for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
     {
@@ -474,180 +469,10 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
         TKaonCandidate->GetEntry(iEvent);
         
         fPrintLoopTimer("Kaon Analysis",iEvent,nEvents,1000000);
-
-        // Utilities
-        TLorentzVector  LKaon1,    LKaon2,  LKaon3,    LPhi_candidate1,    LPhi_candidate2;
-        U_nAccept = 0;
-        U_nAccep2 = 0;
-        
-        if ( iEvent == 0 ) { evKaonCandidateEvMix1 = evKaonCandidate; continue;}
-        evPhiCandidate_EvMix1.nPhi = 0;
-        evPhiCandidate_EvMix2.nPhi = 0;
-        evPhiCandidate_EvMix1.Multiplicity = 50;
-        evPhiCandidate_EvMix2.Multiplicity = 50;
-        for ( Int_t iKaon = 0; iKaon < evKaonCandidate.nKaon; iKaon++ )  {
-            LKaon1.SetXYZM(evKaonCandidate.Px[iKaon],evKaonCandidate.Py[iKaon],evKaonCandidate.Pz[iKaon],kKaonMass);
-            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix1.nKaon; jKaon++ )  {
-                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix1.Charge[jKaon] ) continue;
-                LKaon2.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
-                LPhi_candidate1 =   LKaon1  +   LKaon2;
-                evPhiCandidate_EvMix1.Px[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Px();
-                evPhiCandidate_EvMix1.Py[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Py();
-                evPhiCandidate_EvMix1.Pz[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pz();
-                evPhiCandidate_EvMix1.pT[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pt();
-                evPhiCandidate_EvMix1.iKaon[evPhiCandidate_EvMix1.nPhi]   =   iKaon;
-                evPhiCandidate_EvMix1.jKaon[evPhiCandidate_EvMix1.nPhi]   =   jKaon;
-                evPhiCandidate_EvMix1.InvMass[evPhiCandidate_EvMix1.nPhi] =   LPhi_candidate1.Mag();
-                evPhiCandidate_EvMix1.Rap[evPhiCandidate_EvMix1.nPhi]     =   LPhi_candidate1.Rapidity();
-                evPhiCandidate_EvMix1.nPhi++;
-            }
-            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix2.nKaon; jKaon++ )  {
-                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix2.Charge[jKaon] ) continue;
-                LKaon2.SetXYZM(evKaonCandidateEvMix2.Px[iKaon],evKaonCandidateEvMix2.Py[iKaon],evKaonCandidateEvMix2.Pz[iKaon],kKaonMass);
-                LPhi_candidate1 =   LKaon1  +   LKaon2;
-                evPhiCandidate_EvMix1.Px[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Px();
-                evPhiCandidate_EvMix1.Py[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Py();
-                evPhiCandidate_EvMix1.Pz[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pz();
-                evPhiCandidate_EvMix1.pT[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pt();
-                evPhiCandidate_EvMix1.iKaon[evPhiCandidate_EvMix1.nPhi]   =   iKaon;
-                evPhiCandidate_EvMix1.jKaon[evPhiCandidate_EvMix1.nPhi]   =   jKaon;
-                evPhiCandidate_EvMix1.InvMass[evPhiCandidate_EvMix1.nPhi] =   LPhi_candidate1.Mag();
-                evPhiCandidate_EvMix1.Rap[evPhiCandidate_EvMix1.nPhi]     =   LPhi_candidate1.Rapidity();
-                evPhiCandidate_EvMix1.nPhi++;
-            }
-            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix3.nKaon; jKaon++ )  {
-                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix3.Charge[jKaon] ) continue;
-                LKaon2.SetXYZM(evKaonCandidateEvMix3.Px[iKaon],evKaonCandidateEvMix3.Py[iKaon],evKaonCandidateEvMix3.Pz[iKaon],kKaonMass);
-                LPhi_candidate1 =   LKaon1  +   LKaon2;
-                evPhiCandidate_EvMix1.Px[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Px();
-                evPhiCandidate_EvMix1.Py[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Py();
-                evPhiCandidate_EvMix1.Pz[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pz();
-                evPhiCandidate_EvMix1.pT[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pt();
-                evPhiCandidate_EvMix1.iKaon[evPhiCandidate_EvMix1.nPhi]   =   iKaon;
-                evPhiCandidate_EvMix1.jKaon[evPhiCandidate_EvMix1.nPhi]   =   jKaon;
-                evPhiCandidate_EvMix1.InvMass[evPhiCandidate_EvMix1.nPhi] =   LPhi_candidate1.Mag();
-                evPhiCandidate_EvMix1.Rap[evPhiCandidate_EvMix1.nPhi]     =   LPhi_candidate1.Rapidity();
-                evPhiCandidate_EvMix1.nPhi++;
-            }
-        }
-        for ( Int_t iKaon = 0; iKaon < evKaonCandidateEvMix1.nKaon; iKaon++ )  {
-            LKaon1.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
-            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix1.nKaon; jKaon++ )  {
-                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix1.Charge[jKaon] ) continue;
-                LKaon2.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
-                LPhi_candidate1 =   LKaon1  +   LKaon2;
-                evPhiCandidate_EvMix2.Multiplicity                        =   evKaonCandidateEvMix1.Multiplicity;
-                evPhiCandidate_EvMix2.Px[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Px();
-                evPhiCandidate_EvMix2.Py[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Py();
-                evPhiCandidate_EvMix2.Pz[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pz();
-                evPhiCandidate_EvMix2.pT[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pt();
-                evPhiCandidate_EvMix2.iKaon[evPhiCandidate_EvMix2.nPhi]   =   iKaon;
-                evPhiCandidate_EvMix2.jKaon[evPhiCandidate_EvMix2.nPhi]   =   jKaon;
-                evPhiCandidate_EvMix2.InvMass[evPhiCandidate_EvMix2.nPhi] =   LPhi_candidate1.Mag();
-                evPhiCandidate_EvMix2.Rap[evPhiCandidate_EvMix2.nPhi]     =   LPhi_candidate1.Rapidity();
-                evPhiCandidate_EvMix2.nPhi++;
-            }
-        }
-        for ( Int_t iKaon = 0; iKaon < evKaonCandidateEvMix1.nKaon; iKaon++ )  {
-            LKaon1.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
-            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix1.nKaon; jKaon++ )  {
-                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix1.Charge[jKaon] ) continue;
-                LKaon2.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
-                LPhi_candidate1 =   LKaon1  +   LKaon2;
-                evPhiCandidate_EvMix2.Px[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Px();
-                evPhiCandidate_EvMix2.Py[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Py();
-                evPhiCandidate_EvMix2.Pz[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pz();
-                evPhiCandidate_EvMix2.pT[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pt();
-                evPhiCandidate_EvMix2.iKaon[evPhiCandidate_EvMix2.nPhi]   =   iKaon;
-                evPhiCandidate_EvMix2.jKaon[evPhiCandidate_EvMix2.nPhi]   =   jKaon;
-                evPhiCandidate_EvMix2.InvMass[evPhiCandidate_EvMix2.nPhi] =   LPhi_candidate1.Mag();
-                evPhiCandidate_EvMix2.Rap[evPhiCandidate_EvMix2.nPhi]     =   LPhi_candidate1.Rapidity();
-                evPhiCandidate_EvMix2.nPhi++;
-            }
-        }
-        for ( Int_t iKaon = 0; iKaon < evKaonCandidateEvMix1.nKaon; iKaon++ )  {
-            LKaon1.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
-            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix1.nKaon; jKaon++ )  {
-                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix1.Charge[jKaon] ) continue;
-                LKaon2.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
-                LPhi_candidate1 =   LKaon1  +   LKaon2;
-                evPhiCandidate_EvMix2.Px[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Px();
-                evPhiCandidate_EvMix2.Py[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Py();
-                evPhiCandidate_EvMix2.Pz[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pz();
-                evPhiCandidate_EvMix2.pT[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pt();
-                evPhiCandidate_EvMix2.iKaon[evPhiCandidate_EvMix2.nPhi]   =   iKaon;
-                evPhiCandidate_EvMix2.jKaon[evPhiCandidate_EvMix2.nPhi]   =   jKaon;
-                evPhiCandidate_EvMix2.InvMass[evPhiCandidate_EvMix2.nPhi] =   LPhi_candidate1.Mag();
-                evPhiCandidate_EvMix2.Rap[evPhiCandidate_EvMix2.nPhi]     =   LPhi_candidate1.Rapidity();
-                evPhiCandidate_EvMix2.nPhi++;
-            }
-        }
-        evKaonCandidateEvMix1 = evKaonCandidate;
-        evKaonCandidateEvMix2 = evKaonCandidateEvMix1;
-        evKaonCandidateEvMix3 = evKaonCandidateEvMix2;
-        
-        for ( Int_t iPhi = 0; iPhi < evPhiCandidate_EvMix1.nPhi; iPhi++ )  {
-            if ( !fAcceptCandidate(evPhiCandidate_EvMix1.Rap[iPhi],evPhiCandidate_EvMix1.InvMass[iPhi],evPhiCandidate_EvMix1.pT[iPhi],evPhiCandidate_EvMix1.Multiplicity) ) continue;
-            U_AccCand[U_nAccept] = iPhi;
-            U_nAccept++;
-        }
-        for ( Int_t iPhi = 0; iPhi < evPhiCandidate_EvMix2.nPhi; iPhi++ )  {
-            if ( !fAcceptCandidate(evPhiCandidate_EvMix2.Rap[iPhi],evPhiCandidate_EvMix2.InvMass[iPhi],evPhiCandidate_EvMix2.pT[iPhi],evPhiCandidate_EvMix2.Multiplicity) ) continue;
-            U_AccCan2[U_nAccept] = iPhi;
-            U_nAccep2++;
-        }
-        
-        for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )    {
-            // Must have at least 1 candidate
-            if ( U_nAccept < 1 ) break;
-
-            // >-> 1-Dimensional Analysis Fill   //
-            //
-            // >->-->-> Utilities
-            //
-            Int_t   iPT1D       = fGetBinPT1D(evPhiCandidate_EvMix1.pT[U_AccCand[iPhi]]);
-            Int_t   iPT2D       = fGetBinPT2D(evPhiCandidate_EvMix1.pT[U_AccCand[iPhi]]);
-            Int_t   iMult       = fGetBinMult(evPhiCandidate_EvMix1.Multiplicity);
-            Float_t iInvMass_   = evPhiCandidate_EvMix1.InvMass[U_AccCand[iPhi]];
-            //
-            // >->-->-> Yield
-            //
-            hBKG_1D                                         ->  Fill(iInvMass_);
-            hBKG_1D_in_PT[iPT1D]                            ->  Fill(iInvMass_);
-            hBKG_1D_in_PT_2D_bin[iPT2D]                     ->  Fill(iInvMass_);
-            //
-            // >->-->-> Multiplicity
-            //
-            //hBKG_1D_in_MT[iMult]                            ->  Fill(iInvMass_);
-            //hBKG_1D_in_MT_in_PT[iMult][iPT1D]               ->  Fill(iInvMass_);
-            //hBKG_1D_in_MT_in_PT_2D_bin[iMult][iPT2D]        ->  Fill(iInvMass_);
-            for ( Int_t jPhi = 0; jPhi < U_nAccep2; jPhi++ )    {
-                // Must have at least 1 candidate
-                if ( U_nAccep2 < 1 ) break;
-            
-                // >-> 2-Dimensional Analysis Fill
-                //
-                // >->-->-> Utilities
-                //
-                Int_t   jPT1D       = fGetBinPT1D(evPhiCandidate_EvMix2.pT[U_AccCan2[jPhi]]);
-                Int_t   jPT2D       = fGetBinPT2D(evPhiCandidate_EvMix2.pT[U_AccCan2[jPhi]]);
-                Float_t jInvMass_   = evPhiCandidate_EvMix2.InvMass[U_AccCan2[jPhi]];
-                //
-                // >->-->-> Yield
-                //
-                hBKG_2D                                                 ->  Fill(iInvMass_,jInvMass_,0.5);
-                hBKG_2D_in_PT[iPT2D][jPT2D]                             ->  Fill(iInvMass_,jInvMass_,0.5);
-                //
-                // >->-->-> Multiplicity
-                //
-                //hBKG_2D_in_MT[iMult]                                    ->  Fill(iInvMass_,jInvMass_,0.5);
-                //hBKG_2D_in_MT_in_PT[iMult][iPT2D][jPT2D]                ->  Fill(iInvMass_,jInvMass_,0.5);
-            }
-        }
     }
     
     if ( nEvents > 0 )  fStopTimer("Kaon Analysis");
-    
+    */
     //--------------------------//
     // PostProcessin output obj //
     //--------------------------//
