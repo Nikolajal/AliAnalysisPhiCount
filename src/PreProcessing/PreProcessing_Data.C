@@ -262,8 +262,6 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
 
     if ( nEvents > 0 )  fStartTimer("Phi Analysis");
     
-    TH1F * check = new TH1F ("TEST","TEST",nBinPT1D,fArrPT1D);
-    
     // Starting cycle
     for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
     {
@@ -285,7 +283,6 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
             evPhiCandidate.pT[iPhi]     =   LPhi_candidate1.Pt();
             evPhiCandidate.Rap[iPhi]    =   LPhi_candidate1.Rapidity();
             if ( !fAcceptCandidate(evPhiCandidate.Rap[iPhi],evPhiCandidate.InvMass[iPhi],evPhiCandidate.pT[iPhi],evPhiCandidate.Multiplicity) ) continue;
-            if ( evPhiCandidate.Nature[iPhi] == 1 ) check->Fill(LPhi_candidate1.Pt());
             U_AccCand[U_nAccept] = iPhi;
             U_nAccept++;
         }
@@ -458,7 +455,6 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
     //
     TFile *outFil2  =   new TFile   (fYldPreProc,"recreate");
     //
-    check->Write();
     fHEventCount    ->Write();
     hREC_1D->Write();
     for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)
