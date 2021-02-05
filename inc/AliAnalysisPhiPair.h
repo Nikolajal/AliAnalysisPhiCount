@@ -1,6 +1,3 @@
-// Global Values and constants file
-// !TODO: All set!
-
 #ifndef ALIANALYSISPHIPAIR_H
 #define ALIANALYSISPHIPAIR_H
 
@@ -240,9 +237,9 @@ void    fSetBinPT2D ()
 void    fSetBinMult ()
 {
     fArrMult[0]  =  0.;
-    fArrMult[1]  =  10.;
-    fArrMult[2]  =  30.;
-    fArrMult[3]  =  50.;
+    fArrMult[1]  =  8.;
+    fArrMult[2]  =  22.;
+    fArrMult[3]  =  45.;
     fArrMult[4]  =  100.;
 }
 
@@ -817,6 +814,12 @@ Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatis
     
     fResult[0]  =   fIntegralResults[0] +   fExtrapolResults[0];
     fResult[1]  =   fIntegralResults[1] +   fExtrapolResults[1];
+    fResult[2]  =   fIntegralResults[2] +   fExtrapolResults[2];
+    
+    // !TODO: Revise the combination method
+    fResult[3]  =   fIntegralResults[3] +   fExtrapolResults[3];
+    fResult[4]  =   fIntegralResults[4] +   fExtrapolResults[4];
+    fResult[5]  =   fIntegralResults[5] +   fExtrapolResults[5];
     
     return fResult;
     
@@ -1257,16 +1260,17 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     SetBoundaries(fOption,fInvMassValMin,fInvMassValMax);
     
     // Global Variables
-    Int_t nEntries      = THdata->GetEntries();
-    RooRealVar InvMass  = RooRealVar        ("InvMass","InvMass",fInvMassValMin,fInvMassValMax);
-    RooDataHist* data   = new RooDataHist   (fName,fName,InvMass,Import(*THdata));
-    Int_t kNCycle       = kNCycle_;
+    Int_t nEntries          = THdata->GetEntries();
+    RooRealVar InvMass      = RooRealVar        ("InvMass","InvMass",fInvMassValMin,fInvMassValMax);
+    RooDataHist* data       = new RooDataHist   (fName,fName,InvMass,Import(*THdata));
+    RooDataHist* dataLoose  = new RooDataHist   (fName,fName,InvMass,Import(*fLooseErrors(THdata)));
+    Int_t kNCycle           = kNCycle_;
     
     // Background PDF Coefficients
-    RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,-1,1);//,0.5,-1,1);
-    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,0.1,-1,1);//,-0.1,-1,1);
-    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.01,-1,1);//,0.01,-1,1);
-    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,0.05,-1,1);//,-0.05,-1,1);
+    RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,1,   -1, 1);//,0.5,-1,1);
+    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,0.1, -1, 1);//,-0.1,-1,1);
+    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.01,-1, 1);//,0.01,-1,1);
+    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,0.05,-1, 1);//,-0.05,-1,1);
     
     RooRealVar ch4, ch5;
     if ( fCheb3 && !fCheb5 )    ch4     = RooRealVar        ("ch4","ch4"        ,0.);
@@ -1299,7 +1303,8 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     RooFitResult* result;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        result  =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        result  =   fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
     }
     
     if ( fSaveToFile )
@@ -1372,6 +1377,7 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     Int_t nEntries      = THdata->GetEntries();
     RooRealVar InvMass  = RooRealVar        ("InvMass","InvMass",fInvMassValMin,fInvMassValMax);
     RooDataHist* data   = new RooDataHist   (fName.Data(),fName.Data(),InvMass,Import(*THdata));
+    RooDataHist* dataLoose  = new RooDataHist   (fName,fName,InvMass,Import(*fLooseErrors(THdata)));
     Int_t kNCycle       = 1;
     
     // Background PDF Coefficients
@@ -1411,6 +1417,7 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     RooFitResult* result;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
+        result  =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
         result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
     }
     
@@ -1476,6 +1483,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     RooRealVar varx     = RooRealVar        ("xInvMass2D","xInvMass2D",fInvMassValMin,fInvMassValMax);
     RooRealVar vary     = RooRealVar        ("yInvMass2D","yInvMass2D",fInvMassValMin,fInvMassValMax);
     RooDataHist* data   = new RooDataHist   (fHistName.c_str(),fHistName.c_str(),RooArgList(varx,vary),Import(*THdata));
+    RooDataHist* dataLoose  = new RooDataHist   (fHistName.c_str(),fHistName.c_str(),RooArgList(varx,vary),Import(*fLooseErrors(THdata)));
     Int_t kNCycle       = 1;
     
     RooArgSet  *utilityx    =   new RooArgSet(fFitShapeX->floatParsFinal(),fFitShapeX->constPars());
@@ -1550,6 +1558,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     RooFitResult* FitResults;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
+        FitResults  =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
        FitResults = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
     }
     
@@ -1557,15 +1566,15 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     if ( fSaveToFile )
     {
         int         nBinsPrint      =   3;
-        double      dIncrement      =   (fMaxIM2D-fMinIM2D)/nBinsPrint;
+        double      dIncrement      =   (fInvMassValMin-fInvMassValMax)/nBinsPrint;
         TLatex*     latext          =   new TLatex();
         TCanvas*    cTotal          =   new TCanvas("","",0,45,1440,855);
                     cTotal          ->  SetTitle(Form("Slices of 2D Invariant Mass of Kaons in pT %.1f-%.1f GeV, %.1f-%.1f GeV",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
                     cTotal          ->  SetName(Form("PT_%.1f_%.1f__%.1f_%.1f_%s",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fHistName.c_str()));
                     cTotal          ->  Divide(2,nBinsPrint);
         
-                            varx.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
-                            vary.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
+                            varx.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
+                            vary.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
         for (int i = 0; i < nBinsPrint; i++)
         {
             hName                       = "Slice of 2D Invariant Mass of Kaons";
@@ -1574,31 +1583,31 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
             if ( PTindex != -1 &&  bPythiaTest ) hTitle = Form("Slice of 2D Invariant Mass of Kaons in pT %.1f-%.1f GeV, %.1f-%.1f GeV for MC",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]);
             
             TCanvas * fSaveToCanvas =   new TCanvas(
-                                                    Form("xInvMass_%.3f_%.3f_PTx_%.3f_%.3f_PTy_%.3f_%.3f_%s",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fHistName.c_str()),
-                                                    Form("xInvMass_%.3f_%.3f_PTx_%.3f_%.3f_PTy_%.3f_%.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1])
+                                                    Form("xInvMass_%.3f_%.3f_PTx_%.3f_%.3f_PTy_%.3f_%.3f_%s",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fHistName.c_str()),
+                                                    Form("xInvMass_%.3f_%.3f_PTx_%.3f_%.3f_PTy_%.3f_%.3f",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1])
                                                     );
             
             RooPlot * fSaveToFrame  =   vary.frame(Name(hName),Title(hTitle));
             TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
 
-                            varx.setRange("fDrawRange",fMinIM2D+i*dIncrement,fMinIM2D+(i+1)*dIncrement);
-                            vary.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
+                            varx.setRange("fDrawRange",fInvMassValMin+i*dIncrement,fInvMassValMin+(i+1)*dIncrement);
+                            vary.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
 
             fRooPlotMaker(fSaveToFrame,fLegend,fMod,data,"yInvMass2D");
             
             cTotal->cd( i+1 );
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K^{+}K^{-}} < %.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K^{+}K^{-}} < %.3f",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
             fSaveToCanvas->cd();
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K^{+}K^{-}} < %.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K^{+}K^{-}} < %.3f",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
             fSaveToCanvas               ->Write();
             delete fSaveToCanvas;
         }
-                                        varx.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
-                                        vary.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
+                                        varx.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
+                                        vary.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
         for (int i = 0; i < nBinsPrint; i++)
         {
             hName                       = "Slice of 2D Invariant Mass of Kaons";
@@ -1607,32 +1616,32 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
             if ( PTindex != -1 &&  bPythiaTest ) hTitle = Form("Slice of 2D Invariant Mass of Kaons in pT %.1f-%.1f GeV, %.1f-%.1f GeV for MC",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]);
             
             TCanvas * fSaveToCanvas =   new TCanvas(
-                                                    Form("yInvMass_%.3f_%.3f_PTx_%.3f_%.3f_PTy_%.3f_%.3f_%s",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fHistName.c_str()),
-                                                    Form("yInvMass_%.3f_%.3f_PTx_%.3f_%.3f_PTy_%.3f_%.3f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1])
+                                                    Form("yInvMass_%.3f_%.3f_PTx_%.3f_%.3f_PTy_%.3f_%.3f_%s",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fHistName.c_str()),
+                                                    Form("yInvMass_%.3f_%.3f_PTx_%.3f_%.3f_PTy_%.3f_%.3f",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1])
                                                     );
             
             RooPlot * fSaveToFrame      =   varx.frame(Name(hName),Title(hTitle));
             TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
             
-                                        varx.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
-                                        vary.setRange("fDrawRange",fMinIM2D+i*dIncrement,fMinIM2D+(i+1)*dIncrement);
+                                        varx.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
+                                        vary.setRange("fDrawRange",fInvMassValMin+i*dIncrement,fInvMassValMin+(i+1)*dIncrement);
                                                                             
             fRooPlotMaker(fSaveToFrame,fLegend,fMod,data,"xInvMass2D");
             
             cTotal->cd( i+1 +3 );
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.2f < m^{y}_{K^{+}K^{-}} < %.2f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.2f < m^{y}_{K^{+}K^{-}} < %.2f",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
             
             fSaveToCanvas->cd();
             fSaveToFrame                ->Draw("same");
             fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.2f < m^{y}_{K^{+}K^{-}} < %.2f",fMinIM2D+dIncrement*i,fMinIM2D+dIncrement*(i+1)));
+            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.2f < m^{y}_{K^{+}K^{-}} < %.2f",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
             fSaveToCanvas               ->Write();
             delete fSaveToCanvas;
         }
-                                        varx.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
-                                        vary.setRange("fDrawRange",fMinIM2D,fMaxIM2D);
+                                        varx.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
+                                        vary.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
         cTotal ->Write();
         delete cTotal;
     }
