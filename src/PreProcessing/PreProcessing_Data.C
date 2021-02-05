@@ -26,6 +26,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
     // Retrieving Event Count Histogram
     TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList");
     TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enumerate");
+    TH1D   *fHEvCountMlt    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_Mult");
     
     // Define tree data structures
     Struct_PhiCandidate     evPhiCandidate;
@@ -161,7 +162,18 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
     }
 
     // >-> MULTIPLICITY ANALYSIS //
-
+    
+    // >->-->-> General analysis //
+    //
+    TH1D       *fHEventCount_in_MT;
+    TH1D       *fHEventCount_PhiCandidate_General_in_MT;
+    TH1D       *fHEventCount_PhiCandidate_Accepted_in_MT;
+    //
+    fHEventCount_in_MT                          =   new TH1D("fHEventCount_in_MT",                          "fHEventCount_in_MT",                       nBinMult,   fArrMult);
+    fHEventCount_PhiCandidate_General_in_MT     =   new TH1D("fHEventCount_PhiCandidate_General_in_MT",     "fHEventCount_PhiCandidate_General_in_MT",  nBinMult,   fArrMult);
+    fHEventCount_PhiCandidate_Accepted_in_MT    =   new TH1D("fHEventCount_PhiCandidate_Accepted_in_MT",    "fHEventCount_PhiCandidate_Accepted_in_MT", nBinMult,   fArrMult);
+    //
+    
     // >->-->-> 1-Dimension analysis //
     //
     //  Declaring all histograms
@@ -278,6 +290,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
         Bool_t  fCheckFill3 =   false;
         Bool_t  fCheckFill4 =   false;
         
+        fHEventCount_PhiCandidate_General_in_MT->Fill(evPhiCandidate.Multiplicity);
         for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )  {
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
             evPhiCandidate.pT[iPhi]     =   LPhi_candidate1.Pt();
@@ -286,16 +299,10 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
             U_AccCand[U_nAccept] = iPhi;
             U_nAccept++;
         }
-        
-        if ( U_nAccept == 0 )   hTriggerEvt->Fill(0);
+        if ( U_nAccept == 0 )   { hTriggerEvt->Fill(0); continue; }
+        fHEventCount_PhiCandidate_Accepted_in_MT->Fill(evPhiCandidate.Multiplicity);
         
         for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )    {
-            // Must have at least 1 candidate
-            if ( U_nAccept < 1 ) break;
-        
-            // Selecting valid candidates
-            if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi) ) continue;
-            
             // >-> 1-Dimensional Analysis Fill   //
             //
             // >->-->-> Utilities
@@ -481,6 +488,10 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
     TFile *outFil3  =   new TFile   (fMltPreProc,"recreate");
     //
     fHEventCount->Write();
+    fHEvCountMlt->Write();
+    fHEventCount_in_MT                          ->Write();
+    fHEventCount_PhiCandidate_General_in_MT     ->Write();
+    fHEventCount_PhiCandidate_Accepted_in_MT    ->Write();
     for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
     {
         hREC_1D_in_MT[iHisto]->Write();
