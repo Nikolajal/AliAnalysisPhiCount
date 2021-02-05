@@ -229,12 +229,11 @@ void Analysis_SignalCorrections ( bool fSilent = true )
         hTitle                              =   Form("gRES_1D_Stat_in_MT_%i",iMult);
         gRES_1D_Stat_in_MT[iMult]           ->  SetNameTitle(hName,hTitle);
         //
-        fYield_Syst_in_MT[iMult]            =   new TGraphAsymmErrors();
+        gRES_1D_Syst_in_MT[iMult]           =   new TGraphAsymmErrors();
         hName                               =   Form("gRES_1D_Syst_in_MT_%i",iMult);
         hTitle                              =   Form("gRES_1D_Syst_in_MT_%i",iMult);
-        fYield_Syst_in_MT[iMult]            ->  SetNameTitle(hName,hTitle);
+        gRES_1D_Syst_in_MT[iMult]           ->  SetNameTitle(hName,hTitle);
     }
-
     // >->-->-> 2-Dimension analysis //
     //
     //  Declaring all histograms
@@ -334,7 +333,6 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     //  Filling output objects //
     //-------------------------//
     //
-    /*
     fStartTimer("Fit_for_extrapolation");
     //
     // Output File for Fit Check
@@ -376,6 +374,12 @@ void Analysis_SignalCorrections ( bool fSilent = true )
         fYield_Profile_Syst ->  SetPointError   (iFit,binwidth,binwidth,fResults[1],fResults[1]);
     }
     //
+    fResults = fMeasureFullYield(fYield_Profile_Stat,fYield_Profile_Syst,"2D");
+    fYield_Stat ->  SetPoint        (1,2,fResults[0]);
+    fYield_Syst ->  SetPoint        (1,2,fResults[0]);
+    fYield_Stat ->  SetPointError   (1,0,0,fResults[1],fResults[1]);
+    fYield_Syst ->  SetPointError   (1,0,0,fResults[1],fResults[1]);
+    //
     outCheckFitYld->Close();
     //
     // Output File for Fit Check
@@ -409,12 +413,16 @@ void Analysis_SignalCorrections ( bool fSilent = true )
             fYield_Profile_Stat_in_MT[iMult] ->  SetPointError   (iFit,binwidth,binwidth,fResults[1],fResults[1]);
             fYield_Profile_Syst_in_MT[iMult] ->  SetPointError   (iFit,binwidth,binwidth,fResults[1],fResults[1]);
         }
+        fResults = fMeasureFullYield(fYield_Profile_Stat_in_MT[iMult],fYield_Profile_Syst_in_MT[iMult],"2D");
+        fYield_Stat_in_MT[iMult]    ->  SetPoint        (1,2,fResults[0]);
+        fYield_Syst_in_MT[iMult]    ->  SetPoint        (1,2,fResults[0]);
+        fYield_Stat_in_MT[iMult]    ->  SetPointError   (1,0,0,fResults[1],fResults[1]);
+        fYield_Syst_in_MT[iMult]    ->  SetPointError   (1,0,0,fResults[1],fResults[1]);
     }
     //
     fStopTimer("Fit_for_extrapolation");
     //
     outCheckFitMlt->Close();
-    */
     //
     //--------------------------//
     //  Printing output objects //

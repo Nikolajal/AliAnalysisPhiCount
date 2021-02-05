@@ -17,11 +17,11 @@ void Analysis_FinalPlots ()
     //
     TGraphAsymmErrors  *fYield_Stat;
     hName                               =   Form("fYield_Stat");
-    fYield_Stat                         =   (TGraphAsymmErrors*)(insFile_DT_Mult->Get(hName));
+    fYield_Stat                         =   (TGraphAsymmErrors*)(insFile_DT_Yield->Get(hName));
     //
     TGraphAsymmErrors  *fYield_Syst;
     hName                               =   Form("fYield_Syst");
-    fYield_Syst                         =   (TGraphAsymmErrors*)(insFile_DT_Mult->Get(hName));
+    fYield_Syst                         =   (TGraphAsymmErrors*)(insFile_DT_Yield->Get(hName));
     //
     
     // >-> MULTIPLICITY ANALYSIS //
@@ -118,7 +118,42 @@ void Analysis_FinalPlots ()
     //  Filling output objects //
     //-------------------------//
     //
+    //  >>->> YIELD ANALYSIS //
     //
+    //  >>->>->> Recovering Basic values
+    Double_t    fY_phi          =   fYield_Stat->GetPointY(0);
+    Double_t    fY_phi_stat     =   fYield_Stat->GetErrorY(0);
+    Double_t    fY_phi_syst     =   fYield_Syst->GetErrorY(0);
+    Double_t    fY_phiphi       =   fYield_Stat->GetPointY(1);
+    Double_t    fY_phiphi_stat  =   fYield_Stat->GetErrorY(1);
+    Double_t    fY_phiphi_syst  =   fYield_Syst->GetErrorY(1);
+    //
+    //  >>->>->> Calculating GammaPhi
+    //
+    fGammaPhi_Stat->SetPoint        (0, 1,  fGammaPhiValue(fY_phi,fY_phiphi));
+    fGammaPhi_Stat->SetPointError   (0, 0,  0,  fGammaPhiError(fY_phi,fY_phiphi,fY_phi_stat,fY_phiphi_stat),    fGammaPhiError(fY_phi,fY_phiphi,fY_phi_stat,fY_phiphi_stat));
+    fGammaPhi_Syst->SetPoint        (0, 1,  fGammaPhiValue(fY_phi,fY_phiphi));
+    fGammaPhi_Syst->SetPointError   (0, 0,  0,  fGammaPhiError(fY_phi,fY_phiphi,fY_phi_stat,fY_phiphi_stat),    fGammaPhiError(fY_phi,fY_phiphi,fY_phi_stat,fY_phiphi_stat));
+    //
+    //  >>->> MULTIPLICITY ANALYSIS //
+    //
+    for ( Int_t iMult = 0; iMult < nBinMult; iMult++ )   {
+        //  >>->>->> Recovering Basic values
+        Double_t    fY_phi_MT          =   fYield_Stat_in_MT[iMult]->GetPointY(0);
+        Double_t    fY_phi_stat_MT     =   fYield_Stat_in_MT[iMult]->GetErrorY(0);
+        Double_t    fY_phi_syst_MT     =   fYield_Stat_in_MT[iMult]->GetErrorY(0);
+        Double_t    fY_phiphi_MT       =   fYield_Stat_in_MT[iMult]->GetPointY(1);
+        Double_t    fY_phiphi_stat_MT  =   fYield_Stat_in_MT[iMult]->GetErrorY(1);
+        Double_t    fY_phiphi_syst_MT  =   fYield_Stat_in_MT[iMult]->GetErrorY(1);
+        //
+        //  >>->>->> Calculating GammaPhi
+        //
+        fGammaPhi_Stat_in_MT->SetPoint(iMult,iMult,fGammaPhiValue(fY_phi_MT,fY_phiphi_MT));
+        fGammaPhi_Stat_in_MT->SetPointError(iMult,0,0,fGammaPhiError(fY_phi_MT,fY_phiphi_MT,fY_phi_stat_MT,fY_phiphi_stat_MT),fGammaPhiError(fY_phi_MT,fY_phiphi_MT,fY_phi_stat_MT,fY_phiphi_stat_MT));
+        fGammaPhi_Syst_in_MT->SetPoint(iMult,iMult,fGammaPhiValue(fY_phi_MT,fY_phiphi_MT));
+        fGammaPhi_Syst_in_MT->SetPointError(iMult,0,0,fGammaPhiError(fY_phi_MT,fY_phiphi_MT,fY_phi_stat_MT,fY_phiphi_stat_MT),fGammaPhiError(fY_phi_MT,fY_phiphi_MT,fY_phi_stat_MT,fY_phiphi_stat_MT));
+        //
+    }
     //
     //-------------------------//
     //  Analysis //
@@ -145,7 +180,7 @@ void Analysis_FinalPlots ()
     fLegendGPhi     ->AddEntry      (fGammaPhi_Syst,    "Syst. Err.",   "F");
     fLegendGPhi     ->AddEntry      (fGammaPhi_Stat,    "Stat. Err.",   "E");
     //
-    fGammaPhiFull   ->Draw      ("AL");
+    fGammaPhiFull   ->Draw      ("ALP");
     fLegendGPhi     ->Draw      ("SAME");
     fGammaPhi       ->SaveAs    ("fGammaPhi.pdf");
     //
@@ -153,7 +188,26 @@ void Analysis_FinalPlots ()
     //
     TCanvas        *fGammaPhi_in_MT =   new TCanvas();
     TLegend        *fLegendGPhiMT   =   new TLegend();
+    TMultiGraph    *fGammaPhiFull_in_MT   =   new TMultiGraph();
+    //
+    fGammaPhi_Stat_in_MT  ->  SetMarkerStyle(33);
+    fGammaPhi_Stat_in_MT  ->  SetMarkerColor(2);
+    fGammaPhi_Stat_in_MT  ->  SetMarkerSize(2);
+    fGammaPhi_Stat_in_MT  ->  SetDrawOption("EP");
     
+    fGammaPhi_Syst_in_MT  ->  SetMarkerStyle(33);
+    fGammaPhi_Syst_in_MT  ->  SetMarkerColor(2);
+    fGammaPhi_Syst_in_MT  ->  SetMarkerSize(2);
+    fGammaPhi_Syst_in_MT  ->  SetDrawOption("EP");
+    //
+    fGammaPhiFull_in_MT ->Add           (fGammaPhi_Syst_in_MT);
+    fGammaPhiFull_in_MT     ->Add           (fGammaPhi_Stat_in_MT);
+    //
+    fLegendGPhiMT     ->AddEntry      (fGammaPhi_Syst,    "Data",         "P");
+    fLegendGPhiMT     ->AddEntry      (fGammaPhi_Syst,    "Syst. Err.",   "F");
+    fLegendGPhiMT     ->AddEntry      (fGammaPhi_Stat,    "Stat. Err.",   "E");
+    //
+    fGammaPhiFull_in_MT   ->Draw      ("ALP");
     fLegendGPhiMT   ->Draw      ("SAME");
     fGammaPhi_in_MT ->SaveAs    ("fGammaPhi_in_MT.pdf");
     //

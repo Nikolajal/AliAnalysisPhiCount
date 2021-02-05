@@ -24,7 +24,7 @@ enum            fitresults2D
 
 // Performance Values
 auto const  kCPU_use                =   3;
-auto const  kNCycle_                =   2;
+auto const  kNCycle_                =   1;
 auto const  kStatEvalCycles         =   10000;
 
 // Analysis Values
@@ -74,6 +74,8 @@ auto const  fKaonCandidateEff_Tree  =   "KaonEfficiency";
 //-// Analysis constants
 auto const  kParticleMass_          =   1.019455;   //  1.019455    +- 0.000020
 auto const  kParticleWidth          =   0.00426;    //  0.00426     +- 0.00004
+auto const  kKaonMass               =   .493677;
+auto const  kKaonMassUncert         =   .000013;
 auto const  kDetectorSlope          =   1.;
 auto const  kBranchingRtio          =   0.489;
 auto const  kVertexEfficnc          =   0.99;

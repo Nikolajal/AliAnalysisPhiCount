@@ -1,20 +1,20 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: [INFO] About trees in input
 
-void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEventsCut = -1. )
+void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string fOption = "" )
 {
     //---------------------//
     //  Setting up input   //
     //---------------------//
-    
-    // >-> OPTIONS
-    
-    if ( fFileName == "" )
-    {
+    //
+    // >-> Initialisation warnings
+    //
+    if ( fFileName == "" )  {
         cout << "[WARNING] Must Specify an input root file" << endl;
-        cout << "[INFO] Usage PreProcessing_Data(\"Root_file_name.root\")" << endl;
+        cout << "[INFO] Usage PreProcessing_Data.C(\"Root_file_name.root\")" << endl;
         return;
     }
+    if ( nEventsCut != -1 ) cout << "[WARNING] Choosing to limit the datasample to " << nEventsCut << " events" <<endl;
     
     // Retrieving Event data
     TFile *insFileDT        =   new TFile   (fFileName.c_str());
@@ -40,7 +40,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
     {
         cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
         TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
-        TKaonCandidate-> SetBranchAddress   ("nPhi",            &evKaonCandidate.nKaon);
+        TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
         TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
         TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
         TKaonCandidate-> SetBranchAddress   ("Pz",              &evKaonCandidate.Pz);
@@ -74,7 +74,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
         TPhiCandidate-> SetBranchAddress    ("Nature",          &evPhiCandidate.Nature);
         
         TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
-        TKaonCandidate-> SetBranchAddress   ("nPhi",           &evKaonCandidate.nKaon);
+        TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
         TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
         TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
         TKaonCandidate-> SetBranchAddress   ("Pz",              &evKaonCandidate.Pz);
@@ -98,6 +98,8 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
     fSetBinNTup();
     Int_t       U_AccCand[1024];
     Int_t       U_nAccept;
+    Int_t       U_AccCan2[1024];
+    Int_t       U_nAccep2;
     
     // Creating the histograms-------------------------------------------------------------------------------
 
@@ -109,12 +111,24 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
     //
     TH1F       *hREC_1D;
     TH1F      **hREC_1D_in_PT               = new TH1F     *[nBinPT1D];
+    TH1F       *hBKG_1D;
+    TH1F      **hBKG_1D_in_PT               = new TH1F     *[nBinPT1D];
+    TH1F       *hFLL_1D;
+    TH1F      **hFLL_1D_in_PT               = new TH1F     *[nBinPT1D];
     //
     //  Defining cumulative histogram over measurable pT
     //
     hName       =   Form("hREC_1D");
     hTitle      =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fMinPT1D,fMaxPT1D);
     hREC_1D     =   new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+    //
+    hName       =   Form("hBKG_1D");
+    hTitle      =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fMinPT1D,fMaxPT1D);
+    hBKG_1D     =   new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+    //
+    hName       =   Form("hFLL_1D");
+    hTitle      =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fMinPT1D,fMaxPT1D);
+    hFLL_1D     =   new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
     //
     //  Defining pT-Differential histograms over measurable pT
     //
@@ -124,6 +138,16 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
         hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT1D[iPT1D],fArrPT1D[iPT1D+1]);
         hREC_1D_in_PT[iPT1D]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
         SetAxis(hREC_1D_in_PT[iPT1D],"IM 1D");
+        //
+        hName = Form("hBKG_1D_in_PT_%i",iPT1D);
+        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT1D[iPT1D],fArrPT1D[iPT1D+1]);
+        hBKG_1D_in_PT[iPT1D]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+        SetAxis(hBKG_1D_in_PT[iPT1D],"IM 1D");
+        //
+        hName = Form("hFLL_1D_in_PT_%i",iPT1D);
+        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT1D[iPT1D],fArrPT1D[iPT1D+1]);
+        hFLL_1D_in_PT[iPT1D]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+        SetAxis(hFLL_1D_in_PT[iPT1D],"IM 1D");
     }
 
     // >->-->-> 2-Dimension analysis //
@@ -133,12 +157,26 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
     TH2F       *hREC_2D;
     TH1F      **hREC_1D_in_PT_2D_bin        = new TH1F     *[nBinPT2D];
     TH2F     ***hREC_2D_in_PT               = new TH2F    **[nBinPT2D];
+    TH2F       *hBKG_2D;
+    TH1F      **hBKG_1D_in_PT_2D_bin        = new TH1F     *[nBinPT2D];
+    TH2F     ***hBKG_2D_in_PT               = new TH2F    **[nBinPT2D];
+    TH2F       *hFLL_2D;
+    TH1F      **hFLL_1D_in_PT_2D_bin        = new TH1F     *[nBinPT2D];
+    TH2F     ***hFLL_2D_in_PT               = new TH2F    **[nBinPT2D];
     //
     //  Defining cumulative histogram over measurable pT
     //
     hName       =   Form("hREC_2D");
     hTitle      =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fMinPT2D,fMaxPT2D,fMinPT2D,fMaxPT2D);
     hREC_2D     =   new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+    //
+    hName       =   Form("hBKG_2D");
+    hTitle      =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fMinPT2D,fMaxPT2D,fMinPT2D,fMaxPT2D);
+    hBKG_2D     =   new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+    //
+    hName       =   Form("hFLL_2D");
+    hTitle      =   Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fMinPT2D,fMaxPT2D,fMinPT2D,fMaxPT2D);
+    hFLL_2D     =   new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
     //
     //  Defining pT-Differential histograms over measurable pT
     //
@@ -148,20 +186,42 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
         hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1]);
         hREC_1D_in_PT_2D_bin[iPT2D]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
         SetAxis(hREC_1D_in_PT_2D_bin[iPT2D],"IM 1D");
-        
+        //
+        hName = Form("hBKG_1D_in_PT_2D_bin_%i",iPT2D);
+        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1]);
+        hBKG_1D_in_PT_2D_bin[iPT2D]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+        SetAxis(hBKG_1D_in_PT_2D_bin[iPT2D],"IM 1D");
+        //
+        hName = Form("hFLL_1D_in_PT_2D_bin_%i",iPT2D);
+        hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1]);
+        hFLL_1D_in_PT_2D_bin[iPT2D]   = new TH1F (hName,hTitle,nBinIM1D,fArrIM1D);
+        SetAxis(hFLL_1D_in_PT_2D_bin[iPT2D],"IM 1D");
+        //
         hREC_2D_in_PT[iPT2D]    = new TH2F *    [nBinPT2D];
-        
+        hBKG_2D_in_PT[iPT2D]    = new TH2F *    [nBinPT2D];
+        hFLL_2D_in_PT[iPT2D]    = new TH2F *    [nBinPT2D];
+        //
         for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )
         {
             hName = Form("hREC_2D_in_PT_%i_%i",iPT2D,jPT2D);
             hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1],fArrPT2D[jPT2D],fArrPT2D[jPT2D+1]);
             hREC_2D_in_PT[iPT2D][jPT2D]    = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
             SetAxis(hREC_2D_in_PT[iPT2D][jPT2D],"IM 2D");
+            //
+            hName = Form("hBKG_2D_in_PT_%i_%i",iPT2D,jPT2D);
+            hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1],fArrPT2D[jPT2D],fArrPT2D[jPT2D+1]);
+            hBKG_2D_in_PT[iPT2D][jPT2D]    = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+            SetAxis(hBKG_2D_in_PT[iPT2D][jPT2D],"IM 2D");
+            //
+            hName = Form("hFLL_2D_in_PT_%i_%i",iPT2D,jPT2D);
+            hTitle= Form("m_{K^{+}K^{-}} in p_{T} range [%.1f-%.1f] GeV/c and [%.1f-%.1f] GeV/c",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1],fArrPT2D[jPT2D],fArrPT2D[jPT2D+1]);
+            hFLL_2D_in_PT[iPT2D][jPT2D]    = new TH2F (hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+            SetAxis(hFLL_2D_in_PT[iPT2D][jPT2D],"IM 2D");
         }
     }
-
+    //
     // >-> MULTIPLICITY ANALYSIS //
-
+    //
     // >->-->-> 1-Dimension analysis //
     //
     //  Declaring all histograms
@@ -227,7 +287,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
             }
         }
     }
-
+    //
     // >-> TRIGGER ANALYSIS //
     //
     //  Overall Triggering in Events
@@ -258,7 +318,7 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
     //-------------------------//
     
     // Evaluating entries and saving them for later
-    Int_t nEvents = (!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : nEventsCut);
+    Int_t nEvents = 0;//(!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : nEventsCut);
 
     if ( nEvents > 0 )  fStartTimer("Phi Analysis");
     
@@ -318,9 +378,9 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
             // 
             // >->-->-> Yield
             //
-            hREC_1D                                         ->  Fill(iInvMass_);
-            hREC_1D_in_PT[iPT1D]                            ->  Fill(iInvMass_);
-            hREC_1D_in_PT_2D_bin[iPT2D]                     ->  Fill(iInvMass_);
+            hFLL_1D                                         ->  Fill(iInvMass_);
+            hFLL_1D_in_PT[iPT1D]                            ->  Fill(iInvMass_);
+            hFLL_1D_in_PT_2D_bin[iPT2D]                     ->  Fill(iInvMass_);
             //
             // >->-->-> Multiplicity
             //
@@ -353,8 +413,8 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
                 // 
                 // >->-->-> Yield
                 //
-                hREC_2D                                                 ->  Fill(iInvMass_,jInvMass_,0.5);
-                hREC_2D_in_PT[iPT2D][jPT2D]                             ->  Fill(iInvMass_,jInvMass_,0.5);
+                hFLL_2D                                                 ->  Fill(iInvMass_,jInvMass_,0.5);
+                hFLL_2D_in_PT[iPT2D][jPT2D]                             ->  Fill(iInvMass_,jInvMass_,0.5);
                 //
                 // >->-->-> Multiplicity
                 //
@@ -397,12 +457,15 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
     if ( nEvents > 0 )  fStopTimer("Phi Analysis");
     
     // Evaluating entries and saving them for later
-    Int_t nEvents = (!TKaonCandidate) ? 0 : ( nEventsCut == -1.? TKaonCandidate->GetEntries() : nEventsCut);
+    nEvents = (!TKaonCandidate) ? 0 : ( nEventsCut == -1.? TKaonCandidate->GetEntries() : nEventsCut);
 
     if ( nEvents > 0 )  fStartTimer("Kaon Analysis");
     
-    Struct_KaonCandidate evKaonCandidateEvMix1;
-    evKaonCandidateEvMix1.nKaon = 0;
+    Struct_KaonCandidate    evKaonCandidateEvMix1;
+    Struct_KaonCandidate    evKaonCandidateEvMix2;
+    Struct_KaonCandidate    evKaonCandidateEvMix3;
+    Struct_PhiCandidate     evPhiCandidate_EvMix1;
+    Struct_PhiCandidate     evPhiCandidate_EvMix2;
     
     // Starting cycle
     for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
@@ -413,10 +476,173 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
         fPrintLoopTimer("Kaon Analysis",iEvent,nEvents,1000000);
 
         // Utilities
-        TLorentzVector  LKaon1,    LKaon2,    LPhi_candidate1,    LPhi_candidate2;
+        TLorentzVector  LKaon1,    LKaon2,  LKaon3,    LPhi_candidate1,    LPhi_candidate2;
+        U_nAccept = 0;
+        U_nAccep2 = 0;
         
+        if ( iEvent == 0 ) { evKaonCandidateEvMix1 = evKaonCandidate; continue;}
+        evPhiCandidate_EvMix1.nPhi = 0;
+        evPhiCandidate_EvMix2.nPhi = 0;
+        evPhiCandidate_EvMix1.Multiplicity = 50;
+        evPhiCandidate_EvMix2.Multiplicity = 50;
         for ( Int_t iKaon = 0; iKaon < evKaonCandidate.nKaon; iKaon++ )  {
-            evKaonCandidateEvMix1 = evKaonCandidate;
+            LKaon1.SetXYZM(evKaonCandidate.Px[iKaon],evKaonCandidate.Py[iKaon],evKaonCandidate.Pz[iKaon],kKaonMass);
+            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix1.nKaon; jKaon++ )  {
+                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix1.Charge[jKaon] ) continue;
+                LKaon2.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
+                LPhi_candidate1 =   LKaon1  +   LKaon2;
+                evPhiCandidate_EvMix1.Px[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Px();
+                evPhiCandidate_EvMix1.Py[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Py();
+                evPhiCandidate_EvMix1.Pz[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pz();
+                evPhiCandidate_EvMix1.pT[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pt();
+                evPhiCandidate_EvMix1.iKaon[evPhiCandidate_EvMix1.nPhi]   =   iKaon;
+                evPhiCandidate_EvMix1.jKaon[evPhiCandidate_EvMix1.nPhi]   =   jKaon;
+                evPhiCandidate_EvMix1.InvMass[evPhiCandidate_EvMix1.nPhi] =   LPhi_candidate1.Mag();
+                evPhiCandidate_EvMix1.Rap[evPhiCandidate_EvMix1.nPhi]     =   LPhi_candidate1.Rapidity();
+                evPhiCandidate_EvMix1.nPhi++;
+            }
+            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix2.nKaon; jKaon++ )  {
+                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix2.Charge[jKaon] ) continue;
+                LKaon2.SetXYZM(evKaonCandidateEvMix2.Px[iKaon],evKaonCandidateEvMix2.Py[iKaon],evKaonCandidateEvMix2.Pz[iKaon],kKaonMass);
+                LPhi_candidate1 =   LKaon1  +   LKaon2;
+                evPhiCandidate_EvMix1.Px[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Px();
+                evPhiCandidate_EvMix1.Py[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Py();
+                evPhiCandidate_EvMix1.Pz[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pz();
+                evPhiCandidate_EvMix1.pT[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pt();
+                evPhiCandidate_EvMix1.iKaon[evPhiCandidate_EvMix1.nPhi]   =   iKaon;
+                evPhiCandidate_EvMix1.jKaon[evPhiCandidate_EvMix1.nPhi]   =   jKaon;
+                evPhiCandidate_EvMix1.InvMass[evPhiCandidate_EvMix1.nPhi] =   LPhi_candidate1.Mag();
+                evPhiCandidate_EvMix1.Rap[evPhiCandidate_EvMix1.nPhi]     =   LPhi_candidate1.Rapidity();
+                evPhiCandidate_EvMix1.nPhi++;
+            }
+            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix3.nKaon; jKaon++ )  {
+                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix3.Charge[jKaon] ) continue;
+                LKaon2.SetXYZM(evKaonCandidateEvMix3.Px[iKaon],evKaonCandidateEvMix3.Py[iKaon],evKaonCandidateEvMix3.Pz[iKaon],kKaonMass);
+                LPhi_candidate1 =   LKaon1  +   LKaon2;
+                evPhiCandidate_EvMix1.Px[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Px();
+                evPhiCandidate_EvMix1.Py[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Py();
+                evPhiCandidate_EvMix1.Pz[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pz();
+                evPhiCandidate_EvMix1.pT[evPhiCandidate_EvMix1.nPhi]      =   LPhi_candidate1.Pt();
+                evPhiCandidate_EvMix1.iKaon[evPhiCandidate_EvMix1.nPhi]   =   iKaon;
+                evPhiCandidate_EvMix1.jKaon[evPhiCandidate_EvMix1.nPhi]   =   jKaon;
+                evPhiCandidate_EvMix1.InvMass[evPhiCandidate_EvMix1.nPhi] =   LPhi_candidate1.Mag();
+                evPhiCandidate_EvMix1.Rap[evPhiCandidate_EvMix1.nPhi]     =   LPhi_candidate1.Rapidity();
+                evPhiCandidate_EvMix1.nPhi++;
+            }
+        }
+        for ( Int_t iKaon = 0; iKaon < evKaonCandidateEvMix1.nKaon; iKaon++ )  {
+            LKaon1.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
+            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix1.nKaon; jKaon++ )  {
+                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix1.Charge[jKaon] ) continue;
+                LKaon2.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
+                LPhi_candidate1 =   LKaon1  +   LKaon2;
+                evPhiCandidate_EvMix2.Multiplicity                        =   evKaonCandidateEvMix1.Multiplicity;
+                evPhiCandidate_EvMix2.Px[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Px();
+                evPhiCandidate_EvMix2.Py[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Py();
+                evPhiCandidate_EvMix2.Pz[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pz();
+                evPhiCandidate_EvMix2.pT[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pt();
+                evPhiCandidate_EvMix2.iKaon[evPhiCandidate_EvMix2.nPhi]   =   iKaon;
+                evPhiCandidate_EvMix2.jKaon[evPhiCandidate_EvMix2.nPhi]   =   jKaon;
+                evPhiCandidate_EvMix2.InvMass[evPhiCandidate_EvMix2.nPhi] =   LPhi_candidate1.Mag();
+                evPhiCandidate_EvMix2.Rap[evPhiCandidate_EvMix2.nPhi]     =   LPhi_candidate1.Rapidity();
+                evPhiCandidate_EvMix2.nPhi++;
+            }
+        }
+        for ( Int_t iKaon = 0; iKaon < evKaonCandidateEvMix1.nKaon; iKaon++ )  {
+            LKaon1.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
+            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix1.nKaon; jKaon++ )  {
+                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix1.Charge[jKaon] ) continue;
+                LKaon2.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
+                LPhi_candidate1 =   LKaon1  +   LKaon2;
+                evPhiCandidate_EvMix2.Px[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Px();
+                evPhiCandidate_EvMix2.Py[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Py();
+                evPhiCandidate_EvMix2.Pz[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pz();
+                evPhiCandidate_EvMix2.pT[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pt();
+                evPhiCandidate_EvMix2.iKaon[evPhiCandidate_EvMix2.nPhi]   =   iKaon;
+                evPhiCandidate_EvMix2.jKaon[evPhiCandidate_EvMix2.nPhi]   =   jKaon;
+                evPhiCandidate_EvMix2.InvMass[evPhiCandidate_EvMix2.nPhi] =   LPhi_candidate1.Mag();
+                evPhiCandidate_EvMix2.Rap[evPhiCandidate_EvMix2.nPhi]     =   LPhi_candidate1.Rapidity();
+                evPhiCandidate_EvMix2.nPhi++;
+            }
+        }
+        for ( Int_t iKaon = 0; iKaon < evKaonCandidateEvMix1.nKaon; iKaon++ )  {
+            LKaon1.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
+            for ( Int_t jKaon = 0; jKaon < evKaonCandidateEvMix1.nKaon; jKaon++ )  {
+                if ( evKaonCandidate.Charge[iKaon] == evKaonCandidateEvMix1.Charge[jKaon] ) continue;
+                LKaon2.SetXYZM(evKaonCandidateEvMix1.Px[iKaon],evKaonCandidateEvMix1.Py[iKaon],evKaonCandidateEvMix1.Pz[iKaon],kKaonMass);
+                LPhi_candidate1 =   LKaon1  +   LKaon2;
+                evPhiCandidate_EvMix2.Px[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Px();
+                evPhiCandidate_EvMix2.Py[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Py();
+                evPhiCandidate_EvMix2.Pz[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pz();
+                evPhiCandidate_EvMix2.pT[evPhiCandidate_EvMix2.nPhi]      =   LPhi_candidate1.Pt();
+                evPhiCandidate_EvMix2.iKaon[evPhiCandidate_EvMix2.nPhi]   =   iKaon;
+                evPhiCandidate_EvMix2.jKaon[evPhiCandidate_EvMix2.nPhi]   =   jKaon;
+                evPhiCandidate_EvMix2.InvMass[evPhiCandidate_EvMix2.nPhi] =   LPhi_candidate1.Mag();
+                evPhiCandidate_EvMix2.Rap[evPhiCandidate_EvMix2.nPhi]     =   LPhi_candidate1.Rapidity();
+                evPhiCandidate_EvMix2.nPhi++;
+            }
+        }
+        evKaonCandidateEvMix1 = evKaonCandidate;
+        evKaonCandidateEvMix2 = evKaonCandidateEvMix1;
+        evKaonCandidateEvMix3 = evKaonCandidateEvMix2;
+        
+        for ( Int_t iPhi = 0; iPhi < evPhiCandidate_EvMix1.nPhi; iPhi++ )  {
+            if ( !fAcceptCandidate(evPhiCandidate_EvMix1.Rap[iPhi],evPhiCandidate_EvMix1.InvMass[iPhi],evPhiCandidate_EvMix1.pT[iPhi],evPhiCandidate_EvMix1.Multiplicity) ) continue;
+            U_AccCand[U_nAccept] = iPhi;
+            U_nAccept++;
+        }
+        for ( Int_t iPhi = 0; iPhi < evPhiCandidate_EvMix2.nPhi; iPhi++ )  {
+            if ( !fAcceptCandidate(evPhiCandidate_EvMix2.Rap[iPhi],evPhiCandidate_EvMix2.InvMass[iPhi],evPhiCandidate_EvMix2.pT[iPhi],evPhiCandidate_EvMix2.Multiplicity) ) continue;
+            U_AccCan2[U_nAccept] = iPhi;
+            U_nAccep2++;
+        }
+        
+        for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )    {
+            // Must have at least 1 candidate
+            if ( U_nAccept < 1 ) break;
+
+            // >-> 1-Dimensional Analysis Fill   //
+            //
+            // >->-->-> Utilities
+            //
+            Int_t   iPT1D       = fGetBinPT1D(evPhiCandidate_EvMix1.pT[U_AccCand[iPhi]]);
+            Int_t   iPT2D       = fGetBinPT2D(evPhiCandidate_EvMix1.pT[U_AccCand[iPhi]]);
+            Int_t   iMult       = fGetBinMult(evPhiCandidate_EvMix1.Multiplicity);
+            Float_t iInvMass_   = evPhiCandidate_EvMix1.InvMass[U_AccCand[iPhi]];
+            //
+            // >->-->-> Yield
+            //
+            hBKG_1D                                         ->  Fill(iInvMass_);
+            hBKG_1D_in_PT[iPT1D]                            ->  Fill(iInvMass_);
+            hBKG_1D_in_PT_2D_bin[iPT2D]                     ->  Fill(iInvMass_);
+            //
+            // >->-->-> Multiplicity
+            //
+            //hBKG_1D_in_MT[iMult]                            ->  Fill(iInvMass_);
+            //hBKG_1D_in_MT_in_PT[iMult][iPT1D]               ->  Fill(iInvMass_);
+            //hBKG_1D_in_MT_in_PT_2D_bin[iMult][iPT2D]        ->  Fill(iInvMass_);
+            for ( Int_t jPhi = 0; jPhi < U_nAccep2; jPhi++ )    {
+                // Must have at least 1 candidate
+                if ( U_nAccep2 < 1 ) break;
+            
+                // >-> 2-Dimensional Analysis Fill
+                //
+                // >->-->-> Utilities
+                //
+                Int_t   jPT1D       = fGetBinPT1D(evPhiCandidate_EvMix2.pT[U_AccCan2[jPhi]]);
+                Int_t   jPT2D       = fGetBinPT2D(evPhiCandidate_EvMix2.pT[U_AccCan2[jPhi]]);
+                Float_t jInvMass_   = evPhiCandidate_EvMix2.InvMass[U_AccCan2[jPhi]];
+                //
+                // >->-->-> Yield
+                //
+                hBKG_2D                                                 ->  Fill(iInvMass_,jInvMass_,0.5);
+                hBKG_2D_in_PT[iPT2D][jPT2D]                             ->  Fill(iInvMass_,jInvMass_,0.5);
+                //
+                // >->-->-> Multiplicity
+                //
+                //hBKG_2D_in_MT[iMult]                                    ->  Fill(iInvMass_,jInvMass_,0.5);
+                //hBKG_2D_in_MT_in_PT[iMult][iPT2D][jPT2D]                ->  Fill(iInvMass_,jInvMass_,0.5);
+            }
         }
     }
     
@@ -445,6 +671,65 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
     hTriggerEvt1D   ->Scale(100./nEvents);
     hTriggerEvt2D   ->Scale(100./nEvents);
     //
+    // >-> Yield Analysis
+    //
+    // >->-> Background Subtraction
+    //
+    auto FullIntegral   =   hFLL_1D->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+    auto Bkg_Integral   =   hBKG_1D->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+    hREC_1D->Add(hFLL_1D,hBKG_1D,1.,-FullIntegral/Bkg_Integral);
+    //
+    for ( Int_t iPT1D = 0; iPT1D < nBinPT1D; iPT1D++ )  {
+        if ( hBKG_1D_in_PT[iPT1D]->GetEntries() == 0 || hFLL_1D_in_PT[iPT1D]->GetEntries() == 0 ) continue;
+        FullIntegral   =   hFLL_1D_in_PT[iPT1D]->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+        Bkg_Integral   =   hBKG_1D_in_PT[iPT1D]->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+        hREC_1D_in_PT[iPT1D]->Add(hFLL_1D_in_PT[iPT1D],hBKG_1D_in_PT[iPT1D],1.,-FullIntegral/Bkg_Integral);
+    }
+    //
+    FullIntegral   =   hFLL_2D->Integral(fGetBinIM2D(1.03),fGetBinIM2D(1.08),fGetBinIM2D(1.03),fGetBinIM2D(1.08));
+    Bkg_Integral   =   hBKG_2D->Integral(fGetBinIM2D(1.03),fGetBinIM2D(1.08),fGetBinIM2D(1.03),fGetBinIM2D(1.08));
+    hREC_2D->Add(hFLL_2D,hBKG_2D,1.,-FullIntegral/Bkg_Integral);
+    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
+        if ( hBKG_1D_in_PT_2D_bin[iPT2D]->GetEntries() == 0 || hFLL_1D_in_PT_2D_bin[iPT2D]->GetEntries() == 0 ) continue;
+        FullIntegral   =   hFLL_1D_in_PT_2D_bin[iPT2D]->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+        Bkg_Integral   =   hBKG_1D_in_PT_2D_bin[iPT2D]->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+        hREC_1D_in_PT_2D_bin[iPT2D]->Add(hFLL_1D_in_PT_2D_bin[iPT2D],hBKG_1D_in_PT_2D_bin[iPT2D],1.,-FullIntegral/Bkg_Integral);
+        //
+        for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )  {
+            if ( hBKG_2D_in_PT[iPT2D][jPT2D]->GetEntries() == 0 || hFLL_2D_in_PT[iPT2D][jPT2D]->GetEntries() == 0 ) continue;
+            FullIntegral   =   hFLL_2D_in_PT[iPT2D][jPT2D]->Integral(fGetBinIM2D(1.03),fGetBinIM2D(1.08),fGetBinIM2D(1.03),fGetBinIM2D(1.08));
+            Bkg_Integral   =   hBKG_2D_in_PT[iPT2D][jPT2D]->Integral(fGetBinIM2D(1.03),fGetBinIM2D(1.08),fGetBinIM2D(1.03),fGetBinIM2D(1.08));
+            hREC_2D_in_PT[iPT2D][jPT2D]->Add(hFLL_2D_in_PT[iPT2D][jPT2D],hBKG_2D_in_PT[iPT2D][jPT2D],1.,-FullIntegral/Bkg_Integral);
+        }
+    }
+    //
+    for ( Int_t iMult = 0; iMult < nBinMult; iMult++ )  {
+        FullIntegral   =   hFLL_1D->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+        Bkg_Integral   =   hBKG_1D->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+        hREC_1D->Add(hFLL_1D,hBKG_1D,1.,-FullIntegral/Bkg_Integral);
+        //
+        for ( Int_t iPT1D = 0; iPT1D < nBinPT1D; iPT1D++ )  {
+            if ( hBKG_1D_in_PT[iPT1D]->GetEntries() == 0 || hFLL_1D_in_PT[iPT1D]->GetEntries() == 0 ) continue;
+            FullIntegral   =   hFLL_1D_in_PT[iPT1D]->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+            Bkg_Integral   =   hBKG_1D_in_PT[iPT1D]->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+            hREC_1D_in_PT[iPT1D]->Add(hFLL_1D_in_PT[iPT1D],hBKG_1D_in_PT[iPT1D],1.,-FullIntegral/Bkg_Integral);
+        }
+        //
+        for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
+            if ( hBKG_1D_in_PT_2D_bin[iPT2D]->GetEntries() == 0 || hFLL_1D_in_PT_2D_bin[iPT2D]->GetEntries() == 0 ) continue;
+            FullIntegral   =   hFLL_1D_in_PT_2D_bin[iPT2D]->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+            Bkg_Integral   =   hBKG_1D_in_PT_2D_bin[iPT2D]->Integral(fGetBinIM1D(1.03),fGetBinIM1D(1.08));
+            hREC_1D_in_PT_2D_bin[iPT2D]->Add(hFLL_1D_in_PT_2D_bin[iPT2D],hBKG_1D_in_PT_2D_bin[iPT2D],1.,-FullIntegral/Bkg_Integral);
+            //
+            for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )  {
+                if ( hBKG_2D_in_PT[iPT2D][jPT2D]->GetEntries() == 0 || hFLL_2D_in_PT[iPT2D][jPT2D]->GetEntries() == 0 ) continue;
+                FullIntegral   =   hFLL_2D_in_PT[iPT2D][jPT2D]->Integral(fGetBinIM2D(1.03),fGetBinIM2D(1.08),fGetBinIM2D(1.03),fGetBinIM2D(1.08));
+                Bkg_Integral   =   hBKG_2D_in_PT[iPT2D][jPT2D]->Integral(fGetBinIM2D(1.03),fGetBinIM2D(1.08),fGetBinIM2D(1.03),fGetBinIM2D(1.08));
+                hREC_2D_in_PT[iPT2D][jPT2D]->Add(hFLL_2D_in_PT[iPT2D][jPT2D],hBKG_2D_in_PT[iPT2D][jPT2D],1.,-FullIntegral/Bkg_Integral);
+            }
+        }
+    }
+    //
     fStopTimer("post-processing output objects");
     //
     //--------------------------//
@@ -471,20 +756,27 @@ void PreProcessing_Data ( string fFileName = "", string fOption = "", Int_t nEve
     check->Write();
     fHEventCount    ->Write();
     hREC_1D->Write();
+    hBKG_1D->Write();
+    hFLL_1D->Write();
     for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)
     {
         hREC_1D_in_PT[iHisto]   ->Write();
+        hBKG_1D_in_PT[iHisto]   ->Write();
+        hFLL_1D_in_PT[iHisto]   ->Write();
     }
     //
     hREC_2D->Write();
+    hBKG_2D->Write();
+    hFLL_2D->Write();
     //
-    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
-    {
+    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)   {
         hREC_1D_in_PT_2D_bin[iHisto]   ->Write();
-        
-        for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
-        {
+        hBKG_1D_in_PT_2D_bin[iHisto]   ->Write();
+        hFLL_1D_in_PT_2D_bin[iHisto]   ->Write();
+        for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)   {
             hREC_2D_in_PT[iHisto][jHisto]->Write();
+            hBKG_2D_in_PT[iHisto][jHisto]->Write();
+            hFLL_2D_in_PT[iHisto][jHisto]->Write();
         }
     }
     //

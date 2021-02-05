@@ -1,20 +1,20 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: All Set!
 
-void PreProcessing_MC ( string fFileName = "" )
+void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., string fOption = "" )
 {
     //---------------------//
     //  Setting up input   //
     //---------------------//
-    
-    // >-> OPTIONS
-    
-    if ( fFileName == "" )
-    {
+    //
+    // >-> Initialisation warnings
+    //
+    if ( fFileName == "" )  {
         cout << "[WARNING] Must Specify an input root file" << endl;
-        cout << "[INFO] Usage PreProcessing_MC(\"Root_file_name.root\")" << endl;
+        cout << "[INFO] Usage PreProcessing_MC.C(\"Root_file_name.root\")" << endl;
         return;
     }
+    if ( nEventsCut != -1 ) cout << "[WARNING] Choosing to limit the datasample to " << nEventsCut << " events" <<endl;
     
     //Retrieving Event data
     TFile *insFileMC        =   new TFile   (fFileName.c_str());

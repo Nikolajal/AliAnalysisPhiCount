@@ -230,6 +230,8 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     cout << Form("[INFO] Starting yield analysis in 1D") << endl;
     for ( Int_t iFit = 0; iFit < nBinPT1D; iFit++ )
     {
+        if ( iFit == 18 ) break;
+        
         //Progressive Count
         fProgrCount++;
         //
@@ -237,7 +239,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
         fPrintLoopTimer("Yield Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
         //
         // Fit
-        auto fResults       =   FitModel(hREC_1D_in_PT[iFit],"STD",true,iFit,1);
+        auto fResults       =   FitModel(hREC_1D_in_PT[iFit],"CH3",true,iFit,1);
         
         if ( !fResults ) continue;
         
@@ -257,9 +259,9 @@ void Analysis_SignalExtraction ( bool fSilent = true )
         fPrintLoopTimer("Yield Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
         
         // Fit
-        fShapeStore[iFit]   =   FitModel(hREC_1D_in_PT_2D_bin[iFit],"STD",true,iFit,2);
+        fShapeStore[iFit]   =   FitModel(hREC_1D_in_PT_2D_bin[iFit],"CH3",true,iFit,2);
     }
-     
+    /*
     cout << Form("[INFO] Starting yield analysis in 2D") << endl;
     for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
     {
@@ -275,7 +277,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
             if ( !fShapeStore[jFit] ) continue;
             
             // Fit
-            auto fResults       =   FitModel(hREC_2D_in_PT[iFit][jFit],fShapeStore[iFit],fShapeStore[jFit],"STD",true,iFit,jFit);
+            auto fResults       =   FitModel(hREC_2D_in_PT[iFit][jFit],fShapeStore[iFit],fShapeStore[jFit],"CH3",true,iFit,jFit);
             
             if ( !fResults ) continue;
             
@@ -290,7 +292,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     fStopTimer("Yield Analysis Signal Extrapolation");
     
     outCheckFitYld->Close();
-     
+    
     fStartTimer("Yield in Multiplicity Analysis Signal Extrapolation");
     
     // Total Fit number and progressive
@@ -318,7 +320,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
             fPrintLoopTimer("Yield in Multiplicity Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
             
             // Fit
-            auto fResults = FitModel(hREC_1D_in_MT_in_PT[iMult][iFit],"STD",true,iFit,1);
+            auto fResults = FitModel(hREC_1D_in_MT_in_PT[iMult][iFit],"CH3",true,iFit,1);
             
             if ( !fResults ) continue;
             
@@ -372,7 +374,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     outCheckFitMlt->Close();
     
     fStopTimer("Yield in Multiplicity Analysis Signal Extrapolation");
-    
+    */
     //--------------------------//
     // PostProcessin output obj //
     //--------------------------//
@@ -405,14 +407,13 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     //
     // >> Yield Analysis
     //
-    /*
     TFile *outFil2  =   new TFile   (fYldSigExtr,"recreate");
     //
     hEvntEff->Write();
     hRAW_1D->Write();
     hRAW_2D->Write();
     //
-    outFil2->Close();*/
+    outFil2->Close();
     //
     // >> Multiplicity Analysis
     //
@@ -468,7 +469,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     for (int iFit = 0; iFit < nBinPT2D; iFit++ )
     {
         Results[iFit]   = new RooFitResult * [nBinPT2D];
-        utility[iFit]   = FitModel(hdM_dpT_Tot_Rec[iFit],"STD",bSave,iFit,2);
+        utility[iFit]   = FitModel(hdM_dpT_Tot_Rec[iFit],"CH3",bSave,iFit,2);
     }
     
     // 2D Fits
@@ -483,7 +484,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
             if ( iFit == 2  && jFit == 11 ) continue;
             
             // Fit
-            Results[iFit][jFit] = FitModel(hdM_dpT_Tot_Rec2D[iFit][jFit],utility[iFit],utility[jFit],"STD",bSave,iFit,jFit);
+            Results[iFit][jFit] = FitModel(hdM_dpT_Tot_Rec2D[iFit][jFit],utility[iFit],utility[jFit],"CH3",bSave,iFit,jFit);
             
             // Building N_Raw histogram
             auto N_Raw      = static_cast<RooRealVar*>(Results[iFit][jFit]->floatParsFinal().at(SignlSignl));
