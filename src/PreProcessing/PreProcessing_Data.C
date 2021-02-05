@@ -40,7 +40,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
     {
         cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
         TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
-        TKaonCandidate-> SetBranchAddress   ("nPhi",            &evKaonCandidate.nKaon);
+        TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
         TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
         TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
         TKaonCandidate-> SetBranchAddress   ("Pz",              &evKaonCandidate.Pz);
@@ -74,7 +74,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
         TPhiCandidate-> SetBranchAddress    ("Nature",          &evPhiCandidate.Nature);
         
         TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
-        TKaonCandidate-> SetBranchAddress   ("nPhi",           &evKaonCandidate.nKaon);
+        TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
         TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
         TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
         TKaonCandidate-> SetBranchAddress   ("Pz",              &evKaonCandidate.Pz);
