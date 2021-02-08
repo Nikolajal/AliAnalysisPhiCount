@@ -386,7 +386,6 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     outCheckFitMlt->Close();
     
     fStopTimer("Yield in Multiplicity Analysis Signal Extrapolation");
-     */
     //
     //--------------------------//
     // PostProcessin output obj //
