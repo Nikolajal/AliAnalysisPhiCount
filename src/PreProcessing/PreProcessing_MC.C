@@ -312,8 +312,8 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., string fO
         
         for ( Int_t iPhi = 0; iPhi < evPhiEfficiency.nPhi; iPhi++ )
         {
-            LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[iPhi],evPhiEfficiency.Py[iPhi],evPhiEfficiency.Pz[iPhi],kParticleMass_);
-            if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),kParticleMass_,LPhi_candidate1.Pt(),evPhiEfficiency.Multiplicity) ) continue;
+            LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[iPhi],evPhiEfficiency.Py[iPhi],evPhiEfficiency.Pz[iPhi],kPhiMesonMass_);
+            if ( !fAcceptCandidate(LPhi_candidate1.Rapidity(),kPhiMesonMass_,LPhi_candidate1.Pt(),evPhiEfficiency.Multiplicity) ) continue;
             U_AccCand[U_nAccept] = iPhi;
             U_nAccept++;
         }
@@ -323,7 +323,7 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., string fO
             if ( U_nAccept < 1 ) break;
 
             // Building First Candidate
-            LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[U_AccCand[iPhi]],evPhiEfficiency.Py[U_AccCand[iPhi]],evPhiEfficiency.Pz[U_AccCand[iPhi]],kParticleMass_);
+            LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[U_AccCand[iPhi]],evPhiEfficiency.Py[U_AccCand[iPhi]],evPhiEfficiency.Pz[U_AccCand[iPhi]],kPhiMesonMass_);
 
             // >> 1-Dimensional Analysis Fill
             //
@@ -355,9 +355,12 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., string fO
             {
                 // Must have at least 2 candidates
                 if ( U_nAccept < 2 ) break;
+                
+                // Protection against auto-correlation
+                if ( iPhi == jPhi ) continue;
 
                 // Building Second Candidate
-                LPhi_candidate2.SetXYZM(evPhiEfficiency.Px[U_AccCand[jPhi]],evPhiEfficiency.Py[U_AccCand[jPhi]],evPhiEfficiency.Pz[U_AccCand[jPhi]],kParticleMass_);
+                LPhi_candidate2.SetXYZM(evPhiEfficiency.Px[U_AccCand[jPhi]],evPhiEfficiency.Py[U_AccCand[jPhi]],evPhiEfficiency.Pz[U_AccCand[jPhi]],kPhiMesonMass_);
 
                 // >> 2-Dimensional Analysis Fill
                 //
