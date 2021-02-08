@@ -1031,8 +1031,8 @@ Double_t   *    fCoreFitModelOptionSelect       ( string fOption )
     fCoreFitModelSetBoundaries ( fOption, fResult[0], fResult[1] );
     if  ( fOption.find("CH3") != -1 ) { fResult[2] = 0.; };
     if  ( fOption.find("CH5") != -1 ) { fResult[3] = 1.; };
-    if  ( fOption.find("Wdt") != -1 ) { fResult[4] = kParticleMass_*0.1; };
-    if  ( fOption.find("Mss") != -1 ) { fResult[5] = kParticleWidth*0.1; };
+    if  ( fOption.find("Wdt") != -1 ) { fResult[4] = kPhiMesonMass_*0.1; };
+    if  ( fOption.find("Mss") != -1 ) { fResult[5] = kPhiMesonWidth*0.1; };
     if  ( bPythiaTest               ) { fResult[6] = 0.; };
     return fResult;
 }
@@ -1052,8 +1052,8 @@ RooFitResult*   fCoreFitModel                   ( RooDataHist *fDataHist, RooRea
     RooRealVar  ChebychevPar5   =   RooRealVar      ("ch5","ch5",   0., 0. - kCh5Limits, 0. + kCh5Limits);
 
     //Signal
-    RooRealVar  VoigtianMass_   =   RooRealVar      ("Vms","Vms",   kParticleMass_, kParticleMass_ - kVmsLimits, kParticleMass_ + kVmsLimits);
-    RooRealVar  VoigtianWidth   =   RooRealVar      ("Vwd","Vwd",   kParticleWidth, kParticleWidth - kVwdLimits, kParticleWidth + kVwdLimits);
+    RooRealVar  VoigtianMass_   =   RooRealVar      ("Vms","Vms",   kPhiMesonMass_, kPhiMesonMass_ - kVmsLimits, kPhiMesonMass_ + kVmsLimits);
+    RooRealVar  VoigtianWidth   =   RooRealVar      ("Vwd","Vwd",   kPhiMesonWidth, kPhiMesonWidth - kVwdLimits, kPhiMesonWidth + kVwdLimits);
     RooRealVar  VoigtianSlope   =   RooRealVar      ("Vsl","Vsl",   kDetectorSlope, kDetectorSlope - kVslLimits, kDetectorSlope + kVslLimits);
     
     // Normalisation coefficients
@@ -1678,7 +1678,7 @@ RooFitResult*   fExtrapolateModelLEGACYROOFIT               ( TH1F *HData, TStri
     // Signal PDF Parameters
     RooRealVar          n_value ("n_value", "n_value",  6.7,    2.01,    20.);
     RooRealVar          exp_par ("exp_par", "exp_par",  .272,   0.1,    2.);
-    RooRealVar          prt_mss ("prt_mss", "prt_mss",  kParticleMass_);
+    RooRealVar          prt_mss ("prt_mss", "prt_mss",  kPhiMesonMass_);
     
     // Normalisation Coefficients
     RooRealVar          Sig_str ("Sig_str", "Sig_str",  0.033, 0.2, 0.4);
