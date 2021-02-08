@@ -108,11 +108,7 @@ const   Float_t   fMaxPT1D  =   10.0;
         Float_t  *fArrPT1D  =   new Float_t [nBinPT1D+1];
 
 //-// pT bins 2D
-<<<<<<< HEAD
 const   Int_t     nBinPT2D  =   12;
-=======
-const   Int_t     nBinPT2D  =   14;
->>>>>>> Improvements
 const   Float_t   fMinPT2D  =   0.00;
 const   Float_t   fMaxPT2D  =   10.0;
         Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
