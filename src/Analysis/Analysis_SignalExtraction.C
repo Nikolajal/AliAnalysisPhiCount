@@ -299,10 +299,6 @@ void Analysis_SignalExtraction ( bool fSilent = true )
             hRAW_2D->SetBinError        (iFit+1,jFit+1,N_Raw->getError());
         }
     }
-<<<<<<< HEAD
-=======
-    /*
->>>>>>> Improvements
     //
     delete[] fShapeStore;
     fStopTimer("Yield Analysis Signal Extrapolation");
@@ -390,10 +386,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     outCheckFitMlt->Close();
     
     fStopTimer("Yield in Multiplicity Analysis Signal Extrapolation");
-<<<<<<< HEAD
-=======
      */
->>>>>>> Improvements
     //
     //--------------------------//
     // PostProcessin output obj //
