@@ -588,15 +588,15 @@ void                fSetLevyTsalis                  ( Double_t fIntegral = 0.032
     fLevyFit1D  ->  SetParameter(0,kPMas);  //Particle Mass?
     
     // n-Parameter
-    fLevyFit1D  ->  SetParLimits(1,2.1,7.5);
+    fLevyFit1D  ->  SetParLimits(1,2.1,100.);
     fLevyFit1D  ->  SetParameter(1,6.7);    // 6.7
     
     // T-Parameter
-    fLevyFit1D  ->  SetParLimits(2,.21,.750);
+    fLevyFit1D  ->  SetParLimits(2,.21,10.);
     fLevyFit1D  ->  SetParameter(2,.272);   // .272
     
     // dN/dy
-    fLevyFit1D  ->  SetParLimits(3,1.e-7,1.e-1);
+    fLevyFit1D  ->  SetParLimits(3,0.,10.);
     fLevyFit1D  ->  SetParameter(3,fIntegral);  //
 }
 //
@@ -690,7 +690,7 @@ Double_t*           fMeasureFullYield               ( Tclass *THdata, TString fN
 //
 //_____________________________________________________________________________
 //
-Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "ExtrapolateSignal" )    {
+Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, Double_t fIntegral = 0.032, TString fName = "ExtrapolateSignal" )    {
     //  Optimisation mode
     gROOT->SetBatch(true);
     
@@ -712,7 +712,7 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
     //  Evaluating the Statistical Errors
     for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
         //  Set Standard Fit
-        fSetLevyTsalis();
+        fSetLevyTsalis(fIntegral);
         //
         //  Generating the Fit TGraph
         auto fSubject   =   fRandomizePoints(gStatistics,gSystematics);
@@ -725,7 +725,7 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
     //  Evaluating the Statistical Errors
     for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
         //  Set Standard Fit
-        fSetLevyTsalis();
+        fSetLevyTsalis(fIntegral);
         //
         //  Generating the Fit TGraph
         auto fSubject   =   fRandomizePoints(gSystematics,gStatistics);
@@ -809,7 +809,7 @@ Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatis
     for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
     
     auto        fIntegralResults    =   fIntegrateModel     (gStatistics,gSystematics,fName);
-    auto        fExtrapolResults    =   fExtrapolateModel   (gStatistics,gSystematics,fName);
+    auto        fExtrapolResults    =   fExtrapolateModel   (gStatistics,gSystematics,fIntegralResults[0],fName);
     
     fResult[0]  =   fIntegralResults[0] +   fExtrapolResults[0];
     fResult[1]  =   fIntegralResults[1] +   fExtrapolResults[1];

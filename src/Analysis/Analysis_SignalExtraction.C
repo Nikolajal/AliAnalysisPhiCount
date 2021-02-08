@@ -278,7 +278,6 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     {
         for ( Int_t jFit = 0; jFit < nBinPT2D; jFit++ )
         {
-            if ( iFit +jFit >= 20) break;
             //Progressive Count
             fProgrCount++;
             

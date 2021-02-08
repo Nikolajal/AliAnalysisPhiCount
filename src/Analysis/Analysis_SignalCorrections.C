@@ -372,6 +372,7 @@ void Analysis_SignalCorrections ( bool fSilent = true )
         fYield_Profile_Syst ->  SetPointError   (iFit,binwidth,binwidth,fResults[1],fResults[1]);
     }
     //
+    /*
     fResults = fMeasureFullYield(fYield_Profile_Stat,fYield_Profile_Syst,"2D");
     fYield_Stat ->  SetPoint        (1,2,fResults[0]);
     fYield_Syst ->  SetPoint        (1,2,fResults[0]);
@@ -421,6 +422,7 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     fStopTimer("Fit_for_extrapolation");
     //
     outCheckFitMlt->Close();
+     */
     //
     //--------------------------//
     //  Printing output objects //
