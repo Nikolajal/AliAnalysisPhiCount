@@ -584,7 +584,7 @@ void                fSetLevyTsalis                  ( ) {
     // - // Setting up Fit parameters
     
     // Mass
-    fLevyFit1D  ->  SetParLimits(0,kPMas,kPMas);
+    fLevyFit1D  ->  SetParLimits(0,0.,2.);
     fLevyFit1D  ->  SetParameter(0,kPMas);
     
     // n-Parameter
