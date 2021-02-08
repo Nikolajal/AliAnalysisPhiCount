@@ -21,7 +21,7 @@ enum            fFitResults2D
 
 // Performance Values
 auto const  kCPU_use                =   3;
-auto const  kNCycle_                =   1;
+auto const  kNCycle_                =   5;
 auto const  kStatEvalCycles         =   1000;
 
 // Analysis Values
