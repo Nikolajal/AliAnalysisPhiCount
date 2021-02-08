@@ -108,7 +108,11 @@ const   Float_t   fMaxPT1D  =   10.0;
         Float_t  *fArrPT1D  =   new Float_t [nBinPT1D+1];
 
 //-// pT bins 2D
+<<<<<<< HEAD
 const   Int_t     nBinPT2D  =   12;
+=======
+const   Int_t     nBinPT2D  =   14;
+>>>>>>> Improvements
 const   Float_t   fMinPT2D  =   0.00;
 const   Float_t   fMaxPT2D  =   10.0;
         Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
@@ -220,6 +224,7 @@ void    fSetBinPT2D ()
     fArrPT2D[0]  =  0.00;
     fArrPT2D[1]  =  0.20;
     fArrPT2D[2]  =  0.40;
+<<<<<<< HEAD
     fArrPT2D[3]  =  0.70;
     fArrPT2D[4]  =  1.00;
     fArrPT2D[5]  =  1.20;
@@ -230,6 +235,20 @@ void    fSetBinPT2D ()
     fArrPT2D[10] =  3.00;
     fArrPT2D[11] =  5.00;
     fArrPT2D[12] =  10.0;
+=======
+    fArrPT2D[3]  =  0.60;
+    fArrPT2D[4]  =  0.80;
+    fArrPT2D[5]  =  1.00;
+    fArrPT2D[6]  =  1.20;
+    fArrPT2D[7]  =  1.40;
+    fArrPT2D[8]  =  1.60;
+    fArrPT2D[9]  =  1.80;
+    fArrPT2D[10] =  2.00;
+    fArrPT2D[11] =  3.00;
+    fArrPT2D[12] =  4.00;
+    fArrPT2D[13] =  6.00;
+    fArrPT2D[14] =  10.0;
+>>>>>>> Improvements
 }
 
 void    fSetBinMult ()
