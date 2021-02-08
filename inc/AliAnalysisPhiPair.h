@@ -622,7 +622,7 @@ Double_t*           fExtrapolateModel               ( Tclass *THdata, TString fN
     fSetLevyTsalis();
     
     // Fit the Spectra
-    THdata->Fit(fLevyFit1D,"IMREQ0S","",0.6,4.);
+    THdata->Fit(fLevyFit1D,"IMREQ0S","",0.4,10.);
     
     // Save to further checks
     TCanvas * fCheckFit = new TCanvas();
@@ -717,7 +717,7 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
         //  Generating the Fit TGraph
         auto fSubject   =   fRandomizePoints(gStatistics,gSystematics);
         //
-        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.6,4.);
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.4,10.);
         //
         hStatIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
     }
@@ -730,7 +730,7 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
         //  Generating the Fit TGraph
         auto fSubject   =   fRandomizePoints(gSystematics,gStatistics);
         //
-        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.6,4.);
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.4,10.);
         //
         hSystIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
     }
