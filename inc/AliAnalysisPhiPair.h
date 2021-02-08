@@ -1558,8 +1558,6 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     RooProdPdf          fSS   ("fSigSig","fSigSig"      ,fSigx,fSigy);
     RooAddPdf           fMod  ("fMod2D","fMod2D"        ,RooArgList(fBB,fSS,fSB,fBS),RooArgList(n1,n0,n3,n2));
     
-
-    RooFitResult* fFitResults;
     RooFitResult* fFitResults;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
