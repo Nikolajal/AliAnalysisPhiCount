@@ -300,14 +300,12 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     }
     //
     // Scaling for events
-    hRES_1D->Scale(1./(hEvntEff->GetBinContent(9)));
-    hRAW_1D->Scale(1./(hEvntEff->GetBinContent(9)));
-    hRES_2D->Scale(1./(hEvntEff->GetBinContent(9)));
+    hRES_1D->Scale(kTriggerEfficnc/(hEvntEff->GetBinContent(1)));
+    hRES_2D->Scale(kTriggerEfficnc/(hEvntEff->GetBinContent(1)));
     for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
     {
-        hRAW_1D_in_MT[iHisto]->Scale(1./(hEvntEff->GetBinContent(9)));
-        hRES_1D_in_MT[iHisto]->Scale(1./(hEvntEff->GetBinContent(9)));
-        hRES_2D_in_MT[iHisto]->Scale(1./(hEvntEff->GetBinContent(9)));
+        hRES_1D_in_MT[iHisto]->Scale(kTriggerEfficnc/(hEvntEff->GetBinContent(1)));
+        hRES_2D_in_MT[iHisto]->Scale(kTriggerEfficnc/(hEvntEff->GetBinContent(1)));
     }
     //
     // Scaling for Branching Ratio
@@ -439,8 +437,10 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     TFile *outFil2  =   new TFile   (fYldSigCorr,"recreate");
     //
     hEvntEff                ->Write();
-    gRES_1D_Stat            ->Write();
     hRES_1D                 ->Write();
+    hRES_2D                 ->Write();
+    gRES_1D_Stat            ->Write();
+    gRES_1D_Syst            ->Write();
     fYield_Stat             ->Write();
     fYield_Syst             ->Write();
     fYield_Profile_Stat     ->Write();
@@ -456,6 +456,7 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     for ( Int_t iMult = 0; iMult < nBinMult; iMult++ )
     {
         hRES_1D_in_MT[iMult]        ->Write();
+        hRES_2D_in_MT[iMult]        ->Write();
         fYield_Stat_in_MT[iMult]    ->Write();
         fYield_Syst_in_MT[iMult]    ->Write();
     }

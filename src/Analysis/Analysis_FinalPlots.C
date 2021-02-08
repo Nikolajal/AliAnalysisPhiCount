@@ -16,10 +16,19 @@ void Analysis_FinalPlots ()
     // >-> YIELD ANALYSIS //
     //
     TGraphAsymmErrors  *fYield_Stat;
+    TGraphAsymmErrors  *fYield_Syst;
+    TH1D               *hRES_1D;
+    TH2D               *hRES_2D;
+    //
+    hName                               =   Form("hRES_1D");
+    hRES_1D                             =   (TH1D*)(insFile_DT_Yield->Get(hName));
+    //
+    hName                               =   Form("hRES_2D");
+    hRES_2D                             =   (TH2D*)(insFile_DT_Yield->Get(hName));
+    //
     hName                               =   Form("fYield_Stat");
     fYield_Stat                         =   (TGraphAsymmErrors*)(insFile_DT_Yield->Get(hName));
     //
-    TGraphAsymmErrors  *fYield_Syst;
     hName                               =   Form("fYield_Syst");
     fYield_Syst                         =   (TGraphAsymmErrors*)(insFile_DT_Yield->Get(hName));
     //
@@ -155,6 +164,14 @@ void Analysis_FinalPlots ()
         //
     }
     //
+    std::vector<TH1D*>  fVector_Full_2D_Conditional_Spectra;
+    //fVector_Full_2D_Conditional_Spectra.push_back(Final);
+    for ( Int_t iPT2D = 1; iPT2D <= nBinPT2D; iPT2D++ ) {
+        TH1D    *   fConditionalYield   =   hRES_2D->ProjectionX(Form("hRES_2D_PorjX_%i",iPT2D),iPT2D+1,iPT2D+1);
+        if ( fConditionalYield->GetEntries() <= 0 ) continue;
+        fVector_Full_2D_Conditional_Spectra.push_back(fConditionalYield);
+    }
+    //
     //-------------------------//
     //  Analysis //
     //-------------------------//
@@ -190,34 +207,51 @@ void Analysis_FinalPlots ()
     TLegend        *fLegendGPhiMT   =   new TLegend();
     TMultiGraph    *fGammaPhiFull_in_MT   =   new TMultiGraph();
     //
-    fGammaPhi_Stat_in_MT  ->  SetMarkerStyle(33);
-    fGammaPhi_Stat_in_MT  ->  SetMarkerColor(2);
-    fGammaPhi_Stat_in_MT  ->  SetMarkerSize(2);
-    fGammaPhi_Stat_in_MT  ->  SetDrawOption("EP");
+    fGammaPhi_Stat_in_MT    ->  SetMarkerStyle(33);
+    fGammaPhi_Stat_in_MT    ->  SetMarkerColor(2);
+    fGammaPhi_Stat_in_MT    ->  SetMarkerSize(2);
+    fGammaPhi_Stat_in_MT    ->  SetDrawOption("EP");
     
-    fGammaPhi_Syst_in_MT  ->  SetMarkerStyle(33);
-    fGammaPhi_Syst_in_MT  ->  SetMarkerColor(2);
-    fGammaPhi_Syst_in_MT  ->  SetMarkerSize(2);
-    fGammaPhi_Syst_in_MT  ->  SetDrawOption("EP");
+    fGammaPhi_Syst_in_MT    ->  SetMarkerStyle(33);
+    fGammaPhi_Syst_in_MT    ->  SetMarkerColor(2);
+    fGammaPhi_Syst_in_MT    ->  SetMarkerSize(2);
+    fGammaPhi_Syst_in_MT    ->  SetDrawOption("EP");
     //
-    fGammaPhiFull_in_MT ->Add           (fGammaPhi_Syst_in_MT);
+    fGammaPhiFull_in_MT     ->Add           (fGammaPhi_Syst_in_MT);
     fGammaPhiFull_in_MT     ->Add           (fGammaPhi_Stat_in_MT);
     //
-    fLegendGPhiMT     ->AddEntry      (fGammaPhi_Syst,    "Data",         "P");
-    fLegendGPhiMT     ->AddEntry      (fGammaPhi_Syst,    "Syst. Err.",   "F");
-    fLegendGPhiMT     ->AddEntry      (fGammaPhi_Stat,    "Stat. Err.",   "E");
+    fLegendGPhiMT           ->AddEntry      (fGammaPhi_Syst,    "Data",         "P");
+    fLegendGPhiMT           ->AddEntry      (fGammaPhi_Syst,    "Syst. Err.",   "F");
+    fLegendGPhiMT           ->AddEntry      (fGammaPhi_Stat,    "Stat. Err.",   "E");
     //
-    fGammaPhiFull_in_MT   ->Draw      ("ALP");
-    fLegendGPhiMT   ->Draw      ("SAME");
-    fGammaPhi_in_MT ->SaveAs    ("fGammaPhi_in_MT.pdf");
+    fGammaPhiFull_in_MT     ->Draw      ("ALP");
+    fLegendGPhiMT           ->Draw      ("SAME");
+    fGammaPhi_in_MT         ->SaveAs    ("fGammaPhi_in_MT.pdf");
     //
     //--
     //
     TCanvas        *fGammaPhi_All   =   new TCanvas();
     TLegend        *fLegendGPhiAll  =   new TLegend();
     
-    fLegendGPhiAll  ->Draw      ("SAME");
-    fGammaPhi_All   ->SaveAs    ("fGammaPhi_All.pdf");
+    fLegendGPhiAll          ->Draw      ("SAME");
+    fGammaPhi_All           ->SaveAs    ("fGammaPhi_All.pdf");
+    //
+    TCanvas        *fCanvas_Conditional_Spectra    =   new TCanvas();
+    TLegend        *fLegend_Conditional_Spectra    =   new TLegend(0.7,0.4,0.9,0.9);
+    gPad                    ->SetLogy();
+    gStyle                  ->SetOptStat(0);
+    
+    Int_t   fIterator   =   3;
+    fSetRainbowStyle(fVector_Full_2D_Conditional_Spectra);
+    for ( TH1D*&    fConditionalYield   :   fVector_Full_2D_Conditional_Spectra )  {
+        fLegend_Conditional_Spectra ->AddEntry(fConditionalYield,   Form("#phi p_{T} #in [%2.1f-%2.1f]",fArrPT2D[fIterator-1],fArrPT2D[fIterator]), "EP");
+        fConditionalYield->Draw("SAME EP");
+        fConditionalYield->Draw("SAME HIST L");
+        fIterator++;
+    }
+    
+    fLegend_Conditional_Spectra ->Draw      ("SAME");
+    fCanvas_Conditional_Spectra ->SaveAs    ("fCanvas_Conditional_Spectra.pdf");
     //
 }
 

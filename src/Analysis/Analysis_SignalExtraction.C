@@ -118,7 +118,8 @@ void Analysis_SignalExtraction ( bool fSilent = true )
         hName   =   Form("hREC_2D_in_MT_%i",iHisto);
         hREC_2D_in_MT[iHisto]   =   (TH2F*)(insFile_DT_Mult->Get(hName));
 
-        hREC_1D_in_MT_in_PT_2D_bin[iHisto]  = new TH1F     *[nBinPT2D];
+        hREC_1D_in_MT_in_PT_2D_bin[iHisto]  = new
+        TH1F     *[nBinPT2D];
         hREC_2D_in_MT_in_PT[iHisto]         = new TH2F    **[nBinPT2D];
         for ( Int_t jHisto = 0; jHisto < nBinPT2D; jHisto++ )
         {
@@ -159,6 +160,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     //  Declaring all histograms
     //
     TH1F       *hRAW_1D;
+    TH1F       *hRAW_1D_in_2D_bin;
     //
     //  Defining yield histogram over measurable pT
     //
@@ -166,6 +168,11 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     hTitle      =   Form("hRAW_1D");
     hRAW_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
     SetAxis(hRAW_1D,"PT 1D");
+    //
+    hName       =   Form("hRAW_1D_in_2D_bin");
+    hTitle      =   Form("hRAW_1D_in_2D_bin");
+    hRAW_1D_in_2D_bin     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+    SetAxis(hRAW_1D_in_2D_bin,"PT 1D");
     //
     // >->-->-> 2-Dimension analysis //
     //
@@ -225,7 +232,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     // Total Fit number abnd progressive
     Int_t   fTotalCount = nBinPT1D+(1+nBinPT2D)*nBinPT2D;
     Int_t   fProgrCount = 0;
-    
+    //
     // Starting cycle
     cout << Form("[INFO] Starting yield analysis in 1D") << endl;
     for ( Int_t iFit = 0; iFit < nBinPT1D; iFit++ )
@@ -237,7 +244,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
         fPrintLoopTimer("Yield Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
         //
         // Fit
-        auto fResults       =   FitModel(hREC_1D_in_PT[iFit],"CH3",true,iFit,1);
+        auto fResults       =   FitModel(hREC_1D_in_PT[iFit],"1D",true,iFit,1);
         
         if ( !fResults ) continue;
         
@@ -246,7 +253,6 @@ void Analysis_SignalExtraction ( bool fSilent = true )
         hRAW_1D->SetBinContent      (iFit+1,N_Raw->getVal());
         hRAW_1D->SetBinError        (iFit+1,N_Raw->getError());
     }
-    
     cout << Form("[INFO] Starting yield analysis in 1D in 2D bins") << endl;
     for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
     {
@@ -257,9 +263,16 @@ void Analysis_SignalExtraction ( bool fSilent = true )
         fPrintLoopTimer("Yield Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
         
         // Fit
-        fShapeStore[iFit]   =   FitModel(hREC_1D_in_PT_2D_bin[iFit],"CH3",true,iFit,2);
+        fShapeStore[iFit]   =   FitModel(hREC_1D_in_PT_2D_bin[iFit],"2D_bin",true,iFit,2);
+        
+        if ( !fShapeStore[iFit]  ) continue;
+        
+        // Building N_Raw histogram
+        auto N_Raw      = static_cast<RooRealVar*>(fShapeStore[iFit] ->floatParsFinal().at(Signal));
+        hRAW_1D_in_2D_bin->SetBinContent      (iFit+1,N_Raw->getVal());
+        hRAW_1D_in_2D_bin->SetBinError        (iFit+1,N_Raw->getError());
     }
-     
+    //
     cout << Form("[INFO] Starting yield analysis in 2D") << endl;
     for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
     {
@@ -271,11 +284,11 @@ void Analysis_SignalExtraction ( bool fSilent = true )
             // Print Progress
             fPrintLoopTimer("Yield Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
             
-            if ( !fShapeStore[iFit] ) break;
+            if ( !fShapeStore[iFit] ) continue;
             if ( !fShapeStore[jFit] ) continue;
             
             // Fit
-            auto fResults       =   FitModel(hREC_2D_in_PT[iFit][jFit],fShapeStore[iFit],fShapeStore[jFit],"CH3",true,iFit,jFit);
+            auto fResults       =   FitModel(hREC_2D_in_PT[iFit][jFit],fShapeStore[iFit],fShapeStore[jFit],"2D",true,iFit,jFit);
             
             if ( !fResults ) continue;
             
@@ -285,12 +298,12 @@ void Analysis_SignalExtraction ( bool fSilent = true )
             hRAW_2D->SetBinError        (iFit+1,jFit+1,N_Raw->getError());
         }
     }
-     
+    //
     delete[] fShapeStore;
     fStopTimer("Yield Analysis Signal Extrapolation");
     
     outCheckFitYld->Close();
-    
+    //
     fStartTimer("Yield in Multiplicity Analysis Signal Extrapolation");
     
     // Total Fit number and progressive
@@ -305,9 +318,9 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     {
         // Storing Results for shape
         RooFitResult  **fShapeStore =   new RooFitResult   *[nBinPT2D];
-        
+        //
         cout << Form("[INFO] Starting Multiplicity yield analysis in bin [%1.2f-%1.2f]",fArrMult[iMult],fArrMult[iMult+1]) << endl;
-        
+        //
         cout << Form("[INFO] Starting Multiplicity yield analysis in 1D") << endl;
         for ( Int_t iFit = 0; iFit < nBinPT1D; iFit++ )
         {
@@ -318,7 +331,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
             fPrintLoopTimer("Yield in Multiplicity Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
             
             // Fit
-            auto fResults = FitModel(hREC_1D_in_MT_in_PT[iMult][iFit],"CH3",true,iFit,1);
+            auto fResults = FitModel(hREC_1D_in_MT_in_PT[iMult][iFit],Form("1D_%i",iMult),true,iFit,1);
             
             if ( !fResults ) continue;
             
@@ -327,7 +340,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
             hRAW_1D_in_MT[iMult]->SetBinContent     (iFit+1,N_Raw->getVal());
             hRAW_1D_in_MT[iMult]->SetBinError       (iFit+1,N_Raw->getError());
         }
-        
+        //
         cout << Form("[INFO] Starting Multiplicity yield analysis in 1D in 2D bins") << endl;
         for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
         {
@@ -338,9 +351,9 @@ void Analysis_SignalExtraction ( bool fSilent = true )
             fPrintLoopTimer("Yield in Multiplicity Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
             
             // Fit
-            fShapeStore[iFit]   =   FitModel(hREC_1D_in_MT_in_PT_2D_bin[iMult][iFit],"",true,iFit,2);
+            fShapeStore[iFit]   =   FitModel(hREC_1D_in_MT_in_PT_2D_bin[iMult][iFit],Form("2D_bin_%i",iMult),true,iFit,2);
         }
-        
+        //
         cout << Form("[INFO] Starting Multiplicity yield analysis in 2D") << endl;
         for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ )
         {
@@ -356,7 +369,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
                 if ( !fShapeStore[jFit] ) continue;
                 
                 // Fit
-                auto fResults       =   FitModel(hREC_2D_in_MT_in_PT[iMult][iFit][jFit],fShapeStore[iFit],fShapeStore[jFit],"",true,iFit,jFit);
+                auto fResults       =   FitModel(hREC_2D_in_MT_in_PT[iMult][iFit][jFit],fShapeStore[iFit],fShapeStore[jFit],Form("2D_%i",iMult),true,iFit,jFit);
                 
                 if ( !fResults ) continue;
                 
@@ -372,7 +385,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     outCheckFitMlt->Close();
     
     fStopTimer("Yield in Multiplicity Analysis Signal Extrapolation");
-    
+    //
     //--------------------------//
     // PostProcessin output obj //
     //--------------------------//
@@ -409,6 +422,7 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     //
     hEvntEff->Write();
     hRAW_1D->Write();
+    hRAW_1D_in_2D_bin->Write();
     hRAW_2D->Write();
     //
     outFil2->Close();

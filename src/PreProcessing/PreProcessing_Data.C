@@ -299,10 +299,15 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
             U_AccCand[U_nAccept] = iPhi;
             U_nAccept++;
         }
-        if ( U_nAccept == 0 )   { hTriggerEvt->Fill(0); continue; }
-        fHEventCount_PhiCandidate_Accepted_in_MT->Fill(evPhiCandidate.Multiplicity);
+        if ( U_nAccept == 0 )       hTriggerEvt->Fill(0);
         
         for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )    {
+            // Must have at least 1 candidate
+            if ( U_nAccept < 1 ) break;
+
+            // Selecting valid candidates
+            if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi) ) continue;
+            
             // >-> 1-Dimensional Analysis Fill   //
             //
             // >->-->-> Utilities
@@ -315,6 +320,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
             // >->-->-> Trigger
             //
             if ( !fCheckFill1 ) {
+                fHEventCount_PhiCandidate_Accepted_in_MT->Fill(evPhiCandidate.Multiplicity);
                 hTriggerEvt->Fill(1);
                 fCheckFill1 = true;
             }

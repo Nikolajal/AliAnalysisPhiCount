@@ -22,7 +22,7 @@ enum            fitresults2D
 // Performance Values
 auto const  kCPU_use                =   3;
 auto const  kNCycle_                =   1;
-auto const  kStatEvalCycles         =   10000;
+auto const  kStatEvalCycles         =   1000;
 
 // Analysis Values
 auto const  bPythiaTest             =   kFALSE;
@@ -76,6 +76,7 @@ auto const  kKaonMassUncert         =   .000013;
 auto const  kDetectorSlope          =   1.;
 auto const  kBranchingRtio          =   0.489;
 auto const  kVertexEfficnc          =   0.99;
+auto const  kTriggerEfficnc         =   0.85;
 auto const  kRapidityIntvl          =   1.;
 
 //-// Analysis systematics (%)
@@ -101,19 +102,19 @@ const   Float_t   fMaxIM2D  = 1.08;
         Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];
 
 //-// pT bins 1D
-const   Int_t     nBinPT1D  =   23;
-const   Float_t   fMinPT1D  =   0.0;
-const   Float_t   fMaxPT1D  =   21;
+const   Int_t     nBinPT1D  =   20;
+const   Float_t   fMinPT1D  =   0.00;
+const   Float_t   fMaxPT1D  =   10.0;
         Float_t  *fArrPT1D  =   new Float_t [nBinPT1D+1];
 
 //-// pT bins 2D
 const   Int_t     nBinPT2D  =   12;
-const   Float_t   fMinPT2D  =   0.0;
-const   Float_t   fMaxPT2D  =   21;
+const   Float_t   fMinPT2D  =   0.00;
+const   Float_t   fMaxPT2D  =   10.0;
         Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
 
 //-// Muliplicity bins
-const   Int_t     nBinMult  =   4;
+const   Int_t     nBinMult  =   5;
 const   Float_t   fMinMult  =   0.0;
 const   Float_t   fMaxMult  =   100.0;
         Float_t  *fArrMult  =   new Float_t [nBinMult+1];
@@ -212,9 +213,6 @@ void    fSetBinPT1D ()
     fArrPT1D[18]    =   7.00;
     fArrPT1D[19]    =   8.00;
     fArrPT1D[20]    =   10.0;
-    fArrPT1D[21]    =   13.0;
-    fArrPT1D[22]    =   16.0;
-    fArrPT1D[23]    =   21.0;
 }
 
 void    fSetBinPT2D ()
@@ -222,25 +220,26 @@ void    fSetBinPT2D ()
     fArrPT2D[0]  =  0.00;
     fArrPT2D[1]  =  0.20;
     fArrPT2D[2]  =  0.40;
-    fArrPT2D[3]  =  0.60;
-    fArrPT2D[4]  =  0.80;
-    fArrPT2D[5]  =  1.00;
-    fArrPT2D[6]  =  1.20;
-    fArrPT2D[7]  =  1.40;
-    fArrPT2D[8]  =  1.60;
-    fArrPT2D[9]  =  3.20;
-    fArrPT2D[10] =  5.00;
-    fArrPT2D[11] =  10.0;
-    fArrPT2D[12] =  21.0;
+    fArrPT2D[3]  =  0.70;
+    fArrPT2D[4]  =  1.00;
+    fArrPT2D[5]  =  1.20;
+    fArrPT2D[6]  =  1.40;
+    fArrPT2D[7]  =  1.60;
+    fArrPT2D[8]  =  1.80;
+    fArrPT2D[9]  =  2.00;
+    fArrPT2D[10] =  3.00;
+    fArrPT2D[11] =  5.00;
+    fArrPT2D[12] =  10.0;
 }
 
 void    fSetBinMult ()
 {
-    fArrMult[0]  =  0.;
-    fArrMult[1]  =  8.;
-    fArrMult[2]  =  22.;
-    fArrMult[3]  =  45.;
-    fArrMult[4]  =  100.;
+    fArrMult[0]  =  0.00;
+    fArrMult[1]  =  5.00;
+    fArrMult[2]  =  15.0;
+    fArrMult[3]  =  30.0;
+    fArrMult[4]  =  50.0;
+    fArrMult[5]  =  100.;
 }
 
 void    fSetBinRap_ ()
@@ -590,7 +589,7 @@ void                fSetLevyTsalis                  ( ) {
     
     // n-Parameter
     fLevyFit1D  ->  SetParLimits(1,2.1,7.5);
-    fLevyFit1D  ->  SetParameter(1,6.); // 6.7
+    fLevyFit1D  ->  SetParameter(1,6.7); // 6.7
     
     // T-Parameter
     fLevyFit1D  ->  SetParLimits(2,.21,.750);
@@ -623,7 +622,7 @@ Double_t*           fExtrapolateModel               ( Tclass *THdata, TString fN
     fSetLevyTsalis();
     
     // Fit the Spectra
-    THdata->Fit(fLevyFit1D,"IMREQ0S","",0.4,10.);
+    THdata->Fit(fLevyFit1D,"IMREQ0S","",0.6,4.);
     
     // Save to further checks
     TCanvas * fCheckFit = new TCanvas();
@@ -718,7 +717,7 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
         //  Generating the Fit TGraph
         auto fSubject   =   fRandomizePoints(gStatistics,gSystematics);
         //
-        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0");
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.6,4.);
         //
         hStatIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
     }
@@ -731,7 +730,7 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
         //  Generating the Fit TGraph
         auto fSubject   =   fRandomizePoints(gSystematics,gStatistics);
         //
-        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0");
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.6,4.);
         //
         hSystIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
     }
@@ -1288,7 +1287,7 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     else                        sMass   = RooRealVar        ("sMass","sMass"    ,kPMas,kPMas*0.9,kPMas*1.1);
     
     if ( bPythiaTest )          sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.);
-    else                        sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.5,0.,1.);
+    else                        sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.001,0.,0.002);
     
     // Coefficients
     RooRealVar nSS      = RooRealVar        ("1nSS","1nSS"      ,0.5*nEntries,0.,nEntries);
@@ -1341,6 +1340,7 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
         fSaveToFrame                ->Draw("same");
         fLegend                     ->Draw("same");
         fSaveToCanvas               ->Write ();
+        fSaveToCanvas               ->SaveAs(Form("result/SEFitCheck/PT_%.1f_%.1f_1D_%s.pdf",fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName));
         delete fSaveToCanvas;
     }
     
@@ -1382,7 +1382,7 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     
     // Background PDF Coefficients
     RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,-1,1);//,0.5,-1,1);
-    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,0.,-1,1);//,-0.1,-1,1);
+    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,-0.1,-1,1);//,-0.1,-1,1);
     RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.,-1,1);//,0.01,-1,1);
     RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,0.,-1,1);//,-0.05,-1,1);
     
@@ -1402,7 +1402,7 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     else                        sMass   = RooRealVar        ("sMass","sMass"    ,kPMas,kPMas*0.9,kPMas*1.1);
     
     if ( bPythiaTest )          sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.);
-    else                        sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.5,0.,1.);
+    else                        sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.001,0.,0.002);
     
     // Coefficients
     RooRealVar nSS      = RooRealVar        ("1nSS","1nSS"      ,0.5*nEntries,0.,nEntries);
@@ -1455,6 +1455,7 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
         fSaveToFrame                ->Draw("same");
         fLegend                     ->Draw("same");
         fSaveToCanvas               ->Write ();
+        fSaveToCanvas               ->SaveAs(Form("result/SEFitCheck/PT_%.1f_%.1f_1D_%s.pdf",fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data()));
         delete fSaveToCanvas;
     }
     
@@ -1566,7 +1567,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     if ( fSaveToFile )
     {
         int         nBinsPrint      =   3;
-        double      dIncrement      =   (fInvMassValMin-fInvMassValMax)/nBinsPrint;
+        double      dIncrement      =   (fInvMassValMax-fInvMassValMin)/nBinsPrint;
         TLatex*     latext          =   new TLatex();
         TCanvas*    cTotal          =   new TCanvas("","",0,45,1440,855);
                     cTotal          ->  SetTitle(Form("Slices of 2D Invariant Mass of Kaons in pT %.1f-%.1f GeV, %.1f-%.1f GeV",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
@@ -1643,6 +1644,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
                                         varx.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
                                         vary.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
         cTotal ->Write();
+        cTotal               ->SaveAs(Form("result/SEFitCheck/PT_%.1f_%.1f__%.1f_%.1f_%s.pdf",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fHistName.c_str()));
         delete cTotal;
     }
     
