@@ -69,8 +69,8 @@ auto const  fKaonCandidateEff_Tree  =   "KaonEfficiency";
 
 // Analysis Values
 //-// Analysis constants
-auto const  kParticleMass_          =   1.019455;   //  1.019455    +- 0.000020
-auto const  kParticleWidth          =   0.00426;    //  0.00426     +- 0.00004
+auto const  kPhiMesonMass_          =   1.019455;   //  1.019455    +- 0.000020
+auto const  kPhiMesonWidth          =   0.00426;    //  0.00426     +- 0.00004
 auto const  kKaonMass               =   .493677;
 auto const  kKaonMassUncert         =   .000013;
 auto const  kDetectorSlope          =   1.;
@@ -580,24 +580,24 @@ Double_t            fGammaPhiError                  ( Double_t fYieldPhi, Double
 //
 //_____________________________________________________________________________
 //
-void                fSetLevyTsalis                  ( ) {
+void                fSetLevyTsalis                  ( Double_t fIntegral = 0.032 ) {
     // - // Setting up Fit parameters
     
     // Mass
     fLevyFit1D  ->  SetParLimits(0,0.,2.);
-    fLevyFit1D  ->  SetParameter(0,kPMas);
+    fLevyFit1D  ->  SetParameter(0,kPMas);  //Particle Mass?
     
     // n-Parameter
     fLevyFit1D  ->  SetParLimits(1,2.1,7.5);
-    fLevyFit1D  ->  SetParameter(1,6.7); // 6.7
+    fLevyFit1D  ->  SetParameter(1,6.7);    // 6.7
     
     // T-Parameter
     fLevyFit1D  ->  SetParLimits(2,.21,.750);
-    fLevyFit1D  ->  SetParameter(2,.272); // .272
+    fLevyFit1D  ->  SetParameter(2,.272);   // .272
     
     // dN/dy
     fLevyFit1D  ->  SetParLimits(3,1.e-7,1.e-1);
-    fLevyFit1D  ->  SetParameter(3,0.032);
+    fLevyFit1D  ->  SetParameter(3,fIntegral);  //
 }
 //
 //_____________________________________________________________________________
@@ -750,7 +750,7 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
 //
 //_____________________________________________________________________________
 //
-Double_t*           fIntegrateModel                 ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "IntegrateSignal" )    {
+Double_t*           fIntegrateModel                 ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "IntegrateSignal" )      {
     //  Optimisation mode
     gROOT->SetBatch(true);
     
@@ -798,7 +798,7 @@ Double_t*           fIntegrateModel                 ( TGraphAsymmErrors* gStatis
 //
 //_____________________________________________________________________________
 //
-Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "MeasureFullYield" ) {
+Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "MeasureFullYield" )     {
     // Optimisation mode
     gROOT->SetBatch(true);
     
