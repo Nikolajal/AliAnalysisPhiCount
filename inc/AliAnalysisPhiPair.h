@@ -8,12 +8,12 @@
 //      GLOBAL VARIABLES        //
 //------------------------------//
 
-enum            fitresults1D
+enum            fFitResults1D
 {
     Background, Signal
 };
 
-enum            fitresults2D
+enum            fFitResults2D
 {
 
     BackgBackg, BackgSignl, SignlBackg, SignlSignl
@@ -1084,7 +1084,7 @@ RooFitResult*   FitModel                        ( TH1F * _h_Data, string fOption
     RooAddPdf       fModel_;
     
     // Fitting histogram and
-    RooFitResult   *fResult     =   fCoreFitModel( fDataHist, fVariable, fModel_, fFitOptions[2], fFitOptions[3], fFitOptions[4], fFitOptions[5], fFitOptions[6] );
+    RooFitResult   *fFitResults     =   fCoreFitModel( fDataHist, fVariable, fModel_, fFitOptions[2], fFitOptions[3], fFitOptions[4], fFitOptions[5], fFitOptions[6] );
     
     // Saving to canvas on file if requested
     if ( fOption.find("S") != -1 )
@@ -1118,7 +1118,7 @@ RooFitResult*   FitModel                        ( TH1F * _h_Data, string fOption
     // Un-Silencing TCanvas Pop-Up
     gROOT->SetBatch(false);
     
-    return fResult;
+    return fFitResults;
 }
 
 RooFitResult*   FitModel                        ( TH1D * _h_Data, string fOption = "" )
@@ -1299,11 +1299,13 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     RooAddPdf       fMod= RooAddPdf        ("fMod","fMod"      ,RooArgList(fBkg,fSig),RooArgList(nBB,nSS));
     
     
-    RooFitResult* result;
+    RooFitResult* fFitResults;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        result  =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
-        result  =   fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        fFitResults      =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        fFitResults      =   fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(Signal));
+        if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
     }
     
     if ( fSaveToFile )
@@ -1347,7 +1349,7 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     // Un-Silencing TCanvas Pop-Up
     gROOT->SetBatch(false);
     
-    return result;
+    return fFitResults;
 }
 
 RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSaveToFile = false, Int_t PTindex = -1, Int_t PTDimension = 1, string fOption = "" )
@@ -1413,12 +1415,13 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     RooChebychev    fBkg= RooChebychev     ("fBkg","fBkg"      ,InvMass,RooArgSet(ch0,ch1,ch2,ch3,ch4,ch5));
     RooAddPdf       fMod= RooAddPdf        ("fMod","fMod"      ,RooArgList(fBkg,fSig),RooArgList(nBB,nSS));
     
-    
-    RooFitResult* result;
+    RooFitResult* fFitResults;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        result  =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
-        result = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        fFitResults      =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        fFitResults      =   fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(Signal));
+        if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
     }
     
     if ( fSaveToFile )
@@ -1462,7 +1465,7 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     // Un-Silencing TCanvas Pop-Up
     gROOT->SetBatch(false);
     
-    return result;
+    return fFitResults;
 }
 
 RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooFitResult * fFitShapeY, string fHistName = "", Bool_t fSaveToFile = false, Int_t PTindex = -1, Int_t PTjndex = -1, string fOption = "" )
@@ -1556,11 +1559,14 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     RooAddPdf           fMod  ("fMod2D","fMod2D"        ,RooArgList(fBB,fSS,fSB,fBS),RooArgList(n1,n0,n3,n2));
     
 
-    RooFitResult* FitResults;
+    RooFitResult* fFitResults;
+    RooFitResult* fFitResults;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        FitResults  =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
-       FitResults = fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        fFitResults      =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        fFitResults      =   fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        auto N_Raw      =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(Signal));
+        if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
     }
     
     // Save to file
@@ -1652,7 +1658,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     gROOT->SetBatch(false);
     
     // Fit
-    return FitResults;
+    return fFitResults;
 }
 
 RooFitResult*   fExtrapolateModelLEGACYROOFIT               ( TH1F *HData, TString fName = "ExtrapolateSignal" ) {
