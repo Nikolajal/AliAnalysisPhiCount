@@ -6,7 +6,7 @@ mkdir result_MCG_PhiQuickReference/logs
 
 strun=0
 nruns=1
-njobs=5
+njobs=3
 nevents=1000000
 
 echo "[INFO] Starting production"
@@ -14,7 +14,7 @@ echo "[INFO] Starting production"
 
 for run in $(seq $strun $(($strun + $nruns - 1))); do
     
-    for option in {-1,1,2,3,4,5,6,7}; do
+    for option in {5,6,7,3,0,1,2,4,8,9}; do
 
     ### wait if there are too many jobs running
     while true; do
@@ -26,7 +26,7 @@ for run in $(seq $strun $(($strun + $nruns - 1))); do
         sleep 60
     done
     
-    runid=$(printf "%09d" $(( run + 1000000000 * (option +1) )))
+    runid=$(printf "%09d" $(( run + 1000000000 * (option) )))
     seed=$((123456789 + $run * 2))
     
     echo "[INFO] Starting run $runid with production option $option"
