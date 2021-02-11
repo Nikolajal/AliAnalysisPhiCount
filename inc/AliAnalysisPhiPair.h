@@ -22,7 +22,7 @@ enum            fFitResults2D
 // Performance Values
 auto const  kCPU_use                =   3;
 auto const  kNCycle_                =   5;
-auto const  kStatEvalCycles         =   1000;
+auto const  kStatEvalCycles         =   10;
 
 // Analysis Values
 auto const  bPythiaTest             =   kFALSE;
@@ -80,7 +80,7 @@ auto const  kTriggerEfficnc         =   0.85;
 auto const  kRapidityIntvl          =   1.;
 
 //-// Analysis systematics (%)
-auto const  kBRSystematics          =   (0.5/48.9);
+auto const  kBRSystematics          =   0.01;
 
 auto const  kPMas                   =   1.019455;   //  1.019455    +- 0.000020
 auto const  kPWid                   =   0.00426;    //  0.00426     +- 0.00004
@@ -584,7 +584,7 @@ void                fSetLevyTsalis                  ( Double_t fIntegral = 0.032
     // - // Setting up Fit parameters
     
     // Mass
-    fLevyFit1D  ->  SetParLimits(0,0.,2.);
+    fLevyFit1D  ->  SetParLimits(0,0.,10.);
     fLevyFit1D  ->  SetParameter(0,kPMas);  //Particle Mass?
     
     // n-Parameter
@@ -602,90 +602,36 @@ void                fSetLevyTsalis                  ( Double_t fIntegral = 0.032
 //
 //_____________________________________________________________________________
 //
-TGraphAsymmErrors*  fSetSystErr                     ( ) {
-    return nullptr;
-}
-//_____________________________________________________________________________
-//
-template < class Tclass >
-Double_t*           fExtrapolateModel               ( Tclass *THdata, TString fName = "ExtrapolateSignal" ) {
-    // Optimisation mode
-    gROOT->SetBatch(true);
-    
-    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
-    Double_t   *fResult = new   Double_t    [6];
-    
-    // Setting -1. for the default
-    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
-    
-    // Set Standard Fit
-    fSetLevyTsalis();
-    
-    // Fit the Spectra
-    THdata->Fit(fLevyFit1D,"IMREQ0S","",0.4,10.);
-    
-    // Save to further checks
-    TCanvas * fCheckFit = new TCanvas();
-    gPad->SetLogy();
-    THdata      ->Draw("same");
-    fLevyFit1D  ->Draw("same");
-    fCheckFit   ->Write();
-    fCheckFit   ->SaveAs(Form("tmp/%s.pdf",fName.Data()));
-    
-    fResult[0]  =   fLevyFit1D->Integral(0.,0.4);
-    fResult[1]  =   fLevyFit1D->IntegralError(0.,0.4);
-    
-    return fResult;
-    
-    // End Optimisation mode
-    gROOT->SetBatch(false);
+void                fFitLevyTsalis                  ( TGraphAsymmErrors* gToBeFitted ) {
+    return;
 }
 //
 //_____________________________________________________________________________
 //
-template < class Tclass >
-Double_t*           fIntegrateModel                 ( Tclass *THdata, TString fName = "IntegrateSignal" )    {
-    // Optimisation mode
-    gROOT->SetBatch(true);
-    
-    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
-    Double_t   *fResult = new   Double_t    [6];
-    
-    // Setting -1. for the default
-    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
-    
-    fResult[0]  =   THdata  ->IntegralAndError(-1.,100,fResult[1],"width");
-    //fSetSystErr(THdata)     ->IntegralAndError(-1.,100,fResult[2],"width");
-    
+TGraphAsymmErrors*  fSetSystErrors                  ( TGraphAsymmErrors* gStatistics ) {
+    TGraphAsymmErrors  *fResult =   new TGraphAsymmErrors(*gStatistics);
+    for ( Int_t iPnt = 0; iPnt < fResult->GetN(); iPnt++ ) {
+        auto    fYValue =   fResult ->  GetPointY(iPnt);
+        fResult ->  SetPointEYhigh  ( iPnt, fYValue*sqrt(kBRSystematics*kBRSystematics) );
+        fResult ->  SetPointEYlow   ( iPnt, fYValue*sqrt(kBRSystematics*kBRSystematics) );
+    }
     return fResult;
-    
-    // End Optimisation mode
-    gROOT->SetBatch(false);
 }
 //
 //_____________________________________________________________________________
 //
-template < class Tclass >
-Double_t*           fMeasureFullYield               ( Tclass *THdata, TString fName = "MeasureFullYield" ) {
-    // Optimisation mode
-    gROOT->SetBatch(true);
-    
-    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
-    Double_t   *fResult             =   new Double_t        [6];
-    
-    // Setting -1. for the default
-    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
-    
-    auto        fIntegralResults    =   fIntegrateModel     (THdata,fName);
-    auto        fExtrapolResults    =   fExtrapolateModel   (THdata,fName);
-    
-    fResult[0]  =   fIntegralResults[0] +   fExtrapolResults[0];
-    fResult[1]  =   fIntegralResults[1] +   fExtrapolResults[1];
-    
+std::vector<TGraphAsymmErrors*>   fSetSystErrors    ( std::vector<TGraphAsymmErrors*>  gStatistics ) {
+    std::vector<TGraphAsymmErrors*> fResult;
+    for ( auto& iGraph : gStatistics )  {
+        TGraphAsymmErrors  *fCurrentGraph =   new TGraphAsymmErrors(*iGraph);
+        for ( Int_t iPnt = 0; iPnt < fCurrentGraph->GetN(); iPnt++ ) {
+            auto    fYValue =   fCurrentGraph ->  GetPointY(iPnt);
+            fCurrentGraph ->  SetPointEYhigh  ( iPnt, fYValue*sqrt(4*kBRSystematics*kBRSystematics) );
+            fCurrentGraph ->  SetPointEYlow   ( iPnt, fYValue*sqrt(4*kBRSystematics*kBRSystematics) );
+        }
+        fResult.push_back(fCurrentGraph);
+    }
     return fResult;
-    
-    // End Optimisation mode
-    gROOT->SetBatch(false);
 }
 //
 //_____________________________________________________________________________
@@ -693,23 +639,27 @@ Double_t*           fMeasureFullYield               ( Tclass *THdata, TString fN
 Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, Double_t fIntegral = 0.032, TString fName = "ExtrapolateSignal" )    {
     //  Optimisation mode
     gROOT->SetBatch(true);
-    
-    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err, Syst err
-    Double_t   *fResult = new   Double_t    [10];
-    
-    //  Checking the consistency of TGraphs
-    Int_t   fNPoints =   gStatistics ->  GetN();
-    if  ( fNPoints  != gSystematics ->  GetN() )
-    {
-        cout << "[ERROR] Systematics and Statistics do not have the same number of points! Skipping this one..." << endl;
-        return nullptr;
-    }
-    
     //
+    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err, Syst err
+    Double_t   *fResult     =   new Double_t    [10];
+    //
+    //  Measuring mean value
+    fSetLevyTsalis(fIntegral);
+    TGraphAsymmErrors   *   gTotal  =   new TGraphAsymmErrors(*(fSumGraphErrors(gStatistics,gSystematics)));
+    gTotal->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.7,10.);
+    fResult[0]  =   fLevyFit1D  ->Integral(0.,0.4);
+    //
+    TCanvas *   cDrawFit    =   new TCanvas(Form("gTotal_%s",fName.Data()),Form("gTotal_%s",fName.Data()));
+    gStyle->SetOptStat(0);
+    gPad->SetLogy();
+    gTotal->Draw();
+    fLevyFit1D->Draw("same");
+    cDrawFit->Write();
+    cDrawFit->SaveAs(Form("tmp/gTotal_%s.pdf",fName.Data()));
+    delete cDrawFit;
+    //
+    //  Measuring Statistical error
     TH1D*   hStatIntegral   =   new TH1D(Form("hStatIntegral_%s",fName.Data()),"hStatIntegral",100000,0.0,.1);
-    TH1D*   hSystIntegral   =   new TH1D(Form("hSystIntegral_%s",fName.Data()),"hSystIntegral",100000,0.0,.1);
-    
-    //  Evaluating the Statistical Errors
     for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
         //  Set Standard Fit
         fSetLevyTsalis(fIntegral);
@@ -717,12 +667,14 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
         //  Generating the Fit TGraph
         auto fSubject   =   fRandomizePoints(gStatistics,gSystematics);
         //
-        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.4,10.);
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.7,10.);
         //
         hStatIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
     }
-    
-    //  Evaluating the Statistical Errors
+    fResult[1]  =   hStatIntegral->GetRMS();
+    //
+    //  Measuring Systematics error
+    TH1D*   hSystIntegral   =   new TH1D(Form("hSystIntegral_%s",fName.Data()),"hSystIntegral",100000,0.0,.1);
     for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
         //  Set Standard Fit
         fSetLevyTsalis(fIntegral);
@@ -730,22 +682,19 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
         //  Generating the Fit TGraph
         auto fSubject   =   fRandomizePoints(gSystematics,gStatistics);
         //
-        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.4,10.);
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.7,10.);
         //
         hSystIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
     }
-    
+    fResult[2]  =   hSystIntegral->GetRMS();
+    //
     hStatIntegral->Write();
     hSystIntegral->Write();
-
-    fResult[0]  =   hStatIntegral->GetMean();
-    fResult[1]  =   hStatIntegral->GetRMS();
-    fResult[2]  =   hSystIntegral->GetRMS();
-    
-    return fResult;
-    
+    //
     //  End Optimisation mode
     gROOT->SetBatch(false);
+    //
+    return fResult;
 }
 //
 //_____________________________________________________________________________
@@ -753,18 +702,16 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
 Double_t*           fIntegrateModel                 ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "IntegrateSignal" )      {
     //  Optimisation mode
     gROOT->SetBatch(true);
-    
-    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err, Syst err
-    Double_t   *fResult = new   Double_t    [10];
-    
-    //  Checking the consistency of TGraphs
+    //
     Int_t   fNPoints =   gStatistics ->  GetN();
     if  ( fNPoints  != gSystematics ->  GetN() )
     {
         cout << "[ERROR] Systematics and Statistics do not have the same number of points! Skipping this one..." << endl;
         return nullptr;
     }
-    
+    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err, Syst err
+    Double_t   *fResult = new   Double_t    [10];
+    //
     //  Calculate Integral and mean pT
     for ( Int_t iFill = 0; iFill < 5; iFill++ ) fResult[iFill]  =   0;
     for ( Int_t iFit = 0; iFit < fNPoints; iFit++ ) {
@@ -775,7 +722,7 @@ Double_t*           fIntegrateModel                 ( TGraphAsymmErrors* gStatis
         auto    fYErrStatHigh   =   ( gStatistics ->  GetErrorYhigh(iFit) );
         auto    fYErrSystLow    =   ( gSystematics ->  GetErrorYlow(iFit) );
         auto    fYErrSystHigh   =   ( gSystematics ->  GetErrorYhigh(iFit) );
-        
+        //
         fResult[0]             +=   fXBinWidth*fYValue;
         fResult[1]             +=   fXBinWidth*fYErrStatLow;
         fResult[2]             +=   fXBinWidth*fYErrStatHigh;
@@ -789,11 +736,11 @@ Double_t*           fIntegrateModel                 ( TGraphAsymmErrors* gStatis
         fResult[9]             +=   fXBinWidth*fYErrSystHigh;
         */
     }
-    
-    return fResult;
-    
+    //
     //  End Optimisation mode
     gROOT->SetBatch(false);
+    //
+    return fResult;
 }
 //
 //_____________________________________________________________________________
@@ -801,29 +748,26 @@ Double_t*           fIntegrateModel                 ( TGraphAsymmErrors* gStatis
 Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "MeasureFullYield" )     {
     // Optimisation mode
     gROOT->SetBatch(true);
-    
+    //
     // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
     Double_t   *fResult             =   new Double_t        [6];
-    
-    // Setting -1. for the default
-    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
-    
+    //
     auto        fIntegralResults    =   fIntegrateModel     (gStatistics,gSystematics,fName);
     auto        fExtrapolResults    =   fExtrapolateModel   (gStatistics,gSystematics,fIntegralResults[0],fName);
-    
+    //
     fResult[0]  =   fIntegralResults[0] +   fExtrapolResults[0];
     fResult[1]  =   fIntegralResults[1] +   fExtrapolResults[1];
     fResult[2]  =   fIntegralResults[2] +   fExtrapolResults[2];
-    
+    //
     // !TODO: Revise the combination method
     fResult[3]  =   fIntegralResults[3] +   fExtrapolResults[3];
     fResult[4]  =   fIntegralResults[4] +   fExtrapolResults[4];
     fResult[5]  =   fIntegralResults[5] +   fExtrapolResults[5];
-    
-    return fResult;
-    
+    //
     // End Optimisation mode
     gROOT->SetBatch(false);
+    //
+    return fResult;
 }
 //
 //------------------------------//
@@ -1712,5 +1656,88 @@ RooFitResult*   fExtrapolateModelLEGACYROOFIT               ( TH1F *HData, TStri
     return result;
 }
 
+//
+template < class Tclass >
+Double_t*           fExtrapolateModel               ( Tclass *THdata, TString fName = "ExtrapolateSignal" ) {
+    // Optimisation mode
+    gROOT->SetBatch(true);
+    
+    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
+    Double_t   *fResult = new   Double_t    [6];
+    
+    // Setting -1. for the default
+    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
+    
+    // Set Standard Fit
+    fSetLevyTsalis();
+    
+    // Fit the Spectra
+    THdata->Fit(fLevyFit1D,"IMREQ0S","",0.7,10.);
+    
+    // Save to further checks
+    TCanvas * fCheckFit = new TCanvas();
+    gPad->SetLogy();
+    THdata      ->Draw("same");
+    fLevyFit1D  ->Draw("same");
+    fCheckFit   ->Write();
+    fCheckFit   ->SaveAs(Form("tmp/%s.pdf",fName.Data()));
+    
+    fResult[0]  =   fLevyFit1D->Integral(0.,0.4);
+    fResult[1]  =   fLevyFit1D->IntegralError(0.,0.4);
+    
+    return fResult;
+    
+    // End Optimisation mode
+    gROOT->SetBatch(false);
+}
+//
+//_____________________________________________________________________________
+//
+template < class Tclass >
+Double_t*           fIntegrateModel                 ( Tclass *THdata, TString fName = "IntegrateSignal" )    {
+    // Optimisation mode
+    gROOT->SetBatch(true);
+    
+    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
+    Double_t   *fResult = new   Double_t    [6];
+    
+    // Setting -1. for the default
+    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
+    
+    fResult[0]  =   THdata  ->IntegralAndError(-1.,100,fResult[1],"width");
+    //fSetSystErr(THdata)     ->IntegralAndError(-1.,100,fResult[2],"width");
+    
+    return fResult;
+    
+    // End Optimisation mode
+    gROOT->SetBatch(false);
+}
+//
+//_____________________________________________________________________________
+//
+template < class Tclass >
+Double_t*           fMeasureFullYield               ( Tclass *THdata, TString fName = "MeasureFullYield" ) {
+    // Optimisation mode
+    gROOT->SetBatch(true);
+    
+    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
+    Double_t   *fResult             =   new Double_t        [6];
+    
+    // Setting -1. for the default
+    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
+    
+    auto        fIntegralResults    =   fIntegrateModel     (THdata,fName);
+    auto        fExtrapolResults    =   fExtrapolateModel   (THdata,fName);
+    
+    fResult[0]  =   fIntegralResults[0] +   fExtrapolResults[0];
+    fResult[1]  =   fIntegralResults[1] +   fExtrapolResults[1];
+    
+    return fResult;
+    
+    // End Optimisation mode
+    gROOT->SetBatch(false);
+}
+//
+//_____________________________________________________________________________
 
 #endif

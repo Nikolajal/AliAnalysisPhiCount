@@ -128,8 +128,8 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., string fO
     hEFF_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
     SetAxis(hEFF_1D,"PT 1D");
     //
-    hName       =   Form("hREC_1D_in_2Dbin");
-    hTitle      =   Form("hREC_1D_in_2Dbin");
+    hName       =   Form("hREC_1D_in_2D_bin");
+    hTitle      =   Form("hREC_1D_in_2D_bin");
     hREC_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
     SetAxis(hREC_1D_in_2Dbin,"PT 1D");
     //

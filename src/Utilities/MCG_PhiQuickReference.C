@@ -92,9 +92,6 @@ Double_t    fGammaPhiError  ( Double_t fYieldPhi, Double_t fYieldPhiPhi, Double_
     return  fPar1 + fPar2;
 }
 
-
-
-
 int main (int argc, char *argv[])
 {
     // Check everything is good
@@ -147,12 +144,6 @@ int main (int argc, char *argv[])
     pythia.readString(Form("333:mMax = %f",1.25));
     switch (fOption)
     {
-        case 0:
-            pythia.readString("ColourReconnection:reconnect = on");
-            pythia.readString("ColourReconnection:mode = 0");
-            cout << "[INFO] Using Colour reconnection Mode 0" << endl;
-            cout << "The MPI-based original Pythia 8 scheme." << endl;
-            break;
         case 1:
             pythia.readString("ColourReconnection:reconnect = on");
             pythia.readString("ColourReconnection:mode = 1");
@@ -193,7 +184,7 @@ int main (int argc, char *argv[])
             pythia.readString("BeamRemnants:remnantMode = 1");
             pythia.readString("BeamRemnants:saturation = 5");
             pythia.readString("ColourReconnection:mode = 1");
-            pythia.readString("ColourReconnection:allowDoubleJunRem = off = 1");
+            pythia.readString("ColourReconnection:allowDoubleJunRem = off");
             pythia.readString("ColourReconnection:m0 = 2.9");
             pythia.readString("ColourReconnection:allowJunctions = on");
             pythia.readString("ColourReconnection:junctionCorrection = 1.43");
@@ -212,7 +203,7 @@ int main (int argc, char *argv[])
             pythia.readString("BeamRemnants:remnantMode = 1");
             pythia.readString("BeamRemnants:saturation = 5");
             pythia.readString("ColourReconnection:mode = 1");
-            pythia.readString("ColourReconnection:allowDoubleJunRem = off = 1");
+            pythia.readString("ColourReconnection:allowDoubleJunRem = off");
             pythia.readString("ColourReconnection:m0 = 0.3");
             pythia.readString("ColourReconnection:allowJunctions = on");
             pythia.readString("ColourReconnection:junctionCorrection = 1.20");
@@ -232,7 +223,7 @@ int main (int argc, char *argv[])
             pythia.readString("BeamRemnants:remnantMode = 1");
             pythia.readString("BeamRemnants:saturation = 5");
             pythia.readString("ColourReconnection:mode = 1");
-            pythia.readString("ColourReconnection:allowDoubleJunRem = off = 1");
+            pythia.readString("ColourReconnection:allowDoubleJunRem = off");
             pythia.readString("ColourReconnection:m0 = 0.3");
             pythia.readString("ColourReconnection:allowJunctions = on");
             pythia.readString("ColourReconnection:junctionCorrection = 1.15");
@@ -241,7 +232,49 @@ int main (int argc, char *argv[])
             cout << "[INFO] Using Colour reconnection Mode 7" << endl;
             cout << "Mode 3 from https://arxiv.org/pdf/1505.01681.pdf" << endl;
             break;
+        case 8:
+            pythia.readString("MultiPartonInteractions:pT0Ref = 2.15");
+            pythia.readString("BeamRemnants:remnantMode = 1");
+            pythia.readString("BeamRemnants:saturation = 5");
+            pythia.readString("ColourReconnection:allowDoubleJunRem = off");
+            pythia.readString("ColourReconnection:m0 = 0.3");
+            pythia.readString("ColourReconnection:allowJunctions = on");
+            pythia.readString("ColourReconnection:junctionCorrection = 1.2");
+            pythia.readString("ColourReconnection:timeDilationMode = 2");
+            pythia.readString("ColourReconnection:timeDilationPar = 0.18");
+            pythia.readString("Ropewalk:RopeHadronization = on");
+            pythia.readString("Ropewalk:doShoving = on");
+            pythia.readString("Ropewalk:tInit = 1.5");
+            pythia.readString("Ropewalk:deltat = 0.05");
+            pythia.readString("Ropewalk:tShove = 0.1");
+            pythia.readString("Ropewalk:gAmplitude = 0");
+            pythia.readString("Ropewalk:doFlavour = on");
+            pythia.readString("Ropewalk:r0 = 0.5");
+            pythia.readString("Ropewalk:m0 = 0.2");
+            pythia.readString("Ropewalk:beta = 0.1");
+            pythia.readString("PartonVertex:setVertex = on");
+            pythia.readString("PartonVertex:protonRadius = 0.7");
+            pythia.readString("PartonVertex:emissionWidth = 0.1");
+            cout << "[INFO] Using Colour reconnection Mode 8" << endl;
+            cout << "Custom mode 1: QCD based CR w/ ropes" << endl;
+            break;
+        case 9:
+            pythia.readString("MultiPartonInteractions:pT0Ref = 2.15");
+            pythia.readString("BeamRemnants:remnantMode = 1");
+            pythia.readString("BeamRemnants:saturation = 5");
+            pythia.readString("ColourReconnection:allowDoubleJunRem = off");
+            pythia.readString("ColourReconnection:allowJunctions = on");
+            pythia.readString("ColourReconnection:m0 = 0.3");
+            pythia.readString("ColourReconnection:junctionCorrection = 1.2");
+            pythia.readString("ColourReconnection:timeDilationMode = 2");
+            pythia.readString("ColourReconnection:timeDilationPar = 0.18");
+            pythia.readString("Ropewalk:RopeHadronization = off");
+            cout << "[INFO] Using Colour reconnection Mode 9" << endl;
+            cout << "Custom mode 2: QCD based CR w/o ropes" << endl;
+            break;
         default:
+            pythia.readString("ColourReconnection:reconnect = on");
+            pythia.readString("ColourReconnection:mode = 0");
             cout << "[INFO] Using default settings" << endl;
             cout << "To change settings chose from below:" << endl;
             cout << "0. The MPI-based original Pythia 8 scheme." << endl;
@@ -252,6 +285,8 @@ int main (int argc, char *argv[])
             cout << "5. Mode 0 from https://arxiv.org/pdf/1505.01681.pdf." << endl;
             cout << "6. Mode 2 from https://arxiv.org/pdf/1505.01681.pdf." << endl;
             cout << "7. Mode 3 from https://arxiv.org/pdf/1505.01681.pdf." << endl;
+            cout << "8. Custom mode 1: QCD based CR" << endl;
+            cout << "9. Custom mode 2: QCD based CR w/o ropes" << endl;
             break;
     }
     //

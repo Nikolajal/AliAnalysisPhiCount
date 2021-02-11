@@ -1,0 +1,60 @@
+\documentclass[ALICE,manyauthors]{ALICE_analysis_notes}
+%\documentclass[ALICE,manyauthors]{ALICE_scientific_notes}
+%
+%\newcommand{\jpsi}{\rm J/$\psi$}
+%\newcommand{\psip}{$\psi^\prime$}
+%\newcommand{\jpsiDY}{\rm J/$\psi$\,/\,DY}
+%\newcommand{\dd}{\mathrm{d}}
+%\newcommand{\chic}{$\chi_{\rm c}$}
+%\newcommand{\ezdc}{$E_{\rm ZDC}$}
+%\newcommand{\red}{\textcolor{red}}
+%\newcommand{\blue}{\textcolor{blue}}
+\newcommand{\slfrac}[2]{\left.#1\right/#2}
+\usepackage{rotating}
+\usepackage{listings}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{comment}
+\usepackage{siunitx}
+\usepackage{hyperref}
+%
+\begin{document}%
+%%%%%%%%%%%%% ptdr definitions %%%%%%%%%%%%%%%%%%%%%
+%
+%%%%%%%%%%%%%%%  Title page %%%%%%%%%%%%%%%%%%%%%%%%
+%
+\begin{titlepage}
+%
+\PHnumber{ALICE-ANA-2014-xxx} 
+\PHdate{\today}
+%
+%%% Put your own title + short title here:
+\title{My analysis note}
+\ShortTitle{My analysis note}   % appears on right page headers
+%
+\author{Nicola Rubini$^{1}$}
+\author{
+1. University and INFN Bologna\\
+}
+\author{Email: Nicola.Rubini@cern.ch}
+%
+\ShortAuthor{ALICE Analysis Note 2012}      % appears on left page headers, do not change
+%
+\begin{abstract}
+In this Analysis Note is presented the new Analysis Technique for the measurement of the $\phi$-meson pair yield. The $\phi$ meson is reconstructed via its $\phi(1020)\to$K$^{+}$K$^{-}$ decay channel (B.R. 49.2$\pm$0.5\%). Results will be presented about Invariant Mass histograms, inclusive spectra, conditional spectra and a differentiation in multiplicity of the measurement is performed.
+\end{abstract}
+\end{titlepage}
+%
+\tableofcontents
+\newpage
+%
+%	SECTIONS
+%
+\setcounter{secnumdepth}{0}
+\input{Chapters/Introduction.tex}
+\setcounter{secnumdepth}{1}
+\newpage
+\input{Chapters/Dataset_and_event_selection.tex}
+%
+%
+\end{document}
