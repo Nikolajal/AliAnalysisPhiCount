@@ -85,6 +85,11 @@ auto const  kBRSystematics          =   0.01;
 auto const  kPMas                   =   1.019455;   //  1.019455    +- 0.000020
 auto const  kPWid                   =   0.00426;    //  0.00426     +- 0.00004
 
+//-//   Analysis settings
+auto        kDoMultiplicity         =   true;
+auto        kDoYield                =   true;
+auto        kDoTrigger              =   true;
+
 //-// InvMass range Pythia MC
 const   Float_t   fMinIMMC  =   0.75;
 const   Float_t   fMaxIMMC  =   1.25;
@@ -102,15 +107,15 @@ const   Float_t   fMaxIM2D  = 1.08;
         Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];
 
 //-// pT bins 1D
-const   Int_t     nBinPT1D  =   20;
-const   Float_t   fMinPT1D  =   0.00;
-const   Float_t   fMaxPT1D  =   10.0;
+const   Int_t     nBinPT1D  =   21;
+const   Float_t   fMinPT1D  =   0.40;
+const   Float_t   fMaxPT1D  =   21.0;
         Float_t  *fArrPT1D  =   new Float_t [nBinPT1D+1];
 
 //-// pT bins 2D
-const   Int_t     nBinPT2D  =   12;
-const   Float_t   fMinPT2D  =   0.00;
-const   Float_t   fMaxPT2D  =   10.0;
+const   Int_t     nBinPT2D  =   10;
+const   Float_t   fMinPT2D  =   0.40;
+const   Float_t   fMaxPT2D  =   21.0;
         Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
 
 //-// Muliplicity bins
@@ -192,44 +197,43 @@ void    fSetBinNTup ()
 
 void    fSetBinPT1D ()
 {
-    fArrPT1D[0]     =   0.00;
-    fArrPT1D[1]     =   0.20;
-    fArrPT1D[2]     =   0.40;
-    fArrPT1D[3]     =   0.60;
-    fArrPT1D[4]     =   0.80;
-    fArrPT1D[5]     =   1.00;
-    fArrPT1D[6]     =   1.20;
-    fArrPT1D[7]     =   1.40;
-    fArrPT1D[8]     =   1.60;
-    fArrPT1D[9]     =   1.80;
-    fArrPT1D[10]    =   2.00;
-    fArrPT1D[11]    =   2.50;
-    fArrPT1D[12]    =   3.00;
-    fArrPT1D[13]    =   3.50;
-    fArrPT1D[14]    =   4.00;
-    fArrPT1D[15]    =   4.50;
-    fArrPT1D[16]    =   5.00;
-    fArrPT1D[17]    =   6.00;
-    fArrPT1D[18]    =   7.00;
-    fArrPT1D[19]    =   8.00;
-    fArrPT1D[20]    =   10.0;
+    fArrPT1D[0] =   0.4;
+    fArrPT1D[1] =   0.6;
+    fArrPT1D[2] =   0.8;
+    fArrPT1D[3] =   1.0;
+    fArrPT1D[4] =   1.2;
+    fArrPT1D[5] =   1.4;
+    fArrPT1D[6] =   1.6;
+    fArrPT1D[7] =   1.8;
+    fArrPT1D[8] =   2.0;
+    fArrPT1D[9]=   2.5;
+    fArrPT1D[10]=   3.0;
+    fArrPT1D[11]=   3.5;
+    fArrPT1D[12]=   4.0;
+    fArrPT1D[13]=   4.5;
+    fArrPT1D[14]=   5.0;
+    fArrPT1D[15]=   6.0;
+    fArrPT1D[16]=   7.0;
+    fArrPT1D[17]=   8.0;
+    fArrPT1D[18]=   10.0;
+    fArrPT1D[19]=   13.0;
+    fArrPT1D[20]=   16.0;
+    fArrPT1D[21]=   21.0;
 }
 
 void    fSetBinPT2D ()
 {
-    fArrPT2D[0]  =  0.00;
-    fArrPT2D[1]  =  0.20;
-    fArrPT2D[2]  =  0.40;
-    fArrPT2D[3]  =  0.70;
-    fArrPT2D[4]  =  1.00;
-    fArrPT2D[5]  =  1.20;
-    fArrPT2D[6]  =  1.40;
-    fArrPT2D[7]  =  1.60;
-    fArrPT2D[8]  =  1.80;
-    fArrPT2D[9]  =  2.00;
-    fArrPT2D[10] =  3.00;
-    fArrPT2D[11] =  5.00;
-    fArrPT2D[12] =  10.0;
+    fArrPT2D[0] =   0.40;
+    fArrPT2D[1] =   0.68;
+    fArrPT2D[2] =   0.82;
+    fArrPT2D[3] =   0.95;
+    fArrPT2D[4] =   1.1;
+    fArrPT2D[5] =   1.3;
+    fArrPT2D[6] =   1.6;
+    fArrPT2D[7] =   2.3;
+    fArrPT2D[8] =  3.0;
+    fArrPT2D[9] =  5.0;
+    fArrPT2D[10] =  21.;
 }
 
 void    fSetBinMult ()
@@ -380,6 +384,7 @@ bool    fCutTransverseMom   ( Double_t  dTransverseMom )
 
 bool    fCutMultiplicity    ( Double_t  dMultiplicity )
 {
+    return true;
     if ( dMultiplicity < fMinMult ) return false;
     if ( dMultiplicity > fMaxMult ) return false;
     return true;
@@ -559,10 +564,26 @@ Double_t        HistIntegrals               ( Tclass* aTarget, string aOption = 
 //------------------------------//
 //    ANALYSISI SEPCIFIC Fncs   //
 //------------------------------//
-
+//
+//_____________________________________________________________________________
+//
 Int_t kColor[] = {38,kBlue,kBlue+3,46,38};
 Int_t kStyle[] = {26,9,10,25,22};
 Int_t kWidth[] = {1,3,3,1,1};
+//
+//_____________________________________________________________________________
+//
+void                fChooseOptions                  ( TString fOption ) {
+    if ( fOption.IsNull() ) cout << "[INFO] No option chosen, standard all inclusive analysis enabled" <<endl;
+    else    {
+        kDoMultiplicity         =   false;
+        kDoYield                =   false;
+        kDoTrigger              =   false;
+        if ( fOption.Contains("Multiplicity",TString::kIgnoreCase) )    { kDoMultiplicity = true;   }
+        if ( fOption.Contains("Yield",TString::kIgnoreCase) )           { kDoYield = true;          }
+        if ( fOption.Contains("Trigger",TString::kIgnoreCase) )         { kDoTrigger = true;        }
+    }
+}
 //
 //_____________________________________________________________________________
 //
@@ -580,7 +601,7 @@ Double_t            fGammaPhiError                  ( Double_t fYieldPhi, Double
 //
 //_____________________________________________________________________________
 //
-void                fSetLevyTsalis                  ( Double_t fIntegral = 0.032 ) {
+void                fSetLevyTsalis                  ( Bool_t fIsConditional = false, Double_t fIntegral = 0.032 ) {
     // - // Setting up Fit parameters
     
     // Mass
@@ -596,8 +617,24 @@ void                fSetLevyTsalis                  ( Double_t fIntegral = 0.032
     fLevyFit1D  ->  SetParameter(2,.272);   // .272
     
     // dN/dy
-    fLevyFit1D  ->  SetParLimits(3,0.,10.);
+    fLevyFit1D  ->  SetParLimits(3,1.e-9,1.);
     fLevyFit1D  ->  SetParameter(3,fIntegral);  //
+    
+    if ( fIsConditional )   {
+        // - // Setting up Fit parameters
+        
+        // Mass
+        fLevyFit1D  ->  SetParLimits(0,kPMas,kPMas);
+        fLevyFit1D  ->  SetParameter(0,kPMas);
+        
+        // n-Parameter
+        fLevyFit1D  ->  SetParLimits(1,3.5,7.5);
+        fLevyFit1D  ->  SetParameter(1,4.5); // 6.7
+        
+        // T-Parameter
+        fLevyFit1D  ->  SetParLimits(2,.18,.45);
+        fLevyFit1D  ->  SetParameter(2,.272); // .272
+    }
 }
 //
 //_____________________________________________________________________________
@@ -636,7 +673,7 @@ std::vector<TGraphAsymmErrors*>   fSetSystErrors    ( std::vector<TGraphAsymmErr
 //
 //_____________________________________________________________________________
 //
-Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, Double_t fIntegral = 0.032, TString fName = "ExtrapolateSignal" )    {
+Double_t*           fExtrapolateModel               ( bool fIsConditional, TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, Double_t fIntegral = 0.032, TString fName = "ExtrapolateSignal" )    {
     //  Optimisation mode
     gROOT->SetBatch(true);
     //
@@ -644,9 +681,9 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
     Double_t   *fResult     =   new Double_t    [10];
     //
     //  Measuring mean value
-    fSetLevyTsalis(fIntegral);
+    fSetLevyTsalis(fIsConditional,fIntegral);
     TGraphAsymmErrors   *   gTotal  =   new TGraphAsymmErrors(*(fSumGraphErrors(gStatistics,gSystematics)));
-    gTotal->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.7,10.);
+    gTotal->  Fit(fLevyFit1D,"IMRE0SEX0","",0.4,10.);
     fResult[0]  =   fLevyFit1D  ->Integral(0.,0.4);
     //
     TCanvas *   cDrawFit    =   new TCanvas(Form("gTotal_%s",fName.Data()),Form("gTotal_%s",fName.Data()));
@@ -655,19 +692,19 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
     gTotal->Draw();
     fLevyFit1D->Draw("same");
     cDrawFit->Write();
-    cDrawFit->SaveAs(Form("tmp/gTotal_%s.pdf",fName.Data()));
+    cDrawFit->SaveAs(Form("result/tmp/gTotal_%s.pdf",fName.Data()));
     delete cDrawFit;
     //
     //  Measuring Statistical error
     TH1D*   hStatIntegral   =   new TH1D(Form("hStatIntegral_%s",fName.Data()),"hStatIntegral",100000,0.0,.1);
     for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
         //  Set Standard Fit
-        fSetLevyTsalis(fIntegral);
+        fSetLevyTsalis(fIsConditional,fIntegral);
         //
         //  Generating the Fit TGraph
         auto fSubject   =   fRandomizePoints(gStatistics,gSystematics);
         //
-        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.7,10.);
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.4,10.);
         //
         hStatIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
     }
@@ -677,12 +714,12 @@ Double_t*           fExtrapolateModel               ( TGraphAsymmErrors* gStatis
     TH1D*   hSystIntegral   =   new TH1D(Form("hSystIntegral_%s",fName.Data()),"hSystIntegral",100000,0.0,.1);
     for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
         //  Set Standard Fit
-        fSetLevyTsalis(fIntegral);
+        fSetLevyTsalis(fIsConditional,fIntegral);
         //
         //  Generating the Fit TGraph
         auto fSubject   =   fRandomizePoints(gSystematics,gStatistics);
         //
-        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.7,10.);
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.4,10.);
         //
         hSystIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
     }
@@ -752,8 +789,11 @@ Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatis
     // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
     Double_t   *fResult             =   new Double_t        [6];
     //
+    bool fIsConditional = false;
+    if ( fName.First("2D") != -1  ) fIsConditional = true;
+    //
     auto        fIntegralResults    =   fIntegrateModel     (gStatistics,gSystematics,fName);
-    auto        fExtrapolResults    =   fExtrapolateModel   (gStatistics,gSystematics,fIntegralResults[0],fName);
+    auto        fExtrapolResults    =   fExtrapolateModel   (fIsConditional,gStatistics,gSystematics,fIntegralResults[0],fName);
     //
     fResult[0]  =   fIntegralResults[0] +   fExtrapolResults[0];
     fResult[1]  =   fIntegralResults[1] +   fExtrapolResults[1];
@@ -1672,7 +1712,7 @@ Double_t*           fExtrapolateModel               ( Tclass *THdata, TString fN
     fSetLevyTsalis();
     
     // Fit the Spectra
-    THdata->Fit(fLevyFit1D,"IMREQ0S","",0.7,10.);
+    THdata->Fit(fLevyFit1D,"IMREQ0S","",0.4,10.);
     
     // Save to further checks
     TCanvas * fCheckFit = new TCanvas();

@@ -61,10 +61,10 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     hName       =   "hGEN_1D";
     hGEN_1D     =   (TH1F*)(insFile_EF_Yield->Get(hName));
     //
-    hName       =   "hREC_1D_in_2Dbin";
+    hName       =   "hREC_1D_in_2D_bin";
     hREC_1D_in_2D_bin     =   (TH1F*)(insFile_EF_Yield->Get(hName));
     //
-    hName       =   "hGEN_1D_in_2Dbin";
+    hName       =   "hGEN_1D_in_2D_bin";
     hGEN_1D_in_2D_bin     =   (TH1F*)(insFile_EF_Yield->Get(hName));
     //
     // >->-->-> 2-Dimension analysis //
@@ -78,6 +78,7 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     //
     hName       =   "hRAW_2D";
     hRAW_2D     =   (TH2F*)(insFile_DT_Yield->Get(hName));
+    hRAW_2D->GetEntries();
     //
     hName       =   "hEFF_2D";
     hEFF_2D     =   (TH2F*)(insFile_EF_Yield->Get(hName));
@@ -285,7 +286,7 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     for ( Int_t iHisto = 0; iHisto < nBinPT2D-2; iHisto++ )  {
         hName       =   Form("gRES_2D_Syst_%i",iHisto);
         hTitle      =   Form("gRES_2D_Syst_%i",iHisto);
-        gRES_2D_Stat.at(iHisto)->SetNameTitle(hName,hTitle);
+        gRES_2D_Syst.at(iHisto)->SetNameTitle(hName,hTitle);
         
     }
     //
@@ -461,8 +462,8 @@ void Analysis_SignalCorrections ( bool fSilent = true )
     hEvntEff                ->Write();
     gRES_1D_Stat            ->Write();
     gRES_1D_Syst            ->Write();
-    hRES_1D            ->Write();
-    hRES_2D            ->Write();
+    hRES_1D                 ->Write();
+    hRES_2D                 ->Write();
     for ( Int_t iFit = 0; iFit < nBinPT2D-2; iFit++ ) {
         gRES_2D_Stat.at(iFit)->Write();
         gRES_2D_Syst.at(iFit)->Write();

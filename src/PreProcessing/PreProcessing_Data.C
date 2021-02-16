@@ -1,7 +1,7 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: [INFO] About trees in input
 
-void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string fOption = "" )
+void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString fOption = "" )
 {
     //---------------------//
     //  Setting up input   //
@@ -15,6 +15,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
         return;
     }
     if ( nEventsCut != -1 ) cout << "[WARNING] Choosing to limit the datasample to " << nEventsCut << " events" <<endl;
+    fChooseOption(fOption);
     
     // Retrieving Event data
     TFile *insFileDT        =   new TFile   (fFileName.c_str());
@@ -314,7 +315,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
             //
             Int_t   iPT1D       = fGetBinPT1D(evPhiCandidate.pT[U_AccCand[iPhi]]);
             Int_t   iPT2D       = fGetBinPT2D(evPhiCandidate.pT[U_AccCand[iPhi]]);
-            Int_t   iMult       = fGetBinMult(evPhiCandidate.Multiplicity);
+            Int_t   iMult       = evPhiCandidate.Multiplicity > 100 ? fGetBinMult(100) : fGetBinMult(evPhiCandidate.Multiplicity);
             Float_t iInvMass_   = evPhiCandidate.InvMass[U_AccCand[iPhi]];
             //
             // >->-->-> Trigger
@@ -324,7 +325,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
                 hTriggerEvt->Fill(1);
                 fCheckFill1 = true;
             }
-            hTriggerEvt1D                                   ->  Fill(LPhi_candidate1.Pt());
+            hTriggerEvt1D                                   ->  Fill(evPhiCandidate.pT[U_AccCand[iPhi]]);
             // 
             // >->-->-> Yield
             //
@@ -359,7 +360,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
                     hTriggerEvt->Fill(2);
                     fCheckFill2 = true;
                 }
-                hTriggerEvt2D                                           ->  Fill(LPhi_candidate1.Pt(),LPhi_candidate2.Pt(),0.5);
+                hTriggerEvt2D                                           ->  Fill(evPhiCandidate.pT[U_AccCand[iPhi]],evPhiCandidate.pT[U_AccCand[jPhi]],0.5);
                 // 
                 // >->-->-> Yield
                 //
@@ -373,7 +374,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
                 
                 for ( Int_t kPhi = 0; kPhi < U_nAccept; kPhi++ )    {
                     // Must have at least 3 candidates
-                    if ( U_nAccept < 3 ) break;
+                    if ( U_nAccept < 3 && kDoTrigger ) break;
 
                     // Selecting valid candidates
                     if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi, kPhi) ) continue;
@@ -387,7 +388,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
 
                     for ( Int_t lPhi = 0; lPhi < U_nAccept; lPhi++ )    {
                         // Must have at least 4 candidates
-                        if ( U_nAccept < 4 ) break;
+                        if ( U_nAccept < 4 && kDoTrigger ) break;
 
                         // Selecting valid candidates
                         if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi, kPhi, lPhi) ) continue;
@@ -455,70 +456,76 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, string f
     //
     // >-> Trigger Analysis
     //
-    TFile *outFil1  =   new TFile   (fTrgPreProc,"recreate");
-    //
-    fHEventCount    ->Write();
-    hTriggerEvt     ->Write();
-    hTriggerEvt1D   ->Write();
-    hTriggerEvt2D   ->Write();
-    //
-    outFil1->Close();
+    if ( kDoTrigger )  {
+        TFile *outFil1  =   new TFile   (fTrgPreProc,"recreate");
+        //
+        fHEventCount    ->Write();
+        hTriggerEvt     ->Write();
+        hTriggerEvt1D   ->Write();
+        hTriggerEvt2D   ->Write();
+        //
+        outFil1->Close();
+    }
     //
     // >-> Yield Analysis
     //
-    TFile *outFil2  =   new TFile   (fYldPreProc,"recreate");
-    //
-    fHEventCount    ->Write();
-    hREC_1D->Write();
-    for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)
-    {
-        hREC_1D_in_PT[iHisto]   ->Write();
-    }
-    //
-    hREC_2D->Write();
-    //
-    for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
-    {
-        hREC_1D_in_PT_2D_bin[iHisto]   ->Write();
-        
-        for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
+    if ( kDoYield )  {
+        TFile *outFil2  =   new TFile   (fYldPreProc,"recreate");
+        //
+        fHEventCount    ->Write();
+        hREC_1D->Write();
+        for (int iHisto = 0; iHisto < nBinPT1D; iHisto++)
         {
-            hREC_2D_in_PT[iHisto][jHisto]->Write();
+            hREC_1D_in_PT[iHisto]   ->Write();
         }
+        //
+        hREC_2D->Write();
+        //
+        for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
+        {
+            hREC_1D_in_PT_2D_bin[iHisto]   ->Write();
+            
+            for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
+            {
+                hREC_2D_in_PT[iHisto][jHisto]->Write();
+            }
+        }
+        //
+        outFil2->Close();
     }
-    //
-    outFil2->Close();
     //
     // >-> Multiplicity Analysis
     //
-    TFile *outFil3  =   new TFile   (fMltPreProc,"recreate");
-    //
-    fHEventCount->Write();
-    fHEvCountMlt->Write();
-    fHEventCount_in_MT                          ->Write();
-    fHEventCount_PhiCandidate_General_in_MT     ->Write();
-    fHEventCount_PhiCandidate_Accepted_in_MT    ->Write();
-    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
-    {
-        hREC_1D_in_MT[iHisto]->Write();
-        hREC_2D_in_MT[iHisto]->Write();
+    if ( kDoMultiplicity )  {
+        TFile *outFil3  =   new TFile   (fMltPreProc,"recreate");
+        //
+        fHEventCount->Write();
+        fHEvCountMlt->Write();
+        fHEventCount_in_MT                          ->Write();
+        fHEventCount_PhiCandidate_General_in_MT     ->Write();
+        fHEventCount_PhiCandidate_Accepted_in_MT    ->Write();
+        for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+        {
+            hREC_1D_in_MT[iHisto]->Write();
+            hREC_2D_in_MT[iHisto]->Write();
 
-        for ( Int_t jHisto = 0; jHisto < nBinPT1D; jHisto++ )
-        {
-            hREC_1D_in_MT_in_PT[iHisto][jHisto]->Write();
-        }
-        for ( Int_t jHisto = 0; jHisto < nBinPT2D; jHisto++ )
-        {
-            hREC_1D_in_MT_in_PT_2D_bin[iHisto][jHisto]->Write();
-            
-            for ( Int_t kHisto = 0; kHisto < nBinPT2D; kHisto++ )
+            for ( Int_t jHisto = 0; jHisto < nBinPT1D; jHisto++ )
             {
-                hREC_2D_in_MT_in_PT[iHisto][jHisto][kHisto]->Write();
+                hREC_1D_in_MT_in_PT[iHisto][jHisto]->Write();
+            }
+            for ( Int_t jHisto = 0; jHisto < nBinPT2D; jHisto++ )
+            {
+                hREC_1D_in_MT_in_PT_2D_bin[iHisto][jHisto]->Write();
+                
+                for ( Int_t kHisto = 0; kHisto < nBinPT2D; kHisto++ )
+                {
+                    hREC_2D_in_MT_in_PT[iHisto][jHisto][kHisto]->Write();
+                }
             }
         }
+        //
+        outFil3->Close();
     }
-    //
-    outFil3->Close();
     //
     fStopTimer("writing output objects to file(s)");
     // >-> Close input File

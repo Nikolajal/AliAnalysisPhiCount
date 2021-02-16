@@ -1,7 +1,7 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: All Set!
 
-void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., string fOption = "" )
+void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString fOption = "" )
 {
     //---------------------//
     //  Setting up input   //
@@ -15,6 +15,7 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., string fO
         return;
     }
     if ( nEventsCut != -1 ) cout << "[WARNING] Choosing to limit the datasample to " << nEventsCut << " events" <<endl;
+    fChooseOption(fOption);
     
     //Retrieving Event data
     TFile *insFileMC        =   new TFile   (fFileName.c_str());
@@ -133,18 +134,18 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., string fO
     hREC_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
     SetAxis(hREC_1D_in_2Dbin,"PT 1D");
     //
-    hName       =   Form("hGEN_1D_in_2Dbin");
-    hTitle      =   Form("hGEN_1D_in_2Dbin");
+    hName       =   Form("hGEN_1D_in_2D_bin");
+    hTitle      =   Form("hGEN_1D_in_2D_bin");
     hGEN_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
     SetAxis(hGEN_1D_in_2Dbin,"PT 1D");
     //
-    hName       =   Form("hTRU_1D_in_2Dbin");
-    hTitle      =   Form("hTRU_1D_in_2Dbin");
+    hName       =   Form("hTRU_1D_in_2D_bin");
+    hTitle      =   Form("hTRU_1D_in_2D_bin");
     hTRU_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
     SetAxis(hTRU_1D_in_2Dbin,"PT 1D");
     //
-    hName       =   Form("hEFF_1D_in_2Dbin");
-    hTitle      =   Form("hEFF_1D_in_2Dbin");
+    hName       =   Form("hEFF_1D_in_2D_bin");
+    hTitle      =   Form("hEFF_1D_in_2D_bin");
     hEFF_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
     SetAxis(hEFF_1D_in_2Dbin,"PT 1D");
     //
@@ -329,7 +330,7 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., string fO
             //
             // >>-->> Utilities
             //
-            Int_t   indexMult = fGetBinMult(evPhiEfficiency.Multiplicity);
+            Int_t   indexMult       = evPhiEfficiency.Multiplicity > 100 ? fGetBinMult(100) : fGetBinMult(evPhiEfficiency.Multiplicity);
             Int_t   indexSele = (int)evPhiEfficiency.Selection[U_AccCand[iPhi]];
             Float_t indexTMom = LPhi_candidate1.Pt();
             //
@@ -439,6 +440,7 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., string fO
     //
     for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
     {
+        if ( !kDoMultiplicity ) break;
         hEFF_1D_in_MT[iHisto]               ->Divide(hREC_1D_in_MT[iHisto],         hGEN_1D_in_MT[iHisto],          1.,1.,"b");
         hEFF_1D_in_MT_in_2Dbin[iHisto]      ->Divide(hREC_1D_in_MT_in_2Dbin[iHisto],hGEN_1D_in_MT_in_2Dbin[iHisto], 1.,1.,"b");
         hEFF_2D_in_MT[iHisto]               ->Divide(hREC_2D_in_MT[iHisto],         hGEN_2D_in_MT[iHisto],          1.,1.,"b");
@@ -471,53 +473,59 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., string fO
     //
     // >> Trigger Analysis
     //
-    TFile *outFil1  =   new TFile   (fTrgPrePrMC,"recreate");
-    //
-    outFil1->Close();
+    if ( kDoTrigger )   {
+        TFile *outFil1  =   new TFile   (fTrgPrePrMC,"recreate");
+        //
+        outFil1->Close();
+    }
     //
     // >> Yield Analysis
     //
-    TFile *outFil2  =   new TFile   (fYldPrePrMC,"recreate");
-    //
-    hREC_1D->Scale(1.,"width");
-    hREC_1D->Write();
-    hREC_1D->Scale(1./fNormEvent);
-    hREC_1D->Write();
-    hGEN_1D->Write();
-    hTRU_1D->Write();
-    hEFF_1D->Write();
-    hREC_1D_in_2Dbin->Write();
-    hGEN_1D_in_2Dbin->Write();
-    hTRU_1D_in_2Dbin->Write();
-    hEFF_1D_in_2Dbin->Write();
-    hREC_2D->Write();
-    hGEN_2D->Write();
-    hTRU_2D->Write();
-    hEFF_2D->Write();
-    //
-    outFil2->Close();
+    if ( kDoYield ) {
+        TFile *outFil2  =   new TFile   (fYldPrePrMC,"recreate");
+        //
+        hREC_1D->Scale(1.,"width");
+        hREC_1D->Write();
+        hREC_1D->Scale(1./fNormEvent);
+        hREC_1D->Write();
+        hGEN_1D->Write();
+        hTRU_1D->Write();
+        hEFF_1D->Write();
+        hREC_1D_in_2Dbin->Write();
+        hGEN_1D_in_2Dbin->Write();
+        hTRU_1D_in_2Dbin->Write();
+        hEFF_1D_in_2Dbin->Write();
+        hREC_2D->Write();
+        hGEN_2D->Write();
+        hTRU_2D->Write();
+        hEFF_2D->Write();
+        //
+        outFil2->Close();
+    }
     //
     // >> Multiplicity Analysis
     //
-    TFile *outFil3  =   new TFile   (fMltPrePrMC,"recreate");
-    //
-    for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
-    {
-        hREC_1D_in_MT[iHisto]->Write();
-        hGEN_1D_in_MT[iHisto]->Write();
-        hTRU_1D_in_MT[iHisto]->Write();
-        hEFF_1D_in_MT[iHisto]->Write();
-        hREC_1D_in_MT_in_2Dbin[iHisto]->Write();
-        hGEN_1D_in_MT_in_2Dbin[iHisto]->Write();
-        hTRU_1D_in_MT_in_2Dbin[iHisto]->Write();
-        hEFF_1D_in_MT_in_2Dbin[iHisto]->Write();
-        hREC_2D_in_MT[iHisto]->Write();
-        hGEN_2D_in_MT[iHisto]->Write();
-        hTRU_2D_in_MT[iHisto]->Write();
-        hEFF_2D_in_MT[iHisto]->Write();
+    if ( kDoMultiplicity )  {
+        TFile *outFil3  =   new TFile   (fMltPrePrMC,"recreate");
+        //
+        for ( Int_t iHisto = 0; iHisto < nBinMult; iHisto++ )
+        {
+            hREC_1D_in_MT[iHisto]->Write();
+            hGEN_1D_in_MT[iHisto]->Write();
+            hTRU_1D_in_MT[iHisto]->Write();
+            hEFF_1D_in_MT[iHisto]->Write();
+            hREC_1D_in_MT_in_2Dbin[iHisto]->Write();
+            hGEN_1D_in_MT_in_2Dbin[iHisto]->Write();
+            hTRU_1D_in_MT_in_2Dbin[iHisto]->Write();
+            hEFF_1D_in_MT_in_2Dbin[iHisto]->Write();
+            hREC_2D_in_MT[iHisto]->Write();
+            hGEN_2D_in_MT[iHisto]->Write();
+            hTRU_2D_in_MT[iHisto]->Write();
+            hEFF_2D_in_MT[iHisto]->Write();
+        }
+        //
+        outFil3->Close();
     }
-    //
-    outFil3->Close();
     //
     // >-> Close input File
     //

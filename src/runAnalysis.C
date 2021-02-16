@@ -13,6 +13,14 @@ void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEven
     
     // >-> OPTIONS
     
+    gROOT->ProcessLine(".! mkdir -p ./result");
+    gROOT->ProcessLine(".! mkdir -p ./result/trigger");
+    gROOT->ProcessLine(".! mkdir -p ./result/yield");
+    gROOT->ProcessLine(".! mkdir -p ./result/multiplicity");
+    gROOT->ProcessLine(".! mkdir -p ./result/tmp");
+    gROOT->ProcessLine(".! mkdir -p ./result/SEFitCheck");
+    gROOT->ProcessLine(".! mkdir -p ./result/check");
+    
     if ( fFileNameMC == "" )
     {
         cout << "[ERROR] Must Specify an input root file" << endl;
@@ -27,4 +35,5 @@ void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEven
 
     PreProcessing(fFileNameDT,fFileNameMC,nEventsCut);
     Analysis_SignalExtraction();
+    Analysis_SignalCorrections();
 }
