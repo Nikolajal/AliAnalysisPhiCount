@@ -573,15 +573,15 @@ Int_t kWidth[] = {1,3,3,1,1};
 //
 //_____________________________________________________________________________
 //
-void                fChooseOptions                  ( TString fOption ) {
+void                fChooseOption                   ( TString fOption ) {
     if ( fOption.IsNull() ) cout << "[INFO] No option chosen, standard all inclusive analysis enabled" <<endl;
     else    {
         kDoMultiplicity         =   false;
         kDoYield                =   false;
         kDoTrigger              =   false;
-        if ( fOption.Contains("Multiplicity",TString::kIgnoreCase) )    { kDoMultiplicity = true;   }
-        if ( fOption.Contains("Yield",TString::kIgnoreCase) )           { kDoYield = true;          }
-        if ( fOption.Contains("Trigger",TString::kIgnoreCase) )         { kDoTrigger = true;        }
+        if ( fOption.Contains("Multiplicity",TString::kIgnoreCase) )    { kDoMultiplicity = true;   cout << "[INFO] Mutliplicity option chosen" <<endl;}
+        if ( fOption.Contains("Yield",TString::kIgnoreCase) )           { kDoYield = true;          cout << "[INFO] Yield option chosen" <<endl;}
+        if ( fOption.Contains("Trigger",TString::kIgnoreCase) )         { kDoTrigger = true;        cout << "[INFO] Trigger option chosen" <<endl;}
     }
 }
 //

@@ -1,7 +1,7 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: [INFO] About trees in input
 
-void Analysis_SignalExtraction ( bool fSilent = true )
+void Analysis_SignalExtraction ( bool fSilent = true, TString fOption = "" )
 {
     //---------------------//
     //  Setting up input   //
@@ -226,6 +226,9 @@ void Analysis_SignalExtraction ( bool fSilent = true )
     //
     RooFitResult  **fShapeStore =   new RooFitResult   *[nBinPT2D];
     //
+    //  Making utility variables
+    Int_t fTotalCount, fProgrCount;
+    //
     if ( kDoYield )   {
         fStartTimer("Yield Analysis Signal Extrapolation");
         
@@ -233,8 +236,8 @@ void Analysis_SignalExtraction ( bool fSilent = true )
         TFile*  outCheckFitYld  =   new TFile(fYldSigChek,"recreate");
          
         // Total Fit number abnd progressive
-        Int_t   fTotalCount = nBinPT1D+(1+nBinPT2D)*nBinPT2D;
-        Int_t   fProgrCount = 0;
+        fTotalCount = nBinPT1D+(1+nBinPT2D)*nBinPT2D;
+        fProgrCount = 0;
         //
         // Starting cycle
         cout << Form("[INFO] Starting yield analysis in 1D") << endl;

@@ -135,7 +135,7 @@ int main (int argc, char *argv[])
     //
     // >-> Physics
     //
-    pythia.readString("SoftQCD:nonDiffractive = on");
+    pythia.readString("SoftQCD:all = on");
     pythia.readString("ParticleDecays:limitTau0 = on");
     pythia.readString("Beams:idA = 2212");
     pythia.readString("Beams:idB = 2212");
@@ -236,6 +236,7 @@ int main (int argc, char *argv[])
             pythia.readString("MultiPartonInteractions:pT0Ref = 2.15");
             pythia.readString("BeamRemnants:remnantMode = 1");
             pythia.readString("BeamRemnants:saturation = 5");
+            pythia.readString("ColourReconnection:mode = 1");
             pythia.readString("ColourReconnection:allowDoubleJunRem = off");
             pythia.readString("ColourReconnection:m0 = 0.3");
             pythia.readString("ColourReconnection:allowJunctions = on");
@@ -262,6 +263,7 @@ int main (int argc, char *argv[])
             pythia.readString("MultiPartonInteractions:pT0Ref = 2.15");
             pythia.readString("BeamRemnants:remnantMode = 1");
             pythia.readString("BeamRemnants:saturation = 5");
+            pythia.readString("ColourReconnection:mode = 1");
             pythia.readString("ColourReconnection:allowDoubleJunRem = off");
             pythia.readString("ColourReconnection:allowJunctions = on");
             pythia.readString("ColourReconnection:m0 = 0.3");

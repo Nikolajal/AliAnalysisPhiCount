@@ -5,7 +5,7 @@
 #include "./PreProcessing.C"
 // !TODO: All Set!
 
-void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEventsCut = -1., string fOption = "" )
+void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEventsCut = -1., TString fOption = "" )
 {
     //---------------------//
     //  Setting up input   //
@@ -33,7 +33,7 @@ void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEven
         fFileNameDT = fFileNameMC;
     }
 
-    PreProcessing(fFileNameDT,fFileNameMC,nEventsCut);
-    Analysis_SignalExtraction();
+    PreProcessing(fFileNameDT,fFileNameMC,nEventsCut,fOption);
+    Analysis_SignalExtraction(true,fOption);
     Analysis_SignalCorrections();
 }
