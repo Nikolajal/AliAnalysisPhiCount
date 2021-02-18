@@ -287,7 +287,7 @@ int main (int argc, char *argv[])
             cout << "5. Mode 0 from https://arxiv.org/pdf/1505.01681.pdf." << endl;
             cout << "6. Mode 2 from https://arxiv.org/pdf/1505.01681.pdf." << endl;
             cout << "7. Mode 3 from https://arxiv.org/pdf/1505.01681.pdf." << endl;
-            cout << "8. Custom mode 1: QCD based CR" << endl;
+            cout << "8. Custom mode 1: QCD based CR w/ ropes" << endl;
             cout << "9. Custom mode 2: QCD based CR w/o ropes" << endl;
             break;
     }

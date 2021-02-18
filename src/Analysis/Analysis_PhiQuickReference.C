@@ -19,7 +19,7 @@ void Analysis_PhiQuickReference ( bool fSilent = false )
     }
     
     // Retrieving PreProcessed data histograms
-    Int_t kOption = 8;
+    Int_t kOption = 10;
     TFile **insFile_DT_Yield            =   new TFile  *[kOption];
     insFile_DT_Yield[0]                 =   new TFile   ("./result_MCG_PhiQuickReference/MCG_PhiQuickReference_000000000.root");
     insFile_DT_Yield[1]                 =   new TFile   ("./result_MCG_PhiQuickReference/MCG_PhiQuickReference_2000000000.root");
@@ -29,6 +29,8 @@ void Analysis_PhiQuickReference ( bool fSilent = false )
     insFile_DT_Yield[5]                 =   new TFile   ("./result_MCG_PhiQuickReference/MCG_PhiQuickReference_6000000000.root");
     insFile_DT_Yield[6]                 =   new TFile   ("./result_MCG_PhiQuickReference/MCG_PhiQuickReference_7000000000.root");
     insFile_DT_Yield[7]                 =   new TFile   ("./result_MCG_PhiQuickReference/MCG_PhiQuickReference_8000000000.root");
+    insFile_DT_Yield[8]                 =   new TFile   ("./result_MCG_PhiQuickReference/MCG_PhiQuickReference_9000000000.root");
+    insFile_DT_Yield[9]                 =   new TFile   ("./result_MCG_PhiQuickReference/MCG_PhiQuickReference_10000000000.root");
     
     // Recovering the histograms-------------------------------------------------------------------------------
 
@@ -98,13 +100,13 @@ void Analysis_PhiQuickReference ( bool fSilent = false )
     
     //fPrintLoopTimer("Fit_for_extrapolation",1,1,1);
     
-    TString   fLabels[8]  = {"Monash 2013","The new more QCD based scheme","The new gluon-move model","The SK I e^+ e^- CR model","The SK II e^+ e^- CR model","Mode 0 from paper","Mode 2 from paper","Mode 3 from paper"};
+    TString   fLabels[10]  = {"Monash 2013","The new more QCD based scheme","The new gluon-move model","The SK I e^+ e^- CR model","The SK II e^+ e^- CR model","Mode 0 from paper","Mode 2 from paper","Mode 3 from paper", "QCD based w/ Ropes" , "QCD based w/o Ropes" };
     
-    TLegend    *fLeg    =   new     TLegend(0.1,0.5,0.3,0.9);
-    TLegend    *fLeg2   =   new     TLegend(0.1,0.5,0.3,0.9);
+    TLegend    *fLeg    =   new     TLegend(0.1,0.1,0.4,0.9);
+    TLegend    *fLeg2   =   new     TLegend(0.1,0.1,0.4,0.9);
     
-    Float_t fColor[8]      =   {1,2,2,2,2,4,4,4};
-    Float_t fMarker[8]     =   {22,47,33,34,43,26,27,32};
+    Float_t fColor[10]      =   {1,2,2,2,2,4,4,4,4,4};
+    Float_t fMarker[10]     =   {22,47,33,34,43,26,27,32,33,34};
     
     for ( Int_t iBin = 0; iBin < kOption; iBin++ )
     {
@@ -199,8 +201,8 @@ void Analysis_PhiQuickReference ( bool fSilent = false )
     {
         hPhiYield[iBin]->SetLineWidth(1.);
         hPhiYield[iBin]->SetLineStyle(1);
-        hPhiYield[iBin]->SetMaximum(0.05);
-        hPhiYield[iBin]->SetMinimum(0.02);
+        hPhiYield[iBin]->SetMaximum(0.04);
+        hPhiYield[iBin]->SetMinimum(0.01);
         hPhiYield[iBin]->GetXaxis()->SetRange(2,2);
         hPhiYield[iBin]->Draw("SAME HIST EP");
     }
@@ -230,8 +232,8 @@ void Analysis_PhiQuickReference ( bool fSilent = false )
     hPhiYield[0]->GetYaxis()->SetTitleOffset(1);
     for ( Int_t iBin = 0; iBin < kOption; iBin++ )
     {
-        hPhiYield[iBin]->SetMaximum(0.0025);
-        hPhiYield[iBin]->SetMinimum(0.0005);
+        hPhiYield[iBin]->SetMaximum(0.0018);
+        hPhiYield[iBin]->SetMinimum(0.0000);
         hPhiYield[iBin]->GetXaxis()->SetRange(3,3);
         hPhiYield[iBin]->Draw("SAME HIST EP");
     }

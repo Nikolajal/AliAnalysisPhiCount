@@ -74,10 +74,10 @@ auto const  kPhiMesonWidth          =   0.00426;    //  0.00426     +- 0.00004
 auto const  kKaonMass               =   .493677;
 auto const  kKaonMassUncert         =   .000013;
 auto const  kDetectorSlope          =   1.;
-auto const  kBranchingRtio          =   0.489;
-auto const  kVertexEfficnc          =   0.99;
-auto const  kTriggerEfficnc         =   0.85;
-auto const  kRapidityIntvl          =   1.;
+auto const  kBranchingRtio          =   0.492;
+auto const  kVertexEfficnc          =   1;
+auto const  kTriggerEfficnc         =   1;
+auto const  kRapidityIntvl          =   1;
 
 //-// Analysis systematics (%)
 auto const  kBRSystematics          =   0.01;
@@ -95,16 +95,16 @@ const   Float_t   fMinIMMC  =   0.75;
 const   Float_t   fMaxIMMC  =   1.25;
 
 //-// InvMass bins 1D
-const   Int_t     nBinIM1D  = 135;
-const   Float_t   fMinIM1D  = 0.99;
-const   Float_t   fMaxIM1D  = 1.08;
-        Float_t * fArrIM1D  = new Float_t [nBinIM1D+1];
+const   Int_t     nBinIM1D  =   135;
+const   Float_t   fMinIM1D  =   0.99;
+const   Float_t   fMaxIM1D  =   1.08;
+        Float_t * fArrIM1D  =   new Float_t [nBinIM1D+1];
 
 //-// InvMass bins 2D
-const   Int_t     nBinIM2D  = 135;
-const   Float_t   fMinIM2D  = 0.99;
-const   Float_t   fMaxIM2D  = 1.08;
-        Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];
+const   Int_t     nBinIM2D  =   135;
+const   Float_t   fMinIM2D  =   0.99;
+const   Float_t   fMaxIM2D  =   1.08;
+        Float_t * fArrIM2D  =   new Float_t [nBinIM2D+1];
 
 //-// pT bins 1D
 const   Int_t     nBinPT1D  =   21;
@@ -813,6 +813,17 @@ Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatis
 //------------------------------//
 //    ANALYSISI LEGACY Fncs     //
 //------------------------------//
+
+TH1F*            fCheckPublishedResults( TH1F* fMyResults, TH1F* hPublishedResults, TGraphAsymmErrors* gPublishedResults )    {
+    TH1F   *fCheck  =   new TH1F(*hPublishedResults);
+    fCheck->Divide(fMyResults,hPublishedResults);
+    for ( int i = 0; i < fCheck->GetNbinsX(); i++ ) {
+        auto pubError   =   gPublishedResults->GetErrorXhigh(i);
+        auto myError    =   fMyResults->GetBinError(i+1);
+        fCheck->SetBinError (i,sqrt(pubError*pubError+myError*myError));
+    }
+    return fCheck;
+}
 
 int             fLegendSelect                   ( string fOption )
 {
