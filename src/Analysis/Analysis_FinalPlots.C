@@ -8,31 +8,45 @@ void Analysis_FinalPlots ()
     //---------------------//
     
     // Retrieving PreProcessed data histograms
-    TFile*  insFile_DT_Yield            =   new TFile   (fYldSigCorr);
-    TFile*  insFile_DT_Mult             =   new TFile   (fMltSigCorr);
+    TFile  *insFile_DT_Yield            =   new TFile   (fYldSigCorr);
+    TFile  *insFile_DT_Mult             =   new TFile   (fMltSigCorr);
+    //TFile **fEfficiency                 =   new TFile   [nPeriodFiles];
+    
+    // Previous Publications checks
+    TFile*  insFile_PrevPap             =   new TFile   ("./result/HEPData-ins1762364-v1-Table_4.root");
     
     // Recovering the histograms-------------------------------------------------------------------------------
 
     // >-> YIELD ANALYSIS //
     //
-    TGraphAsymmErrors  *fYield_Stat;
-    TGraphAsymmErrors  *fYield_Syst;
-    TH1D               *hRES_1D;
-    TH2D               *hRES_2D;
+    TGraphAsymmErrors                  *g1D_Res_Stat,      *g1D_Res_Syst;
+    TGraphAsymmErrors                 **g2D_Res_Stat,     **g2D_Res_Syst;
+    TGraphAsymmErrors                  *fYield_Stat,       *fYield_Syst;
     //
-    hName                               =   Form("hRES_1D");
-    hRES_1D                             =   (TH1D*)(insFile_DT_Yield->Get(hName));
+    hName                               =   Form("gRES_1D_Stat");
+    g1D_Res_Stat                        =   (TGraphAsymmErrors*)(insFile_DT_Yield->Get(hName));
     //
-    hName                               =   Form("hRES_2D");
-    hRES_2D                             =   (TH2D*)(insFile_DT_Yield->Get(hName));
+    hName                               =   Form("gRES_1D_Syst");
+    g1D_Res_Syst                        =   (TGraphAsymmErrors*)(insFile_DT_Yield->Get(hName));
+    //
+    g2D_Res_Stat                        =   new TGraphAsymmErrors*  [nBinPT2D];
+    g2D_Res_Syst                        =   new TGraphAsymmErrors*  [nBinPT2D];
+    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ ) {
+        hName                           =   Form("gRES_2D_Stat_%i",iPT2D);
+        g2D_Res_Stat[iPT2D]             =   (TGraphAsymmErrors*)(insFile_DT_Yield->Get(hName));
+        hName                           =   Form("gRES_2D_Syst_%i",iPT2D);
+        g2D_Res_Syst[iPT2D]             =   (TGraphAsymmErrors*)(insFile_DT_Yield->Get(hName));
+    }
     //
     hName                               =   Form("fYield_Stat");
     fYield_Stat                         =   (TGraphAsymmErrors*)(insFile_DT_Yield->Get(hName));
     //
     hName                               =   Form("fYield_Syst");
     fYield_Syst                         =   (TGraphAsymmErrors*)(insFile_DT_Yield->Get(hName));
-    //
     
+    
+    
+    /*
     // >-> MULTIPLICITY ANALYSIS //
     //
     TGraphAsymmErrors **fYield_Stat_in_MT  =   new TGraphAsymmErrors  *[nBinMult];
@@ -45,6 +59,7 @@ void Analysis_FinalPlots ()
         hName                               =   Form("fYield_Syst_%i",iMult);
         fYield_Syst_in_MT[iMult]            =   (TGraphAsymmErrors*)(insFile_DT_Mult->Get(hName));
     }
+     */
     //
     //---------------------//
     //  Setting up output  //
@@ -63,65 +78,6 @@ void Analysis_FinalPlots ()
     
     // Creating the histograms-------------------------------------------------------------------------------
     //
-    TGraphAsymmErrors  *fGammaPhi_Stat          =   new TGraphAsymmErrors();
-    hName       =   Form("fGammaPhi");
-    hTitle      =   Form("fGammaPhi");
-    fGammaPhi_Stat->SetNameTitle(hName,hTitle);
-    //
-    TGraphAsymmErrors  *fGammaPhi_Syst          =   new TGraphAsymmErrors();
-    hName       =   Form("fGammaPhi");
-    hTitle      =   Form("fGammaPhi");
-    fGammaPhi_Syst->SetNameTitle(hName,hTitle);
-    //
-    TGraphAsymmErrors  *fGammaPhi_Stat_in_MT    =   new TGraphAsymmErrors();
-    hName       =   Form("fGammaPhi_in_MT");
-    hTitle      =   Form("fGammaPhi_in_MT");
-    fGammaPhi_Stat_in_MT->SetNameTitle(hName,hTitle);
-    //
-    TGraphAsymmErrors  *fGammaPhi_Syst_in_MT    =   new TGraphAsymmErrors();
-    hName       =   Form("fGammaPhi_in_MT");
-    hTitle      =   Form("fGammaPhi_in_MT");
-    fGammaPhi_Syst_in_MT->SetNameTitle(hName,hTitle);
-    //
-    TGraphAsymmErrors  *fYield_1tuple_Stat          =   new TGraphAsymmErrors();
-    hName       =   Form("fYield_1tuple_Stat");
-    hTitle      =   Form("fYield_1tuple_Stat");
-    fYield_1tuple_Stat->SetNameTitle(hName,hTitle);
-    //
-    TGraphAsymmErrors  *fYield_1tuple_Syst          =   new TGraphAsymmErrors();
-    hName       =   Form("fYield_1tuple_Syst");
-    hTitle      =   Form("fYield_1tuple_Syst");
-    fYield_1tuple_Syst->SetNameTitle(hName,hTitle);
-    //
-    TGraphAsymmErrors  *fYield_1tuple_Stat_in_MT    =   new TGraphAsymmErrors();
-    hName       =   Form("fYield_1tuple_Stat_in_MT");
-    hTitle      =   Form("fYield_1tuple_Stat_in_MT");
-    fYield_1tuple_Stat_in_MT->SetNameTitle(hName,hTitle);
-    //
-    TGraphAsymmErrors  *fYield_1tuple_Syst_in_MT    =   new TGraphAsymmErrors();
-    hName       =   Form("fYield_1tuple_Syst_in_MT");
-    hTitle      =   Form("fYield_1tuple_Syst_in_MT");
-    fYield_1tuple_Syst_in_MT->SetNameTitle(hName,hTitle);
-    //
-    TGraphAsymmErrors  *fYield_2tuple_Stat          =   new TGraphAsymmErrors();
-    hName       =   Form("fYield_2tuple_Stat");
-    hTitle      =   Form("fYield_2tuple_Stat");
-    fYield_2tuple_Stat->SetNameTitle(hName,hTitle);
-    //
-    TGraphAsymmErrors  *fYield_2tuple_Syst          =   new TGraphAsymmErrors();
-    hName       =   Form("fYield_2tuple_Syst");
-    hTitle      =   Form("fYield_2tuple_Syst");
-    fYield_2tuple_Syst->SetNameTitle(hName,hTitle);
-    //
-    TGraphAsymmErrors  *fYield_2tuple_Stat_in_MT    =   new TGraphAsymmErrors();
-    hName       =   Form("fYield_2tuple_Stat_in_MT");
-    hTitle      =   Form("fYield_2tuple_Stat_in_MT");
-    fYield_2tuple_Stat_in_MT->SetNameTitle(hName,hTitle);
-    //
-    TGraphAsymmErrors  *fYield_2tuple_Syst_in_MT    =   new TGraphAsymmErrors();
-    hName       =   Form("fYield_2tuple_Syst_in_MT");
-    hTitle      =   Form("fYield_2tuple_Syst_in_MT");
-    fYield_2tuple_Syst_in_MT->SetNameTitle(hName,hTitle);
     //
     //-------------------------//
     //  Filling output objects //
@@ -129,6 +85,14 @@ void Analysis_FinalPlots ()
     //
     //  >>->> YIELD ANALYSIS //
     //
+    TFile   *fCheck =   new TFile("eeeee.root","recreate");
+    TCanvas    *cInclusiveSpectrum      =   fPublishSpectrum(g1D_Res_Stat,g1D_Res_Syst);
+    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ ) {
+        TCanvas     *cConditionalSpectrum   =    fPublishSpectrum(g2D_Res_Stat[iPT2D],g2D_Res_Syst[iPT2D]);
+    }
+    fCheck->Close();
+}
+    /*
     //  >>->>->> Recovering Basic values
     Double_t    fY_phi          =   fYield_Stat->GetPointY(0);
     Double_t    fY_phi_stat     =   fYield_Stat->GetErrorY(0);
@@ -144,8 +108,12 @@ void Analysis_FinalPlots ()
     fGammaPhi_Syst->SetPoint        (0, 1,  fGammaPhiValue(fY_phi,fY_phiphi));
     fGammaPhi_Syst->SetPointError   (0, 0,  0,  fGammaPhiError(fY_phi,fY_phiphi,fY_phi_stat,fY_phiphi_stat),    fGammaPhiError(fY_phi,fY_phiphi,fY_phi_stat,fY_phiphi_stat));
     //
+     */
+    
+    
     //  >>->> MULTIPLICITY ANALYSIS //
     //
+    /*
     for ( Int_t iMult = 0; iMult < nBinMult; iMult++ )   {
         //  >>->>->> Recovering Basic values
         Double_t    fY_phi_MT          =   fYield_Stat_in_MT[iMult]->GetPointY(0);
@@ -170,16 +138,19 @@ void Analysis_FinalPlots ()
         TH1D    *   fConditionalYield   =   hRES_2D->ProjectionX(Form("hRES_2D_PorjX_%i",iPT2D),iPT2D+1,iPT2D+1);
         if ( fConditionalYield->GetEntries() <= 0 ) continue;
         fVector_Full_2D_Conditional_Spectra.push_back(fConditionalYield);
-    }
+    }*/
     //
     //-------------------------//
-    //  Analysis //
+    //  Analysis               //
     //-------------------------//
     //
+    /*
     TCanvas        *fGammaPhi       =   new TCanvas();
     TLegend        *fLegendGPhi     =   new TLegend();
     TMultiGraph    *fGammaPhiFull   =   new TMultiGraph();
     //
+    fGammaPhi_Syst  ->  GetHistogram()  ->  SetMaximum(0.1);
+    fGammaPhi_Syst  ->  GetHistogram()  ->  SetMinimum(-0.05);
     fGammaPhi_Stat  ->  SetMarkerStyle(33);
     fGammaPhi_Stat  ->  SetMarkerColor(2);
     fGammaPhi_Stat  ->  SetMarkerSize(2);
@@ -207,6 +178,8 @@ void Analysis_FinalPlots ()
     TLegend        *fLegendGPhiMT   =   new TLegend();
     TMultiGraph    *fGammaPhiFull_in_MT   =   new TMultiGraph();
     //
+    fGammaPhi_Syst_in_MT    ->  GetHistogram()  ->  SetMaximum(0.1);
+    fGammaPhi_Syst_in_MT    ->  GetHistogram()  ->  SetMinimum(-0.05);
     fGammaPhi_Stat_in_MT    ->  SetMarkerStyle(33);
     fGammaPhi_Stat_in_MT    ->  SetMarkerColor(2);
     fGammaPhi_Stat_in_MT    ->  SetMarkerSize(2);
@@ -253,7 +226,7 @@ void Analysis_FinalPlots ()
     fLegend_Conditional_Spectra ->Draw      ("SAME");
     fCanvas_Conditional_Spectra ->SaveAs    ("fCanvas_Conditional_Spectra.pdf");
     //
-}
+    //fCheckPublishedResults(hRES_1D,hTRU,gTRU)->Draw();*/
 
 /*
 

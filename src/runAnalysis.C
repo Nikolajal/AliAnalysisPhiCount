@@ -5,7 +5,7 @@
 #include "./PreProcessing.C"
 // !TODO: All Set!
 
-void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEventsCut = -1., TString fOption = "" )
+void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEventsCut = -1., TString fOption = "", TString fFolder = "" )
 {
     //---------------------//
     //  Setting up input   //
@@ -17,6 +17,7 @@ void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEven
     gROOT->ProcessLine(".! mkdir -p ./result/trigger");
     gROOT->ProcessLine(".! mkdir -p ./result/yield");
     gROOT->ProcessLine(".! mkdir -p ./result/multiplicity");
+    gROOT->ProcessLine(".! mkdir -p ./result/rapidity");
     gROOT->ProcessLine(".! mkdir -p ./result/tmp");
     gROOT->ProcessLine(".! mkdir -p ./result/SEFitCheck");
     gROOT->ProcessLine(".! mkdir -p ./result/check");
@@ -35,5 +36,5 @@ void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEven
 
     PreProcessing(fFileNameDT,fFileNameMC,nEventsCut,fOption);
     Analysis_SignalExtraction(true,fOption);
-    Analysis_SignalCorrections();
+    Analysis_SignalCorrections(true,fOption);
 }

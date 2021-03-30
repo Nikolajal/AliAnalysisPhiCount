@@ -1,0 +1,52 @@
+\begin{comment}
+TODO:	----------------------------
+1. Add PID Histograms for each variation cut
+2. PID shortcuts
+------------------------------------------
+\end{comment}
+
+\section{Track Selection and Particle Identification}
+\label{sec:Trackslelection}
+As was mentioned above, the $\phi$ meson reconstruction was performed using the Invariant mass technique on its decay product K$^{+}$K$^{-}$, which have a branching ratio of 49.2(5)\% \cite{PDG}. The main target of our identification effort is then primary charged Kaons.\\
+\subsection{Track selection}
+To this end, we resort to the \href{https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliDPGtoolsFilteringCuts#Run_flag_1000_AddTrackCutsLHC10b}{DPG Track Filterbit 5} that encapsules the \texttt{GetStandardITSTPCTrackCuts2010()},which applies a number of selections, listed below:
+\begin{enumerate}
+\item A minimum number of rows crossed in the TPC ($N_{cr,TPC}$ $\geq 70$)
+\item A maximum $\chi^2$ per cluster in the TPC ($\chi^2_{TPC} < 4$)
+\item Reject kink daughters
+\item Require ITS refits
+\item Require TPC refits
+\item Minimum number of clusters in SPD: 1 ($\texttt{AliESDtrackCuts::SetClusterRequirementITS(kSPD, kAny)}$)
+\item DCAxy $<$ 0.0182 + 0.0350$/p_{T}^{1.01}$ (7-$\sigma$ cut)
+\item A maximum $\chi^2$ per TPC-constrained Global ($\chi^2_{CGI} < 36$)
+\item DCAz $<$ \SI{2}{\centi \meter}
+\item $\texttt{AliESDtrackCuts::SetDCAToVertex2D(kFALSE)}$
+\item $\texttt{AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE)}$
+\item A maximum $\chi^2$ per cluster in the ITS ($\chi^2_{ITS} < 36$)
+\end{enumerate}
+In addition to these selections we add a cut in $\eta$, $p_{T}$ and rapidity to enhance the precision of the measurement:
+\begin{enumerate}
+\item p$_{T}$ of Kaon candidate over \SI{0.15}{\giga\electronvolt} (p$_{T} \geq$ \SI{0.15}{\giga\electronvolt})
+\item $\eta$ of Kaon candidate in range [-0.8;0.8] ($|\eta| < 0.8$)
+\item Reconstructed $\phi$ candidate in rapidity range [-0.5;0.5] ($|\text{y}| < 0.5$)
+\end{enumerate}
+\subsection{PID Selection}
+Once the primary tracks are selected, we proceed to the particle identification using the TPC and TOF detectors, respectively measuring the energy loss and the time of flight of the particle. The selection is made using the $\sigma_K$ of the detector, representing the probability of the particle of being a Kaon based on the measurement of the specific detector. The selections used in the analysis are:
+\begin{enumerate}
+\item If the track does not match a TOF hit, a $|\sigma_K^{\text{TPC}}| < 3.0$ selection is performed
+\item If the track matches a TOF hit, a $|\sigma_K^{\text{TPC}}| < 5.0$ selection is performed, combined with a $|\sigma_K^{\text{TOF}}| < 3.0$ selection (TOF veto)
+\end{enumerate}
+Given the presence of issues in the TPC reconstruction for low momenta particles, the TPC selection is widened to $|\sigma_K^{\text{TPC}}| < 7.0$ for tracks having a 
+p$_{T} \leq$ \SI{0.28}{\giga\electronvolt}. This PID selection will not be concerned by variations made to evaluate the systematic uncertainty.
+\subsection{Uncertainty evaluation}
+To evaluate the uncertainties associated to the selections the analysis is run multiple times varying the PID selection values of $\sigma_K$ by $10\%$:
+\begin{enumerate}
+\item $|\sigma_K^{\text{TPC}}| < 3.0$ $\qquad$ $|\sigma_K^{\text{TPC}}| < 5.0$ with $|\sigma_K^{\text{TOF}}| < 3.0$ veto $\qquad$ (Standard)
+\item $|\sigma_K^{\text{TPC}}| < 3.3$ $\qquad$ $|\sigma_K^{\text{TPC}}| < 5.0$ with $|\sigma_K^{\text{TOF}}| < 3.0$ veto 
+\item $|\sigma_K^{\text{TPC}}| < 2.7$ $\qquad$ $|\sigma_K^{\text{TPC}}| < 5.0$ with $|\sigma_K^{\text{TOF}}| < 3.0$ veto 
+\item $|\sigma_K^{\text{TPC}}| < 3.0$ $\qquad$ $|\sigma_K^{\text{TPC}}| < 5.5$ with $|\sigma_K^{\text{TOF}}| < 3.0$ veto
+\item $|\sigma_K^{\text{TPC}}| < 3.0$ $\qquad$ $|\sigma_K^{\text{TPC}}| < 4.5$ with $|\sigma_K^{\text{TOF}}| < 3.0$ veto
+\item $|\sigma_K^{\text{TPC}}| < 3.0$ $\qquad$ $|\sigma_K^{\text{TPC}}| < 5.0$ with $|\sigma_K^{\text{TOF}}| < 3.3$ veto
+\item $|\sigma_K^{\text{TPC}}| < 3.0$ $\qquad$ $|\sigma_K^{\text{TPC}}| < 5.0$ with $|\sigma_K^{\text{TOF}}| < 2.7$ veto
+\end{enumerate}
+For the tracking efficiency, a $4\%$ uncertainty is taken from \cite{PrevPub}

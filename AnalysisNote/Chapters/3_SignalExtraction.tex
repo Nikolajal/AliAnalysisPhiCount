@@ -1,0 +1,52 @@
+\section{Signal Extraction}
+\label{sec:SignalExtraction}
+The analysis makes use of Invariant Mass histograms built using different p$_T$ bins of eligible candidates. The list of bins used in the analysis are listed in Table \ref{tab:PTbins}.
+
+\begin{table}
+\center
+\begin{tabular}{ccc|ccc||ccc}
+\multicolumn{6}{c}{1D Analysis} 					&\multicolumn{3}{c}{2D Analysis}\\
+Bin	&Min		&Max	&Bin		&Min		&Max	&Bin		&Min		&Max\\
+\hline
+1	&0.4		&...		&8		&0.4		&...		&1		&0.4		&...\\
+2	&0.4		&...		&9		&0.4		&...		&2		&0.4		&...\\
+3	&0.4		&...		&10		&0.4		&...		&3		&0.4		&...\\
+4	&0.4		&...		&11		&0.4		&...		&4		&0.4		&...\\
+5	&0.4		&...		&12		&0.4		&...		&5		&0.4		&...\\
+6	&0.4		&...		&13		&0.4		&...		&6		&0.4		&...\\
+7	&0.4		&...		&14		&0.4		&...		&7		&0.4		&...\\
+\end{tabular}
+\label{tab:PTbins}
+\caption{The p$_{T}$ bins used in the analysis, all values are in \SI{}{\giga \electronvolt \per \clight}}
+\end{table}
+
+\subsection{Extraction of $\phi$ meson}
+The Signal extraction of $\phi$ meson yields is performed using the Invariant mass distribution of un-like signed charged Kaons pairs from the same event. In this analysis we do not make use of the background subtraction method to maintain consistency with the pair analysis.
+\subsubsection{Background estimation}
+The background estimation is made simultaneously to the Signal Extraction using a Fit procedure with a function that accounts for the two components. For the part regarding the background a Chebychev polynomial of the 4$^{th}$ degree is used. 
+\subsubsection{Signal Peak Fit}
+The signal peak fit is performed with a Vogtian function.
+
+\subsection{Extraction of $\phi$-meson pair}
+The Signal extraction of $\phi$ meson yields is performed using the 2-Dimensional Invariant mass distribution of un-like signed charged Kaons pairs from the same event. The 2-Dimensional distribution combines Kaon pairs ($\phi$-meson candidates) from within the same event, having the first pair on the x-axis and the second candidate on the y-axis. Given the choice of the pair order is in principle arbitrary, a symmetrisation process is performed where the distribution is built with two entries, weighted $\frac{1}{2}$ each, where the candidates are swapped in their position.\\
+\indent When selecting the candidates further selections for background rejection are implemented:
+\begin{enumerate}
+\item Only events with more than 2 K$^{+}$ and 2K$^{-}$ are used
+\item For each $\phi$-meson candidate, a check on the Kaons used to build it is made: no $\phi$-meson candidate pair should share Kaons.
+\end{enumerate}
+\subsubsection{Background estimation}
+The $\phi$-meson pair analysis presents three kinds of Background one needs to discriminate against:
+\begin{enumerate}
+\item x-candidate: Combinatorial Background	$\qquad$ 		y-candidate: Combinatorial Background
+\item x-candidate: True $\phi$-meson decay	$\qquad$ 		y-candidate: Combinatorial Background
+\item x-candidate: Combinatorial Background	$\qquad$ 		y-candidate: True $\phi$-meson decay
+\end{enumerate}
+In order to 
+\subsubsection{Signal Peak Fit}
+
+\subsection{Uncertainty Evaluation}
+As a check on the goodness of this choice the process is repeated with a Chebychev polynomial of 3$^{rd}$ and 5$^{th}$ degree.
+
+
+\begin{comment}
+\end{comment}

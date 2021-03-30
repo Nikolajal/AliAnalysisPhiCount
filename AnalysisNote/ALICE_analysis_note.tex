@@ -4,19 +4,25 @@
 %\newcommand{\jpsi}{\rm J/$\psi$}
 %\newcommand{\psip}{$\psi^\prime$}
 %\newcommand{\jpsiDY}{\rm J/$\psi$\,/\,DY}
-%\newcommand{\dd}{\mathrm{d}}
+\newcommand{\dd}{\mathrm{d}}
 %\newcommand{\chic}{$\chi_{\rm c}$}
 %\newcommand{\ezdc}{$E_{\rm ZDC}$}
 %\newcommand{\red}{\textcolor{red}}
-%\newcommand{\blue}{\textcolor{blue}}
+\newcommand{\blue}{\textcolor{blue}}
 \newcommand{\slfrac}[2]{\left.#1\right/#2}
 \usepackage{rotating}
 \usepackage{listings}
 \usepackage{multirow}
 \usepackage{tabularx}
 \usepackage{comment}
+\usepackage{xcolor}
+\usepackage{listings}
 \usepackage{siunitx}
+\usepackage[backend=bibtex,style=numeric,sorting=none]{biblatex} % Use the bibtex backend with the authoryear citation sty le (which resembles APA)
+\addbibresource{ALICE_analysis_note} 
 \usepackage{hyperref}
+
+\DeclareSIUnit\clight{\text{\ensuremath{c}}}
 %
 \begin{document}%
 %%%%%%%%%%%%% ptdr definitions %%%%%%%%%%%%%%%%%%%%%
@@ -29,8 +35,8 @@
 \PHdate{\today}
 %
 %%% Put your own title + short title here:
-\title{My analysis note}
-\ShortTitle{My analysis note}   % appears on right page headers
+\title{First measurement of $\phi$-pair production in pp collisions}
+\ShortTitle{First measurement of $\phi$-pair production in pp collisions}   % appears on right page headers
 %
 \author{Nicola Rubini$^{1}$}
 \author{
@@ -41,7 +47,8 @@
 \ShortAuthor{ALICE Analysis Note 2012}      % appears on left page headers, do not change
 %
 \begin{abstract}
-In this Analysis Note is presented the new Analysis Technique for the measurement of the $\phi$-meson pair yield. The $\phi$ meson is reconstructed via its $\phi(1020)\to$K$^{+}$K$^{-}$ decay channel (B.R. 49.2$\pm$0.5\%). Results will be presented about Invariant Mass histograms, inclusive spectra, conditional spectra and a differentiation in multiplicity of the measurement is performed.
+%The measurement of the φ meson at mid-rapidity in minimum-bias pp collisions at s = 13 TeV is described in this note. The results include the pT spectrum, the integrated yield dN/dy, the mean transverse momentum ⟨pT⟩, and ratios to the yields of other hadrons. A multiplicity-dependent analysis will be performed separately.
+In this Analysis Note we present the new Analysis Technique for the measurement of the $\phi$-meson pair yield. The $\phi$ meson is reconstructed via its $\phi(1020)\to$K$^{+}$K$^{-}$ decay channel (B.R. 49.2$\pm$0.5\%). Results will be presented about Invariant Mass histograms, inclusive spectra, conditional spectra and a differentiation in multiplicity of the measurement is performed.
 \end{abstract}
 \end{titlepage}
 %
@@ -51,10 +58,21 @@ In this Analysis Note is presented the new Analysis Technique for the measuremen
 %	SECTIONS
 %
 \setcounter{secnumdepth}{0}
-\input{Chapters/Introduction.tex}
+\input{Chapters/0_Introduction.tex}
 \setcounter{secnumdepth}{1}
 \newpage
-\input{Chapters/Dataset_and_event_selection.tex}
+\input{Chapters/1_Dataset.tex}
+\input{Chapters/2_Trackselection.tex}
+\input{Chapters/3_SignalExtraction.tex}
+\input{Chapters/4_Simulation.tex}
+\input{Chapters/5_NormCorrection.tex}
+\input{Chapters/6_SpectrumUncertainty.tex}
+\input{Chapters/7_SpectrumFits.tex}
+\input{Chapters/8_Systematics.tex}
+\setcounter{secnumdepth}{0}
+%\input{Chapters/0_1_Comparison.tex}
+\setcounter{secnumdepth}{1}
 %
+\printbibliography
 %
 \end{document}

@@ -2,7 +2,7 @@
 #define ALIANALYSISPHIPAIR_H
 
 // Analysis Utility
-#include "./AliAnalysisUtility/AliAnalysisUtility.h"
+#include "../AliAnalysisUtility/AliAnalysisUtility.h"
 
 //------------------------------//
 //      GLOBAL VARIABLES        //
@@ -10,24 +10,27 @@
 
 enum            fFitResults1D
 {
-    Background, Signal
+    Background, Signal, kMass, kSlop, kWidt
 };
 
 enum            fFitResults2D
 {
-
     BackgBackg, BackgSignl, SignlBackg, SignlSignl
 };
 
 // Performance Values
-auto const  kCPU_use                =   3;
-auto const  kNCycle_                =   5;
-auto const  kStatEvalCycles         =   10;
+auto const  kCPU_use                =   4;
+auto const  kNCycle_                =   10;
+auto const  kStatEvalCycles         =   200;
+auto const  kBinningPrecision1D     =   0.25*MeV;
+auto const  kBinningPrecision2D     =   0.5*MeV;
+auto const  kPrintIntervalPP        =   1000000;
 
 // Analysis Values
 auto const  bPythiaTest             =   kFALSE;
+auto const  kOnlyTrue               =   false;
 
-//-// File Names
+//-// File Names                    // Re-Make the name with %s instead of the folder name
 
 //-//-// Yield Analysis
     //PreProcessing
@@ -52,14 +55,14 @@ auto const  fMltSigCh2k             =   "./result/multiplicity/FitCheckHist2.roo
 auto const  fTrgPreProc             =   "./result/trigger/DifferentialCandidateEventsHistograms.root";
 auto const  fTrgPrePrMC             =   "./result/trigger/PPReference.root";
 
-//-//-// Others
-auto const  fInvMasHist             =   "./result/InvariantMassHistograms.root";
-auto const  fEfficiHist             =   "./result/Efficiencies_MCTruth.root";
-auto const  fFitResHist             =   "./result/InvariantMassFitResultsPlots.root";
-auto const  fFitResults             =   "./result/InvariantMassFitResults.root";
-auto const  fAnlResHist             =   "./result/AnalysisResultsPlots.root";
-auto const  fAnlResults             =   "./result/AnalysisResults.root";
-auto const  fSystError_             =   "./result/Syst_SigExt.root";
+//-//-// Rapidity Analysis
+    //PreProcessing
+auto const  fRapPreProc             =   "./result/rapidity/PPRapidityDistributions.root";
+auto const  fRapPrePrMC             =   "./result/rapidity/PPReference.root";
+auto const  fRapSigExtr             =   "./result/rapidity/SEHistograms.root";
+auto const  fRapSigChek             =   "./result/rapidity/FitCheckHisto.root";
+auto const  fRapSigCorr             =   "./result/rapidity/SCHistograms.root";
+auto const  fRapSigCh2k             =   "./result/rapidity/FitCheckHist2.root";
 
 //-// Tree Names
 auto const  fPhiCandidate_Tree      =   "PhiCandidate";
@@ -68,54 +71,88 @@ auto const  fKaonCandidate_Tree     =   "KaonCandidate";
 auto const  fKaonCandidateEff_Tree  =   "KaonEfficiency";
 
 // Analysis Values
-//-// Analysis constants
+//
+//>->   Analysis constants
+//
+//>->->->   Particles
+//
 auto const  kPhiMesonMass_          =   1.019455;   //  1.019455    +- 0.000020
 auto const  kPhiMesonWidth          =   0.00426;    //  0.00426     +- 0.00004
 auto const  kKaonMass               =   .493677;
 auto const  kKaonMassUncert         =   .000013;
-auto const  kDetectorSlope          =   1.;
-auto const  kBranchingRtio          =   0.492;
-auto const  kVertexEfficnc          =   1;
-auto const  kTriggerEfficnc         =   1;
-auto const  kRapidityIntvl          =   1;
-
-//-// Analysis systematics (%)
-auto const  kBRSystematics          =   0.01;
-
+//
+// TO BE GOT RID OF, Legacy compatibility
 auto const  kPMas                   =   1.019455;   //  1.019455    +- 0.000020
 auto const  kPWid                   =   0.00426;    //  0.00426     +- 0.00004
+//
+//>->->->   Detectors
+//
+auto const  kDetectorSlope          =   1.;
+//
+//>->->->   Systematics
+//
+//>->->->->->   Branching Ratio
+auto const  kBR                     =   0.492;
+auto const  kSysLow_BR              =   0.01;
+auto const  kSysHig_BR              =   0.01;
+//
+//>->->->->->   Signal Extraction
+auto const  kSysLow_1D_SE           =   0.06;
+auto const  kSysHig_1D_SE           =   0.06;
+auto const  kSysLow_2D_SE           =   0.15;
+auto const  kSysHig_2D_SE           =   0.15;
+//
+//>->->->->->   Tracking Efficiency
+auto const  kSysLow_TR              =   0.08;
+auto const  kSysHig_TR              =   0.08;
+//
+//>->->->->->   PID Efficiency
+auto const  kSysLow_PD              =   0.015;
+auto const  kSysHig_PD              =   0.015;
+//
+auto const  kTriggerEff             =   .7574; // 5TeV 0.7574;// 7TeV 0.85;
+auto const  nMltTrgECls             =   9;
+Float_t const  kMultTrgEff      []  =   {.998822,0.995576,0.991524,0.986489,0.975743,0.9575743,0.937151,0.897753,0.696985};
+Float_t const  kMltTrgECls      []  =   {0,5,10,15,20,30,40,50,70,100};
+auto const  kSysLow_Trigger         =   0.01;
+auto const  kSysHig_Trigger         =   0.01;
+//
+auto const  kTrackingEff            =   -1.0; //Unused
+auto const  kSysLow_Tracking        =   0.01;
+auto const  kSysHig_Tracking        =   0.01;
 
 //-//   Analysis settings
-auto        kDoMultiplicity         =   true;
-auto        kDoYield                =   true;
-auto        kDoTrigger              =   true;
+auto        kDoMultiplicity         =   false;
+auto        kDoYield                =   false;
+auto        kDoTrigger              =   false;
+auto        kDoRapidity             =   false;
 
 //-// InvMass range Pythia MC
 const   Float_t   fMinIMMC  =   0.75;
 const   Float_t   fMaxIMMC  =   1.25;
 
 //-// InvMass bins 1D
-const   Int_t     nBinIM1D  =   135;
-const   Float_t   fMinIM1D  =   0.99;
-const   Float_t   fMaxIM1D  =   1.08;
-        Float_t * fArrIM1D  =   new Float_t [nBinIM1D+1];
+const   Float_t   fMinIM1D  = 0.99;
+const   Float_t   fMaxIM1D  = 1.08;
+const   Int_t     nBinIM1D  = (int)((fMaxIM1D-fMinIM1D)/kBinningPrecision1D);
+        Float_t * fArrIM1D  = new Float_t [nBinIM1D+1];
 
 //-// InvMass bins 2D
-const   Int_t     nBinIM2D  =   135;
-const   Float_t   fMinIM2D  =   0.99;
-const   Float_t   fMaxIM2D  =   1.08;
-        Float_t * fArrIM2D  =   new Float_t [nBinIM2D+1];
+const   Float_t   fMinIM2D  = 0.99;
+const   Float_t   fMaxIM2D  = 1.08;
+const   Int_t     nBinIM2D  = (int)((fMaxIM2D-fMinIM2D)/kBinningPrecision2D);
+        Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];
 
 //-// pT bins 1D
-const   Int_t     nBinPT1D  =   21;
-const   Float_t   fMinPT1D  =   0.40;
-const   Float_t   fMaxPT1D  =   21.0;
+const   Int_t     nBinPT1D  =   15;
+const   Float_t   fMinPT1D  =   0.4;
+const   Float_t   fMaxPT1D  =   12.;
         Float_t  *fArrPT1D  =   new Float_t [nBinPT1D+1];
 
 //-// pT bins 2D
-const   Int_t     nBinPT2D  =   10;
-const   Float_t   fMinPT2D  =   0.40;
-const   Float_t   fMaxPT2D  =   21.0;
+const   Int_t     nBinPT2D  =   7;
+const   Float_t   fMinPT2D  =   0.4;
+const   Float_t   fMaxPT2D  =   12.;
         Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
 
 //-// Muliplicity bins
@@ -125,9 +162,9 @@ const   Float_t   fMaxMult  =   100.0;
         Float_t  *fArrMult  =   new Float_t [nBinMult+1];
 
 //-// Rapidity bins
-const   Int_t     nBinRap_  =   20;
-const   Float_t   fMinRap_  =   0.0;
-const   Float_t   fMaxRap_  =   1.0;
+const   Int_t     nBinRap_  =   4;
+const   Float_t   fMinRap_  =   0.;
+const   Float_t   fMaxRap_  =   .5;
         Float_t  *fArrRap_  =   new Float_t [nBinRap_+1];
 
 //-// N-Tuples bins
@@ -136,36 +173,63 @@ const   Float_t   fMinNTup  =   -0.5;
 const   Float_t   fMaxNTup  =   4.5;
         Float_t  *fArrNTup  =   new Float_t [nBinNTup+1];
 
+//-// Systematics Options
+//
+//-//-//    SE
+//
+const   Bool_t  f1DOptio    =   true;
+const   Bool_t  f2DOptio    =   true;
+const   Int_t   nOptions    =   14;
+const   string  sOptions[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK","W","CH3","CH5"};
+const   Int_t   nOption2    =   15;
+const   string  sOption2[]  =   {"BKG","RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK","W","CH3","CH5"};
+//
+//-//-//    PID
+//
+const   Int_t   nPIDFiles       =   6;
+const   TString sPID_DT_Name    =   "LHC10_kAnyINT_PID_%i.root";
+const   TString sPID_MC_Name    =   "LHC14j4_kAnyINT_PID_%i.root";
+//
 //------------------------------//
 //    DATA STRUCTURES           //
 //------------------------------//
 
 typedef struct
 {
-    UChar_t nPhi,           Multiplicity,   iKaon[1024],    jKaon[1024],   Nature[1024];
-    Float_t Px[1024],       Py[1024],       Pz[1024],       pT[1024],      Rap[1024],        InvMass[1024];
+    UChar_t     nPhi,           EventMask,      iKaon[1024],    jKaon[1024],   Nature[1024];
+    Float_t     Multiplicity,   Px[1024],       Py[1024],       Pz[1024],       pT[1024],      Rap[1024],       InvMass[1024];
+    Bool_t      kHasRap[1024],  kHasMult;
+    Int_t       iPT1D[1024],    iPT2D[1024],    iRap[1024],     iMult;
 } Struct_PhiCandidate;
 
 typedef struct
 {
-    UChar_t nKaon,          Multiplicity,   Charge[1024];
+    UChar_t nKaon,          EventMask,      Charge[1024];
     Char_t  SigmaTOF[1024], SigmaTPC[1024];
-    Float_t Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    Float_t Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
 } Struct_KaonCandidate;
 
 typedef struct
 {
-    UChar_t nPhi,           Multiplicity,   Selection[1024];
-    Float_t Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    UChar_t nPhi,           TrueEventMask,  EventMask,      Selection[1024];
+    Float_t Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
     Bool_t  fTru,           fGen,           fRec;
 } Struct_PhiEfficiency;
 
 typedef struct
 {
-    UChar_t nKaon,          Multiplicity,   Charge[1024],   Selection[1024];
-    Float_t Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    UChar_t nKaon,          TrueEventMask,  EventMask,      Charge[1024],   Selection[1024];
+    Float_t Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
     Bool_t  ftru;
 } Struct_KaonEfficiency;
+
+enum class kEventMask {
+    kVoid1, kPileUp, kPileUpMult, kINELgt0, kVoid5, kVoid6, kVoid7, kVoid8
+};
+
+enum kEventCount {
+    kUnderFlow = 0, kTrigger = 1, kHasEvent = 2, kHasMCTracks = 3, kHasPID = 4, kNoSPDVtx = 5, kVtxMismatch = 6, kVertex = 7, kVertex10 = 8
+};
 
 //------------------------------//
 //    VARIABLES UTILITIES       //
@@ -197,43 +261,35 @@ void    fSetBinNTup ()
 
 void    fSetBinPT1D ()
 {
-    fArrPT1D[0] =   0.4;
-    fArrPT1D[1] =   0.6;
-    fArrPT1D[2] =   0.8;
-    fArrPT1D[3] =   1.0;
-    fArrPT1D[4] =   1.2;
-    fArrPT1D[5] =   1.4;
-    fArrPT1D[6] =   1.6;
-    fArrPT1D[7] =   1.8;
-    fArrPT1D[8] =   2.0;
-    fArrPT1D[9]=   2.5;
-    fArrPT1D[10]=   3.0;
-    fArrPT1D[11]=   3.5;
-    fArrPT1D[12]=   4.0;
-    fArrPT1D[13]=   4.5;
-    fArrPT1D[14]=   5.0;
-    fArrPT1D[15]=   6.0;
-    fArrPT1D[16]=   7.0;
-    fArrPT1D[17]=   8.0;
-    fArrPT1D[18]=   10.0;
-    fArrPT1D[19]=   13.0;
-    fArrPT1D[20]=   16.0;
-    fArrPT1D[21]=   21.0;
+    fArrPT1D[0]     =   0.4;
+    fArrPT1D[1]     =   0.7;
+    fArrPT1D[2]     =   0.9;
+    fArrPT1D[3]     =   1.2;
+    fArrPT1D[4]     =   1.4;
+    fArrPT1D[5]     =   1.6;
+    fArrPT1D[6]     =   1.8;
+    fArrPT1D[7]     =   2.0;
+    fArrPT1D[8]     =   2.2;
+    fArrPT1D[9]     =   2.6;
+    fArrPT1D[10]    =   3.0;
+    fArrPT1D[11]    =   3.5;
+    fArrPT1D[12]    =   4.0;
+    fArrPT1D[13]    =   5.0;
+    fArrPT1D[14]    =   8.0;
+    fArrPT1D[15]    =   12.0;
 }
 
 void    fSetBinPT2D ()
 {
-    fArrPT2D[0] =   0.40;
-    fArrPT2D[1] =   0.68;
-    fArrPT2D[2] =   0.82;
-    fArrPT2D[3] =   0.95;
-    fArrPT2D[4] =   1.1;
-    fArrPT2D[5] =   1.3;
-    fArrPT2D[6] =   1.6;
-    fArrPT2D[7] =   2.3;
-    fArrPT2D[8] =  3.0;
-    fArrPT2D[9] =  5.0;
-    fArrPT2D[10] =  21.;
+    
+    fArrPT2D[0]     =   0.40;
+    fArrPT2D[1]     =   0.70;
+    fArrPT2D[2]     =   1.00;
+    fArrPT2D[3]     =   1.50;
+    fArrPT2D[4]     =   2.00;
+    fArrPT2D[5]     =   3.00;
+    fArrPT2D[6]     =   4.00;
+    fArrPT2D[7]     =   12.00;
 }
 
 void    fSetBinMult ()
@@ -249,26 +305,10 @@ void    fSetBinMult ()
 void    fSetBinRap_ ()
 {
     fArrRap_[0]  =  0.0;
-    fArrRap_[1]  =  0.025;
-    fArrRap_[2]  =  0.05;
-    fArrRap_[3]  =  0.075;
-    fArrRap_[4]  =  0.1;
-    fArrRap_[5]  =  0.125;
-    fArrRap_[6]  =  0.150;
-    fArrRap_[7]  =  0.175;
-    fArrRap_[8]  =  0.2;
-    fArrRap_[9]  =  0.25;
-    fArrRap_[10]  =  0.3;
-    fArrRap_[11]  =  0.35;
-    fArrRap_[12]  =  0.4;
-    fArrRap_[13]  =  0.45;
-    fArrRap_[14]  =  0.5;
-    fArrRap_[15]  =  0.55;
-    fArrRap_[16]  =  0.6;
-    fArrRap_[17]  =  0.7;
-    fArrRap_[18]  =  0.8;
-    fArrRap_[19]  =  0.9;
-    fArrRap_[20]  =  1.0;
+    fArrRap_[1]  =  0.08;
+    fArrRap_[2]  =  0.16;
+    fArrRap_[3]  =  0.32;
+    fArrRap_[4]  =  0.5;
 }
 
 Int_t   fGetBinIM1D (Float_t input_value )
@@ -338,7 +378,7 @@ Int_t   fGetBinRap_ (Float_t input_value )
 {
     for ( Int_t iBin = 0; iBin <= nBinRap_; iBin++ )
     {
-        if ( input_value <= fArrRap_[iBin] )
+        if ( fabs(input_value) <= fArrRap_[iBin] )
         {
             return iBin -1;
         }
@@ -358,13 +398,25 @@ Int_t   fGetBinNTup (Float_t input_value )
     return -1;
 }
 
+Int_t   fGetBinMultEff (Float_t input_value )
+{
+    for ( Int_t iBin = 0; iBin <= nMltTrgECls; iBin++ )
+    {
+        if ( input_value <= kMltTrgECls[iBin] )
+        {
+            return iBin -1;
+        }
+    }
+    return -1;
+}
+
 //------------------------------//
 //      CUTS UTILITIES          //
 //------------------------------//
 
 bool    fCutRapidity        ( Double_t  dRapidity )
 {
-    if ( fabs(dRapidity) <= 0.5 ) return true;
+    if ( fabs(dRapidity) < 0.5 ) return true;
     return false;
 }
 
@@ -377,8 +429,8 @@ bool    fCutInvariantMass    ( Double_t  dInvariantMass )
 
 bool    fCutTransverseMom   ( Double_t  dTransverseMom )
 {
-    if ( dTransverseMom <= 0.4 ) return false;
-    if ( dTransverseMom >= fMaxPT1D ) return false;
+    if ( dTransverseMom < fMinPT1D ) return false;
+    if ( dTransverseMom > fMaxPT1D ) return false;
     return true;
 }
 
@@ -390,12 +442,10 @@ bool    fCutMultiplicity    ( Double_t  dMultiplicity )
     return true;
 }
 
-bool    fAcceptCandidate ( Double_t  dRapidity, Double_t  dInvariantMass, Double_t dTransverseMom, Double_t  dMultiplicity )
+bool    fAcceptCandidate ( Double_t  dInvariantMass, Double_t dTransverseMom )
 {
-    if ( !fCutRapidity(dRapidity)           ) return false;
     if ( !fCutInvariantMass(dInvariantMass) ) return false;
     if ( !fCutTransverseMom(dTransverseMom) ) return false;
-    if ( !fCutMultiplicity(dMultiplicity)   ) return false;
     return true;
 }
 
@@ -579,9 +629,11 @@ void                fChooseOption                   ( TString fOption ) {
         kDoMultiplicity         =   false;
         kDoYield                =   false;
         kDoTrigger              =   false;
+        kDoRapidity             =   false;
         if ( fOption.Contains("Multiplicity",TString::kIgnoreCase) )    { kDoMultiplicity = true;   cout << "[INFO] Mutliplicity option chosen" <<endl;}
         if ( fOption.Contains("Yield",TString::kIgnoreCase) )           { kDoYield = true;          cout << "[INFO] Yield option chosen" <<endl;}
         if ( fOption.Contains("Trigger",TString::kIgnoreCase) )         { kDoTrigger = true;        cout << "[INFO] Trigger option chosen" <<endl;}
+        if ( fOption.Contains("Rapidity",TString::kIgnoreCase) )        { kDoRapidity = true;       cout << "[INFO] Rapidity option chosen" <<endl;}
     }
 }
 //
@@ -605,35 +657,39 @@ void                fSetLevyTsalis                  ( Bool_t fIsConditional = fa
     // - // Setting up Fit parameters
     
     // Mass
-    fLevyFit1D  ->  SetParLimits(0,0.,10.);
+    fLevyFit1D  ->  SetParLimits(0,kPMas*0.9,kPMas*1.1);
     fLevyFit1D  ->  SetParameter(0,kPMas);  //Particle Mass?
     
     // n-Parameter
-    fLevyFit1D  ->  SetParLimits(1,2.1,100.);
-    fLevyFit1D  ->  SetParameter(1,6.7);    // 6.7
+    fLevyFit1D  ->  SetParLimits(1,5.,9.);
+    fLevyFit1D  ->  SetParameter(1,7.18);    // 6.7
     
     // T-Parameter
-    fLevyFit1D  ->  SetParLimits(2,.21,10.);
-    fLevyFit1D  ->  SetParameter(2,.272);   // .272
+    fLevyFit1D  ->  SetParLimits(2,.2,.400);
+    fLevyFit1D  ->  SetParameter(2,.300);   // .272
     
     // dN/dy
     fLevyFit1D  ->  SetParLimits(3,1.e-9,1.);
     fLevyFit1D  ->  SetParameter(3,fIntegral);  //
     
-    if ( fIsConditional )   {
-        // - // Setting up Fit parameters
+    if ( false )   {
+        // - // Setting up Fit parameters// - // Setting up Fit parameters
         
         // Mass
-        fLevyFit1D  ->  SetParLimits(0,kPMas,kPMas);
+        fLevyFit1D  ->  SetParLimits(0,0.,100.);
         fLevyFit1D  ->  SetParameter(0,kPMas);
         
         // n-Parameter
-        fLevyFit1D  ->  SetParLimits(1,3.5,7.5);
-        fLevyFit1D  ->  SetParameter(1,4.5); // 6.7
+        fLevyFit1D  ->  SetParLimits(1,2.0001,1000.);
+        fLevyFit1D  ->  SetParameter(1,5.); // 6.7
         
         // T-Parameter
-        fLevyFit1D  ->  SetParLimits(2,.18,.45);
-        fLevyFit1D  ->  SetParameter(2,.272); // .272
+        fLevyFit1D  ->  SetParLimits(2,0.,100.);
+        fLevyFit1D  ->  SetParameter(2,.3); // .272
+        
+        // dN/dy
+        fLevyFit1D  ->  SetParLimits(3,0.5e-6,1.e-3);
+        fLevyFit1D  ->  SetParameter(3,1.e-6);
     }
 }
 //
@@ -649,8 +705,8 @@ TGraphAsymmErrors*  fSetSystErrors                  ( TGraphAsymmErrors* gStatis
     TGraphAsymmErrors  *fResult =   new TGraphAsymmErrors(*gStatistics);
     for ( Int_t iPnt = 0; iPnt < fResult->GetN(); iPnt++ ) {
         auto    fYValue =   fResult ->  GetPointY(iPnt);
-        fResult ->  SetPointEYhigh  ( iPnt, fYValue*sqrt(kBRSystematics*kBRSystematics) );
-        fResult ->  SetPointEYlow   ( iPnt, fYValue*sqrt(kBRSystematics*kBRSystematics) );
+        fResult ->  SetPointEYhigh  ( iPnt, fYValue*sqrt(kSysHig_BR*kSysHig_BR+kSysHig_TR*kSysHig_TR+kSysHig_PD*kSysHig_PD+kSysHig_1D_SE*kSysHig_1D_SE) );
+        fResult ->  SetPointEYlow   ( iPnt, fYValue*sqrt(kSysLow_BR*kSysLow_BR+kSysLow_TR*kSysLow_TR+kSysLow_PD*kSysLow_PD+kSysLow_1D_SE*kSysLow_1D_SE) );
     }
     return fResult;
 }
@@ -663,8 +719,8 @@ std::vector<TGraphAsymmErrors*>   fSetSystErrors    ( std::vector<TGraphAsymmErr
         TGraphAsymmErrors  *fCurrentGraph =   new TGraphAsymmErrors(*iGraph);
         for ( Int_t iPnt = 0; iPnt < fCurrentGraph->GetN(); iPnt++ ) {
             auto    fYValue =   fCurrentGraph ->  GetPointY(iPnt);
-            fCurrentGraph ->  SetPointEYhigh  ( iPnt, fYValue*sqrt(4*kBRSystematics*kBRSystematics) );
-            fCurrentGraph ->  SetPointEYlow   ( iPnt, fYValue*sqrt(4*kBRSystematics*kBRSystematics) );
+            fCurrentGraph ->  SetPointEYhigh  ( iPnt, fYValue*sqrt(4*(kSysHig_BR*kSysHig_BR+kSysHig_TR*kSysHig_TR+kSysHig_PD*kSysHig_PD)+kSysHig_2D_SE*kSysHig_2D_SE) );
+            fCurrentGraph ->  SetPointEYlow   ( iPnt, fYValue*sqrt(4*(kSysLow_BR*kSysLow_BR+kSysLow_TR*kSysLow_TR+kSysLow_PD*kSysLow_PD)+kSysLow_2D_SE*kSysLow_2D_SE) );
         }
         fResult.push_back(fCurrentGraph);
     }
@@ -677,41 +733,48 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TGrap
     //  Optimisation mode
     gROOT->SetBatch(true);
     //
-    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err, Syst err
+    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err low, Stat err high, Syst err low, syst err high
     Double_t   *fResult     =   new Double_t    [10];
     //
-    //  Measuring mean value
+    //  Starting the
     fSetLevyTsalis(fIsConditional,fIntegral);
-    TGraphAsymmErrors   *   gTotal  =   new TGraphAsymmErrors(*(fSumGraphErrors(gStatistics,gSystematics)));
-    gTotal->  Fit(fLevyFit1D,"IMRE0SEX0","",0.4,10.);
-    fResult[0]  =   fLevyFit1D  ->Integral(0.,0.4);
     //
-    TCanvas *   cDrawFit    =   new TCanvas(Form("gTotal_%s",fName.Data()),Form("gTotal_%s",fName.Data()));
+    //  Generating a Full Error Spectra to fit and extrapolating at low pT
+    TGraphAsymmErrors      *gTotal      =   new TGraphAsymmErrors(*(fSumGraphErrors(gStatistics,gSystematics)));
+    gTotal                              ->  Fit(fLevyFit1D,"IMREQ0SEX0","",fMinPT1D,fMaxPT1D);
+    fResult[0]                          =   fLevyFit1D  ->Integral(0.,fMinPT1D);
+    //
+    //  !TODO: Scorporare la fuznione calcola mean pT
+    //  Evaluating the Mean pT
+    if ( !fIsConditional )  {
+        fResult[5]                          =   (fMinPT1D)*fLevyFit1D->Moment(1,0.,fMinPT1D)*(fResult[0]);
+        for ( Int_t iPT1D = 0; iPT1D < nBinPT1D; iPT1D++ )  {
+            fResult[5]                     +=   (fArrPT1D[iPT1D+1] - fArrPT1D[iPT1D])*(fLevyFit1D->Moment(1,fArrPT1D[iPT1D],fArrPT1D[iPT1D+1]))*(gTotal->GetPointY(iPT1D));
+        }
+        cout << fResult[5] << " -- " << endl;
+    }   else    {
+        fResult[5]                          =   (fMinPT2D)*fLevyFit1D->Moment(1,0.,fMinPT2D)*(fResult[0]);
+        for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
+            fResult[5]                     +=   (fArrPT2D[iPT2D+1] - fArrPT2D[iPT2D])*(fLevyFit1D->Moment(1,fArrPT2D[iPT2D],fArrPT2D[iPT2D+1]))*(gTotal->GetPointY(iPT2D));
+        }
+    }
+    //
+    //  Save Fitresult for check later
+    TCanvas                *cDrawFit    =   new TCanvas(Form("%s_%s",gStatistics->GetName(),fName.Data()),"");
     gStyle->SetOptStat(0);
     gPad->SetLogy();
     gTotal->Draw();
     fLevyFit1D->Draw("same");
     cDrawFit->Write();
-    cDrawFit->SaveAs(Form("result/tmp/gTotal_%s.pdf",fName.Data()));
+    cDrawFit->SaveAs(Form("result/tmp/%s_%s.pdf",gStatistics->GetName(),fName.Data()));
     delete cDrawFit;
     //
     //  Measuring Statistical error
-    TH1D*   hStatIntegral   =   new TH1D(Form("hStatIntegral_%s",fName.Data()),"hStatIntegral",100000,0.0,.1);
-    for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
-        //  Set Standard Fit
-        fSetLevyTsalis(fIsConditional,fIntegral);
-        //
-        //  Generating the Fit TGraph
-        auto fSubject   =   fRandomizePoints(gStatistics,gSystematics);
-        //
-        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.4,10.);
-        //
-        hStatIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
-    }
-    fResult[1]  =   hStatIntegral->GetRMS();
-    //
-    //  Measuring Systematics error
-    TH1D*   hSystIntegral   =   new TH1D(Form("hSystIntegral_%s",fName.Data()),"hSystIntegral",100000,0.0,.1);
+    TCanvas *   cDrawFitStat    =   new TCanvas(Form("STAT_%s_%s",gStatistics->GetName(),fName.Data()),"");
+    gStyle->SetOptStat(0);
+    gPad->SetLogy();
+    gTotal->Draw();
+    TH1D*   hStatIntegral   =   new TH1D(Form("hStatIntegral_%s_%s",gStatistics->GetName(),fName.Data()),"hStatIntegral",100000,0.0,.1);
     for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
         //  Set Standard Fit
         fSetLevyTsalis(fIsConditional,fIntegral);
@@ -719,12 +782,47 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TGrap
         //  Generating the Fit TGraph
         auto fSubject   =   fRandomizePoints(gSystematics,gStatistics);
         //
-        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",0.4,10.);
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",fMinPT1D,fMaxPT1D);
         //
-        hSystIntegral->Fill(fLevyFit1D  ->Integral(0.,0.4));
+        hStatIntegral->Fill(fLevyFit1D  ->Integral(0.,fMinPT1D));
+        auto fMemory = new TF1(*fLevyFit1D);
+        fMemory->Draw("same");
     }
-    fResult[2]  =   hSystIntegral->GetRMS();
+    cDrawFitStat->Write();
+    cDrawFitStat->SaveAs(Form("result/tmp/STAT_%s_%s.pdf",gStatistics->GetName(),fName.Data()));
+    delete cDrawFitStat;
+    fResult[1]  =   hStatIntegral->GetRMS();
+    fResult[2]  =   hStatIntegral->GetRMS();
     //
+    //  Measuring Systematics error
+    TCanvas *   cDrawFitSyst    =   new TCanvas(Form("SYST_%s_%s",gStatistics->GetName(),fName.Data()),"");
+    gStyle->SetOptStat(0);
+    gPad->SetLogy();
+    gTotal->Draw();
+    TH1D*   hSystIntegral   =   new TH1D(Form("hSystIntegral_%s_%s",gStatistics->GetName(),fName.Data()),"hSystIntegral",100000,0.0,.1);
+    for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
+        //  Set Standard Fit
+        fSetLevyTsalis(fIsConditional,fIntegral);
+        //
+        //  Generating the Fit TGraph
+        auto fSubject   =   fRandomizePoints(gStatistics,gSystematics);
+        //
+        fSubject    ->  Fit(fLevyFit1D,"IMREQ0SEX0","",fMinPT1D,fMaxPT1D);
+        //
+        hSystIntegral->Fill(fLevyFit1D  ->Integral(0.,fMinPT1D));
+        auto fMemory = new TF1(*fLevyFit1D);
+        fMemory->Draw("same");
+    }
+    fResult[3]  =   hSystIntegral->GetRMS();
+    fResult[4]  =   hSystIntegral->GetRMS();
+    cDrawFitSyst->Write();
+    cDrawFitSyst->SaveAs(Form("result/tmp/SYST_%s_%s.pdf",gStatistics->GetName(),fName.Data()));
+    delete cDrawFitSyst;
+    //
+    fResult[6]  =   0;
+    fResult[7]  =   0;
+    fResult[8]  =   0;
+    fResult[9]  =   0;
     hStatIntegral->Write();
     hSystIntegral->Write();
     //
@@ -746,8 +844,8 @@ Double_t*           fIntegrateModel                 ( TGraphAsymmErrors* gStatis
         cout << "[ERROR] Systematics and Statistics do not have the same number of points! Skipping this one..." << endl;
         return nullptr;
     }
-    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err, Syst err
-    Double_t   *fResult = new   Double_t    [10];
+    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high
+    Double_t   *fResult = new   Double_t    [5];
     //
     //  Calculate Integral and mean pT
     for ( Int_t iFill = 0; iFill < 5; iFill++ ) fResult[iFill]  =   0;
@@ -761,17 +859,14 @@ Double_t*           fIntegrateModel                 ( TGraphAsymmErrors* gStatis
         auto    fYErrSystHigh   =   ( gSystematics ->  GetErrorYhigh(iFit) );
         //
         fResult[0]             +=   fXBinWidth*fYValue;
-        fResult[1]             +=   fXBinWidth*fYErrStatLow;
-        fResult[2]             +=   fXBinWidth*fYErrStatHigh;
+        fResult[1]             +=   fXBinWidth*fYErrStatLow*fXBinWidth*fYErrStatLow;
+        fResult[2]             +=   fXBinWidth*fYErrStatHigh*fXBinWidth*fYErrStatHigh;
         fResult[3]             +=   fXBinWidth*fYErrSystLow;
         fResult[4]             +=   fXBinWidth*fYErrSystHigh;
-        /*
-        fResult[5]             +=   fXBinWidth*fYValue;
-        fResult[6]             +=   fXBinWidth*fYErrStatLow;
-        fResult[7]             +=   fXBinWidth*fYErrStatHigh;
-        fResult[8]             +=   fXBinWidth*fYErrSystLow;
-        fResult[9]             +=   fXBinWidth*fYErrSystHigh;
-        */
+    }
+    for ( Int_t iTer = 1; iTer <= 2; iTer++ )    {
+        auto fTemp      =   fResult[iTer];
+        fResult[iTer]   =   sqrt(fTemp);
     }
     //
     //  End Optimisation mode
@@ -786,8 +881,8 @@ Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatis
     // Optimisation mode
     gROOT->SetBatch(true);
     //
-    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
-    Double_t   *fResult             =   new Double_t        [6];
+    // Result format:  Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err low, Stat err high, Syst err low, syst err high
+    Double_t   *fResult             =   new Double_t        [10];
     //
     bool fIsConditional = false;
     if ( fName.First("2D") != -1  ) fIsConditional = true;
@@ -795,14 +890,27 @@ Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatis
     auto        fIntegralResults    =   fIntegrateModel     (gStatistics,gSystematics,fName);
     auto        fExtrapolResults    =   fExtrapolateModel   (fIsConditional,gStatistics,gSystematics,fIntegralResults[0],fName);
     //
+    //  Mean Value of Result
     fResult[0]  =   fIntegralResults[0] +   fExtrapolResults[0];
-    fResult[1]  =   fIntegralResults[1] +   fExtrapolResults[1];
-    fResult[2]  =   fIntegralResults[2] +   fExtrapolResults[2];
     //
-    // !TODO: Revise the combination method
-    fResult[3]  =   fIntegralResults[3] +   fExtrapolResults[3];
-    fResult[4]  =   fIntegralResults[4] +   fExtrapolResults[4];
-    fResult[5]  =   fIntegralResults[5] +   fExtrapolResults[5];
+    //  Statistical Error of Result
+    fResult[1]  =   sqrt(fIntegralResults[1]*fIntegralResults[1] +   fExtrapolResults[1]*fExtrapolResults[1]);
+    fResult[2]  =   sqrt(fIntegralResults[2]*fIntegralResults[2] +   fExtrapolResults[2]*fExtrapolResults[2]);
+    //
+    //  Systematical Error of Result
+    fResult[3]  =   fIntegralResults[3] +   fExtrapolResults[4];
+    fResult[4]  =   fIntegralResults[3] +   fExtrapolResults[4];
+    //
+    //  Mean Value of pT
+    fResult[5]  =   fExtrapolResults[5]/fResult[0];
+    //
+    //  Statistical Error of Result
+    fResult[6]  =   fExtrapolResults[6];
+    fResult[7]  =   fExtrapolResults[7];
+    //
+    //  Systematical Error of Result
+    fResult[8]  =   fExtrapolResults[8];
+    fResult[9]  =   fExtrapolResults[9];
     //
     // End Optimisation mode
     gROOT->SetBatch(false);
@@ -810,19 +918,83 @@ Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatis
     return fResult;
 }
 //
+//_____________________________________________________________________________
+//
+Double_t            fEvaluateINELgt0                ( Int_t iMultBin, TH1  *hMultCounter)  {
+    Double_t    fResult =   0;
+    Int_t       fUppLimit   =   fArrMult[nBinMult];
+    Int_t       fLowLimit   =   fArrMult[0];
+    if  ( iMultBin > -1  && iMultBin < nBinMult)  {
+        fUppLimit   =   fArrMult[iMultBin+1];
+        fLowLimit   =   fArrMult[iMultBin];
+    }   else    {
+        cout << "[WARNING] Invalid index, returning full multiplicity count" << endl;
+    }
+    for ( Int_t iBin = 1; iBin <= hMultCounter->GetNbinsX(); iBin++ )   {
+        auto fMultValue = hMultCounter->GetBinCenter(iBin);
+        if ( fMultValue < fLowLimit )   continue;
+        if ( fMultValue > fUppLimit )   break;
+        fResult  +=  hMultCounter->GetBinContent(iBin)/kMultTrgEff[fGetBinMultEff(iBin-1.5)];
+    }
+    return      fResult;
+}
+//
+//_____________________________________________________________________________
+//
 //------------------------------//
 //    ANALYSISI LEGACY Fncs     //
 //------------------------------//
 
-TH1F*            fCheckPublishedResults( TH1F* fMyResults, TH1F* hPublishedResults, TGraphAsymmErrors* gPublishedResults )    {
+TH1F*           fCheckPublishedData  ( TH1F* fMyResults, TH1F* hPublishedResults, TGraphAsymmErrors* gPublishedResults )    {
     TH1F   *fCheck  =   new TH1F(*hPublishedResults);
     fCheck->Divide(fMyResults,hPublishedResults);
     for ( int i = 0; i < fCheck->GetNbinsX(); i++ ) {
-        auto pubError   =   gPublishedResults->GetErrorXhigh(i);
+        auto pubError   =   gPublishedResults->GetErrorYhigh(i);
+        auto pubValY   =   gPublishedResults->GetPointY(i);
         auto myError    =   fMyResults->GetBinError(i+1);
-        fCheck->SetBinError (i,sqrt(pubError*pubError+myError*myError));
+        auto myValY    =   fMyResults->GetBinContent(i+1);
+        auto checkVal   =   fCheck->GetBinContent(i+1);
+        fCheck->SetBinError (i+1,checkVal*sqrt((pubError*pubError/(pubValY*pubValY))+(myError*myError/(myValY*myValY))));
     }
     return fCheck;
+}
+
+TH1F*           fCheckPublishedData  ( TH1D* fMyResults, TH1F* hPublishedResults, TGraphAsymmErrors* gPublishedResults )    {
+    TH1F   *fCheck  =   new TH1F(*hPublishedResults);
+    fCheck->Divide(fMyResults,hPublishedResults);
+    for ( int i = 0; i < fCheck->GetNbinsX(); i++ ) {
+        auto pubError   =   gPublishedResults->GetErrorYhigh(i);
+        auto pubValY   =   gPublishedResults->GetPointY(i);
+        auto myError    =   fMyResults->GetBinError(i+1);
+        auto myValY    =   fMyResults->GetBinContent(i+1);
+        auto checkVal   =   fCheck->GetBinContent(i+1);
+        fCheck->SetBinError (i+1,checkVal*sqrt((pubError*pubError/(pubValY*pubValY))+(myError*myError/(myValY*myValY))));
+    }
+    return fCheck;
+}
+
+TH1D           *fCheckPublishedData     ( TH1D* fMyResults, TH1* fPublishedResults )   {
+    auto    fCheck  =   new TH1D(*fMyResults);
+    fCheck->Divide(fMyResults,fPublishedResults);
+    return  fCheck;
+}
+
+TH1D           *fCheckPublishedData     ( TH1D* fMyResults, TGraphAsymmErrors* fPublishedResults )   {
+    auto    fCheck  =   new TH1D(*fMyResults);
+    fCheck->Divide(fMyResults,(fPublishedResults->GetHistogram()));
+    return  fCheck;
+}
+
+TH1F           *fCheckPublishedData     ( TGraphAsymmErrors* fMyResults, TH1* fPublishedResults )   {
+    auto    fCheck  =   new TH1F(*(fMyResults->GetHistogram()));
+    fCheck->Divide((fMyResults->GetHistogram()),fPublishedResults);
+    return  fCheck;
+}
+
+TH1F           *fCheckPublishedData     ( TGraphAsymmErrors* fMyResults, TGraphAsymmErrors* fPublishedResults )   {
+    auto    fCheck  =   new TH1F(*(fMyResults->GetHistogram()));
+    fCheck->Divide((fMyResults->GetHistogram()),(fPublishedResults->GetHistogram()));
+    return  fCheck;
 }
 
 int             fLegendSelect                   ( string fOption )
@@ -952,65 +1124,70 @@ void            fRooPlotMaker                   ( RooPlot * fRooPlot, TLegend * 
     fAxisMaker(fRooPlot,fSelect);
 }
 
-void            fCoreFitModelSetBoundaries      ( string fOption, Double_t &aValMin, Double_t &aValMax )
+void            SetBoundaries   ( string fOption, Double_t &aValMin, Double_t &aValMax )
 {
-    aValMin = 0.99;
-    aValMax = 1.05;
+    aValMin = 0.995;
+    aValMax = 1.050;
     if ( fOption.find("RA") != -1 )
     {
-        aValMin =   0.990;
-        aValMax =   1.040;
+        aValMin =   0.995;
+        aValMax =   1.045;
     }
     if ( fOption.find("RB") != -1 )
     {
-        aValMin =   0.990;
-        aValMax =   1.060;
+        aValMin =   0.995;
+        aValMax =   1.055;
     }
     if ( fOption.find("RC") != -1 )
     {
-        aValMin =   0.990;
-        aValMax =   1.070;
+        aValMin =   0.995;
+        aValMax =   1.060;
     }
     if ( fOption.find("RD") != -1 )
     {
         aValMin =   0.995;
-        aValMax =   1.040;
+        aValMax =   1.065;
     }
     if ( fOption.find("RE") != -1 )
     {
         aValMin =   0.995;
-        aValMax =   1.050;
+        aValMax =   1.070;
     }
     if ( fOption.find("RF") != -1 )
     {
-        aValMin =   0.995;
-        aValMax =   1.060;
+        aValMin =   1.000;
+        aValMax =   1.045;
     }
     if ( fOption.find("RG") != -1 )
     {
-        aValMin =   0.995;
-        aValMax =   1.070;
+        aValMin =   1.000;
+        aValMax =   1.050;
     }
     if ( fOption.find("RH") != -1 )
     {
         aValMin =   1.000;
-        aValMax =   1.040;
+        aValMax =   1.055;
     }
     if ( fOption.find("RI") != -1 )
     {
         aValMin =   1.000;
-        aValMax =   1.050;
+        aValMax =   1.060;
     }
     if ( fOption.find("RJ") != -1 )
     {
         aValMin =   1.000;
-        aValMax =   1.060;
+        aValMax =   1.065;
     }
     if ( fOption.find("RK") != -1 )
     {
         aValMin =   1.000;
         aValMax =   1.070;
     }
+}
+
+void            fCoreFitModelSetBoundaries      ( string fOption, Double_t &aValMin, Double_t &aValMax )
+{
+    SetBoundaries   ( fOption, aValMin, aValMax );
 }
 
 Double_t   *    fCoreFitModelOptionSelect       ( string fOption )
@@ -1169,67 +1346,6 @@ RooFitResult*   FitModel                        ( TH1D * _h_Data, string fOption
     return fResult;
 }
 
-void            SetBoundaries   ( string fOption, Double_t &aValMin, Double_t &aValMax )
-{
-    aValMin = 0.99;
-    aValMax = 1.05;
-    if ( fOption.find("RA") != -1 )
-    {
-        aValMin =   0.990;
-        aValMax =   1.040;
-    }
-    if ( fOption.find("RB") != -1 )
-    {
-        aValMin =   0.990;
-        aValMax =   1.060;
-    }
-    if ( fOption.find("RC") != -1 )
-    {
-        aValMin =   0.990;
-        aValMax =   1.070;
-    }
-    if ( fOption.find("RD") != -1 )
-    {
-        aValMin =   0.995;
-        aValMax =   1.040;
-    }
-    if ( fOption.find("RE") != -1 )
-    {
-        aValMin =   0.995;
-        aValMax =   1.050;
-    }
-    if ( fOption.find("RF") != -1 )
-    {
-        aValMin =   0.995;
-        aValMax =   1.060;
-    }
-    if ( fOption.find("RG") != -1 )
-    {
-        aValMin =   0.995;
-        aValMax =   1.070;
-    }
-    if ( fOption.find("RH") != -1 )
-    {
-        aValMin =   1.000;
-        aValMax =   1.040;
-    }
-    if ( fOption.find("RI") != -1 )
-    {
-        aValMin =   1.000;
-        aValMax =   1.050;
-    }
-    if ( fOption.find("RJ") != -1 )
-    {
-        aValMin =   1.000;
-        aValMax =   1.060;
-    }
-    if ( fOption.find("RK") != -1 )
-    {
-        aValMin =   1.000;
-        aValMax =   1.070;
-    }
-}
-
 RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t fSaveToFile = false, Int_t PTindex = -1, Int_t PTDimension = 1, string fOption = "" )
 {
     // Silencing TCanvas Pop-Up
@@ -1261,10 +1377,10 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     Int_t kNCycle           = kNCycle_;
     
     // Background PDF Coefficients
-    RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,1,   -1, 1);//,0.5,-1,1);
-    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,0.1, -1, 1);//,-0.1,-1,1);
+    RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,   -1, 1);//,0.5,-1,1);
+    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,-0.1, -1, 1);//,-0.1,-1,1);
     RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.01,-1, 1);//,0.01,-1,1);
-    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,0.05,-1, 1);//,-0.05,-1,1);
+    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,-0.05,-1, 1);//,-0.05,-1,1);
     
     RooRealVar ch4, ch5;
     if ( fCheb3 && !fCheb5 )    ch4     = RooRealVar        ("ch4","ch4"        ,0.);
@@ -1275,18 +1391,18 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     
     //Signal
     RooRealVar sMass, sWidt, sSlop;
-    if ( fWidth )               sWidt   = RooRealVar        ("sWidt","sWidt"    ,kPWid);
-    else                        sWidt   = RooRealVar        ("sWidt","sWidt"    ,kPWid,kPWid*0.9,kPWid*1.1);
+    if ( fWidth )               sWidt   = RooRealVar        ("bWidt","bWidt"    ,kPWid);
+    else                        sWidt   = RooRealVar        ("bWidt","bWidt"    ,kPWid,kPWid*0.9,kPWid*1.1);
+
+    if ( fMass_ )               sMass   = RooRealVar        ("bMass","bMass"    ,kPMas);
+    else                        sMass   = RooRealVar        ("bMass","bMass"    ,kPMas,kPMas*0.9,kPMas*1.1);
     
-    if ( fMass_ )               sMass   = RooRealVar        ("sMass","sMass"    ,kPMas);
-    else                        sMass   = RooRealVar        ("sMass","sMass"    ,kPMas,kPMas*0.9,kPMas*1.1);
-    
-    if ( bPythiaTest )          sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.);
-    else                        sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.001,0.,0.002);
+    if ( bPythiaTest )          sSlop   = RooRealVar        ("bSlop","bSlop"    ,0.);
+    else                        sSlop   = RooRealVar        ("bSlop","bSlop"    ,0.001,0.,0.002);
     
     // Coefficients
-    RooRealVar nSS      = RooRealVar        ("1nSS","1nSS"      ,0.5*nEntries,0.,nEntries);
-    RooRealVar nBB      = RooRealVar        ("1nBB","1nBB"      ,0.5*nEntries,0.,nEntries);
+    RooRealVar nSS      = RooRealVar        ("anSS","anSS"      ,0.5*nEntries,0.,nEntries);
+    RooRealVar nBB      = RooRealVar        ("anBB","anBB"      ,0.5*nEntries,0.,nEntries);
     
     // PDFs
     RooVoigtian     fSig= RooVoigtian      ("fSig","fSig"      ,InvMass,sMass,sWidt,sSlop);
@@ -1297,10 +1413,16 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     RooFitResult* fFitResults;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        fFitResults      =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
-        fFitResults      =   fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
-        auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(Signal));
-        if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
+        if ( !kOnlyTrue )   {
+            fFitResults      =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+            fFitResults      =   fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+            auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(Signal));
+            if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
+        }
+        if ( kOnlyTrue )    {
+            fFitResults      =   fSig.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+            fFitResults      =   fSig.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        }
     }
     
     if ( fSaveToFile )
@@ -1375,13 +1497,13 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     RooRealVar InvMass  = RooRealVar        ("InvMass","InvMass",fInvMassValMin,fInvMassValMax);
     RooDataHist* data   = new RooDataHist   (fName.Data(),fName.Data(),InvMass,Import(*THdata));
     RooDataHist* dataLoose  = new RooDataHist   (fName,fName,InvMass,Import(*fLooseErrors(THdata)));
-    Int_t kNCycle       = 1;
+    Int_t kNCycle       = kNCycle_;
     
     // Background PDF Coefficients
-    RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,-1,1);//,0.5,-1,1);
-    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,-0.1,-1,1);//,-0.1,-1,1);
-    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.,-1,1);//,0.01,-1,1);
-    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,0.,-1,1);//,-0.05,-1,1);
+    RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,   -1, 1);//,0.5,-1,1);
+    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,-0.1, -1, 1);//,-0.1,-1,1);
+    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.01,-1, 1);//,0.01,-1,1);
+    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,-0.05,-1, 1);//,-0.05,-1,1);
     
     RooRealVar ch4, ch5;
     if ( fCheb3 && !fCheb5 )    ch4     = RooRealVar        ("ch4","ch4"        ,0.);
@@ -1392,14 +1514,14 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     
     //Signal
     RooRealVar sMass, sWidt, sSlop;
-    if ( fWidth )               sWidt   = RooRealVar        ("sWidt","sWidt"    ,kPWid);
-    else                        sWidt   = RooRealVar        ("sWidt","sWidt"    ,kPWid,kPWid*0.9,kPWid*1.1);
+    if ( fWidth )               sWidt   = RooRealVar        ("bWidt","bWidt"    ,kPWid);
+    else                        sWidt   = RooRealVar        ("bWidt","bWidt"    ,kPWid,kPWid*0.999,kPWid*1.001);
+
+    if ( fMass_ )               sMass   = RooRealVar        ("bMass","bMass"    ,kPMas);
+    else                        sMass   = RooRealVar        ("bMass","bMass"    ,kPMas,kPMas*0.999,kPMas*1.001);
     
-    if ( fMass_ )               sMass   = RooRealVar        ("sMass","sMass"    ,kPMas);
-    else                        sMass   = RooRealVar        ("sMass","sMass"    ,kPMas,kPMas*0.9,kPMas*1.1);
-    
-    if ( bPythiaTest )          sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.);
-    else                        sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.001,0.,0.002);
+    if ( bPythiaTest )          sSlop   = RooRealVar        ("bSlop","bSlop"    ,0.);
+    else                        sSlop   = RooRealVar        ("bSlop","bSlop"    ,0.001,0.0009,0.0011);
     
     // Coefficients
     RooRealVar nSS      = RooRealVar        ("1nSS","1nSS"      ,0.5*nEntries,0.,nEntries);
@@ -1411,12 +1533,28 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     RooAddPdf       fMod= RooAddPdf        ("fMod","fMod"      ,RooArgList(fBkg,fSig),RooArgList(nBB,nSS));
     
     RooFitResult* fFitResults;
+    fFitResults      =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+    fFitResults      =   fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+    
+    sSlop               .  setRange(0.,0.01);
+    sSlop               .  setVal(0.00001);
+    sWidt               .  setRange(kPWid*0.5,kPWid*1.5);
+    sWidt               .  setVal(kPWid);
+    sMass               .  setRange(kPMas*0.5,kPMas*1.5);
+    sMass               .  setVal(kPMas);
+    
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        fFitResults      =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
-        fFitResults      =   fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
-        auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(Signal));
-        if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
+        if ( !kOnlyTrue )   {
+            fFitResults      =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+            fFitResults      =   fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+            auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(Signal));
+            if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
+        }
+        if ( kOnlyTrue )    {
+            fFitResults      =   fSig.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+            fFitResults      =   fSig.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        }
     }
     
     if ( fSaveToFile )
@@ -1453,7 +1591,8 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
         fSaveToFrame                ->Draw("same");
         fLegend                     ->Draw("same");
         fSaveToCanvas               ->Write ();
-        fSaveToCanvas               ->SaveAs(Form("result/SEFitCheck/PT_%.1f_%.1f_1D_%s.pdf",fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data()));
+        if ( PTDimension == 1 )fSaveToCanvas               ->SaveAs(Form("result/SEFitCheck/PT_%.1f_%.1f_1D_%s.pdf",fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data()));
+        if ( PTDimension == 2 )fSaveToCanvas               ->SaveAs(Form("result/SEFitCheck/PT_%.1f_%.1f_1D_%s.pdf",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fName.Data()));
         delete fSaveToCanvas;
     }
     
@@ -1483,7 +1622,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     RooRealVar vary     = RooRealVar        ("yInvMass2D","yInvMass2D",fInvMassValMin,fInvMassValMax);
     RooDataHist* data   = new RooDataHist   (fHistName.c_str(),fHistName.c_str(),RooArgList(varx,vary),Import(*THdata));
     RooDataHist* dataLoose  = new RooDataHist   (fHistName.c_str(),fHistName.c_str(),RooArgList(varx,vary),Import(*fLooseErrors(THdata)));
-    Int_t kNCycle       = 1;
+    Int_t kNCycle       = kNCycle_;
     
     RooArgSet  *utilityx    =   new RooArgSet(fFitShapeX->floatParsFinal(),fFitShapeX->constPars());
     RooArgSet  *utilityy    =   new RooArgSet(fFitShapeY->floatParsFinal(),fFitShapeY->constPars());
@@ -1494,18 +1633,18 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     
     if ( fBackg )
     {
-        ch0x     = RooRealVar ("ch0x","ch0x"     ,utilityx->getRealValue("ch0",0),utilityx->getRealValue("ch0",0)*0.75,utilityx->getRealValue("ch0",0)*1.25);
-        ch1x     = RooRealVar ("ch1x","ch1x"     ,utilityx->getRealValue("ch1",0),utilityx->getRealValue("ch1",0)*0.75,utilityx->getRealValue("ch1",0)*1.25);
-        ch2x     = RooRealVar ("ch2x","ch2x"     ,utilityx->getRealValue("ch2",0),utilityx->getRealValue("ch2",0)*0.75,utilityx->getRealValue("ch2",0)*1.25);
-        ch3x     = RooRealVar ("ch3x","ch3x"     ,utilityx->getRealValue("ch3",0),utilityx->getRealValue("ch3",0)*0.75,utilityx->getRealValue("ch3",0)*1.25);
-        ch4x     = RooRealVar ("ch4x","ch4x"     ,utilityx->getRealValue("ch4",0),utilityx->getRealValue("ch4",0)*0.75,utilityx->getRealValue("ch4",0)*1.25);
-        ch5x     = RooRealVar ("ch5x","ch5x"     ,utilityx->getRealValue("ch5",0),utilityx->getRealValue("ch5",0)*0.75,utilityx->getRealValue("ch5",0)*1.25);
-        ch0y     = RooRealVar ("ch0y","ch0y"     ,utilityy->getRealValue("ch0",0),utilityy->getRealValue("ch0",0)*0.75,utilityy->getRealValue("ch0",0)*1.25);
-        ch1y     = RooRealVar ("ch1y","ch1y"     ,utilityy->getRealValue("ch1",0),utilityy->getRealValue("ch1",0)*0.75,utilityy->getRealValue("ch1",0)*1.25);
-        ch2y     = RooRealVar ("ch2y","ch2y"     ,utilityy->getRealValue("ch2",0),utilityy->getRealValue("ch2",0)*0.75,utilityy->getRealValue("ch2",0)*1.25);
-        ch3y     = RooRealVar ("ch3y","ch3y"     ,utilityy->getRealValue("ch3",0),utilityy->getRealValue("ch3",0)*0.75,utilityy->getRealValue("ch3",0)*1.25);
-        ch4y     = RooRealVar ("ch4y","ch4y"     ,utilityy->getRealValue("ch4",0),utilityy->getRealValue("ch4",0)*0.75,utilityy->getRealValue("ch4",0)*1.25);
-        ch5y     = RooRealVar ("ch5y","ch5y"     ,utilityy->getRealValue("ch5",0),utilityy->getRealValue("ch5",0)*0.75,utilityy->getRealValue("ch5",0)*1.25);
+        ch0x     = RooRealVar ("ch0x","ch0x"     ,utilityx->getRealValue("ch0",0),utilityx->getRealValue("ch0",0)-0.1,utilityx->getRealValue("ch0",0)+0.1);
+        ch1x     = RooRealVar ("ch1x","ch1x"     ,utilityx->getRealValue("ch1",0),utilityx->getRealValue("ch1",0)-0.1,utilityx->getRealValue("ch1",0)+0.1);
+        ch2x     = RooRealVar ("ch2x","ch2x"     ,utilityx->getRealValue("ch2",0),utilityx->getRealValue("ch2",0)-0.1,utilityx->getRealValue("ch2",0)+0.1);
+        ch3x     = RooRealVar ("ch3x","ch3x"     ,utilityx->getRealValue("ch3",0),utilityx->getRealValue("ch3",0)-0.1,utilityx->getRealValue("ch3",0)+0.1);
+        ch4x     = RooRealVar ("ch4x","ch4x"     ,utilityx->getRealValue("ch4",0),utilityx->getRealValue("ch4",0)-0.1,utilityx->getRealValue("ch4",0)+0.1);
+        ch5x     = RooRealVar ("ch5x","ch5x"     ,utilityx->getRealValue("ch5",0),utilityx->getRealValue("ch5",0)-0.1,utilityx->getRealValue("ch5",0)+0.1);
+        ch0y     = RooRealVar ("ch0y","ch0y"     ,utilityy->getRealValue("ch0",0),utilityy->getRealValue("ch0",0)-0.1,utilityy->getRealValue("ch0",0)+0.1);
+        ch1y     = RooRealVar ("ch1y","ch1y"     ,utilityy->getRealValue("ch1",0),utilityy->getRealValue("ch1",0)-0.1,utilityy->getRealValue("ch1",0)+0.1);
+        ch2y     = RooRealVar ("ch2y","ch2y"     ,utilityy->getRealValue("ch2",0),utilityy->getRealValue("ch2",0)-0.1,utilityy->getRealValue("ch2",0)+0.1);
+        ch3y     = RooRealVar ("ch3y","ch3y"     ,utilityy->getRealValue("ch3",0),utilityy->getRealValue("ch3",0)-0.1,utilityy->getRealValue("ch3",0)+0.1);
+        ch4y     = RooRealVar ("ch4y","ch4y"     ,utilityy->getRealValue("ch4",0),utilityy->getRealValue("ch4",0)-0.1,utilityy->getRealValue("ch4",0)+0.1);
+        ch5y     = RooRealVar ("ch5y","ch5y"     ,utilityy->getRealValue("ch5",0),utilityy->getRealValue("ch5",0)-0.1,utilityy->getRealValue("ch5",0)+0.1);
     }
     else
     {
@@ -1524,11 +1663,11 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     }
     
     //Signal
-    RooRealVar pMassx   = RooRealVar ("pMassx","pMassx" ,utilityx->getRealValue("sMass",0));
-    RooRealVar pWidthx  = RooRealVar ("pWidtx","pWidtx" ,utilityx->getRealValue("sWidt",0));
-    RooRealVar pSlopex  = RooRealVar ("pSlopx","pSlopx" ,utilityx->getRealValue("sSlop",0));
-    RooRealVar pMassy   = RooRealVar ("pMassy","pMassy" ,utilityy->getRealValue("sMass",0));
-    RooRealVar pWidthy  = RooRealVar ("pWidty","pWidty" ,utilityy->getRealValue("sWidt",0));
+    RooRealVar pMassx   = RooRealVar ("pMassx","pMassx" ,utilityx->getRealValue("bMass",0));
+    RooRealVar pWidthx  = RooRealVar ("pWidtx","pWidtx" ,utilityx->getRealValue("bWidt",0));
+    RooRealVar pSlopex  = RooRealVar ("pSlopx","pSlopx" ,utilityx->getRealValue("bSlop",0));
+    RooRealVar pMassy   = RooRealVar ("pMassy","pMassy" ,utilityy->getRealValue("bMass",0));
+    RooRealVar pWidthy  = RooRealVar ("pWidty","pWidty" ,utilityy->getRealValue("bWidt",0));
     RooRealVar pSlopey  = RooRealVar ("pSlopy","pSlopy" ,utilityy->getRealValue("sSlop",0));
     
     // Coefficients
@@ -1556,10 +1695,10 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     RooFitResult* fFitResults;
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        fFitResults      =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        //fFitResults      =   fMod.fitTo(*dataLoose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
         fFitResults      =   fMod.fitTo(*data,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
         auto N_Raw      =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(Signal));
-        if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
+        if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError(),20.) ) break;
     }
     
     // Save to file
@@ -1709,7 +1848,7 @@ RooFitResult*   fExtrapolateModelLEGACYROOFIT               ( TH1F *HData, TStri
 
 //
 template < class Tclass >
-Double_t*           fExtrapolateModel               ( Tclass *THdata, TString fName = "ExtrapolateSignal" ) {
+Double_t*       fExtrapolateModel               ( Tclass *THdata, TString fName = "ExtrapolateSignal" ) {
     // Optimisation mode
     gROOT->SetBatch(true);
     
@@ -1723,7 +1862,7 @@ Double_t*           fExtrapolateModel               ( Tclass *THdata, TString fN
     fSetLevyTsalis();
     
     // Fit the Spectra
-    THdata->Fit(fLevyFit1D,"IMREQ0S","",0.4,10.);
+    THdata->Fit(fLevyFit1D,"IMREQ0S","",fMinPT1D,10.);
     
     // Save to further checks
     TCanvas * fCheckFit = new TCanvas();
@@ -1733,8 +1872,8 @@ Double_t*           fExtrapolateModel               ( Tclass *THdata, TString fN
     fCheckFit   ->Write();
     fCheckFit   ->SaveAs(Form("tmp/%s.pdf",fName.Data()));
     
-    fResult[0]  =   fLevyFit1D->Integral(0.,0.4);
-    fResult[1]  =   fLevyFit1D->IntegralError(0.,0.4);
+    fResult[0]  =   fLevyFit1D->Integral(0.,fMinPT1D);
+    fResult[1]  =   fLevyFit1D->IntegralError(0.,fMinPT1D);
     
     return fResult;
     
@@ -1790,5 +1929,284 @@ Double_t*           fMeasureFullYield               ( Tclass *THdata, TString fN
 }
 //
 //_____________________________________________________________________________
+//
+RooFitResult*   FitModelRap                         ( TH1D * THdata, TH1D * THbkg1,  TH1D * THbkg2,  const char* fName = "", Bool_t fSaveToFile = false, Int_t PTindex = -1, Int_t PTDimension = 1, string fOption = "" )
+{
+    //FitModelRap(      hBKG_SIG_Rap,       hBKG_BKG_Rap,       hBKG_BKG_BKG_SIG_Rap);
+    
+    // Silencing TCanvas Pop-Up
+    gROOT->SetBatch();
+    
+    // Check there is a reasonable amount of entries
+    if ( !fIsWorthFitting( THdata ) ) return nullptr;
+    
+    // Global Variables
+    Int_t nDataEntries          = THdata->GetEntries();
+    Int_t nBkg1Entries          = THbkg1->GetEntries();
+    Int_t nBkg2Entries          = THbkg2->GetEntries();
+    RooRealVar fRap_        = RooRealVar        ("Rapidity","Rapidity",-1.,1.);
+    RooDataHist* data       = new RooDataHist   (fName,fName,fRap_,Import(*THdata));
+    RooDataHist* dataLoose  = new RooDataHist   (fName,fName,fRap_,Import(*fLooseErrors(THdata)));
+    RooDataHist* bkg1       = new RooDataHist   (fName,fName,fRap_,Import(*THbkg1));
+    RooDataHist* bkg1Loose  = new RooDataHist   (fName,fName,fRap_,Import(*fLooseErrors(THbkg1)));
+    RooDataHist* bkg2       = new RooDataHist   (fName,fName,fRap_,Import(*THbkg2));
+    RooDataHist* bkg2Loose  = new RooDataHist   (fName,fName,fRap_,Import(*fLooseErrors(THbkg2)));
+    Int_t kNCycle           = kNCycle_;
+    
+    // Combinatorial Background
+    //
+    //>->-> Variables
+    //
+    RooRealVar         *rBkg1_Cf00      =   new RooRealVar      ("rBkg1_Cf00","rBkg1_Cf00",     .05, 0., 1.);
+    RooRealVar         *rBkg1_Cf01      =   new RooRealVar      ("rBkg1_Cf01","rBkg1_Cf01",     .5, -100., 100);
+    RooRealVar         *rBkg1_Cf02      =   new RooRealVar      ("rBkg1_Cf02","rBkg1_Cf02",     .005, 0., 1);
+    //
+    RooRealVar         *rBkg1_Mean      =   new RooRealVar      ("rBkg1_Mean","rBkg1_Mean",     0.);
+    RooRealVar         *rBkg1_Widt      =   new RooRealVar      ("rBkg1_Widt","rBkg1_Widt",     .005, 0., 1);
+    // Formulas
+    TString             fBkg1_Expo  ("TMath::Sqrt( +x[3]*x[3]*(x[0]-1)*(x[0]-1)*(x[0]+1)*(x[0]+1) + TMath::Power( 1 + TMath::Sqrt( (x[0]*x[0] + x[1]*x[1] ) ) , -2*x[2]) )");
+    //
+    // Coefficients
+    RooRealVar         *rBkg1_Expo__Norm=   new RooRealVar     ("rBkg1_Expo__Norm",  "rBkg1_Expo__Norm",  0.5*nBkg1Entries,   0., nBkg1Entries);
+    RooRealVar         *rBkg1_Gauss_Norm=   new RooRealVar     ("rBkg1_Gauss_Norm",  "rBkg1_Gauss_Norm",  0.5*nBkg1Entries,   0., nBkg1Entries);
+    //
+    // PDFs
+    RooGenericPdf      *fBkg1_Expo_     =   new RooGenericPdf   ("fBkg1_Cstm_",     "fBkg1_Cstm_",   fBkg1_Expo.Data(), RooArgList( fRap_,    *rBkg1_Cf00, *rBkg1_Cf01, *rBkg1_Cf02));
+    RooGaussian        *fBkg1_Gauss     =   new RooGaussian     ("fBkg1_Gauss",     "fBkg1_Gauss",   fRap_,    *rBkg1_Mean,    *rBkg1_Widt);
+    RooAddPdf          *fBkg1_Model     =   new RooAddPdf       ("fBkg1_Model",     "fBkg1_Model",  RooArgList( *fBkg1_Expo_, *fBkg1_Gauss ), RooArgList(*rBkg1_Expo__Norm, *rBkg1_Gauss_Norm) );
+    //
+    // Combinatorial Background Fit
+    RooFitResult* fFitRsltBkg1;
+    for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )    {
+        fFitRsltBkg1    =   fBkg1_Model->fitTo(*bkg1Loose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        fFitRsltBkg1    =   fBkg1_Model->fitTo(*bkg1,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        //auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(0));
+        //if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
+    }
+    //
+    // Combinatorial Background + Combinatorial Phis
+    //
+    //>->-> Recovering Previous Shape
+    //
+    RooRealVar         *rBkg2_Cf00      =   new RooRealVar      ("rBkg2_Cf00",  "rBkg2_Cf00",   rBkg1_Cf00->getValV());
+    RooRealVar         *rBkg2_Cf01      =   new RooRealVar      ("rBkg2_Cf01",  "rBkg2_Cf01",   rBkg1_Cf01->getValV());
+    RooRealVar         *rBkg2_Cf02      =   new RooRealVar      ("rBkg2_Cf02",  "rBkg2_Cf02",   rBkg1_Cf02->getValV());
+    //
+    RooRealVar         *rBkg2_Mean      =   new RooRealVar      ("rBkg2_Mean",  "rBkg2_Mean",   rBkg1_Mean->getValV());
+    RooRealVar         *rBkg2_Widt      =   new RooRealVar      ("rBkg2_Widt",  "rBkg2_Widt",   rBkg1_Widt->getValV());
+    //
+    RooGenericPdf      *fBkg2_Expo_     =   new RooGenericPdf   ("fBkg2_Expo_", "fBkg2_Expo_",  fBkg1_Expo.Data(), RooArgList( fRap_,    *rBkg2_Cf00, *rBkg2_Cf01, *rBkg2_Cf02));
+    RooGaussian        *fBkg2_Gauss     =   new RooGaussian     ("fBkg2_Gauss", "fBkg2_Gauss",  fRap_,    *rBkg2_Mean,    *rBkg2_Widt);
+    //
+    RooRealVar         *rBkg2_Expo__Norm=   new RooRealVar     ("rBkg2_Expo__Norm",  "rBkg2_Expo__Norm",  rBkg1_Expo__Norm->getValV()/nBkg1Entries);
+    RooRealVar         *rBkg2_Gauss_Norm=   new RooRealVar     ("rBkg2_Gauss_Norm",  "rBkg2_Gauss_Norm",  rBkg1_Gauss_Norm->getValV()/nBkg1Entries);
+    //
+    RooAddPdf          *fBkg2_MdBk1     =   new RooAddPdf       ("fBkg2_MdBk1", "fBkg2_MdBk1",  RooArgList( *fBkg2_Expo_, *fBkg2_Gauss ), RooArgList(*rBkg2_Expo__Norm, *rBkg2_Gauss_Norm) );
+    //
+    //>->-> Variables
+    //
+    RooRealVar         *rBkg2_Slop      =   new RooRealVar      ("rBkg1_Cf00",  "rBkg1_Cf00",     .5,    0.1,     1.);
+    //
+    // Formulas
+    TString             fBkg2_Lin       ("TMath::Max(0.,1.*-TMath::Abs(x[0])*(x[1]) + x[1])");
+    //
+    // Coefficients
+    RooRealVar         *rBkg2_Bkg1__Norm=   new RooRealVar     ("rBkg2_Bkg1__Norm",  "rBkg2_Bkg1__Norm",  0.5*nBkg2Entries,   0., nBkg2Entries);
+    RooRealVar         *rBkg2_Tria__Norm=   new RooRealVar     ("rBkg2_Tria__Norm",  "rBkg2_Tria__Norm",  0.5*nBkg2Entries,   0., nBkg2Entries);
+    //
+    // PDFs
+    RooGenericPdf      *fBkg2_Tria     =   new RooGenericPdf   ("fBkg2_Tria",       "fBkg2_Tria",   fBkg2_Lin.Data(), RooArgList( fRap_,    *rBkg2_Slop));
+    RooAddPdf          *fBkg2_Model    =   new RooAddPdf       ("fBkg2_Model",      "fBkg2_Model",  RooArgList( *fBkg2_Tria, *fBkg2_MdBk1 ), RooArgList(*rBkg2_Tria__Norm, *rBkg2_Bkg1__Norm) );
+    //
+    RooFitResult* fFitRsltBkg2;
+    for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )    {
+        fFitRsltBkg2    =   fBkg2_Model->fitTo(*bkg2Loose,  Extended(kTRUE),    SumW2Error(kTRUE),  Save(), NumCPU(kCPU_use));
+        fFitRsltBkg2    =   fBkg2_Model->fitTo(*bkg2,       Extended(kTRUE),    SumW2Error(kTRUE),  Save(), NumCPU(kCPU_use));
+        //auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(0));
+        //if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
+    }
+    //
+    // Signal Extraction
+    //
+    //>->-> Recovering Previous Shape
+    //
+    RooRealVar         *rSign_BkSl      =   new RooRealVar      ("rSign_BkSl",      "rSign_BkSl",       rBkg2_Slop->getValV());
+    //
+    RooRealVar         *rSign_Bkg1__Norm=   new RooRealVar      ("rSign_Bkg1__Norm", "rSign_Bkg1__Norm",rBkg2_Bkg1__Norm->getValV()/nBkg2Entries);
+    RooRealVar         *rSign_BkTr__Norm=   new RooRealVar      ("rSign_BkTr__Norm", "rSign_BkTr__Norm",rBkg2_Tria__Norm->getValV()/nBkg2Entries);
+    //
+    RooGenericPdf      *fSign_BkTr     =   new RooGenericPdf    ("fSign_BkTr",       "fSign_BkTr",      fBkg2_Lin.Data(), RooArgList( fRap_,    *rSign_BkSl));
+    RooAddPdf          *fSign_MdBk2    =   new RooAddPdf        ("fSign_MdBk2",      "fSign_MdBk2",     RooArgList( *fSign_BkTr, *fBkg2_MdBk1 ), RooArgList(*rSign_BkTr__Norm, *rSign_Bkg1__Norm) );
+    //
+    //
+    //>->-> Variables
+    //
+    RooRealVar         *rSign_Mean      =   new RooRealVar      ("rSign_Mean","rSign_Mean",     0.);
+    RooRealVar         *rSign_Widt      =   new RooRealVar      ("rSign_Widt","rSign_Widt",     .5,    0.1,     1.);
+    //
+    RooRealVar         *rSign_Slop      =   new RooRealVar      ("rSign_Slop",  "rSign_Slop",     .5,    0.1,     1.);
+    //
+    // Coefficients
+    RooRealVar         *rSign_FBkg_Norm=   new RooRealVar       ("rSign_FBkg_Norm",  "rSign_FBkg_Norm",  0.5*nDataEntries,     0., nDataEntries);
+    RooRealVar         *rSign_Tria_Norm=   new RooRealVar       ("rSign_Tria_Norm",  "rSign_Tria_Norm",  0.5*nDataEntries,     0., nDataEntries);
+    RooRealVar         *rSign_Sign_Norm=   new RooRealVar       ("rSign_Sign_Norm",  "rSign_Sign_Norm",  0.5*nDataEntries,     0., nDataEntries);
+    //
+    // PDFs
+    RooGenericPdf      *fSign_Tria      =   new RooGenericPdf   ("fSign_Tria",       "fSign_Tria",  fBkg2_Lin.Data(), RooArgList( fRap_,    *rSign_Slop));
+    RooGaussian        *fSign_Sign      =   new RooGaussian     ("fSign_Sign",      "fSign_Sign",   fRap_,  *rSign_Mean,   *rSign_Widt);
+    RooAddPdf          *fSign_Model     =   new RooAddPdf       ("fSign_Model",     "fSign_Model",  RooArgList( *fSign_Sign,    *fSign_Tria,  *fSign_MdBk2 ), RooArgList(*rSign_Sign_Norm, *rSign_Tria_Norm, *rSign_FBkg_Norm) );
+    //
+    RooFitResult* fFitRsltSign;
+    for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )    {
+        fFitRsltSign    =   fSign_Model->fitTo(*dataLoose,  Extended(kTRUE),    SumW2Error(kTRUE),  Save(), NumCPU(kCPU_use));
+        fFitRsltSign    =   fSign_Model->fitTo(*data,       Extended(kTRUE),    SumW2Error(kTRUE),  Save(), NumCPU(kCPU_use));
+        //auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(0));
+        //if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
+    }
+    //
+    
+    /*
+     
+     //>->-> Variables
+     //
+     //
+     // Formulas
+     TString             fBkg2_Lin       ("TMath::Max(0.,1.*-TMath::Abs(x[0])*(x[1]) + x[1])");
+     //
+     // Coefficients
+     RooRealVar         *rBkg2_Bkg1__Norm=   new RooRealVar     ("rBkg2_Bkg1__Norm",  "rBkg2_Bkg1__Norm",  0.5*nBkg2Entries,   0., nBkg2Entries);
+     RooRealVar         *rBkg2_Tria__Norm=   new RooRealVar     ("rBkg2_Tria__Norm",  "rBkg2_Tria__Norm",  0.5*nBkg2Entries,   0., nBkg2Entries);
+     //
+     // PDFs
+     RooGenericPdf      *fBkg2_Tria     =   new RooGenericPdf   ("fBkg2_Tria",       "fBkg2_Tria",   fBkg2_Lin.Data(), RooArgList( fRap_,    *rBkg2_Slop));
+     */
+    if ( true )
+    {
+        TCanvas * fSaveToCanvas     = new TCanvas();
+        RooPlot * fSaveToFrame      = fRap_.frame();
+        TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
+        
+        bkg1                        ->plotOn(fSaveToFrame,      MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
+        fBkg1_Model                 ->plotOn (fSaveToFrame,      LineColor(4),                   LineStyle(kDashed), Name("RooMod"));
+        
+        fSaveToFrame                ->Draw("same");
+        fLegend                     ->Draw("same");
+        fSaveToCanvas               ->Write ();
+        fSaveToCanvas               ->SaveAs(Form("result/SEFitCheck/RaP_bkg1_%s.pdf",fName));
+        fSaveToCanvas               ->SetLogy();
+        fSaveToCanvas               ->SaveAs(Form("result/SEFitCheck/RaP_bkg1_logy_%s.pdf",fName));
+        
+        TCanvas * fSaveToCanva2     = new TCanvas();
+        RooPlot * fSaveToFram2      = fRap_.frame();
+        TLegend * fLegen2           = new TLegend   (0.12,0.60,0.30,0.85);
+            
+        bkg2                        ->plotOn    (fSaveToFram2,  MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
+        fBkg2_Model                 ->plotOn    (fSaveToFram2,  LineColor(4),                   LineStyle(kDashed), Name("RooMod"));
+        fBkg2_Model                 ->plotOn    (fSaveToFram2,  Components("fBkg2_Tria"),       LineStyle(kDashed), LineColor(38),      Name("RooBB"));
+        fBkg2_Model                 ->plotOn    (fSaveToFram2,  Components("fBkg2_MdBk1"),      LineStyle(kDashed), LineColor(33),      Name("RooBS"));
+
+        fLegen2                     ->SetFillColor(kWhite);
+        fLegen2                     ->SetLineColor(kWhite);
+        fLegen2                     ->AddEntry(fSaveToFram2->findObject("RooData"), "Data",                 "EP");
+        fLegen2                     ->AddEntry(fSaveToFram2->findObject("RooMod"),  "Full Model",           "L");
+        fLegen2                     ->AddEntry(fSaveToFram2->findObject("RooBB"),   "Combinatorial Phis",   "L");
+        fLegen2                     ->AddEntry(fSaveToFram2->findObject("RooBS"),   "Combinatorial Kaons",  "L");
+    
+        fSaveToFram2                ->Draw("same");
+        fLegen2                     ->Draw("same");
+        fSaveToCanva2               ->Write ();
+        fSaveToCanva2               ->SaveAs(Form("result/SEFitCheck/RaP_bkg2_%s.pdf",fName));
+        fSaveToCanva2               ->SetLogy();
+        fSaveToCanva2               ->SaveAs(Form("result/SEFitCheck/RaP_bkg2_logy_%s.pdf",fName));
+        
+        TCanvas * fSaveToCanva3     = new TCanvas();
+        RooPlot * fSaveToFram3      = fRap_.frame();
+        TLegend * fLegen3           = new TLegend   (0.12,0.60,0.30,0.85);
+            
+        data                        ->plotOn    (fSaveToFram3,  MarkerColor(38),            MarkerStyle(26),    Name("RooData"));
+        fSign_Model                 ->plotOn    (fSaveToFram3,  LineColor(4),               LineStyle(kDashed), Name("RooMod"));
+        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fBkg2_MdBk1"),  LineStyle(kDashed), LineColor(38),      Name("RooBB"));
+        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fSign_Tria"),   LineStyle(kDashed), LineColor(2),       Name("RooBS"));
+        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fSign_Sign"),   LineStyle(kSolid),  LineColor(2),       Name("RooSS"));
+        
+        fLegen3                     ->SetFillColor(kWhite);
+        fLegen3                     ->SetLineColor(kWhite);
+        fLegen3                     ->AddEntry(fSaveToFram3->findObject("RooData"), "Data",                 "EP");
+        fLegen3                     ->AddEntry(fSaveToFram3->findObject("RooMod"),  "Full Model",           "L");
+        fLegen3                     ->AddEntry(fSaveToFram3->findObject("RooBB"),   "Kaon Combinatorial",   "L");
+        fLegen3                     ->AddEntry(fSaveToFram3->findObject("RooBS"),   "Secondary Signal",  "L");
+        fLegen3                     ->AddEntry(fSaveToFram3->findObject("RooSS"),   "Signal",  "L");
+            
+        fSaveToFram3                ->Draw("same");
+        fLegen3                     ->Draw("same");
+        fSaveToCanva3               ->Write ();
+        fSaveToCanva3               ->SaveAs(Form("result/SEFitCheck/RaP_data_%s.pdf",fName));
+        fSaveToCanva3               ->SetLogy();
+        fSaveToCanva3               ->SaveAs(Form("result/SEFitCheck/RaP_data_logy_%s.pdf",fName));
+    }
+    
+    // Un-Silencing TCanvas Pop-Up
+    gROOT->SetBatch(false);
+    
+    return nullptr; //fFitResults;
+    
+    /*
+    // Combinatorial Background
+    RooRealVar          Intercpt ("Intercpt", "Intercpt",  1.,    .5,    10.);
+    
+    // Formulas
+    TString             AbsLin ("-TMath::Abs(x[0])*(x[1])+x[1]");//((x[0]-1)*(x[0]-2))/(x[0]*x[1]*(x[0]*x[1]+x[2]*(x[0]-2)))*x[3]*(TMath::Power(1+(sqrt(x[2]*x[2]+x[3]*x[3])-x[2])/(x[0]*x[1]),(-x[0])))");
+     
+    RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,   -1, 1);//,0.5,-1,1);
+    RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,-0.1, -1, 1);//,-0.1,-1,1);
+    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.01,-1, 1);//,0.01,-1,1);
+    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,-0.05,-1, 1);//,-0.05,-1,1);
+    
+    RooRealVar ch4, ch5;
+    if ( fCheb3 && !fCheb5 )    ch4     = RooRealVar        ("ch4","ch4"        ,0.);
+    else                        ch4     = RooRealVar        ("ch4","ch4"        ,0.,-1,1);
+    
+    if ( fCheb5 )               ch5     = RooRealVar        ("ch5","ch5"        ,0.,-1,1);
+    else                        ch5     = RooRealVar        ("ch5","ch5"        ,0.);
+    
+    //Signal
+    RooRealVar sMass, sWidt, sSlop;
+    if ( fWidth )               sWidt   = RooRealVar        ("sWidt","sWidt"    ,kPWid);
+    else                        sWidt   = RooRealVar        ("sWidt","sWidt"    ,kPWid,kPWid*0.9,kPWid*1.1);
+    
+    if ( fMass_ )               sMass   = RooRealVar        ("sMass","sMass"    ,kPMas);
+    else                        sMass   = RooRealVar        ("sMass","sMass"    ,kPMas,kPMas*0.9,kPMas*1.1);
+    
+    if ( bPythiaTest )          sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.);
+    else                        sSlop   = RooRealVar        ("sSlop","sSlop"    ,0.001,0.,0.002);
+    
+    // Coefficients
+    RooRealVar nSS      = RooRealVar        ("1nSS","1nSS"      ,0.5*nEntries,0.,nEntries);
+    RooRealVar nBB      = RooRealVar        ("1nBB","1nBB"      ,0.5*nEntries,0.,nEntries);
+    
+    // PDFs
+    RooVoigtian     fSig= RooVoigtian      ("fSig","fSig"      ,fRap_,sMass,sWidt,sSlop);
+    RooChebychev    fBkg= RooChebychev     ("fBkg","fBkg"      ,fRap_,RooArgSet(ch0,ch1,ch2,ch3,ch4,ch5));
+    RooAddPdf       fMod= RooAddPdf        ("fMod","fMod"      ,RooArgList(fBkg,fSig),RooArgList(nBB,nSS));
+    
+    
+    RooFitResult* fFitRsltBkg1;
+    for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
+    {
+        fFitResults      =   fModel.fitTo(*bkg2Loose,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        fFitResults      =   fModel.fitTo(*bkg2,Extended(kTRUE),SumW2Error(kTRUE),Save(),NumCPU(kCPU_use));
+        //auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(0));
+        //if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
+    }
+    */
+}
+//
+//_____________________________________________________________________________
+
+
+
+
+
+
 
 #endif

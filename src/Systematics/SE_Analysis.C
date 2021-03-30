@@ -1,87 +1,220 @@
 // File for 1-Dimensional Analysis:
 // !TODO: All Set!
-
-
-#include "../inc/SetValues.h"
-#include "../inc/SetFunctions.h"
+#include "../../inc/AliAnalysisPhiPair.h"
 #include "RooMsgService.h"
 
-void Syst_SignalExtraction_Analysis ( bool fSilent = false)
+void SE_Analysis ( bool fSilent = false)
 {
-    const   Int_t   nOptions    =   15;
-    const   string  sOptions[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK","M","W","CH3","CH5"};
-    const   Int_t   nOption2    =   0;
-    const   string  sOption2[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK"};
-    
-    TFile **insFileHst  =   new TFile*  [2*nOptions+nOption2+2];
+    TFile **insFileH1D  =   new TFile*  [nOptions+1];
+    TFile **insFileH2D  =   new TFile*  [nOption2];
     
     //Recovering histograms
-    TH1F**  h1D_Syst    =   new TH1F*   [nOptions];
-    for ( Int_t iTer = 0; iTer < nOptions; iTer++ )
+    TH1F**  h1D_Syst    =   new TH1F*   [nOptions+1];
+    TH2F**  h2D_Syst    =   new TH2F*   [nOption2];
+    
+    insFileH1D[0]   =   new TFile   (Form("result/yield/SEHistograms.root"));
+    hName           =   Form("hRAW_1D");
+    h1D_Syst[0]     =   (TH1F*)(insFileH1D[0]->Get(hName));
+    hName           =   Form("hRAW_2D");
+    h2D_Syst[0]     =   (TH2F*)(insFileH1D[0]->Get(hName));
+    for ( Int_t iTer = 1; iTer <= nOptions; iTer++ )
     {
-        insFileHst[iTer]=   new TFile   (Form("./result/Systematics_1D_%s.root",sOptions[iTer].c_str()));
-        hName           =   Form("1D_%s",sOptions[iTer].c_str());
-        h1D_Syst[iTer]  =   (TH1F*)(insFileHst[iTer]->Get(hName));
+        insFileH1D[iTer]=   new TFile   (Form("result/Syst_SE/Result_1D_%s.root",sOptions[iTer-1].c_str()));
+        hName           =   Form("hRAW_1D");
+        h1D_Syst[iTer]  =   (TH1F*)(insFileH1D[iTer]->Get(hName));
+        h1D_Syst[iTer]      ->Scale(1.,"width");
     }
-    TH2F**  h2D_Syst    =   new TH2F*   [nOptions+nOption2];
-    for ( Int_t iTer = 0; iTer < nOptions; iTer++ )
+    for ( Int_t iTer = 0; iTer < nOption2; iTer++ )
     {
-        insFileHst[iTer+nOptions]   =   new TFile   (Form("./result/Systematics_2D_1D_%s.root",sOptions[iTer].c_str()));
-        hName           =   Form("1D-2D_%s",sOptions[iTer].c_str());
-        h2D_Syst[iTer]  =   (TH2F*)(insFileHst[iTer+nOptions]->Get(hName));
+        insFileH2D[iTer]=   new TFile   (Form("result/Syst_SE/Result_2D_%s.root",sOption2[iTer].c_str()));
+        hName           =   Form("hRAW_2D");
+        h2D_Syst[iTer]  =   (TH2F*)(insFileH2D[iTer]->Get(hName));
+        h2D_Syst[iTer]      ->Scale(1.,"width");
     }
-    for ( Int_t iTer = nOptions; iTer < nOption2+nOptions; iTer++ )
-    {
-        insFileHst[iTer+nOptions]   =   new TFile   (Form("./result/Systematics_2D_%s.root",sOption2[iTer-nOptions].c_str()));
-        hName           =   Form("2D_%s",sOption2[iTer-nOptions].c_str());
-        h2D_Syst[iTer]  =   (TH2F*)(insFileHst[iTer+nOptions]->Get(hName));
-    }
-    insFileHst[nOptions*2+nOption2]       =   new TFile   ("./result/N_Raw_1D.root");
-    hName                           =   "h1D_Raw";                      // Name of the histogram in the preprocessed file
-    TH1F *  h1D_Raw                 =   (TH1F*)(insFileHst[nOptions*2+nOption2]->Get(hName));
-    insFileHst[nOptions*2+nOption2+1]       =   new TFile   ("./result/N_Raw_2D.root");
-    hName                           =   "h2D_Raw";                      // Name of the histogram in the preprocessed file
-    TH2F *  h2D_Raw                 =   (TH2F*)(insFileHst[nOptions*2+nOption2+1]->Get(hName));
     
     //---------------------//
     //  Setting up output  //
     //---------------------//
-    
-    // Creating the histograms-------------------------------------------------------------------------------
-    TH1F  **fh1D_Systematics_Bin    =   new TH1F   *[nBinPT1D];
-    for ( Int_t iAll = 0; iAll < nBinPT1D; iAll++ )
-    {
-        fh1D_Systematics_Bin[iAll]  =   new TH1F    (Form("1D_BIN_%i",iAll+1),Form("1D_BIN_%i",iAll+1),180,0.1,1.9);
-        fh1D_Systematics_Bin[iAll]  ->SetTitle(Form("Percentage variation of raw yield for bin %i",iAll+1));
-        fh1D_Systematics_Bin[iAll]  ->GetXaxis()->SetTitle("Percentage variation");
-    }
-    TH1F ***fh2D_Systematics_Bin    =   new TH1F  **[nBinPT2D];
-    for ( Int_t iAll = 0; iAll < nBinPT2D; iAll++ )
-    {
-        fh2D_Systematics_Bin[iAll]  =   new TH1F   *[nBinPT2D];
-        for ( Int_t jAll = 0; jAll < nBinPT2D; jAll++ )
-        {
-            fh2D_Systematics_Bin[iAll][jAll]    =   new TH1F    (Form("2D_BIN_%i_%i",iAll+1,jAll+1),Form("2D_BIN_%i_%i",iAll+1,jAll+1),180,0.1,1.9);
-            fh2D_Systematics_Bin[iAll][jAll]    ->SetTitle(Form("Percentage variation of raw yield for bin %i-%i",iAll+1,jAll+1));
-            fh2D_Systematics_Bin[iAll][jAll]    ->GetXaxis()->SetTitle("Percentage variation");
-        }
-    }
     
     //--- Generating the binning array ---//
     fSetBinPT1D();
     fSetBinIM1D();
     fSetBinPT2D();
     fSetBinIM2D();
-        
-    /*------------*/
-    /*  ANALYSIS  */
-    /*------------*/
+    
+    // Creating the histograms-------------------------------------------------------------------------------
+    //
+    hName               =   Form("h1D_Syst_Bin_StSy");
+    hTitle              =   Form("Percentage variation of raw yield for bin of PT [%.2f#;%.2f]",fArrPT1D[0],fArrPT1D[nBinPT1D]);
+    TH1F   *h1D_Syst_Bin_StSy   =   new TH1F (hName,hTitle,100,-.5,.5);
+    //
+    hName               =   Form("h2D_Syst_Bin_StSy");
+    hTitle              =   Form("Percentage variation of raw yield for bin of PT [%.2f#;%.2f]",fArrPT1D[0],fArrPT1D[nBinPT1D]);
+    TH1F   *h2D_Syst_Bin_StSy   =   new TH1F (hName,hTitle,400,-2.,2.);
+    //
+    hName               =   Form("h1D_Stat_Bin");
+    hTitle              =   Form("h1D_Stat_Bin");
+    TH1F   *h1D_Stat_Bin    =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+    //
+    TH1F  **h1D_Syst_Bin    =   new TH1F   *[nBinPT1D+1];
+    hName               =   Form("h1D_Syst_Bin_PT_%.2f_%.2f",fArrPT1D[0],fArrPT1D[nBinPT1D]);
+    hTitle              =   Form("Percentage variation of raw yield for bin of PT [%.2f#;%.2f]",fArrPT1D[0],fArrPT1D[nBinPT1D]);
+    h1D_Syst_Bin[0]  =   new TH1F    (hName,hTitle,200,0.,2.);
+    h1D_Syst_Bin[0]  ->SetTitle(Form("Percentage variation of raw yield for bin %i",-1));
+    h1D_Syst_Bin[0]  ->GetXaxis()->SetTitle("Percentage variation");
+    for ( Int_t iAll = 1; iAll <= nBinPT1D; iAll++ )
+    {
+        hName               =   Form("h1D_Syst_Bin_PT_%.2f_%.2f",fArrPT1D[iAll-1],fArrPT1D[iAll]);
+        hTitle              =   Form("Percentage variation of raw yield for bin of PT [%.2f#;%.2f]",fArrPT1D[iAll-1],fArrPT1D[iAll]);
+        h1D_Syst_Bin[iAll]  =   new TH1F    (hName,hTitle,200,0.,2.);
+        h1D_Syst_Bin[iAll]  ->SetTitle(Form("Percentage variation of raw yield for bin %i",iAll));
+        h1D_Syst_Bin[iAll]  ->GetXaxis()->SetTitle("Percentage variation");
+    }
+    //
+    TH1F   *h2D_Syst_Bin_All;
+    hName                       =   Form("h2D_Syst_Bin_PT_%.2f_%.2f_%.2f_%.2f",fArrPT2D[0],fArrPT2D[nBinPT2D],fArrPT2D[0],fArrPT2D[nBinPT2D]);
+    hTitle                      =   Form("Percentage variation of raw yield for bin of PT [%.2f#;%.2f] [%.2f#;%.2f]",fArrPT2D[0],fArrPT2D[nBinPT2D],fArrPT2D[0],fArrPT2D[nBinPT2D]);
+    h2D_Syst_Bin_All            =   new TH1F    (hName,hTitle,100,0.,2.);
+    h2D_Syst_Bin_All            ->  SetTitle(Form("Percentage variation of raw yield for bin %i",-1));
+    h2D_Syst_Bin_All            ->  GetXaxis()  ->  SetTitle("Percentage variation");
+    //
+    TH2F   *h2D_Stat_Bin;
+    hName                       =   Form("h2D_Stat_Bin");
+    hTitle                      =   Form("h2D_Stat_Bin");
+    h2D_Stat_Bin                =   new TH2F    (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    //
+    TH1F ***h2D_Syst_Bin    =   new TH1F  **[nBinPT2D];
+    for ( Int_t iAll = 0; iAll < nBinPT2D; iAll++ ) {
+        h2D_Syst_Bin[iAll]  =   new TH1F   *[nBinPT2D];
+        for ( Int_t jAll = 0; jAll < nBinPT2D; jAll++ ) {
+            hName                       =   Form("h2D_Syst_Bin_PT_%.2f_%.2f_%.2f_%.2f",fArrPT2D[iAll],fArrPT2D[iAll+1],fArrPT2D[jAll],fArrPT2D[jAll+1]);
+            hTitle                      =   Form("Percentage variation of raw yield for bin of PT [%.2f#;%.2f] [%.2f#;%.2f]",fArrPT2D[iAll],fArrPT2D[iAll+1],fArrPT2D[jAll],fArrPT2D[jAll+1]);
+            h2D_Syst_Bin[iAll][jAll]    =   new TH1F    (hName,hTitle,200,0.,2.);
+            h2D_Syst_Bin[iAll][jAll]    ->  SetTitle(Form("Percentage variation of raw yield for bin %i",iAll+1));
+            h2D_Syst_Bin[iAll][jAll]    ->  GetXaxis()  ->  SetTitle("Percentage variation");
+        }
+    }
+    //------------//
+    //  ANALYSIS  //
+    //------------//
     
     // Output File for Fit Check
-    TFile*  outFileFit  =   new TFile("./result/Syst.root","recreate");
+    TFile*  outFileFit  =   new TFile("./result/Syst_SE/Syst_SE_CheckRatioAndBins.root","recreate");
     
     //------ 1D Histograms ------//
+    //
+    TH1F   *h1D_Systematics_Util    =   new TH1F("1D","1D",nBinPT1D,fArrPT1D);
+    for ( Int_t iTer = 1; iTer <= nOptions; iTer++ )    {
+        h1D_Systematics_Util        ->  Divide(h1D_Syst[iTer],h1D_Syst[0],1.,1.,"b");
+        h1D_Systematics_Util        ->  SetName(Form("hDivide_1D_%s",sOptions[iTer-1].c_str()));
+        for ( Int_t iPT1D = 1; iPT1D <= nBinPT1D; iPT1D++ )  {
+            auto    fStandard       =   h1D_Syst[0]         ->GetBinContent (iPT1D);
+            auto    fStdError       =   h1D_Syst[0]         ->GetBinError   (iPT1D);
+            auto    fVariatin       =   h1D_Syst[iTer]      ->GetBinContent (iPT1D);
+            auto    fVarError       =   h1D_Syst[iTer]      ->GetBinError   (iPT1D);
+            auto    fStdVarRt       =   h1D_Systematics_Util->GetBinContent (iPT1D);
+            auto    fSVRError       =   h1D_Systematics_Util->GetBinError   (iPT1D);
+            if ( fBarlowCheck(fStandard,fStdError,fVariatin,fVarError) )   continue;
+            h1D_Syst_Bin[iPT1D]     ->  Fill(fStdVarRt);
+            h1D_Syst_Bin[0]         ->  Fill(fStdVarRt);
+            h1D_Syst_Bin_StSy       ->  Fill(min(0.,fabs(h1D_Systematics_Util->GetBinContent(iPT1D)-1)-(h1D_Syst[0]->GetBinError(iPT1D))/(h1D_Syst[0]->GetBinContent(iPT1D))));
+        }
+        h1D_Systematics_Util->Write();
+    }
+    for ( Int_t iPT1D = 1; iPT1D <= nBinPT1D; iPT1D++ )  {
+        auto    fStandard       =   h1D_Syst[0]         ->GetBinContent (iPT1D);
+        auto    fStdError       =   h1D_Syst[0]         ->GetBinError   (iPT1D);
+        h1D_Stat_Bin            ->  SetBinContent(iPT1D,fStdError/fStandard);
+    }
     
+    h1D_Syst_Bin_StSy->Write();
+    for ( Int_t iPT1D = 0; iPT1D <= nBinPT1D; iPT1D++ )  {
+        h1D_Syst_Bin[iPT1D] ->  Write();
+    }
+    
+    //------ 2D Histograms ------//
+    //
+    TH2F   *h2D_Systematics_Util    =   new TH2F("2D","2D",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    for ( Int_t iTer = 1; iTer < nOption2; iTer++ )    {
+        h2D_Systematics_Util        ->  Divide(h2D_Syst[iTer],h2D_Syst[0]);
+        h2D_Systematics_Util        ->  SetName(Form("hDivide_2D_%s",sOption2[iTer-1].c_str()));
+        for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
+            for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )  {
+                auto    fStandard       =   h2D_Syst[0]         ->GetBinContent (iPT2D+1,jPT2D+1);
+                auto    fStdError       =   h2D_Syst[0]         ->GetBinError   (iPT2D+1,jPT2D+1);
+                auto    fVariatin       =   h2D_Syst[iTer]      ->GetBinContent (iPT2D+1,jPT2D+1);
+                auto    fVarError       =   h2D_Syst[iTer]      ->GetBinError   (iPT2D+1,jPT2D+1);
+                auto    fStdVarRt       =   h2D_Systematics_Util->GetBinContent (iPT2D+1,jPT2D+1);
+                auto    fSVRError       =   h2D_Systematics_Util->GetBinError   (iPT2D+1,jPT2D+1);
+                h2D_Syst_Bin[iPT2D][jPT2D]  ->  Fill(fStdVarRt);
+                h2D_Syst_Bin_All            ->  Fill(fStdVarRt);
+                h2D_Syst_Bin_StSy           ->  Fill(min(0.,fabs(h2D_Systematics_Util->GetBinContent(iPT2D+1,jPT2D+1)-1)-(h2D_Syst[0]->GetBinError(iPT2D+1,jPT2D+1))/(h2D_Syst[0]->GetBinContent(iPT2D+1,jPT2D+1))));
+            }
+        }
+        h2D_Systematics_Util->Write();
+    }
+    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
+        for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )  {
+            auto    fStandard       =   h2D_Syst[0]         ->GetBinContent (iPT2D+1,jPT2D+1);
+            auto    fStdError       =   h2D_Syst[0]         ->GetBinError   (iPT2D+1,jPT2D+1);
+            h2D_Stat_Bin                ->  SetBinContent(iPT2D+1,jPT2D+1,fStdError/fStandard);
+        }
+    }
+    
+    h2D_Syst_Bin_StSy->Write();
+    h2D_Syst_Bin_All->Write();
+    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
+        for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )  {
+            h2D_Syst_Bin[iPT2D][jPT2D] ->  Write();
+        }
+    }
+    //
+    // Output File for Fit Check
+    TFile*  outFileFi2  =   new TFile("./result/Syst_SE/Syst_SE_MeanAndRMS.root","recreate");
+    //
+    TH1F*   h1D_Syst_Mean   =   new TH1F    ("h1D_Syst_Mean","h1D_Syst_Mean",nBinPT1D,fArrPT1D);
+    TH1F*   h1D_Syst_RMS_   =   new TH1F    ("h1D_Syst_RMS_","h1D_Syst_RMS_",nBinPT1D,fArrPT1D);
+    TH1F*   h1D_Syst_Full   =   new TH1F    ("h1D_Syst_Full","h1D_Syst_Full",nBinPT1D,fArrPT1D);
+    for ( Int_t iPT1D = 1; iPT1D <= nBinPT1D; iPT1D++ )  {
+        h1D_Syst_Mean   ->SetBinContent(iPT1D,fabs(h1D_Syst_Bin[iPT1D] ->  GetMean() -1 ));
+        h1D_Syst_RMS_   ->SetBinContent(iPT1D,h1D_Syst_Bin[iPT1D] ->  GetRMS());
+        h1D_Syst_Full   ->SetBinContent(iPT1D,h1D_Syst_Bin[iPT1D] ->  GetRMS() + fabs(h1D_Syst_Bin[iPT1D] ->  GetMean() -1 ));
+    }
+    h1D_Stat_Bin    ->  Write();
+    h1D_Syst_Mean   ->  Write();
+    h1D_Syst_RMS_   ->  Write();
+    h1D_Syst_Full   ->  Write();
+    //
+    TH2F*   h2D_Syst_Mean   =   new TH2F    ("h2D_Syst_Mean","h2D_Syst_Mean",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    TH2F*   h2D_Syst_RMS_   =   new TH2F    ("h2D_Syst_RMS_","h2D_Syst_RMS_",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    TH2F*   h2D_Syst_Full   =   new TH2F    ("h2D_Syst_Full","h2D_Syst_Full",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
+        for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )  {
+            h2D_Syst_Mean   ->SetBinContent(iPT2D+1,jPT2D+1,fabs(h2D_Syst_Bin[iPT2D][jPT2D] ->  GetMean() -1 ));
+            h2D_Syst_RMS_   ->SetBinContent(iPT2D+1,jPT2D+1,h2D_Syst_Bin[iPT2D][jPT2D] ->  GetRMS());
+            h2D_Syst_Full   ->SetBinContent(iPT2D+1,jPT2D+1,h2D_Syst_Bin[iPT2D][jPT2D] ->  GetRMS() + fabs(h2D_Syst_Bin[iPT2D][jPT2D] ->  GetMean() -1 ));
+        }
+    }
+    h2D_Stat_Bin    ->  Write();
+    h2D_Syst_Mean   ->  Write();
+    h2D_Syst_RMS_   ->  Write();
+    h2D_Syst_Full   ->  Write();
+    //
+    // >-> Close input File
+    //
+    for ( Int_t iTer = 0; iTer <= nOptions; iTer++ )    {
+        insFileH1D[iTer]->Close();
+    }
+    //
+    for ( Int_t iTer = 0; iTer < nOption2; iTer++ )    {
+        insFileH2D[iTer]->Close();
+    }
+    //
+    outFileFit->Close();
+    outFileFi2->Close();
+}
+    
+    /*
     TH1F   *h1D_Systematics_Util    =   new TH1F("1D","1D",nBinPT1D,fArrPT1D);
     for ( Int_t iFll = 0; iFll < nOptions; iFll++ )
     {
@@ -523,7 +656,8 @@ void Syst_SignalExtraction_Analysis ( bool fSilent = false)
     h1D_R6T->Write();
     h2D_Raw->Write();
      */
-    
+    /*
     outFileFit->Close();
     outFileFi2->Close();
 }
+*/

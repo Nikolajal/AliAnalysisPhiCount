@@ -11,7 +11,7 @@ void PreProcessing ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEv
     
     // >-> OPTIONS
     
-    if ( fFileNameMC == "" )
+    if ( fFileNameDT == "" )
     {
         cout << "[ERROR] Must Specify an input root file" << endl;
         cout << "[INFO] Usage PreProcessing(\"MonteCarloFile.root\",\"DataFile.root\",\"AnalysisOption\")" << endl;

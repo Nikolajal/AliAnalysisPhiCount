@@ -1,0 +1,128 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.1 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\datalist[entry]{none/global//global/global}
+  \entry{PDG}{article}{}
+    \name{author}{5}{}{%
+      {{hash=TM}{%
+         family={Tanabashi},
+         familyi={T\bibinitperiod},
+         given={M.},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=HK}{%
+         family={Hagiwara},
+         familyi={H\bibinitperiod},
+         given={K.},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=HK}{%
+         family={Hikasa},
+         familyi={H\bibinitperiod},
+         given={K.},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=NK}{%
+         family={Nakamura},
+         familyi={N\bibinitperiod},
+         given={K.},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=S}{%
+         family={Sumino},
+         familyi={S\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {American Physical Society}%
+    }
+    \strng{namehash}{TM+1}
+    \strng{fullhash}{TMHKHKNKS1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1103/PhysRevD.98.030001
+    \endverb
+    \field{issue}{3}
+    \field{pages}{030001}
+    \field{title}{Review of Particle Physics}
+    \verb{url}
+    \verb https://link.aps.org/doi/10.1103/PhysRevD.98.030001
+    \endverb
+    \field{volume}{98}
+    \field{journaltitle}{Phys. Rev. D}
+    \field{year}{2018}
+    \warn{\item Invalid format of field 'month'}
+  \endentry
+
+  \entry{PrevPub}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=MMYRVR}{%
+         family={M.\bibnamedelima Malaev},
+         familyi={M\bibinitperiod\bibinitdelim M\bibinitperiod},
+         suffix={V.\bibnamedelima Ryabov},
+         suffixi={V\bibinitperiod\bibinitdelim R\bibinitperiod},
+         given={Yu.\bibnamedelima Riabov},
+         giveni={Y\bibinitperiod\bibinitdelim R\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{MMVRYR1}
+    \strng{fullhash}{MMVRYR1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{title}{$\phi\to$K$^{+}$K$^{-}$ production in pp collisions at
+  $\sqrt{s}$ = \SI{7}{\tera \electronvolt} with TPC-PID}
+    \verb{url}
+    \verb https://alice-notes.web.cern.ch/system/files/notes/analysis/277/2014-
+    \verb Mar-25-analysis_note-Phi_10C2_pp7_TPCPID.pdf
+    \endverb
+    \field{journaltitle}{Analysis Note}
+    \field{year}{2014}
+    \warn{\item Invalid format of field 'month'}
+  \endentry
+
+  \entry{PrevPubMult}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=RSKNBMAKD}{%
+         family={Ranbir\bibnamedelima Singh},
+         familyi={R\bibinitperiod\bibinitdelim S\bibinitperiod},
+         suffix={Ajay Kumar\bibnamedelima Dash},
+         suffixi={A\bibinitperiod\bibinitdelim K\bibinitperiod\bibinitdelim
+  D\bibinitperiod},
+         given={Kishora Nayak Bedangadas\bibnamedelima Mohanty},
+         giveni={K\bibinitperiod\bibinitdelim N\bibinitperiod\bibinitdelim
+  B\bibinitperiod\bibinitdelim M\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{RSAKDKNBM1}
+    \strng{fullhash}{RSAKDKNBM1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{title}{$K^{*}$(892) and $\phi$(1020) production as a function of
+  charged particle multiplicity in pp collisions at$\sqrt{s}$ = \SI{7}{\tera
+  \electronvolt}}
+    \verb{url}
+    \verb https://alice-notes.web.cern.ch/system/files/notes/analysis/426/2018-
+    \verb Apr-27-analysis_note-ResoVsMultpp7TeV_v6.pdf
+    \endverb
+    \field{journaltitle}{Analysis Note}
+    \field{year}{2018}
+    \warn{\item Invalid format of field 'month'}
+  \endentry
+\enddatalist
+\endinput
