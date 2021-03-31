@@ -110,7 +110,7 @@ auto const  kSysHig_TR              =   0.08;
 auto const  kSysLow_PD              =   0.015;
 auto const  kSysHig_PD              =   0.015;
 //
-auto const  kTriggerEff             =   .7574; // 5TeV 0.7574;// 7TeV 0.85;
+auto const  kTriggerEff             =   .85; // 5TeV 0.7574;// 7TeV 0.85;
 auto const  nMltTrgECls             =   9;
 Float_t const  kMultTrgEff      []  =   {.998822,0.995576,0.991524,0.986489,0.975743,0.9575743,0.937151,0.897753,0.696985};
 Float_t const  kMltTrgECls      []  =   {0,5,10,15,20,30,40,50,70,100};
@@ -179,10 +179,10 @@ const   Float_t   fMaxNTup  =   4.5;
 //
 const   Bool_t  f1DOptio    =   true;
 const   Bool_t  f2DOptio    =   true;
-const   Int_t   nOptions    =   14;
-const   string  sOptions[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK","W","CH3","CH5"};
-const   Int_t   nOption2    =   15;
-const   string  sOption2[]  =   {"BKG","RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK","W","CH3","CH5"};
+const   Int_t   nOptions    =   18;
+const   string  sOptions[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK","RL","RI","RM","RN","W","CH3","CH5"};
+const   Int_t   nOption2    =   0;
+const   string  sOption2[]  =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ","RK","RL","RI","RM","RN","W","CH3","CH5","BKG"};
 //
 //-//-//    PID
 //
@@ -284,11 +284,11 @@ void    fSetBinPT2D ()
     
     fArrPT2D[0]     =   0.40;
     fArrPT2D[1]     =   0.70;
-    fArrPT2D[2]     =   1.00;
-    fArrPT2D[3]     =   1.50;
+    fArrPT2D[2]     =   0.90;
+    fArrPT2D[3]     =   1.40;
     fArrPT2D[4]     =   2.00;
     fArrPT2D[5]     =   3.00;
-    fArrPT2D[6]     =   4.00;
+    fArrPT2D[6]     =   5.00;
     fArrPT2D[7]     =   12.00;
 }
 
@@ -1126,62 +1126,77 @@ void            fRooPlotMaker                   ( RooPlot * fRooPlot, TLegend * 
 
 void            SetBoundaries   ( string fOption, Double_t &aValMin, Double_t &aValMax )
 {
-    aValMin = 0.995;
+    aValMin = 0.993;
     aValMax = 1.050;
     if ( fOption.find("RA") != -1 )
     {
-        aValMin =   0.995;
+        aValMin =   0.993;
         aValMax =   1.045;
     }
     if ( fOption.find("RB") != -1 )
     {
-        aValMin =   0.995;
+        aValMin =   0.993;
         aValMax =   1.055;
     }
     if ( fOption.find("RC") != -1 )
     {
-        aValMin =   0.995;
-        aValMax =   1.060;
+        aValMin =   0.993;
+        aValMax =   1.065;
     }
     if ( fOption.find("RD") != -1 )
     {
-        aValMin =   0.995;
-        aValMax =   1.065;
+        aValMin =   0.993;
+        aValMax =   1.075;
     }
     if ( fOption.find("RE") != -1 )
     {
-        aValMin =   0.995;
-        aValMax =   1.070;
+        aValMin =   0.996;
+        aValMax =   1.045;
     }
     if ( fOption.find("RF") != -1 )
     {
-        aValMin =   1.000;
-        aValMax =   1.045;
+        aValMin =   0.996;
+        aValMax =   1.050;
     }
     if ( fOption.find("RG") != -1 )
     {
-        aValMin =   1.000;
-        aValMax =   1.050;
+        aValMin =   0.996;
+        aValMax =   1.055;
     }
     if ( fOption.find("RH") != -1 )
     {
-        aValMin =   1.000;
-        aValMax =   1.055;
+        aValMin =   0.996;
+        aValMax =   1.065;
     }
     if ( fOption.find("RI") != -1 )
     {
-        aValMin =   1.000;
-        aValMax =   1.060;
+        aValMin =   0.996;
+        aValMax =   1.075;
     }
     if ( fOption.find("RJ") != -1 )
     {
         aValMin =   1.000;
-        aValMax =   1.065;
+        aValMax =   1.045;
     }
     if ( fOption.find("RK") != -1 )
     {
         aValMin =   1.000;
-        aValMax =   1.070;
+        aValMax =   1.050;
+    }
+    if ( fOption.find("RL") != -1 )
+    {
+        aValMin =   1.000;
+        aValMax =   1.055;
+    }
+    if ( fOption.find("RM") != -1 )
+    {
+        aValMin =   1.000;
+        aValMax =   1.065;
+    }
+    if ( fOption.find("RN") != -1 )
+    {
+        aValMin =   1.000;
+        aValMax =   1.075;
     }
 }
 
@@ -1379,15 +1394,13 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     // Background PDF Coefficients
     RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,   -1, 1);//,0.5,-1,1);
     RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,-0.1, -1, 1);//,-0.1,-1,1);
-    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.01,-1, 1);//,0.01,-1,1);
-    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,-0.05,-1, 1);//,-0.05,-1,1);
     
-    RooRealVar ch4, ch5;
-    if ( fCheb3 && !fCheb5 )    ch4     = RooRealVar        ("ch4","ch4"        ,0.);
-    else                        ch4     = RooRealVar        ("ch4","ch4"        ,0.,-1,1);
+    RooRealVar ch2, ch3;
+    if ( fCheb3 && !fCheb5 )    ch2     = RooRealVar        ("ch2","ch2"        ,0.);
+    else                        ch2     = RooRealVar        ("ch2","ch2"        ,0.,-1,1);
     
-    if ( fCheb5 )               ch5     = RooRealVar        ("ch5","ch5"        ,0.,-1,1);
-    else                        ch5     = RooRealVar        ("ch5","ch5"        ,0.);
+    if ( fCheb5 )               ch3     = RooRealVar        ("ch3","ch3"        ,0.,-1,1);
+    else                        ch3     = RooRealVar        ("ch3","ch3"        ,0.);
     
     //Signal
     RooRealVar sMass, sWidt, sSlop;
@@ -1406,7 +1419,7 @@ RooFitResult*   FitModel        ( TH1D * THdata, const char* fName = "", Bool_t 
     
     // PDFs
     RooVoigtian     fSig= RooVoigtian      ("fSig","fSig"      ,InvMass,sMass,sWidt,sSlop);
-    RooChebychev    fBkg= RooChebychev     ("fBkg","fBkg"      ,InvMass,RooArgSet(ch0,ch1,ch2,ch3,ch4,ch5));
+    RooChebychev    fBkg= RooChebychev     ("fBkg","fBkg"      ,InvMass,RooArgSet(ch0,ch1,ch2,ch3));
     RooAddPdf       fMod= RooAddPdf        ("fMod","fMod"      ,RooArgList(fBkg,fSig),RooArgList(nBB,nSS));
     
     
@@ -1502,34 +1515,32 @@ RooFitResult*   FitModel        ( TH1F * THdata, TString fName = "", Bool_t fSav
     // Background PDF Coefficients
     RooRealVar ch0      = RooRealVar        ("ch0","ch0"      ,0.5,   -1, 1);//,0.5,-1,1);
     RooRealVar ch1      = RooRealVar        ("ch1","ch1"      ,-0.1, -1, 1);//,-0.1,-1,1);
-    RooRealVar ch2      = RooRealVar        ("ch2","ch2"      ,0.01,-1, 1);//,0.01,-1,1);
-    RooRealVar ch3      = RooRealVar        ("ch3","ch3"      ,-0.05,-1, 1);//,-0.05,-1,1);
     
-    RooRealVar ch4, ch5;
-    if ( fCheb3 && !fCheb5 )    ch4     = RooRealVar        ("ch4","ch4"        ,0.);
-    else                        ch4     = RooRealVar        ("ch4","ch4"        ,0.,-1,1);
+    RooRealVar ch2, ch3;
+    if ( fCheb3 && !fCheb5 )    ch2     = RooRealVar        ("ch2","ch2"        ,0.);
+    else                        ch2     = RooRealVar        ("ch2","ch2"        ,0.,-1,1);
     
-    if ( fCheb5 )               ch5     = RooRealVar        ("ch5","ch5"        ,0.,-1,1);
-    else                        ch5     = RooRealVar        ("ch5","ch5"        ,0.);
+    if ( fCheb5 )               ch3     = RooRealVar        ("ch3","ch3"        ,0.,-1,1);
+    else                        ch3     = RooRealVar        ("ch3","ch3"        ,0.);
     
     //Signal
     RooRealVar sMass, sWidt, sSlop;
     if ( fWidth )               sWidt   = RooRealVar        ("bWidt","bWidt"    ,kPWid);
-    else                        sWidt   = RooRealVar        ("bWidt","bWidt"    ,kPWid,kPWid*0.999,kPWid*1.001);
+    else                        sWidt   = RooRealVar        ("bWidt","bWidt"    ,kPWid,kPWid*0.9,kPWid*1.1);
 
     if ( fMass_ )               sMass   = RooRealVar        ("bMass","bMass"    ,kPMas);
-    else                        sMass   = RooRealVar        ("bMass","bMass"    ,kPMas,kPMas*0.999,kPMas*1.001);
+    else                        sMass   = RooRealVar        ("bMass","bMass"    ,kPMas,kPMas*0.9,kPMas*1.1);
     
     if ( bPythiaTest )          sSlop   = RooRealVar        ("bSlop","bSlop"    ,0.);
-    else                        sSlop   = RooRealVar        ("bSlop","bSlop"    ,0.001,0.0009,0.0011);
+    else                        sSlop   = RooRealVar        ("bSlop","bSlop"    ,0.001,0.,0.002);
     
     // Coefficients
-    RooRealVar nSS      = RooRealVar        ("1nSS","1nSS"      ,0.5*nEntries,0.,nEntries);
-    RooRealVar nBB      = RooRealVar        ("1nBB","1nBB"      ,0.5*nEntries,0.,nEntries);
+    RooRealVar nSS      = RooRealVar        ("anSS","anSS"      ,0.5*nEntries,0.,nEntries);
+    RooRealVar nBB      = RooRealVar        ("anBB","anBB"      ,0.5*nEntries,0.,nEntries);
     
     // PDFs
     RooVoigtian     fSig= RooVoigtian      ("fSig","fSig"      ,InvMass,sMass,sWidt,sSlop);
-    RooChebychev    fBkg= RooChebychev     ("fBkg","fBkg"      ,InvMass,RooArgSet(ch0,ch1,ch2,ch3,ch4,ch5));
+    RooChebychev    fBkg= RooChebychev     ("fBkg","fBkg"      ,InvMass,RooArgSet(ch0,ch1,ch2,ch3));
     RooAddPdf       fMod= RooAddPdf        ("fMod","fMod"      ,RooArgList(fBkg,fSig),RooArgList(nBB,nSS));
     
     RooFitResult* fFitResults;
@@ -1629,7 +1640,7 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     
     
     // Background
-    RooRealVar ch0x, ch1x, ch2x, ch3x, ch4x, ch5x, ch0y, ch1y, ch2y, ch3y, ch4y, ch5y;
+    RooRealVar ch0x, ch1x, ch2x, ch3x, ch0y, ch1y, ch2y, ch3y;
     
     if ( fBackg )
     {
@@ -1637,14 +1648,10 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
         ch1x     = RooRealVar ("ch1x","ch1x"     ,utilityx->getRealValue("ch1",0),utilityx->getRealValue("ch1",0)-0.1,utilityx->getRealValue("ch1",0)+0.1);
         ch2x     = RooRealVar ("ch2x","ch2x"     ,utilityx->getRealValue("ch2",0),utilityx->getRealValue("ch2",0)-0.1,utilityx->getRealValue("ch2",0)+0.1);
         ch3x     = RooRealVar ("ch3x","ch3x"     ,utilityx->getRealValue("ch3",0),utilityx->getRealValue("ch3",0)-0.1,utilityx->getRealValue("ch3",0)+0.1);
-        ch4x     = RooRealVar ("ch4x","ch4x"     ,utilityx->getRealValue("ch4",0),utilityx->getRealValue("ch4",0)-0.1,utilityx->getRealValue("ch4",0)+0.1);
-        ch5x     = RooRealVar ("ch5x","ch5x"     ,utilityx->getRealValue("ch5",0),utilityx->getRealValue("ch5",0)-0.1,utilityx->getRealValue("ch5",0)+0.1);
         ch0y     = RooRealVar ("ch0y","ch0y"     ,utilityy->getRealValue("ch0",0),utilityy->getRealValue("ch0",0)-0.1,utilityy->getRealValue("ch0",0)+0.1);
         ch1y     = RooRealVar ("ch1y","ch1y"     ,utilityy->getRealValue("ch1",0),utilityy->getRealValue("ch1",0)-0.1,utilityy->getRealValue("ch1",0)+0.1);
         ch2y     = RooRealVar ("ch2y","ch2y"     ,utilityy->getRealValue("ch2",0),utilityy->getRealValue("ch2",0)-0.1,utilityy->getRealValue("ch2",0)+0.1);
         ch3y     = RooRealVar ("ch3y","ch3y"     ,utilityy->getRealValue("ch3",0),utilityy->getRealValue("ch3",0)-0.1,utilityy->getRealValue("ch3",0)+0.1);
-        ch4y     = RooRealVar ("ch4y","ch4y"     ,utilityy->getRealValue("ch4",0),utilityy->getRealValue("ch4",0)-0.1,utilityy->getRealValue("ch4",0)+0.1);
-        ch5y     = RooRealVar ("ch5y","ch5y"     ,utilityy->getRealValue("ch5",0),utilityy->getRealValue("ch5",0)-0.1,utilityy->getRealValue("ch5",0)+0.1);
     }
     else
     {
@@ -1652,14 +1659,10 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
         ch1x     = RooRealVar ("ch1x","ch1x"     ,utilityx->getRealValue("ch1",0));
         ch2x     = RooRealVar ("ch2x","ch2x"     ,utilityx->getRealValue("ch2",0));
         ch3x     = RooRealVar ("ch3x","ch3x"     ,utilityx->getRealValue("ch3",0));
-        ch4x     = RooRealVar ("ch4x","ch4x"     ,utilityx->getRealValue("ch4",0));
-        ch5x     = RooRealVar ("ch5x","ch5x"     ,utilityx->getRealValue("ch5",0));
         ch0y     = RooRealVar ("ch0y","ch0y"     ,utilityy->getRealValue("ch0",0));
         ch1y     = RooRealVar ("ch1y","ch1y"     ,utilityy->getRealValue("ch1",0));
         ch2y     = RooRealVar ("ch2y","ch2y"     ,utilityy->getRealValue("ch2",0));
         ch3y     = RooRealVar ("ch3y","ch3y"     ,utilityy->getRealValue("ch3",0));
-        ch4y     = RooRealVar ("ch4y","ch4y"     ,utilityy->getRealValue("ch4",0));
-        ch5y     = RooRealVar ("ch5y","ch5y"     ,utilityy->getRealValue("ch5",0));
     }
     
     //Signal
@@ -1682,9 +1685,9 @@ RooFitResult*   FitModel        ( TH2F * THdata, RooFitResult * fFitShapeX, RooF
     RooRealVar n3       = RooRealVar ("anSB2D","anSB2D" ,nEntries*(fS__x*fB__y)/fTot_,0.,nEntries);
     
     // PDFs
-    RooChebychev        fBkgx ("fBkgx","fBkgx"          ,varx,RooArgSet(ch0x,ch1x,ch2x,ch3x,ch4x,ch5x));
+    RooChebychev        fBkgx ("fBkgx","fBkgx"          ,varx,RooArgSet(ch0x,ch1x,ch2x,ch3x));
     RooVoigtian         fSigx ("fSigx","fSigx"          ,varx,pMassx,pWidthx,pSlopex);
-    RooChebychev        fBkgy ("fBkgy","fBkgy"          ,vary,RooArgSet(ch0y,ch1y,ch2y,ch3y,ch4y,ch5x));
+    RooChebychev        fBkgy ("fBkgy","fBkgy"          ,vary,RooArgSet(ch0y,ch1y,ch2y,ch3y));
     RooVoigtian         fSigy ("fSigy","fSigy"          ,vary,pMassy,pWidthy,pSlopey);
     RooProdPdf          fBB   ("fBkg","fBkg"            ,fBkgx,fBkgy);
     RooProdPdf          fSB   ("fSigBkg","fSBWBkg"      ,fSigx,fBkgy);

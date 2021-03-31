@@ -19,6 +19,8 @@ void SE_Production ( bool fSilent = true, TString fOption = "" )
     }
     fChooseOption(fOption);
     
+    gROOT->ProcessLine(Form(".! mkdir -p ./result/Syst_SE_FitCheck"));
+    
     // Retrieving PreProcessed data histograms
     TFile*  insFile_DT_Yield            =   new TFile   (fYldPreProc);
     
@@ -170,6 +172,9 @@ void SE_Production ( bool fSilent = true, TString fOption = "" )
         hRAW_1D->Write();
         
         outFinalResults->Close();
+        
+        gROOT->ProcessLine(Form(".! mkdir -p ./result/Syst_SE_FitCheck/%s",sOptions[iSys].c_str()));
+        gROOT->ProcessLine(Form(".! mv ./result/SEFitCheck/* ./result/Syst_SE_FitCheck/%s",sOptions[iSys].c_str()));
     }
     
     for ( Int_t iSys = 0; iSys < nOption2; iSys++ )
