@@ -105,19 +105,21 @@ int main (int argc, char *argv[])
     // Definition of number of events
     int   nEvents = atoi(argv[2]);
     
+    /*
     int kMultBin    = 500;
     Double_t * fArrMult = new Double_t [kMultBin+1];
     for ( int i = 0; i <= kMultBin; i++ )
     {
         fArrMult[i] =   i;
     }
+     */
     
     // Definition of option
     int   fOption = atoi(argv[4]);
-    
+     
     // Output File
     TFile * outFile     = new   TFile   (Form("%s.root",argv[1]),   "recreate", "", 101);
-    
+    /*
     // Event Count
     TH1D   *hEventCount     =   new TH1D    ("fQC_Event_Enumerate", "fQC_Event_Enumerate",      1,          -0.5,       0.5);
     TH1D   *hEventCountMult =   new TH1D    ("hEventCountMult",     "hEventCountMult",          kMultBin,   fArrMult);
@@ -127,7 +129,38 @@ int main (int argc, char *argv[])
     TH2D   *hPhiYieldMult   =   new TH2D    ("hPhiYieldMult",       "hPhiYieldMult",            10,         -0.5,       9.5,        kMultBin,    fArrMult);
     TH1D   *hPhiGamma       =   new TH1D    ("hPhiGamma",           "hPhiGamma",                1,          -0.5,       0.5);
     TH1D   *hPhiGammaMult   =   new TH1D    ("hPhiGammaMult",       "hPhiGammaMult",            kMultBin,   fArrMult);
+    */
     
+    Float_t *fArrPT2D_Tst = new Float_t[12];
+    
+    fArrPT2D_Tst[0]     =   0.00; //0.4
+    fArrPT2D_Tst[1]     =   0.40; //0.3
+    fArrPT2D_Tst[2]     =   0.70; //0.2
+    fArrPT2D_Tst[3]     =   0.90; //0.1
+    fArrPT2D_Tst[4]     =   1.00; //0.2
+    fArrPT2D_Tst[5]     =   1.20; //0.2
+    fArrPT2D_Tst[6]     =   1.40; //0.2
+    fArrPT2D_Tst[7]     =   1.60; //0.4
+    fArrPT2D_Tst[8]     =   2.00; //0.8
+    fArrPT2D_Tst[9]     =   2.80; //1.2
+    fArrPT2D_Tst[10]    =   4.00; //6.0
+    fArrPT2D_Tst[11]    =   10.0;
+    
+    
+    
+    TH2F       *hTST_2D;
+    TH2D       *hTrue2D;
+    //
+    //  Defining Efficiency and check utilities
+    //
+    auto hName       =   Form("hTST_2D");
+    auto hTitle      =   Form("hTST_2D");
+    hTST_2D     =   new TH2F (hName,hTitle,11,fArrPT2D_Tst,11,fArrPT2D_Tst);
+    //
+    hName       =   Form("hTrue2D");
+    hTitle      =   Form("hTrue2D");
+    hTrue2D     =   new TH2D("hTrue2D","hTrue2D",   1200, 0., 12., 1200, 0., 12.);
+    //
     // PYTHIA INITIALISATION
     Pythia8::Pythia pythia;
     //
@@ -278,7 +311,7 @@ int main (int argc, char *argv[])
             pythia.readString("ColourReconnection:reconnect = on");
             pythia.readString("ColourReconnection:mode = 0");
             cout << "[INFO] Using default settings" << endl;
-            cout << "To change settings chose from below:" << endl;
+            cout << "To change settings choose from below:" << endl;
             cout << "0. The MPI-based original Pythia 8 scheme." << endl;
             cout << "1. The new more QCD based scheme." << endl;
             cout << "2. The new gluon-move model." << endl;
@@ -306,6 +339,40 @@ int main (int argc, char *argv[])
     //
     fStartTimer("Production");
     
+    for ( int iEvent = 0; iEvent < nEvents; iEvent++ )
+    {
+        // Next event
+        pythia.next();
+        fPrintLoopTimer("Production",iEvent,nEvents,10000);
+        
+        // Set Counters to 0
+        Int_t   nPhiMesons      =   0;
+        Float_t*fPTArray        =   new Float_t[100];
+        
+        // Starting cycling through event particles
+        for ( int iParticle = 0; iParticle < pythia.event.size() ; iParticle++ )
+        {
+            // Saving particles
+            const auto Current_Particle = pythia.event[iParticle];
+            
+            // Storing True Phis
+            if ( Current_Particle.id() == 333 && (fabs(Current_Particle.p().rap()) <= 0.5) )
+            {
+                fPTArray[nPhiMesons]    =   Current_Particle.pT();
+                nPhiMesons++;
+            }
+        }
+        if ( nPhiMesons < 2 ) continue;
+        for ( Int_t iTer = 0; iTer < nPhiMesons; iTer++ )   {
+            for ( Int_t jTer = 0; jTer < nPhiMesons; jTer++ )   {
+                if ( iTer == jTer ) continue;
+                hTrue2D         ->  Fill( fPTArray[iTer], fPTArray[jTer], 0.5 );
+                hTST_2D         ->  Fill( fPTArray[iTer], fPTArray[jTer], 0.5 );
+            }
+        }
+    }
+    
+    /*
     // Cycling through events
     for ( int iEvent = 0; iEvent < nEvents; iEvent++ )
     {
@@ -401,9 +468,13 @@ int main (int argc, char *argv[])
         hPhiGammaMult->SetBinContent(iBin,fGammaPhiValue(fYphi,fYphiphi));
         hPhiGammaMult->SetBinError(iBin,fGammaPhiError(fYphi,fYphiphi,fYEphi,fYEphiphi));
     }
+     */
     
     fStopTimer("Production");
     
+    hTrue2D->Write();
+    hTST_2D->Write();
+    /*
     hEventCount     ->Write();
     hEventCountMult ->Write();
     hPhiCount       ->Write();
@@ -412,6 +483,7 @@ int main (int argc, char *argv[])
     hPhiYieldMult   ->Write();
     hPhiGamma       ->Write();
     hPhiGammaMult   ->Write();
+    */
     
     outFile         ->Close();
     return 0;

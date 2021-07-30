@@ -1,8 +1,7 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: All Set!
 
-void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString fOption = "" )
-{
+void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEventsCut = -1., TString kFolder = "" )   {
     //---------------------//
     //  Setting up input   //
     //---------------------//
@@ -21,79 +20,37 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     TFile *insFileMC        =   new TFile   (fFileName.c_str());
     
     //Retrieving Event data TTree
-    TTree   *TPhiCandidate  =   (TTree*)insFileMC->Get(fPhiCandidateEff_Tree);
+    TTree   *TPhiEfficiency =   (TTree*)insFileMC->Get(Form("%s%s",fPhiCandidateEff_Tree,"_name"));
     TTree   *TKaonCandidate =   nullptr;//(TTree*)insFileMC->Get(fKaonCandidateEff_Tree);
+    TTree   *TPhiCandidate  =   (TTree*)insFileMC->Get(Form("%s%s",fPhiCandidate_Tree,"_name"));
+    TTree   *TKaonEfficiency=   nullptr;//(TTree*)insFileMC->Get(fKaonCandidate_Tree);
     
     // Retrieving Event Count Histogram
-    TList  *fQCOutputList   =   (TList*)insFileMC       ->Get("fQCOutputList");
-    TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enumerate");
+    TList  *fQCOutputList   =   (TList*)insFileMC       ->Get("fQCOutputList_name");
+    TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_FLL");
+    TH1D   *fHEvCountMlt    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_V0M");
+    fHEventCount->SetName("fQC_Event_Enumerate");
+    fHEvCountMlt->SetName("fQC_Event_Enum_Mult");
     
     // Define tree data structures
     Struct_PhiEfficiency    evPhiEfficiency;
     Struct_KaonEfficiency   evKaonEfficiency;
+    Struct_PhiCandidate     evPhiCandidate;
+    Struct_KaonCandidate    evKaonCandidate;
 
-    if ( !TPhiCandidate && !TKaonCandidate )
-    {
-        cout << "Input Data Tree not found!" << endl;
-        return;
-    }
-    if ( !TPhiCandidate )
-    {
-        cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
-        TKaonCandidate->SetBranchAddress    ("EventMask",       &evKaonEfficiency.EventMask);
-        TKaonCandidate->SetBranchAddress    ("TrueEventMask",   &evKaonEfficiency.TrueEventMask);
-        TKaonCandidate->SetBranchAddress    ("Multiplicity",    &evKaonEfficiency.Multiplicity);
-        TKaonCandidate->SetBranchAddress    ("nKaon",           &evKaonEfficiency.nKaon);
-        TKaonCandidate->SetBranchAddress    ("Px",              &evKaonEfficiency.Px);
-        TKaonCandidate->SetBranchAddress    ("Py",              &evKaonEfficiency.Py);
-        TKaonCandidate->SetBranchAddress    ("Pz",              &evKaonEfficiency.Pz);
-        TKaonCandidate->SetBranchAddress    ("Selection",       &evKaonEfficiency.Selection);
-    }
-    else if ( !TKaonCandidate )
-    {
-        cout << "[INFO] No KaonCandidate Tree, switching to Phi Analysis" << endl;
-        TPhiCandidate-> SetBranchAddress    ("EventMask",       &evPhiEfficiency.EventMask);
-        TPhiCandidate-> SetBranchAddress    ("TrueEventMask",   &evPhiEfficiency.TrueEventMask);
-        TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiEfficiency.Multiplicity);
-        TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiEfficiency.nPhi);
-        TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiEfficiency.Px);
-        TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiEfficiency.Py);
-        TPhiCandidate-> SetBranchAddress    ("Pz",              &evPhiEfficiency.Pz);
-        TPhiCandidate-> SetBranchAddress    ("Selection",       &evPhiEfficiency.Selection);
-    }
-    else
-    {
-        TKaonCandidate->SetBranchAddress    ("EventMask",       &evKaonEfficiency.EventMask);
-        TKaonCandidate->SetBranchAddress    ("TrueEventMask",   &evKaonEfficiency.TrueEventMask);
-        TKaonCandidate->SetBranchAddress    ("Multiplicity",    &evKaonEfficiency.Multiplicity);
-        TKaonCandidate->SetBranchAddress    ("nKaon",           &evKaonEfficiency.nKaon);
-        TKaonCandidate->SetBranchAddress    ("Px",              &evKaonEfficiency.Px);
-        TKaonCandidate->SetBranchAddress    ("Py",              &evKaonEfficiency.Py);
-        TKaonCandidate->SetBranchAddress    ("Pz",              &evKaonEfficiency.Pz);
-        TKaonCandidate->SetBranchAddress    ("Selection",       &evKaonEfficiency.Selection);
-        
-        TPhiCandidate-> SetBranchAddress    ("EventMask",       &evPhiEfficiency.EventMask);
-        TPhiCandidate-> SetBranchAddress    ("TrueEventMask",   &evPhiEfficiency.TrueEventMask);
-        TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiEfficiency.Multiplicity);
-        TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiEfficiency.nPhi);
-        TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiEfficiency.Px);
-        TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiEfficiency.Py);
-        TPhiCandidate-> SetBranchAddress    ("Pz",              &evPhiEfficiency.Pz);
-        TPhiCandidate-> SetBranchAddress    ("Selection",       &evPhiEfficiency.Selection);
-    }
+    // Setting the input Candidates in the Trees
+    if ( !fSetCandidates(TPhiEfficiency,evPhiEfficiency,TKaonEfficiency,evKaonEfficiency) ) return;
+    if ( !fSetCandidates(TPhiCandidate,evPhiCandidate,TKaonCandidate,evKaonCandidate) )     return;
     
     //---------------------//
     //  Setting up output  //
     //---------------------//
     
     // Generating the binning array--------------------------------------------------------------------------
-    fSetBinPT1D();
-    fSetBinIM1D();
-    fSetBinPT2D();
-    fSetBinIM2D();
-    fSetBinRap_();
-    fSetBinMult();
-    fSetBinNTup();
+    fSetAllBins();
+    auto    fNBinning = (int)((fMaxPT1D-fMinPT1D)*10.);
+    Float_t *fUniformBinning100MeV = new Float_t[fNBinning+1];
+    fSetUniformBinning(fUniformBinning100MeV,fMinPT1D,fMaxPT1D,fNBinning);
     Int_t       U_AccCand[1024];
     Int_t       U_nAccept,  U_nAccep2;
     
@@ -107,13 +64,20 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     //
     TH1F       *hREC_1D;
     TH1F       *hGEN_1D;
+    TH1F       *hREC_Rw_1D;
+    TH1F       *hGEN_Rw_1D;
     TH1F       *hTRU_1D;
-    TH1F       *hTRU_ALL_1D;
-    TH1F       *hREC_1D_in_2Dbin;
-    TH1F       *hGEN_1D_in_2Dbin;
-    TH1F       *hTRU_1D_in_2Dbin;
     TH1F       *hEFF_1D;
-    TH1F       *hEFF_1D_in_2Dbin;
+    TH1F       *hEFF_SL_1D;
+    TH1F       *hGEN_INELVTX_1D;
+    TH1F       *hGEN_INELFLL_1D;
+    TH1F       *hREC_1D_in_2D_bin;
+    TH1F       *hGEN_1D_in_2D_bin;
+    TH1F       *hTRU_1D_in_2D_bin;
+    TH1F       *hEFF_1D_in_2D_bin;
+    TH1F       *hEFF_SL_1D_in_2D_bin;
+    TH1F       *hGEN_INELVTX_1D_in_2D_bin;
+    TH1F       *hGEN_INELFLL_1D_in_2D_bin;
     //
     //  Defining Efficiency and check utilities
     //
@@ -127,40 +91,75 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     hGEN_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
     SetAxis(hGEN_1D,"PT 1D");
     //
+    hName       =   Form("hREC_Rw_1D");
+    hTitle      =   Form("hREC_Rw_1D");
+    hREC_Rw_1D  =   new TH1F (hName,hTitle,fNBinning,fUniformBinning100MeV);
+    SetAxis(hREC_Rw_1D,"PT 1D");
+    //
+    hName       =   Form("hGEN_Rw_1D");
+    hTitle      =   Form("hGEN_Rw_1D");
+    hGEN_Rw_1D  =   new TH1F (hName,hTitle,fNBinning,fUniformBinning100MeV);
+    SetAxis(hGEN_Rw_1D,"PT 1D");
+    //
     hName       =   Form("hTRU_1D");
     hTitle      =   Form("hTRU_1D");
     hTRU_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
     SetAxis(hTRU_1D,"PT 1D");
     //
-    hName       =   Form("hTRU_ALL_1D");
-    hTitle      =   Form("hTRU_ALL_1D");
-    hTRU_ALL_1D =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
-    SetAxis(hTRU_ALL_1D,"PT 1D");
+    hName       =   Form("hGEN_INELVTX_1D");
+    hTitle      =   Form("hGEN_INELVTX_1D");
+    hGEN_INELVTX_1D =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+    SetAxis(hGEN_INELVTX_1D,"PT 1D");
+    //
+    hName       =   Form("hGEN_INELFLL_1D");
+    hTitle      =   Form("hGEN_INELFLL_1D");
+    hGEN_INELFLL_1D =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+    SetAxis(hGEN_INELFLL_1D,"PT 1D");
     //
     hName       =   Form("hEFF_1D");
     hTitle      =   Form("hEFF_1D");
     hEFF_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
     SetAxis(hEFF_1D,"PT 1D");
     //
+    hName       =   Form("hEFF_SL_1D");
+    hTitle      =   Form("hEFF_SL_1D");
+    hEFF_SL_1D     =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
+    SetAxis(hEFF_SL_1D,"PT 1D");
+    //
     hName       =   Form("hREC_1D_in_2D_bin");
     hTitle      =   Form("hREC_1D_in_2D_bin");
-    hREC_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-    SetAxis(hREC_1D_in_2Dbin,"PT 1D");
+    hREC_1D_in_2D_bin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hREC_1D_in_2D_bin,"PT 1D");
     //
     hName       =   Form("hGEN_1D_in_2D_bin");
     hTitle      =   Form("hGEN_1D_in_2D_bin");
-    hGEN_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-    SetAxis(hGEN_1D_in_2Dbin,"PT 1D");
+    hGEN_1D_in_2D_bin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hGEN_1D_in_2D_bin,"PT 1D");
     //
     hName       =   Form("hTRU_1D_in_2D_bin");
     hTitle      =   Form("hTRU_1D_in_2D_bin");
-    hTRU_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-    SetAxis(hTRU_1D_in_2Dbin,"PT 1D");
+    hTRU_1D_in_2D_bin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hTRU_1D_in_2D_bin,"PT 1D");
     //
     hName       =   Form("hEFF_1D_in_2D_bin");
     hTitle      =   Form("hEFF_1D_in_2D_bin");
-    hEFF_1D_in_2Dbin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-    SetAxis(hEFF_1D_in_2Dbin,"PT 1D");
+    hEFF_1D_in_2D_bin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hEFF_1D_in_2D_bin,"PT 1D");
+    //
+    hName       =   Form("hEFF_SL_1D_in_2D_bin");
+    hTitle      =   Form("hEFF_SL_1D_in_2D_bin");
+    hEFF_SL_1D_in_2D_bin     =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hEFF_SL_1D_in_2D_bin,"PT 1D");
+    //
+    hName       =   Form("hGEN_INELVTX_1D_in_2D_bin");
+    hTitle      =   Form("hGEN_INELVTX_1D_in_2D_bin");
+    hGEN_INELVTX_1D_in_2D_bin =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hGEN_INELVTX_1D_in_2D_bin,"PT 2D");
+    //
+    hName       =   Form("hGEN_INELFLL_1D_in_2D_bin");
+    hTitle      =   Form("hGEN_INELFLL_1D_in_2D_bin");
+    hGEN_INELFLL_1D_in_2D_bin =   new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hGEN_INELFLL_1D_in_2D_bin,"PT 2D");
     //
     // >>-->> 2-Dimension analysis //
     //
@@ -169,9 +168,12 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     TH2F       *hREC_2D;
     TH2F       *hGEN_2D;
     TH2F       *hTRU_2D;
-    TH2F       *hTRU_ALL_2D;
+    TH2F       *hGEN_INELVTX_2D;
+    TH2F       *hGEN_INELFLL_2D;
     TH2F       *hEFF_2D;
     TH2F       *hEFF_2D_fr_1D;
+    TH2F       *hEFF_SL_2D;
+    TH2F       *hEFF_SL_2D_fr_1D;
     //
     //  Defining Efficiency and check utilities
     //
@@ -190,10 +192,15 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     hTRU_2D     =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
     SetAxis(hTRU_2D,"PT 2D");
     //
-    hName       =   Form("hTRU_ALL_2D");
-    hTitle      =   Form("hTRU_ALL_2D");
-    hTRU_ALL_2D =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    SetAxis(hTRU_ALL_2D,"PT 2D");
+    hName       =   Form("hGEN_INELVTX_2D");
+    hTitle      =   Form("hGEN_INELVTX_2D");
+    hGEN_INELVTX_2D =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    SetAxis(hGEN_INELVTX_2D,"PT 2D");
+    //
+    hName       =   Form("hGEN_INELFLL_2D");
+    hTitle      =   Form("hGEN_INELFLL_2D");
+    hGEN_INELFLL_2D =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    SetAxis(hGEN_INELFLL_2D,"PT 2D");
     //
     hName       =   Form("hEFF_2D");
     hTitle      =   Form("hEFF_2D");
@@ -205,7 +212,92 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     hEFF_2D_fr_1D     =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
     SetAxis(hEFF_2D_fr_1D,"PT 2D");
     //
+    hName       =   Form("hEFF_SL_2D");
+    hTitle      =   Form("hEFF_SL_2D");
+    hEFF_SL_2D     =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    SetAxis(hEFF_SL_2D,"PT 2D");
+    //
+    hName       =   Form("hEFF_SL_2D_fr_1D");
+    hTitle      =   Form("hEFF_SL_2D_fr_1D");
+    hEFF_SL_2D_fr_1D     =   new TH2F (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    SetAxis(hEFF_SL_2D_fr_1D,"PT 2D");
+    //
 
+    // >> YIELD ANALYSIS //
+
+    // >>-->> 1-Dimension analysis //
+    //
+    //>>    Declaring all histograms
+    //
+    // >>-->>-->>   Mass Resolution
+    //
+    TH1F  **hMRS_1D;
+    TH1F  **hMRS_1D_in_2D_bin;
+    TH2F ***hMRS_2D;
+    //
+    // >>-->>-->>   Mass Distribution
+    //
+    TH1F  **hMDS_1D;
+    TH1F  **hMDS_1D_in_2D_bin;
+    TH2F ***hMDS_2D;
+    //
+    // >>-->>-->>   True Mass Distribution
+    //
+    TH1F  **hTMD_1D;
+    TH1F  **hTMD_1D_in_2D_bin;
+    TH2F ***hTMD_2D;
+    //
+    //>>    Defining all histograms
+    //
+    hMRS_1D     =   new TH1F   *[nBinPT1D];
+    hMDS_1D     =   new TH1F   *[nBinPT1D];
+    hTMD_1D     =   new TH1F   *[nBinPT1D];
+    for ( Int_t iTer = 0; iTer < nBinPT1D; iTer++ )  {
+        hName   =   Form("hMRS_1D_%i",iTer);
+        hTitle  =   Form("hMRS_1D_%i",iTer);
+        hMRS_1D[iTer]   =   new TH1F(hName,hTitle,nBinIMRs,fArrIMRs);
+        hName   =   Form("hMDS_1D_%i",iTer);
+        hTitle  =   Form("hMDS_1D_%i",iTer);
+        hMDS_1D[iTer]   =   new TH1F(hName,hTitle,nBinIM1D,fArrIM1D);
+        hName   =   Form("hTMD_1D_%i",iTer);
+        hTitle  =   Form("hTMD_1D_%i",iTer);
+        hTMD_1D[iTer]   =   new TH1F(hName,hTitle,nBinIM1D,fArrIM1D);
+    }
+    //
+    hMRS_2D             =   new TH2F  **[nBinPT2D];
+    hMDS_2D             =   new TH2F  **[nBinPT2D];
+    hTMD_2D             =   new TH2F  **[nBinPT2D];
+    hMRS_1D_in_2D_bin   =   new TH1F   *[nBinPT2D];
+    hMDS_1D_in_2D_bin   =   new TH1F   *[nBinPT2D];
+    hTMD_1D_in_2D_bin   =   new TH1F   *[nBinPT2D];
+    for ( Int_t iTer = 0; iTer < nBinPT2D; iTer++ )  {
+        hName   =   Form("hMRS_1D_in_2D_bin_%i",iTer);
+        hTitle  =   Form("hMRS_1D_in_2D_bin_%i",iTer);
+        hMRS_1D_in_2D_bin[iTer] =   new TH1F(hName,hTitle,nBinIMRs,fArrIMRs);
+        hName   =   Form("hMDS_1D_in_2D_bin_%i",iTer);
+        hTitle  =   Form("hMDS_1D_in_2D_bin_%i",iTer);
+        hMDS_1D_in_2D_bin[iTer] =   new TH1F(hName,hTitle,nBinIM2D,fArrIM2D);
+        hName   =   Form("hTMD_1D_in_2D_bin_%i",iTer);
+        hTitle  =   Form("hTMD_1D_in_2D_bin_%i",iTer);
+        hTMD_1D_in_2D_bin[iTer] =   new TH1F(hName,hTitle,nBinIM2D,fArrIM2D);
+        //
+        hMRS_2D[iTer]           =   new TH2F   *[nBinPT2D];
+        hMDS_2D[iTer]           =   new TH2F   *[nBinPT2D];
+        hTMD_2D[iTer]           =   new TH2F   *[nBinPT2D];
+        for ( Int_t jTer = 0; jTer < nBinPT2D; jTer++ )  {
+            hName   =   Form("hMRS_2D_%i_%i",iTer,jTer);
+            hTitle  =   Form("hMRS_2D_%i_%i",iTer,jTer);
+            hMRS_2D[iTer][jTer] =   new TH2F(hName,hTitle,nBinIMR2,fArrIMR2,nBinIMR2,fArrIMR2);
+            hName   =   Form("hMDS_2D_%i_%i",iTer,jTer);
+            hTitle  =   Form("hMDS_2D_%i_%i",iTer,jTer);
+            hMDS_2D[iTer][jTer] =   new TH2F(hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+            hName   =   Form("hTMD_2D_%i_%i",iTer,jTer);
+            hTitle  =   Form("hTMD_2D_%i_%i",iTer,jTer);
+            hTMD_2D[iTer][jTer] =   new TH2F(hName,hTitle,nBinIM2D,fArrIM2D,nBinIM2D,fArrIM2D);
+        }
+    }
+    //
+    
     // >> MULTIPLICITY ANALYSIS //
 
     // >>-->> 1-Dimension analysis //
@@ -216,10 +308,10 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     TH1F      **hGEN_1D_in_MT               = new TH1F     *[nBinMult+1];
     TH1F      **hTRU_1D_in_MT               = new TH1F     *[nBinMult+1];
     TH1F      **hEFF_1D_in_MT               = new TH1F     *[nBinMult+1];
-    TH1F      **hREC_1D_in_MT_in_2Dbin      = new TH1F     *[nBinMult+1];
-    TH1F      **hGEN_1D_in_MT_in_2Dbin      = new TH1F     *[nBinMult+1];
-    TH1F      **hTRU_1D_in_MT_in_2Dbin      = new TH1F     *[nBinMult+1];
-    TH1F      **hEFF_1D_in_MT_in_2Dbin      = new TH1F     *[nBinMult+1];
+    TH1F      **hREC_1D_in_MT_in_2D_bin      = new TH1F     *[nBinMult+1];
+    TH1F      **hGEN_1D_in_MT_in_2D_bin      = new TH1F     *[nBinMult+1];
+    TH1F      **hTRU_1D_in_MT_in_2D_bin      = new TH1F     *[nBinMult+1];
+    TH1F      **hEFF_1D_in_MT_in_2D_bin      = new TH1F     *[nBinMult+1];
     //
     //  Defining MT-Differential histograms
     //
@@ -243,25 +335,25 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     hEFF_1D_in_MT[0]   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
     SetAxis(hEFF_1D_in_MT[0],"PT 1D");
     
-    hName = Form("hREC_1D_in_MT_in_2Dbin_%i",0);
-    hTitle= Form("hREC_1D_in_MT_in_2Dbin Multiplicity [%.2f#;%.2f]",fArrMult[0],fArrMult[nBinMult]);
-    hREC_1D_in_MT_in_2Dbin[0]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-    SetAxis(hREC_1D_in_MT_in_2Dbin[0],"PT 1D");
+    hName = Form("hREC_1D_in_MT_in_2D_bin_%i",0);
+    hTitle= Form("hREC_1D_in_MT_in_2D_bin Multiplicity [%.2f#;%.2f]",fArrMult[0],fArrMult[nBinMult]);
+    hREC_1D_in_MT_in_2D_bin[0]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hREC_1D_in_MT_in_2D_bin[0],"PT 1D");
         
-    hName = Form("hGEN_1D_in_MT_in_2Dbin_%i",0);
-    hTitle= Form("hGEN_1D_in_MT_in_2Dbin Multiplicity [%.2f#;%.2f]",fArrMult[0],fArrMult[nBinMult]);
-    hGEN_1D_in_MT_in_2Dbin[0]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-    SetAxis(hGEN_1D_in_MT_in_2Dbin[0],"PT 1D");
+    hName = Form("hGEN_1D_in_MT_in_2D_bin_%i",0);
+    hTitle= Form("hGEN_1D_in_MT_in_2D_bin Multiplicity [%.2f#;%.2f]",fArrMult[0],fArrMult[nBinMult]);
+    hGEN_1D_in_MT_in_2D_bin[0]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hGEN_1D_in_MT_in_2D_bin[0],"PT 1D");
     
-    hName = Form("hTRU_1D_in_MT_in_2Dbin_%i",0);
-    hTitle= Form("hTRU_1D_in_MT_in_2Dbin Multiplicity [%.2f#;%.2f]",fArrMult[0],fArrMult[nBinMult]);
-    hTRU_1D_in_MT_in_2Dbin[0]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-    SetAxis(hTRU_1D_in_MT_in_2Dbin[0],"PT 1D");
+    hName = Form("hTRU_1D_in_MT_in_2D_bin_%i",0);
+    hTitle= Form("hTRU_1D_in_MT_in_2D_bin Multiplicity [%.2f#;%.2f]",fArrMult[0],fArrMult[nBinMult]);
+    hTRU_1D_in_MT_in_2D_bin[0]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hTRU_1D_in_MT_in_2D_bin[0],"PT 1D");
     
-    hName = Form("hEFF_1D_in_MT_in_2Dbin_%i",0);
-    hTitle= Form("hEFF_1D_in_MT_in_2Dbin Multiplicity [%.2f#;%.2f]",fArrMult[0],fArrMult[nBinMult]);
-    hEFF_1D_in_MT_in_2Dbin[0]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-    SetAxis(hEFF_1D_in_MT_in_2Dbin[0],"PT 1D");
+    hName = Form("hEFF_1D_in_MT_in_2D_bin_%i",0);
+    hTitle= Form("hEFF_1D_in_MT_in_2D_bin Multiplicity [%.2f#;%.2f]",fArrMult[0],fArrMult[nBinMult]);
+    hEFF_1D_in_MT_in_2D_bin[0]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+    SetAxis(hEFF_1D_in_MT_in_2D_bin[0],"PT 1D");
     
     for ( Int_t iMult = 1; iMult <= nBinMult; iMult++ )
     {
@@ -285,25 +377,25 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
         hEFF_1D_in_MT[iMult]   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
         SetAxis(hEFF_1D_in_MT[iMult],"PT 1D");
         
-        hName = Form("hREC_1D_in_MT_in_2Dbin_%i",iMult);
-        hTitle= Form("hREC_1D_in_MT_in_2Dbin Multiplicity [%.2f#;%.2f]",fArrMult[iMult-1],fArrMult[iMult]);
-        hREC_1D_in_MT_in_2Dbin[iMult]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-        SetAxis(hREC_1D_in_MT_in_2Dbin[iMult],"PT 1D");
+        hName = Form("hREC_1D_in_MT_in_2D_bin_%i",iMult);
+        hTitle= Form("hREC_1D_in_MT_in_2D_bin Multiplicity [%.2f#;%.2f]",fArrMult[iMult-1],fArrMult[iMult]);
+        hREC_1D_in_MT_in_2D_bin[iMult]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+        SetAxis(hREC_1D_in_MT_in_2D_bin[iMult],"PT 1D");
             
-        hName = Form("hGEN_1D_in_MT_in_2Dbin_%i",iMult);
-        hTitle= Form("hGEN_1D_in_MT_in_2Dbin Multiplicity [%.2f#;%.2f]",fArrMult[iMult-1],fArrMult[iMult]);
-        hGEN_1D_in_MT_in_2Dbin[iMult]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-        SetAxis(hGEN_1D_in_MT_in_2Dbin[iMult],"PT 1D");
+        hName = Form("hGEN_1D_in_MT_in_2D_bin_%i",iMult);
+        hTitle= Form("hGEN_1D_in_MT_in_2D_bin Multiplicity [%.2f#;%.2f]",fArrMult[iMult-1],fArrMult[iMult]);
+        hGEN_1D_in_MT_in_2D_bin[iMult]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+        SetAxis(hGEN_1D_in_MT_in_2D_bin[iMult],"PT 1D");
         
-        hName = Form("hTRU_1D_in_MT_in_2Dbin_%i",iMult);
-        hTitle= Form("hTRU_1D_in_MT_in_2Dbin Multiplicity [%.2f#;%.2f]",fArrMult[iMult-1],fArrMult[iMult]);
-        hTRU_1D_in_MT_in_2Dbin[iMult]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-        SetAxis(hTRU_1D_in_MT_in_2Dbin[iMult],"PT 1D");
+        hName = Form("hTRU_1D_in_MT_in_2D_bin_%i",iMult);
+        hTitle= Form("hTRU_1D_in_MT_in_2D_bin Multiplicity [%.2f#;%.2f]",fArrMult[iMult-1],fArrMult[iMult]);
+        hTRU_1D_in_MT_in_2D_bin[iMult]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+        SetAxis(hTRU_1D_in_MT_in_2D_bin[iMult],"PT 1D");
         
-        hName = Form("hEFF_1D_in_MT_in_2Dbin_%i",iMult);
-        hTitle= Form("hEFF_1D_in_MT_in_2Dbin Multiplicity [%.2f#;%.2f]",fArrMult[iMult-1],fArrMult[iMult]);
-        hEFF_1D_in_MT_in_2Dbin[iMult]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-        SetAxis(hEFF_1D_in_MT_in_2Dbin[iMult],"PT 1D");
+        hName = Form("hEFF_1D_in_MT_in_2D_bin_%i",iMult);
+        hTitle= Form("hEFF_1D_in_MT_in_2D_bin Multiplicity [%.2f#;%.2f]",fArrMult[iMult-1],fArrMult[iMult]);
+        hEFF_1D_in_MT_in_2D_bin[iMult]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+        SetAxis(hEFF_1D_in_MT_in_2D_bin[iMult],"PT 1D");
     }
     //
     // >>-->> 2-Dimension analysis //
@@ -382,10 +474,10 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     TH1F      **hGEN_1D_in_RP               = new TH1F     *[nBinRap_];
     TH1F      **hTRU_1D_in_RP               = new TH1F     *[nBinRap_];
     TH1F      **hEFF_1D_in_RP               = new TH1F     *[nBinRap_];
-    TH1F      **hREC_1D_in_RP_in_2Dbin      = new TH1F     *[nBinRap_];
-    TH1F      **hGEN_1D_in_RP_in_2Dbin      = new TH1F     *[nBinRap_];
-    TH1F      **hTRU_1D_in_RP_in_2Dbin      = new TH1F     *[nBinRap_];
-    TH1F      **hEFF_1D_in_RP_in_2Dbin      = new TH1F     *[nBinRap_];
+    TH1F      **hREC_1D_in_RP_in_2D_bin      = new TH1F     *[nBinRap_];
+    TH1F      **hGEN_1D_in_RP_in_2D_bin      = new TH1F     *[nBinRap_];
+    TH1F      **hTRU_1D_in_RP_in_2D_bin      = new TH1F     *[nBinRap_];
+    TH1F      **hEFF_1D_in_RP_in_2D_bin      = new TH1F     *[nBinRap_];
     //
     //  Defining RP-Differential histograms
     //
@@ -411,25 +503,25 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
         hEFF_1D_in_RP[iRap]   = new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
         SetAxis(hEFF_1D_in_RP[iRap],"PT 1D");
         
-        hName = Form("hREC_1D_in_RP_in_2Dbin_%i",iRap);
-        hTitle= Form("hREC_1D_in_RP_in_2Dbin Rapidity [%.2f#;%.2f]",fArrRap_[iRap],fArrRap_[iRap+1]);
-        hREC_1D_in_RP_in_2Dbin[iRap]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-        SetAxis(hREC_1D_in_RP_in_2Dbin[iRap],"PT 1D");
+        hName = Form("hREC_1D_in_RP_in_2D_bin_%i",iRap);
+        hTitle= Form("hREC_1D_in_RP_in_2D_bin Rapidity [%.2f#;%.2f]",fArrRap_[iRap],fArrRap_[iRap+1]);
+        hREC_1D_in_RP_in_2D_bin[iRap]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+        SetAxis(hREC_1D_in_RP_in_2D_bin[iRap],"PT 1D");
             
-        hName = Form("hGEN_1D_in_RP_in_2Dbin_%i",iRap);
-        hTitle= Form("hGEN_1D_in_RP_in_2Dbin Rapidity [%.2f#;%.2f]",fArrRap_[iRap],fArrRap_[iRap+1]);
-        hGEN_1D_in_RP_in_2Dbin[iRap]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-        SetAxis(hGEN_1D_in_RP_in_2Dbin[iRap],"PT 1D");
+        hName = Form("hGEN_1D_in_RP_in_2D_bin_%i",iRap);
+        hTitle= Form("hGEN_1D_in_RP_in_2D_bin Rapidity [%.2f#;%.2f]",fArrRap_[iRap],fArrRap_[iRap+1]);
+        hGEN_1D_in_RP_in_2D_bin[iRap]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+        SetAxis(hGEN_1D_in_RP_in_2D_bin[iRap],"PT 1D");
         
-        hName = Form("hTRU_1D_in_RP_in_2Dbin_%i",iRap);
-        hTitle= Form("hTRU_1D_in_RP_in_2Dbin Rapidity [%.2f#;%.2f]",fArrRap_[iRap],fArrRap_[iRap+1]);
-        hTRU_1D_in_RP_in_2Dbin[iRap]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-        SetAxis(hTRU_1D_in_RP_in_2Dbin[iRap],"PT 1D");
+        hName = Form("hTRU_1D_in_RP_in_2D_bin_%i",iRap);
+        hTitle= Form("hTRU_1D_in_RP_in_2D_bin Rapidity [%.2f#;%.2f]",fArrRap_[iRap],fArrRap_[iRap+1]);
+        hTRU_1D_in_RP_in_2D_bin[iRap]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+        SetAxis(hTRU_1D_in_RP_in_2D_bin[iRap],"PT 1D");
         
-        hName = Form("hEFF_1D_in_RP_in_2Dbin_%i",iRap);
-        hTitle= Form("hEFF_1D_in_RP_in_2Dbin Rapidity [%.2f#;%.2f]",fArrRap_[iRap],fArrRap_[iRap+1]);
-        hEFF_1D_in_RP_in_2Dbin[iRap]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
-        SetAxis(hEFF_1D_in_RP_in_2Dbin[iRap],"PT 1D");
+        hName = Form("hEFF_1D_in_RP_in_2D_bin_%i",iRap);
+        hTitle= Form("hEFF_1D_in_RP_in_2D_bin Rapidity [%.2f#;%.2f]",fArrRap_[iRap],fArrRap_[iRap+1]);
+        hEFF_1D_in_RP_in_2D_bin[iRap]   = new TH1F (hName,hTitle,nBinPT2D,fArrPT2D);
+        SetAxis(hEFF_1D_in_RP_in_2D_bin[iRap],"PT 1D");
     }
     //
     // >>-->> 2-Dimension analysis //
@@ -478,17 +570,17 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     //  Filling output objects //
     //-------------------------//
     
-    fStartTimer("Analysis");
+    fStartTimer("Efficiency Utility Histograms Production");
     
     // Evaluating entries
-    Int_t nEvents = (!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : nEventsCut);
+    Int_t nEvents = (!TPhiEfficiency) ? 0 : ( nEventsCut == -1.? TPhiEfficiency->GetEntries() : nEventsCut);
     
     // Starting cycle
     for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )    {
         // Recovering events
-        TPhiCandidate->GetEntry(iEvent);
+        TPhiEfficiency->GetEntry(iEvent);
         
-        fPrintLoopTimer("Analysis",iEvent,nEvents,kPrintIntervalPP);
+        fPrintLoopTimer("Efficiency Utility Histograms Production",iEvent,nEvents,kPrintIntervalPP);
 
         // Utilities
         TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
@@ -513,8 +605,9 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
             //
             // >>-->>-->> Event
             //
-            Bool_t  fNoVtxRec           =   (fCheckMask(evPhiEfficiency.TrueEventMask,0) || fCheckMask(evPhiEfficiency.TrueEventMask,1));
-            Bool_t  fIsMBevent          =   (evPhiEfficiency.TrueEventMask == 0);
+            Bool_t  fIsMBevent          =   ( evPhiEfficiency.TrueEventMask == 0 );
+            Bool_t  fIsFullVTX          =   ( fCheckMask( evPhiEfficiency.TrueEventMask, 4 ) ) || fIsMBevent;
+            Bool_t  fIsCUT_VTX          =   ( fCheckMask( evPhiEfficiency.TrueEventMask, 5 ) );
             //
             // >>-->>-->> Multiplicity
             //
@@ -527,38 +620,34 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
             Bool_t  iIsGen              =   (iSelection >= 1);
             Bool_t  iIsRec              =   (iSelection >= 2);
             Float_t iTransMom           =   LPhi_candidate1.Pt();
+            Float_t iTrueIMass          =   evPhiCandidate.TrueInvMass[U_AccCand[iPhi]];
+            Float_t iInvarMass          =   evPhiCandidate.InvMass[U_AccCand[iPhi]];
             Float_t iRapidity           =   LPhi_candidate1.Rapidity();
             Int_t   iRap                =   fGetBinRap_(LPhi_candidate1.Rapidity());
-            Bool_t  fHasRapidity        =   iRap != -1;
+            Bool_t  fHasRapidity        =   fabs(LPhi_candidate1.Rapidity()) <0.5;
             //
-            if ( (fNoVtxRec || fIsMBevent) && fHasRapidity )  {
-                hTRU_ALL_1D                                 ->  Fill(iTransMom);
+            if ( fHasRapidity )  {
+                if ( iIsGen )hGEN_INELFLL_1D                                 ->  Fill(iTransMom);
+                if ( iIsGen )hGEN_INELFLL_1D_in_2D_bin                       ->  Fill(iTransMom);
+            }
+            if ( fHasRapidity && fIsFullVTX )  {
+                if ( iIsGen )hGEN_INELVTX_1D                                 ->  Fill(iTransMom);
+                if ( iIsGen )hGEN_INELVTX_1D_in_2D_bin                       ->  Fill(iTransMom);
             }
             if ( fIsMBevent && fHasRapidity )   {
             //
-            // >>-->> Rapidity
-            //
-                hTRU_1D_in_RP[iRap]                         ->  Fill(iTransMom);
-                hTRU_1D_in_RP_in_2Dbin[iRap]                ->  Fill(iTransMom);
-                if ( iIsGen )   {
-                    hGEN_1D_in_RP[iRap]                     ->  Fill(iTransMom);
-                    hGEN_1D_in_RP_in_2Dbin[iRap]            ->  Fill(iTransMom);
-                } if ( iIsRec )  {
-                    hREC_1D_in_RP[iRap]                     ->  Fill(iTransMom);
-                    hREC_1D_in_RP_in_2Dbin[iRap]            ->  Fill(iTransMom);
-                }
-            //
             // >>-->> Yield
             //
-            
                 hTRU_1D                                     ->  Fill(iTransMom);
-                hTRU_1D_in_2Dbin                            ->  Fill(iTransMom);
+                hTRU_1D_in_2D_bin                           ->  Fill(iTransMom);
                 if ( iIsGen )   {
                     hGEN_1D                                 ->  Fill(iTransMom);
-                    hGEN_1D_in_2Dbin                        ->  Fill(iTransMom);
+                    hGEN_Rw_1D                              ->  Fill(iTransMom);
+                    hGEN_1D_in_2D_bin                       ->  Fill(iTransMom);
                 } if ( iIsRec )  {
                     hREC_1D                                 ->  Fill(iTransMom);
-                    hREC_1D_in_2Dbin                        ->  Fill(iTransMom);
+                    hREC_Rw_1D                              ->  Fill(iTransMom);
+                    hREC_1D_in_2D_bin                       ->  Fill(iTransMom);
                 }
             //
             // >>-->> Multiplicity
@@ -566,18 +655,18 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
                 if ( fHasMultiplicity ) {
                     hTRU_1D_in_MT[iMult+1]                  ->  Fill(iTransMom);
                     hTRU_1D_in_MT[0]                        ->  Fill(iTransMom);
-                    hTRU_1D_in_MT_in_2Dbin[iMult+1]         ->  Fill(iTransMom);
-                    hTRU_1D_in_MT_in_2Dbin[0]               ->  Fill(iTransMom);
+                    hTRU_1D_in_MT_in_2D_bin[iMult+1]        ->  Fill(iTransMom);
+                    hTRU_1D_in_MT_in_2D_bin[0]              ->  Fill(iTransMom);
                     if ( iIsGen )   {
                         hGEN_1D_in_MT[iMult+1]              ->  Fill(iTransMom);
                         hGEN_1D_in_MT[0]                    ->  Fill(iTransMom);
-                        hGEN_1D_in_MT_in_2Dbin[iMult+1]     ->  Fill(iTransMom);
-                        hGEN_1D_in_MT_in_2Dbin[0]           ->  Fill(iTransMom);
+                        hGEN_1D_in_MT_in_2D_bin[iMult+1]    ->  Fill(iTransMom);
+                        hGEN_1D_in_MT_in_2D_bin[0]          ->  Fill(iTransMom);
                     } if ( iIsRec )  {
                         hREC_1D_in_MT[iMult+1]              ->  Fill(iTransMom);
                         hREC_1D_in_MT[0]                    ->  Fill(iTransMom);
-                        hREC_1D_in_MT_in_2Dbin[iMult+1]     ->  Fill(iTransMom);
-                        hREC_1D_in_MT_in_2Dbin[0]           ->  Fill(iTransMom);
+                        hREC_1D_in_MT_in_2D_bin[iMult+1]    ->  Fill(iTransMom);
+                        hREC_1D_in_MT_in_2D_bin[0]          ->  Fill(iTransMom);
                     }
                 }
             }
@@ -602,15 +691,20 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
                 Bool_t  jIsGen              =   (jSelection >= 1);
                 Bool_t  jIsRec              =   (jSelection >= 2);
                 Float_t jTransMom           =   LPhi_candidate2.Pt();
+                Float_t jInvarMass          =   evPhiCandidate.InvMass[U_AccCand[jPhi]];
+                Float_t jTrueIMass          =   evPhiCandidate.TrueInvMass[U_AccCand[jPhi]];
                 Float_t jRapidity           =   LPhi_candidate2.Rapidity();
                 Int_t   jRap                =   fGetBinRap_(LPhi_candidate2.Rapidity());
-                        fHasRapidity        =   jRap != -1 && iRap != -1;
-                Int_t   ijRap               =   fGetBinRap_(LPhi_candidate2.Rapidity()-LPhi_candidate1.Rapidity());
+                        fHasRapidity        =   fabs(LPhi_candidate1.Rapidity())<0.5 && fabs(LPhi_candidate2.Rapidity())<0.5;
+                Int_t   ijRap               =   fGetBinRap_(fabs(LPhi_candidate2.Rapidity()-LPhi_candidate1.Rapidity()));
                 //
-                if ( (fNoVtxRec || fIsMBevent) && fHasRapidity )  {
-                    hTRU_ALL_2D                                     ->  Fill(iTransMom,jTransMom,0.5);
+                if ( fHasRapidity )  {
+                    if ( iIsGen )hGEN_INELFLL_2D                                     ->  Fill(iTransMom,jTransMom,0.5);
                 }
-                if ( fIsMBevent )   {
+                if ( fHasRapidity && fIsFullVTX )  {
+                    if ( iIsGen )hGEN_INELVTX_2D                                     ->  Fill(iTransMom,jTransMom,0.5);
+                }
+                if ( fIsMBevent && fHasRapidity )   {
                 //
                 // >>-->> Rapidity
                 //
@@ -621,30 +715,43 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
                         } if ( iIsRec && jIsRec)  {
                             hREC_2D_in_RP[ijRap]                        ->  Fill(iTransMom,jTransMom,0.5);
                         }
+                        hTRU_1D_in_RP[ijRap]                             ->  Fill(iTransMom,0.5);
+                        hTRU_1D_in_RP_in_2D_bin[ijRap]                    ->  Fill(iTransMom,0.5);
+                        hTRU_1D_in_RP[ijRap]                             ->  Fill(jTransMom,0.5);
+                        hTRU_1D_in_RP_in_2D_bin[ijRap]                    ->  Fill(jTransMom,0.5);
+                        if ( iIsGen )   {
+                            hGEN_1D_in_RP[ijRap]                         ->  Fill(iTransMom,0.5);
+                            hGEN_1D_in_RP_in_2D_bin[ijRap]                ->  Fill(iTransMom,0.5);
+                            hGEN_1D_in_RP[ijRap]                         ->  Fill(jTransMom,0.5);
+                            hGEN_1D_in_RP_in_2D_bin[ijRap]                ->  Fill(jTransMom,0.5);
+                        } if ( iIsRec )  {
+                            hREC_1D_in_RP[ijRap]                         ->  Fill(iTransMom,0.5);
+                            hREC_1D_in_RP_in_2D_bin[ijRap]                ->  Fill(iTransMom,0.5);
+                            hREC_1D_in_RP[ijRap]                         ->  Fill(jTransMom,0.5);
+                            hREC_1D_in_RP_in_2D_bin[ijRap]                ->  Fill(jTransMom,0.5);
+                        }
                     }
                 //
                 // >>-->> Yield
                 //
-                    if ( fHasRapidity ) {
-                        hTRU_2D                                     ->  Fill(iTransMom,jTransMom,0.5);
-                        if ( iIsGen && jIsGen )   {
-                            hGEN_2D                                 ->  Fill(iTransMom,jTransMom,0.5);
-                        } if ( iIsRec && jIsRec )  {
-                            hREC_2D                                 ->  Fill(iTransMom,jTransMom,0.5);
-                        }
+                    hTRU_2D                                     ->  Fill(iTransMom,jTransMom,0.5);
+                    if ( iIsGen && jIsGen )   {
+                        hGEN_2D                                 ->  Fill(iTransMom,jTransMom,0.5);
+                    } if ( iIsRec && jIsRec )  {
+                        hREC_2D                                 ->  Fill(iTransMom,jTransMom,0.5);
+                    }
                 //
                 // >>-->> Multiplicity
                 //
-                        if ( fHasMultiplicity ) {
-                            hTRU_2D_in_MT[iMult+1]                  ->  Fill(iTransMom,jTransMom,0.5);
-                            hTRU_2D_in_MT[0]                        ->  Fill(iTransMom,jTransMom,0.5);
-                            if ( iIsGen && jIsGen )   {
-                                hGEN_2D_in_MT[iMult+1]              ->  Fill(iTransMom,jTransMom,0.5);
-                                hGEN_2D_in_MT[0]                    ->  Fill(iTransMom,jTransMom,0.5);
-                            } if ( iIsRec && jIsRec )  {
-                                hREC_2D_in_MT[iMult+1]              ->  Fill(iTransMom,jTransMom,0.5);
-                                hREC_2D_in_MT[0]                    ->  Fill(iTransMom,jTransMom,0.5);
-                            }
+                    if ( fHasMultiplicity ) {
+                        hTRU_2D_in_MT[iMult+1]                  ->  Fill(iTransMom,jTransMom,0.5);
+                        hTRU_2D_in_MT[0]                        ->  Fill(iTransMom,jTransMom,0.5);
+                        if ( iIsGen && jIsGen )   {
+                            hGEN_2D_in_MT[iMult+1]              ->  Fill(iTransMom,jTransMom,0.5);
+                            hGEN_2D_in_MT[0]                    ->  Fill(iTransMom,jTransMom,0.5);
+                        } if ( iIsRec && jIsRec )  {
+                            hREC_2D_in_MT[iMult+1]              ->  Fill(iTransMom,jTransMom,0.5);
+                            hREC_2D_in_MT[0]                    ->  Fill(iTransMom,jTransMom,0.5);
                         }
                     }
                 }
@@ -666,10 +773,120 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
             }
         }
     }
-    
-    fStopTimer("Analysis");
-    
-    
+    fStopTimer("Efficiency Utility Histograms Production");
+    //
+    //>>    Evaluating entries and saving them for later
+            nEvents = (!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : nEventsCut);
+    //
+    //>>    If there are actually entries start timer
+    if ( nEvents > 0 )  fStartTimer("Resolution Utility Histograms Production");
+    //
+    for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )    {
+        // Recovering events
+        TPhiCandidate->GetEntry(iEvent);
+        
+        fPrintLoopTimer("Resolution Utility Histograms Production",iEvent,nEvents,kPrintIntervalPP);
+        
+        // Utilities
+        TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
+        U_nAccept = 0;
+        
+        // Discarding Pile-up events
+        if ( fCheckMask(evPhiCandidate.EventMask,1) ) continue;
+        
+        for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )  {
+            LPhi_candidate1.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
+            if ( !fAcceptCandidate(evPhiCandidate.InvMass[iPhi],LPhi_candidate1.Pt()) ) continue;
+            if ( !kDoRapidity && !fCutRapidity(LPhi_candidate1.Rapidity()) ) continue;
+            if (  kOnlyTrue && !evPhiCandidate.Nature[iPhi] ) continue;
+            U_AccCand[U_nAccept] = iPhi;
+            evPhiCandidate.pT[iPhi]     =   LPhi_candidate1.Pt();
+            evPhiCandidate.Rap[iPhi]    =   LPhi_candidate1.Rapidity();
+            evPhiCandidate.iRap[iPhi]   =   fGetBinRap_(evPhiCandidate.Rap[iPhi]);
+            evPhiCandidate.iPT1D[iPhi]  =   fGetBinPT1D(evPhiCandidate.pT[iPhi]);
+            evPhiCandidate.iPT2D[iPhi]  =   fGetBinPT2D(evPhiCandidate.pT[iPhi]);
+            evPhiCandidate.kHasRap[iPhi]=   evPhiCandidate.iRap[iPhi] != -1;
+            U_nAccept++;
+        }
+        //
+        // >>-->> Utilities
+        //
+        // >>-->>-->> Multiplicity
+        //
+        Int_t   iMult               =   fGetBinMult(evPhiCandidate.Multiplicity);
+        evPhiCandidate.kHasMult     =   evPhiCandidate.iMult != -1;
+        //
+        for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )    {
+            // Must have at least 1 candidate
+            if ( U_nAccept < 1 ) break;
+
+            // Selecting valid candidates
+            if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi) ) continue;
+            //
+            // >> 1-Dimensional Analysis Fill
+            //
+            // >>-->> Utilities
+            //
+            // >>-->>-->> True Phis
+            //
+            Int_t   iPT1D               =   evPhiCandidate.iPT1D[U_AccCand[iPhi]];
+            Int_t   iPT2D               =   evPhiCandidate.iPT2D[U_AccCand[iPhi]];
+            Float_t iInvarMass          =   evPhiCandidate.InvMass[U_AccCand[iPhi]];
+            Float_t iTrueIMass          =   evPhiCandidate.TrueInvMass[U_AccCand[iPhi]];
+            Float_t iRapidity           =   evPhiCandidate.Rap[U_AccCand[iPhi]];
+            Int_t   iRap                =   evPhiCandidate.iRap[U_AccCand[iPhi]];
+            Bool_t  fHasRapidity        =   evPhiCandidate.kHasRap[U_AccCand[iPhi]];
+            //
+            // >->-->-> Yield
+            //
+            if ( kDoYield && fHasRapidity && iTrueIMass !=0 ) {
+                hMRS_1D[iPT1D]           ->Fill(-iTrueIMass+iInvarMass);
+                hMRS_1D_in_2D_bin[iPT2D] ->Fill(-iTrueIMass+iInvarMass);
+                hMDS_1D[iPT1D]           ->Fill(iInvarMass);
+                hMDS_1D_in_2D_bin[iPT2D] ->Fill(iInvarMass);
+                hTMD_1D[iPT1D]           ->Fill(iTrueIMass);
+                hTMD_1D_in_2D_bin[iPT2D] ->Fill(iTrueIMass);
+            }
+            //
+            for ( Int_t jPhi = 0; jPhi < U_nAccept; jPhi++ )    {
+                // Must have at least 2 candidates
+                if ( U_nAccept < 2 ) break;
+
+                // Selecting valid candidates
+                if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi, jPhi) ) continue;
+                
+                // >-> 2-Dimensional Analysis Fill
+                //
+                // >->-->-> Utilities
+                //
+                // >>-->>-->> True Phis
+                //
+                Int_t   jPT1D               =   evPhiCandidate.iPT1D[U_AccCand[jPhi]];
+                Int_t   jPT2D               =   evPhiCandidate.iPT2D[U_AccCand[jPhi]];
+                Float_t jInvarMass          =   evPhiCandidate.InvMass[U_AccCand[jPhi]];
+                Float_t jTrueIMass          =   evPhiCandidate.TrueInvMass[U_AccCand[jPhi]];
+                Float_t jRapidity           =   evPhiCandidate.Rap[U_AccCand[jPhi]];
+                Int_t   jRap                =   evPhiCandidate.iRap[U_AccCand[jPhi]];
+                        fHasRapidity        =   evPhiCandidate.kHasRap[U_AccCand[iPhi]] && evPhiCandidate.kHasRap[U_AccCand[jPhi]];
+                Int_t   ijRap               =   fGetBinRap_(evPhiCandidate.Rap[U_AccCand[iPhi]]-evPhiCandidate.Rap[U_AccCand[jPhi]]);
+                Bool_t  fHasDiffRap         =   ijRap != -1;
+                //
+                if  ( fHasRapidity && kDoYield && iTrueIMass !=0  && jTrueIMass !=0 )    {
+                //
+                // >->-->-> Yield
+                //
+                    hMRS_2D[iPT2D][jPT2D]   ->Fill(-iTrueIMass+iInvarMass,-jTrueIMass+jInvarMass);
+                    hMDS_2D[iPT2D][jPT2D]   ->Fill(iInvarMass,jInvarMass);
+                    hTMD_2D[iPT2D][jPT2D]   ->Fill(iTrueIMass,jTrueIMass);
+                //
+                }
+                //
+            }
+        }
+    }
+    //
+    fStopTimer("Resolution Utility Histograms Production");
+    //
     //--------------------------//
     // PostProcessin output obj //
     //--------------------------//
@@ -677,31 +894,67 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     // >> YIELD ANALYSIS //
     //
     auto fNormEvent = fHEventCount->GetBinContent(1);
-    hEFF_1D                             ->Divide(hREC_1D,           hGEN_1D,            1.,1.,"b");
-    hEFF_1D_in_2Dbin                    ->Divide(hREC_1D_in_2Dbin,  hGEN_1D_in_2Dbin,   1.,1.,"b");
-    hEFF_2D                             ->Divide(hREC_2D,           hGEN_2D,            1.,1.,"b");
-    hREC_1D->Scale(1.,"width");
-    hGEN_1D->Scale(1.,"width");
-    hTRU_1D->Scale(1.,"width");
-    hTRU_ALL_1D->Scale(1.,"width");
-    hREC_1D_in_2Dbin->Scale(1.,"width");
-    hGEN_1D_in_2Dbin->Scale(1.,"width");
-    hTRU_1D_in_2Dbin->Scale(1.,"width");
-    hREC_2D->Scale(1.,"width");
-    hGEN_2D->Scale(1.,"width");
-    hTRU_2D->Scale(1.,"width");
-    hTRU_ALL_2D->Scale(1.,"width");
-    hREC_1D->Scale(1./fNormEvent);
-    hGEN_1D->Scale(1./fNormEvent);
-    hTRU_1D->Scale(1./fNormEvent);
-    hTRU_ALL_1D->Scale(1./fNormEvent);
-    hREC_1D_in_2Dbin->Scale(1./fNormEvent);
-    hGEN_1D_in_2Dbin->Scale(1./fNormEvent);
-    hTRU_1D_in_2Dbin->Scale(1./fNormEvent);
-    hREC_2D->Scale(1./fNormEvent);
-    hGEN_2D->Scale(1./fNormEvent);
-    hTRU_2D->Scale(1./fNormEvent);
-    hTRU_ALL_2D->Scale(1./fNormEvent);
+    hEFF_1D                             ->Divide(hREC_1D,                   hGEN_1D,                1.,1.,"b");
+    hEFF_1D_in_2D_bin                   ->Divide(hREC_1D_in_2D_bin,         hGEN_1D_in_2D_bin,      1.,1.,"b");
+    hEFF_2D                             ->Divide(hREC_2D,                   hGEN_2D,                1.,1.,"b");
+    hEFF_SL_1D                          ->Divide(hGEN_INELVTX_1D,           hGEN_1D,                1.,1.,"b");
+    hEFF_SL_1D_in_2D_bin                ->Divide(hGEN_INELVTX_1D_in_2D_bin, hGEN_1D_in_2D_bin,      1.,1.,"b");
+    hEFF_SL_2D                          ->Divide(hGEN_INELVTX_2D,           hGEN_2D,                1.,1.,"b");
+    for ( Int_t iPT2D = 1; iPT2D <= nBinPT2D; iPT2D++ )  {
+        for ( Int_t jPT2D = 1; jPT2D <= nBinPT2D; jPT2D++ )  {
+            auto iEffVal    =   hEFF_1D_in_2D_bin->GetBinContent (iPT2D);
+            auto jEffVal    =   hEFF_1D_in_2D_bin->GetBinContent (jPT2D);
+            auto iEffErr    =   hEFF_1D_in_2D_bin->GetBinError   (iPT2D);
+            auto jEffErr    =   hEFF_1D_in_2D_bin->GetBinError   (jPT2D);
+            hEFF_2D_fr_1D->SetBinContent(iPT2D,jPT2D,iEffVal*jEffVal);
+            hEFF_2D_fr_1D->SetBinError  (iPT2D,jPT2D,iEffVal*jEffVal*(iEffErr/iEffVal + jEffErr/jEffVal));
+            //
+            iEffVal    =   1./hEFF_SL_1D_in_2D_bin->GetBinContent (iPT2D);
+            jEffVal    =   1./hEFF_SL_1D_in_2D_bin->GetBinContent (jPT2D);
+            iEffErr    =   iEffVal*hEFF_SL_1D_in_2D_bin->GetBinError   (iPT2D);
+            jEffErr    =   jEffVal*hEFF_SL_1D_in_2D_bin->GetBinError   (jPT2D);
+            hEFF_SL_2D_fr_1D->SetBinContent(iPT2D,jPT2D,1./(iEffVal*jEffVal));
+            hEFF_SL_2D_fr_1D->SetBinError  (iPT2D,jPT2D,iEffVal*jEffVal*(iEffErr/iEffVal + jEffErr/jEffVal));
+        }
+    }
+    //  Renormalisation
+    //
+    hREC_1D                     ->Scale(1.,"width");
+    hREC_1D_in_2D_bin           ->Scale(1.,"width");
+    hREC_2D                     ->Scale(1.,"width");
+    hREC_Rw_1D                  ->Scale(1.,"width");
+    hREC_1D                     ->Scale(1./fNormEvent);
+    hREC_1D_in_2D_bin           ->Scale(1./fNormEvent);
+    hREC_2D                     ->Scale(1./fNormEvent);
+    hREC_Rw_1D                  ->Scale(1./fNormEvent);
+    //
+    hGEN_1D                     ->Scale(1.,"width");
+    hGEN_1D_in_2D_bin           ->Scale(1.,"width");
+    hGEN_2D                     ->Scale(1.,"width");
+    hGEN_Rw_1D                  ->Scale(1.,"width");
+    hGEN_INELVTX_1D             ->Scale(1.,"width");
+    hGEN_INELFLL_1D             ->Scale(1.,"width");
+    hGEN_INELVTX_1D_in_2D_bin   ->Scale(1.,"width");
+    hGEN_INELFLL_1D_in_2D_bin   ->Scale(1.,"width");
+    hGEN_INELVTX_2D             ->Scale(1.,"width");
+    hGEN_INELFLL_2D             ->Scale(1.,"width");
+    hGEN_1D                     ->Scale(1./fNormEvent);
+    hGEN_1D_in_2D_bin           ->Scale(1./fNormEvent);
+    hGEN_2D                     ->Scale(1./fNormEvent);
+    hGEN_Rw_1D                  ->Scale(1./fNormEvent);
+    hGEN_INELVTX_1D             ->Scale(1./fNormEvent);
+    hGEN_INELFLL_1D             ->Scale(1./fNormEvent);
+    hGEN_INELVTX_1D_in_2D_bin   ->Scale(1./fNormEvent);
+    hGEN_INELFLL_1D_in_2D_bin   ->Scale(1./fNormEvent);
+    hGEN_INELVTX_2D             ->Scale(1./fNormEvent);
+    hGEN_INELFLL_2D             ->Scale(1./fNormEvent);
+    //
+    hTRU_1D                     ->Scale(1.,"width");
+    hTRU_1D_in_2D_bin           ->Scale(1.,"width");
+    hTRU_2D                     ->Scale(1.,"width");
+    hTRU_1D                     ->Scale(1./fNormEvent);
+    hTRU_1D_in_2D_bin           ->Scale(1./fNormEvent);
+    hTRU_2D                     ->Scale(1./fNormEvent);
     //
     
     // >> MULTIPLICITY ANALYSIS //
@@ -709,23 +962,23 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     for ( Int_t iMult = 0; iMult <= nBinMult; iMult++ )
     {
         hEFF_1D_in_MT[iMult]               ->Divide(hREC_1D_in_MT[iMult],         hGEN_1D_in_MT[iMult],          1.,1.,"b");
-        hEFF_1D_in_MT_in_2Dbin[iMult]      ->Divide(hREC_1D_in_MT_in_2Dbin[iMult],hGEN_1D_in_MT_in_2Dbin[iMult], 1.,1.,"b");
+        hEFF_1D_in_MT_in_2D_bin[iMult]      ->Divide(hREC_1D_in_MT_in_2D_bin[iMult],hGEN_1D_in_MT_in_2D_bin[iMult], 1.,1.,"b");
         hEFF_2D_in_MT[iMult]               ->Divide(hREC_2D_in_MT[iMult],         hGEN_2D_in_MT[iMult],          1.,1.,"b");
         hREC_1D_in_MT[iMult]->Scale(1.,"width");
         hGEN_1D_in_MT[iMult]->Scale(1.,"width");
         hTRU_1D_in_MT[iMult]->Scale(1.,"width");
-        hREC_1D_in_MT_in_2Dbin[iMult]->Scale(1.,"width");
-        hGEN_1D_in_MT_in_2Dbin[iMult]->Scale(1.,"width");
-        hTRU_1D_in_MT_in_2Dbin[iMult]->Scale(1.,"width");
+        hREC_1D_in_MT_in_2D_bin[iMult]->Scale(1.,"width");
+        hGEN_1D_in_MT_in_2D_bin[iMult]->Scale(1.,"width");
+        hTRU_1D_in_MT_in_2D_bin[iMult]->Scale(1.,"width");
         hREC_2D_in_MT[iMult]->Scale(1.,"width");
         hGEN_2D_in_MT[iMult]->Scale(1.,"width");
         hTRU_2D_in_MT[iMult]->Scale(1.,"width");
         hREC_1D_in_MT[iMult]->Scale(1./fNormEvent);
         hGEN_1D_in_MT[iMult]->Scale(1./fNormEvent);
         hTRU_1D_in_MT[iMult]->Scale(1./fNormEvent);
-        hREC_1D_in_MT_in_2Dbin[iMult]->Scale(1./fNormEvent);
-        hGEN_1D_in_MT_in_2Dbin[iMult]->Scale(1./fNormEvent);
-        hTRU_1D_in_MT_in_2Dbin[iMult]->Scale(1./fNormEvent);
+        hREC_1D_in_MT_in_2D_bin[iMult]->Scale(1./fNormEvent);
+        hGEN_1D_in_MT_in_2D_bin[iMult]->Scale(1./fNormEvent);
+        hTRU_1D_in_MT_in_2D_bin[iMult]->Scale(1./fNormEvent);
         hREC_2D_in_MT[iMult]->Scale(1./fNormEvent);
         hGEN_2D_in_MT[iMult]->Scale(1./fNormEvent);
         hTRU_2D_in_MT[iMult]->Scale(1./fNormEvent);
@@ -737,23 +990,23 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     for ( Int_t iRap = 0; iRap < nBinRap_; iRap++ )
     {
         hEFF_1D_in_RP[iRap]               ->Divide(hREC_1D_in_RP[iRap],         hGEN_1D_in_RP[iRap],          1.,1.,"b");
-        hEFF_1D_in_RP_in_2Dbin[iRap]      ->Divide(hREC_1D_in_RP_in_2Dbin[iRap],hGEN_1D_in_RP_in_2Dbin[iRap], 1.,1.,"b");
+        hEFF_1D_in_RP_in_2D_bin[iRap]      ->Divide(hREC_1D_in_RP_in_2D_bin[iRap],hGEN_1D_in_RP_in_2D_bin[iRap], 1.,1.,"b");
         hEFF_2D_in_RP[iRap]               ->Divide(hREC_2D_in_RP[iRap],         hGEN_2D_in_RP[iRap],          1.,1.,"b");
         hREC_1D_in_RP[iRap]->Scale(1.,"width");
         hGEN_1D_in_RP[iRap]->Scale(1.,"width");
         hTRU_1D_in_RP[iRap]->Scale(1.,"width");
-        hREC_1D_in_RP_in_2Dbin[iRap]->Scale(1.,"width");
-        hGEN_1D_in_RP_in_2Dbin[iRap]->Scale(1.,"width");
-        hTRU_1D_in_RP_in_2Dbin[iRap]->Scale(1.,"width");
+        hREC_1D_in_RP_in_2D_bin[iRap]->Scale(1.,"width");
+        hGEN_1D_in_RP_in_2D_bin[iRap]->Scale(1.,"width");
+        hTRU_1D_in_RP_in_2D_bin[iRap]->Scale(1.,"width");
         hREC_2D_in_RP[iRap]->Scale(1.,"width");
         hGEN_2D_in_RP[iRap]->Scale(1.,"width");
         hTRU_2D_in_RP[iRap]->Scale(1.,"width");
         hREC_1D_in_RP[iRap]->Scale(1./fNormEvent);
         hGEN_1D_in_RP[iRap]->Scale(1./fNormEvent);
         hTRU_1D_in_RP[iRap]->Scale(1./fNormEvent);
-        hREC_1D_in_RP_in_2Dbin[iRap]->Scale(1./fNormEvent);
-        hGEN_1D_in_RP_in_2Dbin[iRap]->Scale(1./fNormEvent);
-        hTRU_1D_in_RP_in_2Dbin[iRap]->Scale(1./fNormEvent);
+        hREC_1D_in_RP_in_2D_bin[iRap]->Scale(1./fNormEvent);
+        hGEN_1D_in_RP_in_2D_bin[iRap]->Scale(1./fNormEvent);
+        hTRU_1D_in_RP_in_2D_bin[iRap]->Scale(1./fNormEvent);
         hREC_2D_in_RP[iRap]->Scale(1./fNormEvent);
         hGEN_2D_in_RP[iRap]->Scale(1./fNormEvent);
         hTRU_2D_in_RP[iRap]->Scale(1./fNormEvent);
@@ -766,41 +1019,143 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     //  Printing output objects //
     //--------------------------//
     //
+    // >> All Analysis Utility
+    //
+    gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kMassResolution_Dir_,(TString("Yield")+kFolder).Data())));
+    TFile *outFil0  =   new TFile   (Form(kMassResolution_Prod,(TString("Yield")+kFolder).Data()),"recreate");
+    //
+    for ( Int_t iTer = 0; iTer < nBinPT1D; iTer++ )  {
+        hMRS_1D[iTer]->Write();
+        hMDS_1D[iTer]->Write();
+        hTMD_1D[iTer]->Write();
+    }
+    for ( Int_t iTer = 0; iTer < nBinPT2D; iTer++ )  {
+        hMRS_1D_in_2D_bin[iTer]->Write();
+        hMDS_1D_in_2D_bin[iTer]->Write();
+        hTMD_1D_in_2D_bin[iTer]->Write();
+        for ( Int_t jTer = 0; jTer < nBinPT2D; jTer++ )  {
+            hMRS_2D[iTer][jTer]->Write();
+            hMDS_2D[iTer][jTer]->Write();
+            hTMD_2D[iTer][jTer]->Write();
+        }
+    }
+    //
+    outFil0->Close();
+    //
     // >> Trigger Analysis
     //
     if ( kDoTrigger )   {
-        TFile *outFil1  =   new TFile   (fTrgPrePrMC,"recreate");
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Trigger")+kFolder).Data())));
+        TFile *outFil1  =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Trigger")+kFolder).Data()),"recreate");
         //
         outFil1->Close();
     }
     //
     // >> Yield Analysis
     //
-    if ( kDoYield || kDoRapidity ) {
-        TFile *outFil2  =   new TFile   (fYldPrePrMC,"recreate");
+    if ( kDoYield ) {
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data())));
+        TFile *outFil2  =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Yield")+kFolder).Data()),"recreate");
         //
         hREC_1D->Write();
         hGEN_1D->Write();
+        hREC_Rw_1D->Write();
+        hGEN_Rw_1D->Write();
         hTRU_1D->Write();
-        hTRU_ALL_1D->Write();
+        hGEN_INELVTX_1D->Write();
+        hGEN_INELFLL_1D->Write();
+        hGEN_INELVTX_1D_in_2D_bin->Write();
+        hGEN_INELFLL_1D_in_2D_bin->Write();
         hEFF_1D->Write();
-        hREC_1D_in_2Dbin->Write();
-        hGEN_1D_in_2Dbin->Write();
-        hTRU_1D_in_2Dbin->Write();
-        hEFF_1D_in_2Dbin->Write();
+        hEFF_SL_1D->Write();
+        hREC_1D_in_2D_bin->Write();
+        hGEN_1D_in_2D_bin->Write();
+        hTRU_1D_in_2D_bin->Write();
+        hEFF_1D_in_2D_bin->Write();
+        hEFF_SL_1D_in_2D_bin->Write();
         hREC_2D->Write();
         hGEN_2D->Write();
         hTRU_2D->Write();
-        hTRU_ALL_2D->Write();
+        hGEN_INELVTX_2D->Write();
+        hGEN_INELFLL_2D->Write();
         hEFF_2D->Write();
+        hEFF_SL_2D->Write();
+        hEFF_2D_fr_1D->Write();
+        hEFF_SL_2D_fr_1D->Write();
         //
         outFil2->Close();
+        //
+        gROOT           ->  SetBatch();
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/")).Data()));
+        //
+        TCanvas        *cDrawEff    =   new TCanvas("","",1200,1200);
+        gStyle          ->  SetOptStat(0);
+        gPad            ->  SetLogx();
+        gPad            ->  SetGridy();
+        uSetHisto(hEFF_1D,"EFF 1D");
+        hEFF_1D         ->  SetMaximum(+60.);
+        hEFF_1D         ->  SetMinimum(0.);
+        hEFF_1D         ->  Draw("");
+        cDrawEff        ->  SaveAs((TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/")+TString("hEFF_1D.pdf")).Data());
+        delete cDrawEff;
+        //
+                        cDrawEff    =   new TCanvas("","",900,1200);
+        gStyle          ->  SetOptStat(0);
+        cDrawEff->Divide(3,4);
+        for ( Int_t iPT2D = 1; iPT2D <= nBinPT2D; iPT2D++ )  {
+            cDrawEff->cd(iPT2D);
+            gPad            ->  SetLogx();
+            gPad            ->  SetGridy();
+            auto h12D = hEFF_2D_fr_1D   ->ProjectionX(Form("12D_%i",iPT2D),iPT2D,iPT2D);
+            auto h_2D = hEFF_2D         ->ProjectionX(Form("_2D_%i",iPT2D),iPT2D,iPT2D);
+            uSetHisto(h12D,"EFF 1D");
+            uSetHisto(h_2D,"EFF2 1D");
+            h12D      ->  SetMaximum(+10.+iPT2D*3.5);
+            h12D      ->  SetMinimum(0.);
+            h12D    ->  Draw();
+            h_2D    ->  Draw("SAME");
+        }
+        cDrawEff        ->  SaveAs((TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/")+TString("hEFF_12D.pdf")).Data());
+        delete cDrawEff;
+        //
+                    cDrawEff    =   new TCanvas("","",1200,1200);
+        gStyle          ->  SetOptStat(0);
+        gPad            ->  SetLogx();
+        gPad            ->  SetGridy();
+        uSetHisto(hEFF_SL_1D,"EFF_SL 1D");
+        hEFF_SL_1D      ->  SetMaximum(+4.);
+        hEFF_SL_1D      ->  SetMinimum(-1.);
+        hEFF_SL_1D      ->  Draw("");
+        cDrawEff        ->  SaveAs((TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/")+TString("hEFF_SL_1D.pdf")).Data());
+        delete cDrawEff;
+        //
+                        cDrawEff    =   new TCanvas("","",900,1200);
+        gStyle          ->  SetOptStat(0);
+        cDrawEff->Divide(3,4);
+        for ( Int_t iPT2D = 1; iPT2D <= nBinPT2D; iPT2D++ )  {
+            cDrawEff->cd(iPT2D);
+            gPad            ->  SetLogx();
+            gPad            ->  SetGridy();
+            auto h12D_SL = hEFF_SL_2D_fr_1D   ->ProjectionX(Form("12D_SL_%i",iPT2D),iPT2D,iPT2D);
+            auto h_2D_SL = hEFF_SL_2D         ->ProjectionX(Form("_2D_SL_%i",iPT2D),iPT2D,iPT2D);
+            uSetHisto(h12D_SL,"EFF SL 1D");
+            h12D_SL      ->  SetMaximum(+4.);
+            h12D_SL      ->  SetMinimum(-1.);
+            uSetHisto(h_2D_SL,"EFF2 SL 1D");
+            h12D_SL    ->  Draw();
+            h_2D_SL    ->  Draw("SAME");
+        }
+        cDrawEff        ->  SaveAs((TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/")+TString("hEFF_SL_12D.pdf")).Data());
+        delete cDrawEff;
+        //
+        gROOT           ->  SetBatch(kFALSE);
     }
     //
     // >> Multiplicity Analysis
     //
     if ( kDoMultiplicity )  {
-        TFile *outFil3  =   new TFile   (fMltPrePrMC,"recreate");
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Multiplicity")+kFolder).Data())));
+        TFile *outFil3  =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Multiplicity")+kFolder).Data()),"recreate");
         //
         for ( Int_t iMult = 0; iMult <= nBinMult; iMult++ )
         {
@@ -808,10 +1163,10 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
             hGEN_1D_in_MT[iMult]->Write();
             hTRU_1D_in_MT[iMult]->Write();
             hEFF_1D_in_MT[iMult]->Write();
-            hREC_1D_in_MT_in_2Dbin[iMult]->Write();
-            hGEN_1D_in_MT_in_2Dbin[iMult]->Write();
-            hTRU_1D_in_MT_in_2Dbin[iMult]->Write();
-            hEFF_1D_in_MT_in_2Dbin[iMult]->Write();
+            hREC_1D_in_MT_in_2D_bin[iMult]->Write();
+            hGEN_1D_in_MT_in_2D_bin[iMult]->Write();
+            hTRU_1D_in_MT_in_2D_bin[iMult]->Write();
+            hEFF_1D_in_MT_in_2D_bin[iMult]->Write();
             hREC_2D_in_MT[iMult]->Write();
             hGEN_2D_in_MT[iMult]->Write();
             hTRU_2D_in_MT[iMult]->Write();
@@ -822,7 +1177,8 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
     }
     //
     if ( kDoRapidity )  {
-        TFile *outFil4  =   new TFile   (fRapPrePrMC,"recreate");
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Rapidity")+kFolder).Data())));
+        TFile *outFil4  =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Rapidity")+kFolder).Data()),"recreate");
         //
         for ( Int_t iRap = 0; iRap < nBinRap_; iRap++ )
         {
@@ -830,10 +1186,10 @@ void PreProcessing_MC ( string fFileName = "", Int_t nEventsCut = -1., TString f
             hGEN_1D_in_RP[iRap]->Write();
             hTRU_1D_in_RP[iRap]->Write();
             hEFF_1D_in_RP[iRap]->Write();
-            hREC_1D_in_RP_in_2Dbin[iRap]->Write();
-            hGEN_1D_in_RP_in_2Dbin[iRap]->Write();
-            hTRU_1D_in_RP_in_2Dbin[iRap]->Write();
-            hEFF_1D_in_RP_in_2Dbin[iRap]->Write();
+            hREC_1D_in_RP_in_2D_bin[iRap]->Write();
+            hGEN_1D_in_RP_in_2D_bin[iRap]->Write();
+            hTRU_1D_in_RP_in_2D_bin[iRap]->Write();
+            hEFF_1D_in_RP_in_2D_bin[iRap]->Write();
             hREC_2D_in_RP[iRap]->Write();
             hGEN_2D_in_RP[iRap]->Write();
             hTRU_2D_in_RP[iRap]->Write();

@@ -1,67 +1,97 @@
-\section{Dataset and event selection}
-\label{sec:Dataset_and_event_selection}
+\section{Simulation}
+\label{sec:Simulation}
+A number of corrections have been carried out using the simulated Dataset anchored to the data used in this analysis. In particular, we used a General Purpose Monte Carlo based on the Pythia6 event generator, using the GEANT3 software to reproduce the interaction with the detector. The dedicated simulation dataset has been discussed in Section \ref{sec:Dataset_and_event_selection}.\\
 
-A total of about $XXX$ events are selected and used for the analysis. A brief summary of their properties, together with their correspondent Monte Carlo production, are liste in Table \ref{tab:datasetsummary}. 
+%_________________________________________________________________________________EFFICIENCY AND ACCEPTANCE
+\subsection{Efficiency $\times$ Acceptance}
+The Efficiency $\times$ Acceptance ($\epsilon$) correction factor is $p_{\text{T}}$ dependent and has been defined as:
+\begin{equation}
+\epsilon(p_{\text{T}}) = \frac{\text{N}^{rec}}{\text{N}^{gen}}
+\label{eq:eff}
+\end{equation}
+\textbf{N$^{rec}$} the number of $\phi$ mesons that are within our geometrical and physical constraints and pass all our selections. This translates in requiring that both the decay kaons are within our geometrical and physical constraints and pass all our selections. Moreover it is required that the reconstructed rapidity is $|y_{rec}|<0.5$ ( Reconstructed $\phi$ mesons ).\\
+\textbf{N$^{gen}$} is the number of $\phi$ mesons that are generated in the Monte Carlo decaying in K$^+$K$^-$, of all the events that pass the Quality cuts. Moreover it is required that the rapidity of the meson is $|y_{gen}|<0.5$ ( Generated $\phi$ mesons ).\\
+Both recordable and generated $\phi$ mesons are considered when the event they belong to pass the analysis cuts and without considering the branching ratio. The 1D efficiency measured in the simulation can be seen in \ref{fig:eff1d}\\
+The uncertainty in $\epsilon(p_{\text{T}})$ is calculated using the Bayesian approach described in \cite{ErrEff}. The standard deviation in an efficiency $\epsilon$ = $k/n$, where the numerator k is a subset of the denominator n, is
+\begin{equation}
+\sigma_{\epsilon}=\sqrt{\frac{k+1}{n+2}\Big( \frac{k+2}{n+3} - \frac{k+1}{n+2} \Big)}
+\end{equation}
+The fractional statistical uncertainty in $\epsilon(p_{\text{T}})$ is added in quadrature with the statistical uncertainty in the uncorrected $\phi$ yield to give the total statistical uncertainty of the corrected $\phi$ yield.
+This efficiency can be easily generalised for the $\phi$-meson pair analysis. One useful approach in dealing with this correction is to make the assumption that it is the product of the inclusive $\phi$ meson:
+\begin{equation}
+\epsilon(p_{\text{T}}^{(1)},p_{\text{T}}^{(2)}) = \epsilon(p_{\text{T}}^{(1)}) \times \epsilon(p_{\text{T}}^{(2)})
+\label{eq:eff2}
+\end{equation}
+where $p_{\text{T}}^{(i)}$ represents the transverse momentum of the i-component of the pair. A comparison between the efficiency measured in the simulation (Eq. \ref{eq:eff}) and the one derived from the 1D efficiency (Eq. \ref{eq:eff2}) can be seen in Figure \ref{fig:eff2d}.
 
-\begin{table}
-\center
-\begin{tabularx}{\textwidth}{c|cccc}
-Type		&Dataset		&N$_{runs}$		&N$_{events}$		&AliRoot\\
-\hline
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.75\textwidth]{../result/Yield/PreProcessing/Plots/hEFF_1D.pdf}
+\caption{Efficiency as a function of Transverse momentum.}
+\label{fig:eff1d}
+\end{figure}
 
-\end{tabularx}
-\caption{Datasets and Monte Carlo production used in the analysis}
-\label{tab:datasetsummary}
-\end{table}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.75\textwidth]{../result/Yield/PreProcessing/Plots/hEFF_12D.pdf}
+\caption{2D Efficiency as a function of Transverse momentum of one candidate.}
+\label{fig:eff2d}
+\end{figure}
 
-\subsection{Vertex selection}
-The first requirement for the candidate event is a proper vertex. This means:
+%_________________________________________________________________________________SIGNAL LOSS
+\subsection{Signal Loss}
+The Signal Loss correction takes into account the amount of $\phi$ mesons or $\phi$-meson pairs lost due to the \texttt{kAnyINT} trigger, which selects only a part of the total inelastic interactions. Applying this correction factor allows to recover the inelastic p$_{\text{T}}$ spectrum. This correction factor can be determined with
+\begin{equation}
+f_{\text{SL}}(p_{\text{T}}) = \frac{\text{N}^{gen*}}{\text{N}^{gen}}
+\label{eq:SL}
+\end{equation}
+\textbf{N$^{gen*}$} the number of $\phi$ mesons that are generated in the Monte Carlo decaying in K$^+$K$^-$ with an interaction vertex within $|v_{z}|<$ \SI{10}{\centi\meter}. Moreover it is required that the rapidity of the meson is $|y_{gen}|<0.5$ ( INEL Generated $\phi$ mesons ).\\
+\textbf{N$^{gen}$} is the number of $\phi$ mesons that are generated in the Monte Carlo decaying in K$^+$K$^-$, of all the events that pass the Quality cuts. Moreover it is required that the rapidity of the meson is $|y_{gen}|<0.5$ ( Generated $\phi$ mesons ).\\
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.75\textwidth]{../result/Yield/PreProcessing/Plots/hEFF_SL_1D.pdf}
+\caption{Signal Loss correction as a function of Transverse momentum.}
+\label{fig:eff1d}
+\end{figure}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.75\textwidth]{../result/Yield/PreProcessing/Plots/hEFF_SL_12D.pdf}
+\caption{2D Signal Loss correction as a function of Transverse momentum of one candidate.}
+\label{fig:eff2d}
+\end{figure}
+
+%_________________________________________________________________________________REWEIGHTING
+\subsection{Efficiency $\times$ Acceptance reweighing}
+\hl{LOOKING INTO IT}
+
+%_________________________________________________________________________________MASS SHIFT AND RESOLUTION
+\subsection{Mass shift and resolution}
+A useful measurement that can be performed using the Monte Carlo dataset is the Mass Resolution. This quantity can be extracted from the distribution $\Delta\text{m} = \text{m}_{\text{rec}} - \text{m}_{\text{gen}}$, where $\text{m}_{\text{rec}}$ is the mass of the reconstructed $\phi$-meson and $\text{m}_{\text{gen}}$ is the mass of the generated $\phi$-meson, and from the Invariant-Mass distribution of $\text{m}_{\text{rec}}$. An example of such distributions can be seen in Figure \ref{fig:InvMassDist}.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.49\textwidth]{../result/Yield/MassResolution/Plots/MDSVoigtFit_1D_7.pdf}
+\includegraphics[width=0.49\textwidth]{../result/Yield/MassResolution/Plots/3SigGuassFit_1D_7.pdf}
+\label{fig:InvMassDist}
+\caption{(left) The Invariant-Mass distribution of $\text{m}_{\text{rec}}$. (right) The distribution of $\Delta\text{m} = \text{m}_{\text{rec}} - \text{m}_{\text{gen}}$ }
+\end{figure}
+
+\indent These two distributions provide two (and more) ways to measure the Mass Resolution so as to fix this parameter in the signal extraction procedure. The following discussion is based on Anders Garrit Knospe extensive study of the $\phi$ meson in pp collisions \cite{Anders}. The three methods that will be considered in this analysis are:
 \begin{enumerate}
-\item The vertex has to be reconstructed by the SPD
-\item If the track reconstructed vertex is not available, the SPD vertex is taken
-\item If the track reconstructed vertex is available, the z coordinate of the two are compared and the event is discarded if the two are more than \SI{0.5}{\centi\meter} apart.
-\item If the accepted vertex absolute value of the z coordinate is more than \SI{10}{\centi\meter}, the event is discarded.
+\item[\texttt{\color{blue}{$\sigma_{h}$}}] The Resolution is extracted fitting a Voigtian function to the Invariant mass distribution in the Monte Carlo Dataset, fixing Mass and Width to the PDG value.
+\item[\texttt{\color{blue}{$\sigma_{c}$}}] The Resolution is taken as the RMS of the Mass difference distribution truncated at 3$\sigma$
+\item[\texttt{\color{blue}{$\sigma_{l}$}}] The Resolution is taken as the $\sigma$ of the Guass Fit of the difference distribution truncated at 2$\sigma$
 \end{enumerate}
-that the vertex is required to be reconstructed by the SPD
-
-\subsection{Multiplicity}
-The information about multiplicity by the V0M detector must be present.
-
-\subsection{Pile-up}
-The vent is discarded if flagged as pile.up form the SPD in multiplicity bins
-
-
-\subsection{TODO}
-\begin{enumerate}
-\item Update the trigger type, trigger efficiency
-\item Put complete runlist in appendix
-\end{enumerate}
-
-\begin{comment}
-
-TO BE PUT IN THE APPENDIX
-
-\begin{table}
-\center
-\begin{tabularx}{\textwidth}{c|X}
-Dataset		&Runlist\\
-\hline
-LHC10b		&117222, 117220, 117116, 117112, 117099, 117092, 117063, 117060, 117059, 117053, 117052, 117050, 117048, 116645, 116643, 116574, 116571, 116562, 116403, 116402, 116288, 116102, 116081, 116079, 115414, 115401, 115399, 115393, 115345, 115335, 115328, 115322, 115318, 115310, 115193, 115186, 114931, 114930, 114924, 114918, 114798, 114786\\
-					\hline
-LHC10c		&121040, 121039, 120829, 120825, 120824, 120823, 120822, 120821, 120758, 120750, 120741, 120671, 120617, 120616, 120505, 120503, 120244, 120079, 120076, 120073, 120072, 120069, 120067, 119862, 119859, 119856, 119853, 119849, 119846, 119845, 119844, 119842, 119841, 118561, 118560, 118558, 118556, 118518, 118506\\
-					\hline
-LHC10d		&126158 , 126097, 126090, 126088, 126082, 126081, 126078, 126073, 126008, 126007, 126004, 125855, 125851, 125850, 125849, 125848, 125847, 125844, 125843, 125842, 125633, 125632, 125630, 125628, 125296, 125134, 125101, 125100, 125097, 125085, 125083, 125023, 122375, 122374\\
-					\hline
-LHC10e		&130850, 130848, 130847, 130844, 130842, 130840, 130834, 130799, 130798, 130795, 130793, 130704, 130696, 130628, 130623, 130621, 130620, 130609, 130608, 130524, 130520, 130519, 130517, 130481, 130480, 130479, 130375, 130178, 130172, 130168, 130158, 130157, 130149, 129983, 129966, 129962, 129961, 129960, 129744, 129742, 129738, 129736, 129735, 129734, 129729, 129726, 129725, 129723, 129666, 129659, 129653, 129652, 129651, 129650, 129647, 129641, 129639, 129599, 129587, 129586, 129540, 129536, 129528, 129527, 129525, 129524, 129523, 129521, 129520, 129514, 129513, 129512, 129042, 128913, 128855, 128853, 128850, 128843, 128836, 128835, 128834, 128833, 128824, 128823, 128820, 128819, 128778, 128777, 128678, 128677, 128621, 128615, 128611, 128609, 128605, 128582, 128506, 128505, 128504, 128503, 128498, 128495, 128494, 128486\\			
-					\hline	
-LHC17p		&282343, 282342, 282341, 282340, 282314, 282313, 282312, 282309, 282307, 282306, 282305, 282304, 282303, 282302, 282247, 282230, 282229, 282227, 282224, 282206, 282189, 282147, 282146, 282127, 282126, 282125, 282123, 282122, 282120, 282119, 282118, 282099, 282098, 282078, 282051, 282050, 282031, 282030, 282025, 282021, 282016, 282008\\			
-					\hline
-\end{tabularx}
-\caption{Runlists used for the analysis with corresponding datasets}
-\label{tab:dataset}
-\end{table}
-
-
-
-
-\end{comment}
+The results for these three methods are shown in Figure \ref{fig:MassRes}.
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.49\textwidth]{../result/Yield/MassResolution/Plots/cAllResolutions_1D.pdf}
+\includegraphics[width=0.49\textwidth]{../result/Yield/MassResolution/Plots/cAllResolutions_1D_in_2D_bin.pdf}\\
+\includegraphics[width=0.49\textwidth]{../result/Yield/MassResolution/Plots/cAllResolutions_1D_N.pdf}
+\includegraphics[width=0.49\textwidth]{../result/Yield/MassResolution/Plots/cAllResolutions_1D_in_2D_bin_N.pdf}
+\label{fig:MassRes}
+\caption{The Invariant Mass resolution as a function of Transverse Momentum in 1D binning (left) and 2D binning (right) in absolute terms (top) and normalised to default option (bottom) \texttt{\color{blue}{$\sigma_{c}$}} }
+\end{figure}
+The (\texttt{\color{blue}{$\sigma_{c}$}}) will be used as the Default value, the others are used to evaluate the uncertainty on the resolution. The fractional deviation of the variations can be seen in the bottom part of figure \ref{fig:MassRes}. Given the deviations are roughly constant in average and this behaviour is seen for both the low and high estimation we can take a flat 10\% systematic error for the Resolution.

@@ -1,35 +1,18 @@
 \section{Introduction}
 \label{sec:Introduction}
-This note describes the measurement using the ALICE detector of $\phi$ mesons and $\phi$-meson pairs produced in minimum-bias pp collisions at $\sqrt{s}=$\SI{7}{\tera\electronvolt}. In this analysis the $\phi$ mesons are reconstructed using their decay in a Kaon couple of opposite sign, which has a branching ratio of $(49.2\%\pm 0.5\%)$ \cite[PDG]. The Invariant Mass technique is used for the reconstruction of the mesons, both for inclusive $\phi$ mesons and $\phi$-meson pairs. For the latter a 2D generalisation is required, this will be the topic of chapter \ref{sec:2D_Technique}.
-
-\begin{comment}
- In this analysis, decays of φ mesons to charged kaons are reconstructed. The yield of φ mesons is extracted from KK invariant-mass distributions as a function of transverse momentum. The φ spectrum is integrated to obtain a measurement of the total dN/dy, and the mean transverse momentum ⟨pT⟩ is extracted from the spectrum.
-The analysis procedure described herein closely follows the procedure used to analyze φ mesons in Pb–Pb collisions at √sNN = 2.76 TeV in 2010 data [1]. The basic invariant-mass analysis is performed many times, with the method varied each time (i.e., using different PID cuts, different combinatorial backgrounds, and many other variations). In order to distinguish between the many different varia- tions of this analysis, it will be useful to introduce shorthand notations, which will be written in “type- writer” font like this. Multiple shorthand notations may be concatenated using underscores like this: tpc2s mix0 fr3 pol2 yh1. Each shorthand notation will be written in blue when first introduced.
-\end{comment}
+The analysis is performed using pp collisions data at $\sqrt{s}$=\SI{7}{\tera\electronvolt}, collected during the run1 data-taking period with the ALICE detector at the LHC. A detailed description of the ALICE detector can be found here \cite{Collaboration_2008}. In this analysis the $\phi$ mesons are reconstructed using their decay in a Kaon couple of opposite sign, which has a branching ratio of $(49.2\%\pm 0.5\%)$ \cite{PDG}. The Invariant Mass technique is used for the reconstruction of the mesons, both for inclusive $\phi$ mesons and $\phi$-meson pairs. For the latter a 2D generalisation is required, this will be the topic of section \ref{sec:SignalExtraction}.\\
 
 \subsection{Analysis Summary}
 Title of Note: First measurement of $\phi$-pair production in minimum-bias pp collisions at $\sqrt{s}=$\SI{7}{\tera\electronvolt}.\\
 Objective: This note documents the analysis of $\phi$-meson pairs in minimum-bias pp collisions at $\sqrt{s}=$\SI{7}{\tera\electronvolt} which are intended for inclusion in a forthcoming paper.\\
 Primary Author: Nicola Rubini, University of Bologna\\
-TWiki Address: TBD
-\[...\]
-\begin{comment}
-This section is a list of information required by the Physics Board.
-Title of Note: Measurement of φ Mesons in Minimum-Bias pp Collisions at s = 13 TeV
-Objective: This note documents the analysis of φ mesons in minimum-bias pp collisions at which are intended for inclusion in a forthcoming paper.
-Primary Author: Anders G. Knospe, The University of Houston
-TWiki Address: https://twiki.cern.ch/twiki/bin/view/ALICE/PWGLFResonancesPhiPP13TeV
-s = 13 TeV,
-AliRoot/AliPhysics versions: AliRoot::v5-08-09-1 + AliPhysics::vAN-20160502-1
-Data Samples Used: real data: LHC15f, ESDs, pass 2
-Analysis General and Specific Selections: Standard Physics Selection, |vz| < 10 cm, pileup rejection Detectors: ITS, TPC, TOF
-Description of cuts: standard ITS/TPC track cuts for 2011, see Section 4.1.
-Simulations: LHC15g3a3, LHC15g3c3, and LHC16d3; ESDs
-Discussion of Efficiencies, Corrections, Etc.: see Section 7.1
-Normalization: see Section 7.4
-Discussion of Uncertainties: see Sections 8, 9.2, and 9.3.
+TWiki Address: TBD\\
 Relevant Presentations:
-\end{comment}
+\begin{itemize}
+\item \href{https://indico.cern.ch/event/1046617/}{\bf{Resonances PAG Meeting, 9 June 2021}}
+\item \href{https://indico.cern.ch/event/1052315/}{\bf{Resonances PAG Meeting, 7 July 2021}}
+\end{itemize}
+
 \subsection{Source Code}
 The latest version of the Analysis Task used to fetch Data and Monte Carlo simulations can be seen \href{https://github.com/alisw/AliPhysics/tree/master/PWGLF/RESONANCES/extra}{here}. The files of interested for the presented analysis are:\\
 \href{https://github.com/alisw/AliPhysics/blob/master/PWGLF/RESONANCES/extra/AddAnalysisTaskPhiCount.C}{\texttt{AddAnalysisTaskPhiCount.C}}.\\

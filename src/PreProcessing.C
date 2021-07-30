@@ -3,7 +3,7 @@
 #include "./PreProcessing/PreProcessing_Data.C"
 // !TODO: All Set!
 
-void PreProcessing ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEventsCut = -1., TString fOption = "" )
+void PreProcessing ( string fFileNameDT = "", string fFileNameMC = "", TString fOption = "", Int_t nEventsCut = -1.)
 {
     //---------------------//
     //  Setting up input   //
@@ -23,9 +23,9 @@ void PreProcessing ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEv
         fFileNameDT = fFileNameMC;
     }
     cout << "[INFO] Starting the Data PreProcessing" << endl;
-    PreProcessing_Data(fFileNameDT,nEventsCut,fOption);
+    PreProcessing_Data(fFileNameDT,fOption,nEventsCut);
     cout << "[INFO] Starting the Monte Carlo PreProcessing" << endl;
-    PreProcessing_MC(fFileNameMC,nEventsCut,fOption);
+    PreProcessing_MC(fFileNameMC,fOption,nEventsCut);
     cout << "[INFO] Finished Pre-Processing" << endl;
     return;
 }

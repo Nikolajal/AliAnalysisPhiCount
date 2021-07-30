@@ -1,7 +1,7 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: [INFO] About trees in input
 
-void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString fOption = "" )
+void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEventsCut = -1, TString kFolder = "" )
 {
     //---------------------//
     //  Setting up input   //
@@ -21,75 +21,24 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
     TFile *insFileDT        =   new TFile   (fFileName.c_str());
     
     // Retrieving Event data TTree
-    TTree   *TPhiCandidate  =   (TTree*)insFileDT       ->Get(fPhiCandidate_Tree);
-    TTree   *TKaonCandidate =   (TTree*)insFileDT       ->Get(fKaonCandidate_Tree);
+    TTree   *TPhiCandidate  =   (TTree*)insFileDT       ->Get(Form("%s%s",fPhiCandidate_Tree,"_name"));
+    TTree   *TKaonCandidate =   (TTree*)insFileDT       ->Get(Form("%s%s",fKaonCandidate_Tree,"_name"));
     
     // Retrieving Event Count Histogram
-    TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList");
-    TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enumerate");
-    TH1D   *fHEvCountMlt    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_Mult");
+    TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList_name");
+    TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_FLL");
+    TH1D   *fHEvCountMlt    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_V0M");
+    fHEventCount->SetName("fQC_Event_Enumerate");
+    fHEvCountMlt->SetName("fQC_Event_Enum_Mult");
     
     // Define tree data structures
     Struct_PhiCandidate     evPhiCandidate;
     Struct_KaonCandidate    evKaonCandidate;
+    
+    // Setting the input Candidates in the Trees
+    if ( !fSetCandidates(TPhiCandidate,evPhiCandidate,TKaonCandidate,evKaonCandidate) )     return;
+    
 
-    if ( !TPhiCandidate && !TKaonCandidate )
-    {
-        cout << "Input Data Tree not found!" << endl;
-        return;
-    }
-    if ( !TPhiCandidate )
-    {
-        cout << "[INFO] No PhiCandidate Tree, switching to Kaon Analysis" << endl;
-        TKaonCandidate-> SetBranchAddress   ("EventMask",       &evKaonCandidate.EventMask);
-        TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
-        TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
-        TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
-        TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
-        TKaonCandidate-> SetBranchAddress   ("Pz",              &evKaonCandidate.Pz);
-        TKaonCandidate-> SetBranchAddress   ("Charge",          &evKaonCandidate.Charge);
-        TKaonCandidate-> SetBranchAddress   ("TOFSigma",        &evKaonCandidate.SigmaTOF);
-        TKaonCandidate-> SetBranchAddress   ("TPCSigma",        &evKaonCandidate.SigmaTPC);
-    }
-    else if ( !TKaonCandidate )
-    {
-        cout << "[INFO] No KaonCandidate Tree, switching to Phi Analysis" << endl;
-        TPhiCandidate-> SetBranchAddress    ("EventMask",       &evPhiCandidate.EventMask);
-        TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiCandidate.Multiplicity);
-        TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
-        TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
-        TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
-        TPhiCandidate-> SetBranchAddress    ("Pz",              &evPhiCandidate.Pz);
-        TPhiCandidate-> SetBranchAddress    ("InvMass",         &evPhiCandidate.InvMass);
-        TPhiCandidate-> SetBranchAddress    ("iKaon",           &evPhiCandidate.iKaon);
-        TPhiCandidate-> SetBranchAddress    ("jKaon",           &evPhiCandidate.jKaon);
-        TPhiCandidate-> SetBranchAddress    ("Nature",          &evPhiCandidate.Nature);
-    }
-    else
-    {
-        TPhiCandidate-> SetBranchAddress    ("EventMask",       &evPhiCandidate.EventMask);
-        TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiCandidate.Multiplicity);
-        TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
-        TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
-        TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
-        TPhiCandidate-> SetBranchAddress    ("Pz",              &evPhiCandidate.Pz);
-        TPhiCandidate-> SetBranchAddress    ("InvMass",         &evPhiCandidate.InvMass);
-        TPhiCandidate-> SetBranchAddress    ("iKaon",           &evPhiCandidate.iKaon);
-        TPhiCandidate-> SetBranchAddress    ("jKaon",           &evPhiCandidate.jKaon);
-        TPhiCandidate-> SetBranchAddress    ("Nature",          &evPhiCandidate.Nature);
-        
-        TKaonCandidate-> SetBranchAddress   ("EventMask",       &evKaonCandidate.EventMask);
-        TKaonCandidate-> SetBranchAddress   ("Multiplicity",    &evKaonCandidate.Multiplicity);
-        TKaonCandidate-> SetBranchAddress   ("nKaon",           &evKaonCandidate.nKaon);
-        TKaonCandidate-> SetBranchAddress   ("Px",              &evKaonCandidate.Px);
-        TKaonCandidate-> SetBranchAddress   ("Py",              &evKaonCandidate.Py);
-        TKaonCandidate-> SetBranchAddress   ("Pz",              &evKaonCandidate.Pz);
-        TKaonCandidate-> SetBranchAddress   ("Charge",          &evKaonCandidate.Charge);
-        TKaonCandidate-> SetBranchAddress   ("TOFSigma",        &evKaonCandidate.SigmaTOF);
-        TKaonCandidate-> SetBranchAddress   ("TPCSigma",        &evKaonCandidate.SigmaTPC);
-    
-    }
-    
     //---------------------//
     //  Setting up output  //
     //---------------------//
@@ -183,8 +132,8 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
     //
     //  Declaring all histograms
     //
-    TH1F      **hREC_1D_in_MT               = new TH1F     *[nBinMult];
-    TH1F     ***hREC_1D_in_MT_in_PT         = new TH1F    **[nBinMult];
+    TH1F      **hREC_1D_in_MT               = new TH1F     *[nBinMult+1];
+    TH1F     ***hREC_1D_in_MT_in_PT         = new TH1F    **[nBinMult+1];
     //
     //  Defining cumulative histogram over measurable pT
     //  Defining pT-Differential histograms over measurable pT
@@ -226,9 +175,9 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
     //
     //  Declaring all histograms
     //
-    TH2F      **hREC_2D_in_MT               = new TH2F     *[nBinMult];
-    TH1F     ***hREC_1D_in_MT_in_PT_2D_bin  = new TH1F    **[nBinMult];
-    TH2F    ****hREC_2D_in_MT_in_PT         = new TH2F   ***[nBinMult];
+    TH2F      **hREC_2D_in_MT               = new TH2F     *[nBinMult+1];
+    TH1F     ***hREC_1D_in_MT_in_PT_2D_bin  = new TH1F    **[nBinMult+1];
+    TH2F    ****hREC_2D_in_MT_in_PT         = new TH2F   ***[nBinMult+1];
     //
     //  Defining cumulative histogram over measurable pT
     //  Defining pT-Differential histograms over measurable pT
@@ -407,10 +356,10 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
     //-------------------------//
     //  Filling output objects //
     //-------------------------//
-    
+    //
     // Evaluating entries and saving them for later
     Int_t nEvents = (!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : nEventsCut);
-
+    
     if ( nEvents > 0 )  fStartTimer("Phi Analysis");
     
     // Starting cycle
@@ -444,11 +393,32 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
             evPhiCandidate.iRap[iPhi]   =   fGetBinRap_(evPhiCandidate.Rap[iPhi]);
             evPhiCandidate.iPT1D[iPhi]  =   fGetBinPT1D(evPhiCandidate.pT[iPhi]);
             evPhiCandidate.iPT2D[iPhi]  =   fGetBinPT2D(evPhiCandidate.pT[iPhi]);
-            evPhiCandidate.kHasRap[iPhi]=   evPhiCandidate.iRap[iPhi] != -1;
+            evPhiCandidate.kHasRap[iPhi]=   fabs(LPhi_candidate1.Rapidity()) <0.5;
             U_nAccept++;
         }
         //
         if ( U_nAccept == 0 )       hTriggerEvt->Fill(0);
+        //
+        //__________ORDERING by PT
+        auto kContinue = kTRUE;
+        if ( U_nAccept > 1 )    {
+            while ( kContinue ) {
+                auto fN = 0;
+                for ( Int_t iPhi = 0; iPhi < U_nAccept-1; iPhi++ )    {
+                    auto fPT1 = evPhiCandidate.pT[U_AccCand[iPhi]];
+                    auto fPT2 = evPhiCandidate.pT[U_AccCand[iPhi+1]];
+                    if ( fPT2 > fPT1 )  {
+                        fN++;
+                        continue;
+                    }
+                    auto fN1            =   U_AccCand[iPhi];
+                    auto fN2            =   U_AccCand[iPhi+1];
+                    U_AccCand[iPhi]     =   fN2;
+                    U_AccCand[iPhi+1]   =   fN1;
+                }
+                if ( fN ==  U_nAccept-1 ) kContinue = kFALSE;
+            }
+        }
         //
         // >>-->> Utilities
         //
@@ -486,7 +456,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
             }
             hTriggerEvt1D                                       ->  Fill(evPhiCandidate.pT[U_AccCand[iPhi]]);
             //
-            if  ( fHasRapidity )    {
+            if  ( fabs(iRapidity) < .5 )    {
             //
             // >->-->-> Rapidity
             //
@@ -516,7 +486,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
                 }
             }
             //
-            for ( Int_t jPhi = 0; jPhi < U_nAccept; jPhi++ )    {
+            for ( Int_t jPhi = iPhi+1; jPhi < U_nAccept; jPhi++ )    {
                 // Must have at least 2 candidates
                 if ( U_nAccept < 2 ) break;
 
@@ -535,7 +505,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
                 Float_t jRapidity           =   evPhiCandidate.Rap[U_AccCand[jPhi]];
                 Int_t   jRap                =   evPhiCandidate.iRap[U_AccCand[jPhi]];
                         fHasRapidity        =   evPhiCandidate.kHasRap[U_AccCand[iPhi]] && evPhiCandidate.kHasRap[U_AccCand[jPhi]];
-                Int_t   ijRap               =   fGetBinRap_(evPhiCandidate.Rap[U_AccCand[iPhi]]-evPhiCandidate.Rap[U_AccCand[jPhi]]);
+                Int_t   ijRap               =   fGetBinRap_(fabs(evPhiCandidate.Rap[U_AccCand[iPhi]]-evPhiCandidate.Rap[U_AccCand[jPhi]]));
                 Bool_t  fHasDiffRap         =   ijRap != -1;
                 //
                 // >->-->-> Trigger
@@ -546,19 +516,22 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
                 }
                 hTriggerEvt2D                                       ->  Fill(evPhiCandidate.pT[U_AccCand[iPhi]],evPhiCandidate.pT[U_AccCand[jPhi]],0.5);
                 //
-                if  ( fHasDiffRap && kDoRapidity )     {
+                if  ( fabs(iRapidity) < .5 && fabs(jRapidity) < .5 )    {
+                    if  ( fHasDiffRap && kDoRapidity )     {
                 //
                 // >->-->-> Rapidity
                 //
-                    hREC_2D_in_RP[ijRap]                            ->  Fill(iInvarMass,jInvarMass,0.5);
-                    hREC_2D_in_RP_in_PT[ijRap][iPT2D][jPT2D]        ->  Fill(iInvarMass,jInvarMass,0.5);
-                }
-                if  ( fHasRapidity && kDoYield )    {
+                        hREC_2D_in_RP[ijRap]                            ->  Fill(iInvarMass,jInvarMass,0.5);
+                        hREC_2D_in_RP_in_PT[ijRap][iPT2D][jPT2D]        ->  Fill(iInvarMass,jInvarMass,0.5);
+                    }
+                //
+                     if (kDoYield )    {
                 //
                 // >->-->-> Yield
                 //
-                    hREC_2D                                         ->  Fill(iInvarMass,jInvarMass,0.5);
-                    hREC_2D_in_PT[iPT2D][jPT2D]                     ->  Fill(iInvarMass,jInvarMass,0.5);
+                         hREC_2D                                    ->  Fill(iInvarMass,jInvarMass);
+                         hREC_2D_in_PT[iPT2D][jPT2D]                ->  Fill(iInvarMass,jInvarMass);
+                     }
                 //
                 // >->-->-> Multiplicity
                 //
@@ -572,7 +545,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
                 //
                 if ( !kDoTrigger ) continue;
                 //
-                for ( Int_t kPhi = 0; kPhi < U_nAccept; kPhi++ )    {
+                for ( Int_t kPhi = jPhi+1; kPhi < U_nAccept; kPhi++ )    {
                     // Must have at least 3 candidates
                     if ( U_nAccept < 3 ) break;
 
@@ -586,7 +559,7 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
                         fCheckFill3 = true;
                     }
 
-                    for ( Int_t lPhi = 0; lPhi < U_nAccept; lPhi++ )    {
+                    for ( Int_t lPhi = kPhi+1; lPhi < U_nAccept; lPhi++ )    {
                         // Must have at least 4 candidates
                         if ( U_nAccept < 4 ) break;
 
@@ -604,7 +577,6 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
             }
         }
     }
-    
     if ( nEvents > 0 )  fStopTimer("Phi Analysis");
     
     // Evaluating entries and saving them for later
@@ -880,7 +852,8 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
     // >-> Trigger Analysis
     //
     if ( kDoTrigger )  {
-        TFile *outFil1  =   new TFile   (fTrgPreProc,"recreate");
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Trigger")+kFolder).Data())));
+        TFile *outFil1  =   new TFile   (Form(kAnalysis_InvMassHist,(TString("Trigger")+kFolder).Data()),"recreate");
         //
         fHEventCount    ->Write();
         fHEvCountMlt    ->Write();
@@ -893,8 +866,9 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
     //
     // >-> Yield Analysis
     //
-    if ( kDoYield || kDoRapidity )  {
-        TFile *outFil2  =   new TFile   (fYldPreProc,"recreate");
+    if ( kDoYield )  {
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data())));
+        TFile *outFil2  =   new TFile   (Form(kAnalysis_InvMassHist,(TString("Yield")+kFolder).Data()),"recreate");
         //
         fHEventCount    ->Write();
         fHEvCountMlt    ->Write();
@@ -922,7 +896,8 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
     // >-> Multiplicity Analysis
     //
     if ( kDoMultiplicity )  {
-        TFile *outFil3  =   new TFile   (fMltPreProc,"recreate");
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Multiplicity")+kFolder).Data())));
+        TFile *outFil3  =   new TFile   (Form(kAnalysis_InvMassHist,(TString("Multiplicity")+kFolder).Data()),"recreate");
         //
         fHEventCount->Write();
         fHEvCountMlt->Write();
@@ -955,7 +930,8 @@ void PreProcessing_Data ( string fFileName = "", Int_t nEventsCut = -1, TString 
     // >-> Rapidity Analysis
     //
     if ( kDoRapidity )  {
-        TFile *outFil4  =   new TFile   (fRapPreProc,"recreate");
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Rapidity")+kFolder).Data())));
+        TFile *outFil4  =   new TFile   (Form(kAnalysis_InvMassHist,(TString("Rapidity")+kFolder).Data()),"recreate");
         //
         fHEventCount->Write();
         fHEvCountMlt->Write();
