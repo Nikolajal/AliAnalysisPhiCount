@@ -729,16 +729,20 @@ std::vector<TH2F*>          FitModel                        ( TH1F  **hShapeFit,
                 auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
                 fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,N_Raw->getVal());
                 fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
-                fResults.at(iTer)->SetBinContent          (jFit+1,iFit+1,N_Raw->getVal());
-                fResults.at(iTer)->SetBinError            (jFit+1,iFit+1,N_Raw->getError());
+                if ( iFit == jFit ) {
+                    fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,2.*N_Raw->getVal());
+                    fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,2.*N_Raw->getError());
+                }
                 iTer++;
             }
             for ( auto fCoeff : fFitresultsStore[iFit][jFit]->constPars() )   {
                 auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
                 fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,N_Raw->getVal());
                 fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
-                fResults.at(iTer)->SetBinContent          (jFit+1,iFit+1,N_Raw->getVal());
-                fResults.at(iTer)->SetBinError            (jFit+1,iFit+1,N_Raw->getError());
+                if ( iFit == jFit ) {
+                    fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,2.*N_Raw->getVal());
+                    fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,2.*N_Raw->getError());
+                }
                 iTer++;
             }
         }

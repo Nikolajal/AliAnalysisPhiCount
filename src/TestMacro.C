@@ -6,6 +6,31 @@
 
 void TestMacro   ()  {
     
+    auto fPhi1 = 0.;
+    auto fPhi2 = 0.;
+    auto fPhi11= 0.;
+    auto fPhi22= 0.;
+    auto nEvents_ = 1.e8;
+    for ( int i = 0; i < nEvents_; i++ )    {
+        auto fPhi = fRandomGen->Poisson(0.3);
+        auto fPhi_= fPhi + ( fRandomGen->Uniform(0,1) > 0.95 && fPhi > 0);
+        if ( fPhi > 0 ) fPhi1 += TMath::Binomial(fPhi,1);
+        if ( fPhi > 1 ) fPhi2 += TMath::Binomial(fPhi,2);
+        if ( fPhi_ > 0 ) fPhi11+= TMath::Binomial(fPhi_,1);
+        if ( fPhi_ > 1 ) fPhi22+= TMath::Binomial(fPhi_,2);
+    }
+    fPhi1 /= nEvents_;
+    fPhi2 /= nEvents_;
+    fPhi11/= nEvents_;
+    fPhi22/= nEvents_;
+    cout << " 1: " << fPhi1 <<  " 2: " << fPhi2 << endl;
+    cout << " 2/1 " << fPhi2/fPhi1 <<  " 2/(1*1): " << fPhi2/(fPhi1*fPhi1) << endl;
+    cout << " \gamma " << 2*fPhi2/(fPhi1) - fPhi1 << endl;
+    cout << " 1: " << fPhi11 <<  " 2: " << fPhi22 << endl;
+    cout << " 2/1 " << fPhi22/fPhi11 <<  " 2/(1*1): " << fPhi22/(fPhi11*fPhi11) << endl;
+    cout << " \gamma " << 2*fPhi22/(fPhi11) - fPhi11 << endl;
+    return;
+    
     // Retrieving PreProcessed data histograms
     TFile*  insFile_DT_Yield            =   new TFile   (Form(kASigExtp_FitCheckRst,"Yield"));
     TFile*  insFile_DT_Yiel2            =   new TFile   (Form(kASigExtr_FitCheckRst,"Yield"));

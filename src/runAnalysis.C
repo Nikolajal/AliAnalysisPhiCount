@@ -29,7 +29,7 @@ void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEven
     //  Evaluating the resolution
     MassResolution();
     //  Signal Extraction
-    SignalExtraction(true,fOption);
+    SignalExtraction(fOption,true);
     //  Sepctra correction and integration
     SignalCorrections(true,fOption);
 }

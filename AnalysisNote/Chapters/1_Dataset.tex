@@ -5,7 +5,7 @@ A total of about 350 million events are selected and used for the analysis. An o
 The analysis is carried out using the AOD filtered data form the fourth reconstruction pass (pass 4) and their anchored general purpose Monte Carlo simulations. Using the AOD data makes the Physics selection implicit, as it has already been done in the re-filtering.
 
 \subsection{Trigger selection}
-The trigger used is \texttt{kAnyINT}, which is requiring a minimum bias trigger. It is the \texttt{OR} combination of the following trigger masks:
+The trigger masks are implemented in the \href{https://github.com/alisw/AliRoot/blob/master/STEER/STEERBase/AliVEvent.h}{AliVEvent} class. The trigger used is \texttt{kAnyINT}, which is requiring a minimum bias trigger, it is the \texttt{OR} combination of the following trigger masks:
 \begin{enumerate}
 \item \texttt{kMB} Minimum Bias trigger in PbPb 2010-11
 \item \texttt{kINT5} V0OR Minimum Bias trigger
@@ -15,14 +15,14 @@ The trigger used is \texttt{kAnyINT}, which is requiring a minimum bias trigger.
 \end{enumerate}
 
 \subsection{Vertex selection}
-The first requirement for the candidate event is a proper vertex. This means:
+A list of quality cuts is applied to the event vertex in order to have a good physical reconstruction:
 \begin{enumerate}
 \item The vertex has to be reconstructed by the SPD
 \item If the track reconstructed vertex is not available, the SPD vertex is taken
 \item If the track reconstructed vertex is available, the z coordinate of the two are compared and the event is discarded if the two are more than \SI{0.5}{\centi\meter} apart.
 \item If the accepted vertex absolute value of the z coordinate is more than \SI{10}{\centi\meter}, the event is discarded.
 \end{enumerate}
-Figure \ref{fig:vertex} shows the distribution of the events per z vertex coordinate that pass the \SI{10}{\centi\meter} requirement.
+Figure \ref{fig:vertex} shows the distribution of the events as a function of the vertex z coordinate, after all quality cuts. A comparison is done to the Monte Carlo generation in order to evaluate the adherence of the simulation to the real data.
 
 \begin{figure}[!h]
 \includegraphics[width=\textwidth]{../../AliAnalysisQA/Result/EVTQA/VTX/Vertex}
@@ -31,7 +31,7 @@ Figure \ref{fig:vertex} shows the distribution of the events per z vertex coordi
 \end{figure}
 
 \subsection{Pile-up}
-The event is discarded if flagged as pile-up form the SPD
+The event is discarded if flagged as pile-up from the SPD
 
 \begin{table}[h]
 \center

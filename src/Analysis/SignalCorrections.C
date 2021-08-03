@@ -36,10 +36,10 @@ void SignalCorrections ( TString fOption = "", bool fSilent = true, TString kFol
     TH1D       *hEvntEff;
     TH1D       *hEvntMlt;
     //
-    hName       =   "fQC_Event_Enumerate";
+    hName       =   "fQC_Event_Enum_FLL";
     hEvntEff    =   (TH1D*)(insFile_DT_Yield->Get(hName));
     //
-    hName       =   "fQC_Event_Enum_Mult";
+    hName       =   "fQC_Event_Enum_V0M";
     hEvntMlt    =   (TH1D*)(insFile_DT_Yield->Get(hName));
     //
     //

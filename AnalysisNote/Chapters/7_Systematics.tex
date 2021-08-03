@@ -25,19 +25,35 @@ This parameter define the fluctuation as within statistical uncertainty if $n_i 
 \begin{itemize}
 \item $|\text{mean}| \leq 0.1$
 \item $\sigma \leq 1.1$
-\item Area within $\pm 1 \sigma$ $\leq$ 60\%
-\item Area within $\pm 2 \sigma$ $\leq$ 88\%
+\item Area within $\pm 1 \sigma$ $\geq$ 60\%
+\item Area within $\pm 2 \sigma$ $\geq$ 88\%
 \end{itemize}
 For each p$_{T}$ bin a histogram is filled with all the sources deemed systematical and the uncertainty is considered as the sum of the RMS and absolute value of the mean.
 
 \paragraph{Smoothing}
-To avoid overestimation or underestimation of the systematic uncertainty in each bin a smoothing process is performed. Smoothing the uncertainties means that bins that have similar values are all round up to the same value. Also when the uncertainties show a dependence in p$_{\text{T}}$, the values try to be extrapolated according to neighbouring bins.
+To avoid overestimation or underestimation of the systematic uncertainty in each bin a smoothing process is performed. The smoothing procedure takes into account neighbouring bins to extrapolate more reasonable values, meaning that small fluctuations are all averaged up to a common value and p$_{\text{T}}$ dependencies are extrapolated.
 
-\paragraph{$\phi$-meson pair yield p$_{\text{T}}$ bins}
-The 2-dimensional Invariant mass distribution has been built to be symmetric in nature. Of course the exact symmetry lays in the ideal limit of infinite statistics, and one can still have fluctuations that break this symmetry when evaluating the systematics variations. Nevertheless we will assume that this symmetry holds and therefore consider the errors in the twice differential yield in p$_{T}$ to be symmetric. This means that any bin of p$_{\text{T}}$ [X; Y] must share the same error as the p$_{\text{T}}$ [Y; X].
+\paragraph{Ratio uncertainties}
+One interesting possibility of this new measurement is to access the production statistics of the $\phi$ meson, this concept is reviewed in Section \ref{sec:Results}. As far as the systematical uncertainty is concerned ,the goal of this section is to understand the possible elusion of uncertainties when we consider the ratio of inclusive $\phi$-meson yield and pair yield. To achieve this we define two quantities:
+\begin{equation}
+\langle \text{e}_{\phi}\rangle = \frac{\sum \sigma_{\phi}(\text{p}_{\text{T}}) \times y_{\phi}(\text{p}_{\text{T}})}{\sum y_{\phi}(\text{p}_{\text{T}})} \qquad \langle \text{e}_{\phi\phi}\rangle = \frac{\sum \sigma_{\phi\phi}(\text{p}_{\text{T}}^{(1)},\text{p}_{\text{T}}^{(2)}) \times y_{\phi\phi}(\text{p}_{\text{T}}^{(1)},\text{p}_{\text{T}}^{(2)})}{\sum y_{\phi\phi}(\text{p}_{\text{T}}^{(1)},\text{p}_{\text{T}}^{(2)})} 
+\label{}
+\end{equation}
+\paragraph{$\sigma_{\phi}$,$\sigma_{\phi\phi}$} is the relative error from the scrutinised systematical source in the p$_{\text{T}}$ bin.
+\paragraph{$y_{\phi}$,$y_{\phi\phi}$} is the yield corrected by efficiency and signal loss in the p$_{\text{T}}$ bin.\\
+$\langle \text{e}_{\phi}\rangle, \langle \text{e}_{\phi\phi}\rangle$ is then the relative uncertainty on the integrated yield (short of the extrapolation) for which the source is responsible. To evaluate the source impact on the ratio one can make a straightforward calculation:
+\begin{equation}
+\frac{\langle \text{Y}_{\phi\phi} \rangle}{\langle \text{Y}_{\phi} \rangle} \to \sigma = \langle \text{e}_{\phi}\rangle + \langle \text{e}_{\phi\phi}\rangle \qquad \frac{\langle \text{Y}_{\phi\phi} \rangle}{\langle \text{Y}_{\phi} \rangle^{2}} \to \sigma = 2\langle \text{e}_{\phi}\rangle + \langle \text{e}_{\phi\phi}\rangle 
+\label{}
+\end{equation}
+Where the uncertainties are considered correlated, if this is not the case a quadratic sum should be used. Another way to evaluate this contribution to the ratio error is to directly take the ratio of the corrected yields for each systematic variation w.r.t. the standard one and build a deviation histogram. This histogram mean and standard deviation will then be the new error \hl{elaborate}.
+\begin{equation}
+\sigma' = \text{MEAN}\Big( \frac{\langle \text{Y}_{\phi\phi}^{(i)} \rangle}{\langle \text{Y}_{\phi}^{(i)} \rangle} \Big) + \text{STDV}\Big( \frac{\langle \text{Y}_{\phi\phi}^{(i)} \rangle}{\langle \text{Y}_{\phi}^{(i)} \rangle} \Big) \qquad \sigma' = \text{MEAN}\Big( \frac{\langle \text{Y}_{\phi\phi}^{(i)} \rangle}{\langle \text{Y}_{\phi}^{(i)} \rangle^{2}} \Big) + \text{STDV}\Big( \frac{\langle \text{Y}_{\phi\phi}^{(i)} \rangle}{\langle \text{Y}_{\phi}^{(i)} \rangle^{2}} \Big)
+\label{}
+\end{equation}
 
 \subsection{Signal Extraction}
-The signal extraction systematic represents the uncertainty related to the signal and background estimation of the fit on the invariant mass distributions. The process is to repeat the fits on the same dataset for each variation, one at a time, and determine the extent by which the results differ. A list of all the standard conditions and variations that have been performed can be found in Tab. \ref{tab:Syst_SE}.
+The signal extraction systematic represents the uncertainty related to the signal and background estimation of the fit on the invariant mass distributions. The process is to repeat the fits on the same dataset for each variation, one at a time, and determine the extent by which the results differ. A list of all the standard conditions and variations that have been performed can be found in Table \ref{tab:Syst_SE}.
 \begin{table}[h]
 \center
 \begin{tabular}{c|r|r}
@@ -63,15 +79,7 @@ Background shape		&3° \v{C}eby\v{s}\"{e}v 						&2°, 4° \v{C}eby\v{s}\"{e}v \
 \end{table}
 
 \subsection{PID Selection}
-The PID selection systematic represents the uncertainty related to the PID selection performed on accepted tracks. The process is to repeat the fits on different datasets for each variation, one at a time, and determine the extent by which the results differ. A list of all the standard conditions and variations that have been performed can be found in Tab. \ref{tab:Syst_SE}.
-
-data sample
-event selection
-track selection
-particle identification
-signal extraction
-
-
+The PID selection systematic represents the uncertainty related to the PID selection performed on accepted tracks. The process is to repeat the fits on different datasets for each variation, one at a time, and determine the extent by which the results differ. A list of all the standard conditions and variations that have been performed can be found in Tab. \ref{tab:Syst_PID}.
 \begin{table}[h]
 \center
 \begin{tabular}{c|r|r}
@@ -86,21 +94,14 @@ TOF veto				&3$\sigma_{\text{Kaons}}$					& $\pm$10\%\\
 
 \end{tabular}
 \caption{List of all Standard PID selections with the variation used to establish the systematic uncertainty}
-\label{tab:Syst_SE}
+\label{tab:Syst_PID}
 \end{table}
 
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth]{Figures/SYST_PID_ALL.pdf}
-\label{fig:1Dfit}
-\caption{}
-\end{figure}
-
 \subsection{Global Tracking Efficiency}
-Global Tracking Efficiency represents the difference in TPC-ITS matching. It is listed in various publications as 4\% per track in various publications for Run 1 Data \cite{PrevPubMult} \hl{cite more}. To check this assumption and assign the correct uncertainty we compare the results from the standard analysis to the results using \href{https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliDPGtoolsFilteringCuts#Run_flag_1000_AddTrackCutsLHC10b}{DPG Track Filterbit 7} which represents the Stand Alone TPC tracks. \hl{continue...}.
+Global Tracking Efficiency represents the difference in TPC-ITS matching. It is listed as 4\% per track in various publications for Run 1 Data \cite{PrevPubMult}. To check this assumption and assign the correct uncertainty we compare the results from the standard analysis to the results using \href{https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliDPGtoolsFilteringCuts#Run_flag_1000_AddTrackCutsLHC10b}{DPG Track Filterbit 7} which represents the Stand Alone TPC tracks.
 
 \subsection{Analysis Cuts}
-Analysis cuts represents the error due to the selections cuts applied to the track. To evaluate its magnitude the analysis is run multiple times variating the parameters of the standard selection. A List of all the standard Track Quality Cuts and their variation is listed in Table \ref{tab:Syst_AC}.
+Analysis cuts represents the error due to the quality cuts applied to the track. To evaluate its magnitude the analysis is run multiple times variating the parameters of the standard selection. A List of all the standard Track Quality Cuts and their variation is listed in Table \ref{tab:Syst_AC}.
 
 \begin{table}[h]
 \center
@@ -117,7 +118,7 @@ Maximum $\chi^2_{ITS}$ per Cluster		&36										&32, 40\\
 								\\ \hline \\
 Maximum DCA$_{\text{z}}$			&2										&1.5, 2.5\\
 								\\ \hline \\
-Maximum DCA$_{\text{xy}}$			&$7\sigma$ 0.0182+0.0350/p$_{T}^{1.01}$		&$5,9\sigma$\\
+Maximum DCA$_{\text{xy}}$			&$7\sigma$ 0.0182+0.0350/p$_{\text{T}}^{1.01}$	&$5,9\sigma$\\
 								\\ \hline \\
 TPC and ITS refit					&Required								&Required\\
 								\\ \hline \\
@@ -132,17 +133,13 @@ Reject Kink Daughter				&Required								&Required\\
 \end{table}
 
 \subsection{Material Budget}
-Material Budget systematic represents how accurately we can reproduce the Material Budget of the detector. To evaluate this uncertainty we take two simulations having an artificially modified material budget with respect to the standard configuration. In particular we will use \hl{... XYZ ...} productions. Those productions are made in p-Pb and have -7\% and +14\% of material budget. The uncertainty is evaluated taking the half of the fractiona variation between the efficiencies $\times$ acceptance in the two simulations. This procedure can be done as the material budget is strictly related to the detector structure and does not depend on the energy and/or collision system.
+Material Budget systematic represents how accurately we can reproduce the Material Budget of the detector. To evaluate this uncertainty we take two simulations having an artificially modified material budget with respect to the standard configuration.
+\begin{comment}
+In particular we will use \hl{... XYZ ...} productions. Those productions are made in p-Pb and have -7\% and +14\% of material budget. The uncertainty is evaluated taking the half of the fractiona variation between the efficiencies $\times$ acceptance in the two simulations. This procedure can be done as the material budget is strictly related to the detector structure and does not depend on the energy and/or collision system.
+\end{comment}
 
 \subsection{Hadronic Interaction}
 Hadronic Interaction systematic represents how accurately we can reproduce the interaction of the particle with the detector in our simulation. To evaluate this uncertainty we take a second simulation, to be compared to the default, using Geant4 for the event reconstruction in the detector.
 
-\subsection{Signal Extrapolation}
-
-
 \subsection{Total uncertainty}
-The total uncertainty 
-
-\paragraph{Ratio uncertainties}
-
-
+The total uncertainty is the square sum of all the listed uncertainties.

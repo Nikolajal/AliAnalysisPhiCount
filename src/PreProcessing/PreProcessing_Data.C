@@ -28,8 +28,6 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
     TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList_name");
     TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_FLL");
     TH1D   *fHEvCountMlt    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_V0M");
-    fHEventCount->SetName("fQC_Event_Enumerate");
-    fHEvCountMlt->SetName("fQC_Event_Enum_Mult");
     
     // Define tree data structures
     Struct_PhiCandidate     evPhiCandidate;

@@ -23,7 +23,7 @@ In addition to these selections we add a cut in $\eta$, p$_{\text{T}}$ for the k
 \item Reconstructed $\phi$ candidate in rapidity range [-0.5;0.5] ($|\text{y}| < 0.5$)
 \end{enumerate}
 \subsection{PID Selection}
-Once the primary tracks are selected, we proceed to the particle identification using the TPC and TOF detectors, respectively measuring the energy loss and the time of flight of the particle. The selection is made using the $\sigma_{\text{kaons}}$ of the detector, this quantity represents how much the measured signal is different from the signal expected for a given particle. It reflects the detector confidence for a given track being a given particle. The selections used in the analysis are:
+Once the primary tracks are selected, we proceed to the particle identification using the TPC and TOF detectors, respectively measuring the energy loss and the time of flight of the particle. The selection is made using the $\sigma_{\text{kaons}}$ of the detector, this quantity represents the difference between the measured signal and the expected signal for a given particle, normalised to the detector resolution. It reflects the detector confidence for a given track being a given particle. The selections used in the analysis are:
 \begin{enumerate}
 \item If the track does not match a TOF hit, a $|\sigma_{\text{kaons}}^{\text{TPC}}| < 3.0$ selection is performed
 \item If the track matches a TOF hit, a $|\sigma_{\text{kaons}}^{\text{TPC}}| < 5.0$ selection is performed, combined with a $|\sigma_{\text{kaons}}^{\text{TOF}}| < 3.0$ selection (TOF veto)
@@ -39,7 +39,7 @@ p$_{\text{T}}$$ \leq$ \SI{0.28}{\giga\electronvolt}. This PID selection will not
 
 %-------------QUALITY ASSURANCE
 \subsection{Quality Assurance}
-To assure a correct selection and a reliable reproduction of the data by the Monte Carlo simulation we can take a look at various distributions in both Datasets. This is done in Figures \ref{fig:EtaPhiCheck} - \ref{fig:PIDCheck}.
+To assure a correct selection and a reliable reproduction of the data by the Monte Carlo simulation we can take a look at various distributions in both Datasets. This is done in Figures \ref{fig:EtaPhiCheck} - \ref{fig:PIDCheck}, all distributions are intended after all quality cuts.
 
 \begin{figure}
 \includegraphics[width=0.49\textwidth]{../../AliAnalysisQA/Result/TRKQA/Tracks/fQC_Tracks_Eta_POS.pdf}
@@ -50,7 +50,7 @@ To assure a correct selection and a reliable reproduction of the data by the Mon
 \label{fig:EtaPhiCheck}
 \end{figure}
 
-For $\phi$ and $\eta$ of the Tracks we compare separately the negative and positive charged tracks to the corresponding Monte Carlo, this is done in Figure \ref{fig:EtaPhiCheck}. This comparison shows a good agreement between Data and Monte Carlo reconstruction.
+For the kinematic quantities $\phi$ and $\eta$, the tracks are compared differentiating by their sign. Figure \ref{fig:EtaPhiCheck} show such comparisons, highlighting how the Monte Carlo correctly reproduces Data and how the track sign is not affecting the reconstruction goodness, which is expected when everything is working correctly. The $\eta$ distribution also provides a check on the Track cut of $| \eta | \leq 0.8$ working properly.
 
 \begin{figure}
 \includegraphics[width=0.49\textwidth]{../../AliAnalysisQA/Result/TRKQA/Tracks/fQC_Tracks_DCAZ_PT_FLL_TOT}
@@ -61,7 +61,7 @@ For $\phi$ and $\eta$ of the Tracks we compare separately the negative and posit
 \label{fig:DCACheck}
 \end{figure}
 
-For DCA distribution of the Tracks we compare separately the cumulative distribution with the Monte Carlo and the Data distributions in p$_{\text{T}}$ with the Quality cuts applied, this is done in Figure \ref{fig:DCACheck}. This comparison shows a good agreement between Data and Monte Carlo reconstruction, and provides a check that the cuts are properly implemented in the task.
+For the DCA distribution of the Tracks we compare separately the cumulative distribution and the p$_{\text{T}}$ distributions, in xy-DCA and z-DCA. Figure \ref{fig:DCACheck} shows the cumulative distribution, compared to the Monte Carlo, which provides again a way to check the goodness fo the reconstruction. Together with that, the p$_{\text{T}}$ distribution is reported for Data only and compared instead to the nominal cuts performed. This further checks the cut is working properly.
 
 \begin{figure}
 \includegraphics[width=0.49\textwidth]{../../AliAnalysisQA/Result/PIDQA/TOF/fQC_kaons_TOF_P}
