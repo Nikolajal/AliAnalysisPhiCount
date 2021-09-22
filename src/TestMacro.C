@@ -1,11 +1,148 @@
 #include "../inc/AliAnalysisPhiPair.h"
-#include "/Users/nikolajal/alidock/AliAnalysisPhiCount/AliAnalysisUtility/ReweightEfficiency.C"
 #include "./Analysis/SignalExtraction.C"
 #include "./PreProcessing.C"
 // !TODO: All Set!
 
 void TestMacro   ()  {
     
+    Double_t fMin_, fMax_;
+    for ( Int_t i = 0; i < nOptions; i++ )  {
+        SetBoundaries(sOptions[i],fMin_,fMax_);
+        cout << sOptions[i] << " min:" << fMin_ << " max:" << fMax_ << endl;
+    }
+    
+    return;
+    
+    RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
+    RooMsgService::instance().setSilentMode(true);
+    auto nEntries = 100000;
+    TH1F* THdata = new TH1F("htest","htest",1000,-20,20);
+    
+    for ( int i = 0; i < nEntries; i++ )  {
+        THdata->Fill( uRandomGen->Gaus(0,5) );
+        THdata->Fill( uRandomGen->Uniform(-20,20) );
+    }
+    
+    RooRealVar      InvMass     =   RooRealVar        ("InvMass",   "InvMass",      -20, 20                  );
+    RooRealVar      InvMassLoose=   RooRealVar        ("InvMassLoose",   "InvMassLoose",      -5, 5                  );
+    
+    RooDataHist*    data        =   new RooDataHist   ("Data",      "Data",         InvMass,        Import(*THdata)                 );
+    RooDataHist*    dataLoose   =   new RooDataHist   ("DataLoose", "DataLoose",    InvMassLoose,        Import(*THdata)   );
+    
+    
+    
+    RooRealVar ch1, ch2;
+                                ch1     =   RooRealVar      ("ch1",     "ch1",      0.,     -10,         10   );
+                                ch2     =   RooRealVar      ("ch2",     "ch2",      0.,     -10,         10   );
+    
+    RooChebychev                fBkg1   =   RooChebychev    ("fBkg1",    "fBkg1",     InvMass,    RooArgSet(ch1));
+    RooChebychev                fBkg2   =   RooChebychev    ("fBkg2",    "fBkg2",     InvMassLoose,    RooArgSet(ch2));
+    
+    RooRealVar mn1, st1;
+    mn1     =   RooRealVar      ("mn1",     "mn1",      0.,     -10,         10   );
+    st1     =   RooRealVar      ("st1",     "st1",      0.,     0,         100   );
+    
+    RooRealVar mn2, st2;
+    mn2     =   RooRealVar      ("mn2",     "mn2",      0.,     -10,         10   );
+    st2     =   RooRealVar      ("st2",     "st2",      0.,     0,         100   );
+    
+    RooGaussian                fSig1   =   RooGaussian    ("fSig1",    "fSig1",     InvMass,    mn1,st1);
+    RooGaussian                fSig2   =   RooGaussian    ("fSig2",    "fSig2",     InvMassLoose,    mn1,st2);
+    
+    RooRealVar  nSS1,    nBB1, nSS2,    nBB2;
+    nSS1     =   RooRealVar      ("anSS1",    "anSS1",     .5*nEntries,    0., 2*nEntries);
+    nBB1     =   RooRealVar      ("anBB1",    "anBB1",     .5*nEntries,    0., 2*nEntries);
+    nSS2     =   RooRealVar      ("anSS2",    "anSS2",     .5*nEntries,    0., 2*nEntries);
+    nBB2     =   RooRealVar      ("anBB2",    "anBB2",     .5*nEntries,    0., 2*nEntries);
+    
+    
+    RooAddPdf                  *fMod1 =   new RooAddPdf   ("fMod1",    "fMod1",     RooArgList(fBkg1,fSig1),   RooArgList(nBB1,nSS1));
+    RooAddPdf                  *fMod2 =   new RooAddPdf   ("fMod2",    "fMod2",     RooArgList(fBkg2,fSig2),   RooArgList(nBB2,nSS2));
+    
+    fMod1->fitTo(*data,Extended(kTRUE),Save(),NumCPU(kCPU_use,kCPUStrategy),Offset(kFitOffset),Strategy(kFitMinuitStrategy),InitialHesse(kFitInitHesse),Minos(kFitMinos));
+    fMod2->fitTo(*dataLoose,Extended(kTRUE),Save(),NumCPU(kCPU_use,kCPUStrategy),Offset(kFitOffset),Strategy(kFitMinuitStrategy),InitialHesse(kFitInitHesse),Minos(kFitMinos));
+    
+    RooRealVar      vTest     =   RooRealVar        ("vTest",   "vTest",      -1000, 1000                  );
+    RooRealVar      vMean     =   RooRealVar        ("vMean",   "vMean",      kPhiMesonMass_);
+    RooRealVar      vStdv     =   RooRealVar        ("vStdv",   "vStdv",      kPhiMesonWidth);
+    RooRealVar      vMea2     =   RooRealVar        ("vMea2",   "vMea2",      kPhiMesonMass_);
+    RooRealVar      vStd2     =   RooRealVar        ("vStd2",   "vStd2",      kPhiMesonWidth);
+    RooRealVar      vSlop     =   RooRealVar        ("vSlop",   "vSlop",      0.0);
+    
+    RooBreitWigner hTest = RooBreitWigner("hTest","hTest",vTest,vMean,vStdv);
+    RooBreitWigner hTes2 = RooBreitWigner("hTes2","hTes2",vTest,vMea2,vStd2);
+    
+    vTest.setRange("Full",0,10);
+    vTest.setRange("Meas",0.99,1.06);
+    
+    cout << hTest.analyticalIntegral(1,"Full") << endl;
+    cout << hTest.analyticalIntegral(1,"Meas") << endl;
+    cout << hTest.analyticalIntegral(1,"Meas")/hTest.analyticalIntegral(1,"Full") << endl;
+    
+    RooProdPdf hTes3 = RooProdPdf( "hTes3","hTes3",hTest,hTes2);
+    
+    auto hTestTF = hTes3.asTF(vTest,RooArgList(vMean,vStdv,vMea2,vStd2));
+    
+    cout << hTestTF->Integral(0,10) << endl;
+    cout << hTestTF->Integral(0.99,1.06) << endl;
+    cout << hTestTF->Integral(0.99,1.06)/(hTestTF->Integral(0,10)) << endl;
+    
+    TCanvas *c1 = new TCanvas();
+    THdata->Draw();
+    
+    
+    /*
+    
+    
+    //
+    //>>    Signal PDF Coefficients
+    RooRealVar sMass, sWidt, sSlop;
+                                sMass   =   RooRealVar      ("bMass",   "bMass",    kPhiMesonMass_,  kPhiMesonMass_*0.5,  kPhiMesonMass_*1.5);
+    if ( fLosWidt )             sWidt   =   RooRealVar      ("bWidt",   "bWidt",    kPhiMesonWidth,  kPhiMesonWidth*0.5,  kPhiMesonWidth*1.5);
+    else                        sWidt   =   RooRealVar      ("bWidt",   "bWidt",    kPhiMesonWidth);
+    if ( bPythiaTest )          sSlop   =   RooRealVar      ("bSlop",   "bSlop",    0.);
+    else if ( !fUseFreeRes )    sSlop   =   RooRealVar      ("bSlop",   "bSlop",    fRescaleRes*hSlopReference->GetBinContent(PTindex+1)/1000.);
+    else                        sSlop   =   RooRealVar      ("bSlop",   "bSlop",    fRescaleRes*hSlopReference->GetBinContent(PTindex+1)/1000.);
+    //
+    //>>    Normalisation Coefficients
+    RooRealVar  nSS,    nBB;
+                                nSS     =   RooRealVar      ("anSS",    "anSS",     .5*nEntries,    0., nEntries);
+                                nBB     =   RooRealVar      ("anBB",    "anBB",     .5*nEntries,    0., nEntries);
+    //
+    //>>    Building the PDFs
+    RooVoigtian                 fSig    =   RooVoigtian     ("fSig",    "fSig",     InvMass,    sMass,  sWidt,  sSlop);
+    RooChebychev                fBkg    =   RooChebychev    ("fBkg",    "fBkg",     InvMass,    RooArgSet(ch1,ch2,ch3,ch4));
+    RooPolynomial               fBkgPol =   RooPolynomial   ("fBkg",    "fBkg",     InvMass,    RooArgSet(ch1,ch2,ch3,ch4));
+    RooAddPdf                  *fMod;
+    if ( fUsePoly )   {
+        fMod                            =   new RooAddPdf   ("fMod",    "fMod",     RooArgList(fBkgPol,fSig),   RooArgList(nBB,nSS));
+        ch1.removeRange();
+        ch2.removeRange();
+        ch3.removeRange();
+        ch4.removeRange();
+    }   else    {
+        fMod                            =   new RooAddPdf   ("fMod",    "fMod",     RooArgList(fBkg,fSig),      RooArgList(nBB,nSS));
+    }
+    //
+    RooFitResult* fFitResults;
+    fFitResults      =   fMod->fitTo(*dataLoose,Save(),NumCPU(kCPU_use,kCPUStrategy));
+    for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )    {
+        if ( !kOnlyTrue )   {
+            fFitResults      =   fMod->fitTo(*data,Extended(kTRUE),Save(),NumCPU(kCPU_use,kCPUStrategy),Offset(kFitOffset),Strategy(kFitMinuitStrategy),InitialHesse(kFitInitHesse),Minos(kFitMinos));
+            auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().find("anSS"));
+            if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
+        }
+        if ( kOnlyTrue )    {
+            fFitResults      =   fSig.fitTo(*data,Extended(kTRUE),Save(),NumCPU(kCPU_use,kCPUStrategy),Offset(kFitOffset),Strategy(kFitMinuitStrategy),InitialHesse(kFitInitHesse),Minos(kFitMinos));
+        }
+    }
+    
+    */
+    
+}
+    
+    
+    /*
     auto fPhi1 = 0.;
     auto fPhi2 = 0.;
     auto fPhi11= 0.;
@@ -188,7 +325,6 @@ void TestMacro   ()  {
     cout << fTotal << " - " << fPartial << " - " << fPartial/fTotal << endl;
     cout << fTota2 << " - " << fPartia2 << " - " << fPartia2/fTota2 << endl;
     */
-}
 
 
     

@@ -31,5 +31,5 @@ void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEven
     //  Signal Extraction
     SignalExtraction(fOption,true);
     //  Sepctra correction and integration
-    SignalCorrections(true,fOption);
+    SignalCorrections(fOption,true);
 }

@@ -1,8 +1,68 @@
 // File for 1-Dimensional Analysis:
 // !TODO: All Set!
 #include "../../inc/AliAnalysisPhiPair.h"
+#include "GeneralAnalysis.cxx"
 #include "RooMsgService.h"
 
+void
+Analysis_SignalExtraction
+( bool fSilent = false)    {
+    
+}
+
+
+
+    /*
+     //
+     //  YIELD Efficiency
+     TFile      *insFile_EF_Yield    =   new TFile   ( Form(kAnalysis_MCTruthHist,"yield") );
+     //
+     TH1F       *hStandard;
+     hName                           =   Form("hRAW_1D");
+     hStandard                       =   (TH1F*)((new TFile(Form(kASigExtr_FitCheckRst,"Yield")))->Get(hName));
+     //
+     std::vector<TH1F*>  fVariations;
+     hName           =   Form("hRAW_1D");
+     for ( Int_t iTer = 0; iTer < nOptions; iTer++ )    {
+         auto    fInput  =   new TFile   (Form("%s/ExtractionCheck/%s/1D/FitResults_%s.root",Form(kAnalysis_SgExSys_Dir,"yield"),sOptions.at(iTer).Data(),sOptions.at(iTer).Data()));
+         auto    fTarget =   new TH1F( *(TH1F*)(fInput->Get(hName)) );
+         fTarget->SetName(sOptions.at(iTer).Data());
+         fVariations.push_back(fTarget);
+         delete fInput;
+         delete fTarget;
+     }
+     //
+     GeneralAnalysis(hStandard,fVariations,TString(Form(kAnalysis_SgExSys_Dir,"yield")));
+     //
+    
+    TFile **insFileH1D  =   new TFile*  [nOptions+1];
+    TFile **insFileH2D  =   new TFile*  [nOption2];
+    
+    //Recovering histograms
+    TH1F**  h1D_Syst    =   new TH1F*   [nOptions+1];
+    TH2F**  h2D_Syst    =   new TH2F*   [nOption2+1];
+    
+    insFileH1D[0]   =   new TFile   (Form(kASigExtr_FitCheckRst,"yield"));
+    hName           =   Form("hRAW_1D");
+    h1D_Syst[0]     =   (TH1F*)(insFileH1D[0]->Get(hName));
+    hName           =   Form("hRAW_2D");
+    h2D_Syst[0]     =   (TH2F*)(insFileH1D[0]->Get(hName));
+    for ( Int_t iTer = 1; iTer <= nOptions; iTer++ )
+    {
+        insFileH1D[iTer]=   new TFile   (Form("result/yield/ExtractionSystematics/ExtractionCheck/%s/1D/FitResults_%s.root",sOptions.at(iTer-1).Data(),sOptions.at(iTer-1).Data()));
+        hName           =   Form("hRAW_1D");
+        h1D_Syst[iTer]  =   (TH1F*)(insFileH1D[iTer]->Get(hName));
+        //h1D_Syst[iTer]      ->Scale(1.,"width");
+    }
+    for ( Int_t iTer = 0; iTer < nOption2; iTer++ )
+    {
+        insFileH2D[iTer]=   new TFile   (Form("result/yield/ExtractionSystematics/ExtractionCheck/%s/2D/FitResults_%s.root",sOption2.at(iTer).Data(),sOption2.at(iTer).Data()));
+        hName           =   Form("hRAW_2D");
+        h2D_Syst[iTer+1]=   (TH2F*)(insFileH2D[iTer]->Get(hName));
+        //h2D_Syst[iTer+1]    ->Scale(1.,"width");
+    }
+     */
+/*
 void Analysis_SignalExtraction ( bool fSilent = false)
 {
     
@@ -788,3 +848,5 @@ void Analysis_SignalExtraction ( bool fSilent = false)
     gROOT->SetBatch(false);
     return;
 }
+
+*/

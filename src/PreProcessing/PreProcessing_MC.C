@@ -20,13 +20,13 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
     TFile *insFileMC        =   new TFile   (fFileName.c_str());
     
     //Retrieving Event data TTree
-    TTree   *TPhiEfficiency =   (TTree*)insFileMC->Get(Form("%s%s",fPhiCandidateEff_Tree,"_name"));
+    TTree   *TPhiEfficiency =   (TTree*)insFileMC->Get(Form("%s%s",fPhiCandidateEff_Tree,""));
     TTree   *TKaonCandidate =   nullptr;//(TTree*)insFileMC->Get(fKaonCandidateEff_Tree);
-    TTree   *TPhiCandidate  =   (TTree*)insFileMC->Get(Form("%s%s",fPhiCandidate_Tree,"_name"));
+    TTree   *TPhiCandidate  =   (TTree*)insFileMC->Get(Form("%s%s",fPhiCandidate_Tree,""));
     TTree   *TKaonEfficiency=   nullptr;//(TTree*)insFileMC->Get(fKaonCandidate_Tree);
     
     // Retrieving Event Count Histogram
-    TList  *fQCOutputList   =   (TList*)insFileMC       ->Get("fQCOutputList_name");
+    TList  *fQCOutputList   =   (TList*)insFileMC       ->Get("fQCOutputList");
     TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_FLL");
     TH1D   *fHEvCountMlt    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_V0M");
     
@@ -60,6 +60,9 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
     //
     //  Declaring all histograms
     //
+    TH1F       *hProdDistrTRU;
+    TH1F       *hProdDistrGEN;
+    TH1F       *hProdDistrREC;
     TH1F       *hREC_1D;
     TH1F       *hGEN_1D;
     TH1F       *hREC_Rw_1D;
@@ -81,6 +84,21 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
     TH1F       *hGEN_INELFLL_1D_in_2D_bin;
     //
     //  Defining Efficiency and check utilities
+    //
+    hName       =   Form("hProdDistrTRU");
+    hTitle      =   Form("hProdDistrTRU");
+    hProdDistrTRU     =   new TH1F (hName,hTitle,10,-.5,9.5);
+    SetAxis(hProdDistrTRU,"PT 1D");
+    //
+    hName       =   Form("hProdDistrGEN");
+    hTitle      =   Form("hProdDistrGEN");
+    hProdDistrGEN     =   new TH1F (hName,hTitle,10,-.5,9.5);
+    SetAxis(hProdDistrGEN,"PT 1D");
+    //
+    hName       =   Form("hProdDistrREC");
+    hTitle      =   Form("hProdDistrREC");
+    hProdDistrREC     =   new TH1F (hName,hTitle,10,-.5,9.5);
+    SetAxis(hProdDistrREC,"PT 1D");
     //
     hName       =   Form("hREC_1D");
     hTitle      =   Form("hREC_1D");
@@ -597,17 +615,32 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
         TPhiEfficiency->GetEntry(iEvent);
         
         fPrintLoopTimer("Efficiency Utility Histograms Production",iEvent,nEvents,kPrintIntervalPP);
-
+        
         // Utilities
         TLorentzVector  LPhi_candidate1,    LPhi_candidate2;
         U_nAccept = 0;
-        
+        //
+        auto    fTru = 0;
+        auto    fGen = 0;
+        auto    fRec = 0;
         for ( Int_t iPhi = 0; iPhi < evPhiEfficiency.nPhi; iPhi++ ) {
             LPhi_candidate1.SetXYZM(evPhiEfficiency.Px[iPhi],evPhiEfficiency.Py[iPhi],evPhiEfficiency.Pz[iPhi],kPhiMesonMass_);
+            
+            if ( fabs(LPhi_candidate1.Rapidity()) < 0.5 )   {
+                fTru++;
+                if ( evPhiEfficiency.Selection[iPhi] >= 1 ) fGen++;
+                if ( evPhiEfficiency.Selection[iPhi] >= 2 ) fRec++;
+            }
+            
             if ( !fAcceptCandidate(kPhiMesonMass_,LPhi_candidate1.Pt()) ) continue;
             U_AccCand[U_nAccept] = iPhi;
             U_nAccept++;
         }
+        //
+        hProdDistrTRU->Fill(fTru);
+        hProdDistrGEN->Fill(fGen);
+        hProdDistrREC->Fill(fRec);
+        //
         for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )    {
             // Must have at least 1 candidate
             if ( U_nAccept < 1 ) break;
@@ -912,6 +945,12 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
     // >> YIELD ANALYSIS //
     //
     auto fNormEvent = fHEventCount->GetBinContent(1);
+    auto fTotlEvent = hProdDistrTRU->GetEntries();
+    for ( Int_t iCnt = 0; iCnt < fNormEvent - fTotlEvent; iCnt++ ) {
+        hProdDistrTRU               ->Fill(0);
+        hProdDistrGEN               ->Fill(0);
+        hProdDistrREC               ->Fill(0);
+    }
     hEFF_1D                             ->Divide(hREC_1D,                   hGEN_1D,                1.,1.,"b");
     hEFF_IM_1D                          ->Divide(hREC_IM_1D,                hGEN_IM_1D,             1.,1.,"b");
     hEFF_1D_in_2D_bin                   ->Divide(hREC_1D_in_2D_bin,         hGEN_1D_in_2D_bin,      1.,1.,"b");
@@ -948,6 +987,9 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
     hREC_IM_1D                  ->Scale(1./fNormEvent);
     hREC_1D_in_2D_bin           ->Scale(1./fNormEvent);
     hREC_2D                     ->Scale(1./fNormEvent);
+    hProdDistrTRU               ->Scale(1./fNormEvent);
+    hProdDistrGEN               ->Scale(1./fNormEvent);
+    hProdDistrREC               ->Scale(1./fNormEvent);
     //
     hGEN_1D                     ->Scale(1.,"width");
     hGEN_1D_in_2D_bin           ->Scale(1.,"width");
@@ -1043,6 +1085,7 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
     // >> All Analysis Utility
     //
     gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kMassResolution_Dir_,(TString("Yield")+kFolder).Data())));
+    gROOT           ->  ProcessLine(Form(".! mkdir -p %s/Plots",Form(kMassResolution_Dir_,(TString("Yield")+kFolder).Data())));
     TFile *outFil0  =   new TFile   (Form(kMassResolution_Prod,(TString("Yield")+kFolder).Data()),"recreate");
     //
     for ( Int_t iTer = 0; iTer < nBinPT1D; iTer++ )  {
@@ -1078,6 +1121,9 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
         gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data())));
         TFile *outFil2  =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Yield")+kFolder).Data()),"recreate");
         //
+        hProdDistrTRU->Write();
+        hProdDistrGEN->Write();
+        hProdDistrREC->Write();
         hREC_1D->Write();
         hGEN_1D->Write();
         hREC_Rw_1D->Write();
@@ -1109,6 +1155,8 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
         //
         outFil2->Close();
         //
+        SetStyle();
+        //
         gROOT           ->  SetBatch();
         gROOT           ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/")).Data()));
         //
@@ -1117,9 +1165,16 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
         gPad            ->  SetLogx();
         gPad            ->  SetGridy();
         uSetHisto(hEFF_1D,"EFF 1D");
-        hEFF_1D         ->  SetMaximum(+60.);
-        hEFF_1D         ->  SetMinimum(0.);
         hEFF_1D         ->  Draw("");
+        
+        uLatex->SetTextFont(60);
+        uLatex->SetTextSize(0.05);
+        uLatex->DrawLatexNDC(0.19, 0.83,"ALICE Performance");
+        uLatex->SetTextFont(42);
+        uLatex->SetTextSize(0.04);
+        uLatex->DrawLatexNDC(0.19, 0.77,"pp #sqrt{#it{s}}= 7 TeV");
+        uLatex->DrawLatexNDC(0.19, 0.71,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+        
         cDrawEff        ->  SaveAs((TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/")+TString("hEFF_1D.pdf")).Data());
         delete cDrawEff;
         //
@@ -1134,10 +1189,21 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
             auto h_2D = hEFF_2D         ->ProjectionX(Form("_2D_%i",iPT2D),iPT2D,iPT2D);
             uSetHisto(h12D,"EFF 1D");
             uSetHisto(h_2D,"EFF2 1D");
-            h12D      ->  SetMaximum(+10.+iPT2D*3.5);
-            h12D      ->  SetMinimum(0.);
             h12D    ->  Draw();
             h_2D    ->  Draw("SAME");
+            
+            if ( iPT2D == 1 )   {
+                uLatex->SetTextFont(60);
+                uLatex->SetTextSize(0.05);
+                uLatex->DrawLatexNDC(0.19, 0.83,"ALICE Performance");
+                uLatex->SetTextFont(42);
+                uLatex->SetTextSize(0.04);
+                uLatex->DrawLatexNDC(0.19, 0.77,"pp #sqrt{#it{s}}= 7 TeV");
+                uLatex->DrawLatexNDC(0.19, 0.71,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+                uLatex->DrawLatexNDC(0.19, 0.65,Form("%.2f < #it{p}_{T}^{#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[iPT2D-1],fArrPT2D[iPT2D]));
+            } else {
+                uLatex->DrawLatexNDC(0.19, 0.83,Form("%.2f < #it{p}_{T}^{#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[iPT2D-1],fArrPT2D[iPT2D]));
+            }
         }
         cDrawEff        ->  SaveAs((TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/")+TString("hEFF_12D.pdf")).Data());
         delete cDrawEff;
@@ -1150,6 +1216,15 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
         hEFF_SL_1D      ->  SetMaximum(+4.);
         hEFF_SL_1D      ->  SetMinimum(-1.);
         hEFF_SL_1D      ->  Draw("");
+        
+        uLatex->SetTextFont(60);
+        uLatex->SetTextSize(0.05);
+        uLatex->DrawLatexNDC(0.19, 0.83,"ALICE Performance");
+        uLatex->SetTextFont(42);
+        uLatex->SetTextSize(0.04);
+        uLatex->DrawLatexNDC(0.19, 0.77,"pp #sqrt{#it{s}}= 7 TeV");
+        uLatex->DrawLatexNDC(0.19, 0.71,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+        
         cDrawEff        ->  SaveAs((TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/")+TString("hEFF_SL_1D.pdf")).Data());
         delete cDrawEff;
         //
@@ -1168,6 +1243,19 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
             uSetHisto(h_2D_SL,"EFF2 SL 1D");
             h12D_SL    ->  Draw();
             h_2D_SL    ->  Draw("SAME");
+            
+            if ( iPT2D == 1 )   {
+                uLatex->SetTextFont(60);
+                uLatex->SetTextSize(0.05);
+                uLatex->DrawLatexNDC(0.19, 0.83,"ALICE Performance");
+                uLatex->SetTextFont(42);
+                uLatex->SetTextSize(0.04);
+                uLatex->DrawLatexNDC(0.19, 0.77,"pp #sqrt{#it{s}}= 7 TeV");
+                uLatex->DrawLatexNDC(0.19, 0.71,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+                uLatex->DrawLatexNDC(0.19, 0.65,Form("%.2f < #it{p}_{T}^{#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[iPT2D-1],fArrPT2D[iPT2D]));
+            } else {
+                uLatex->DrawLatexNDC(0.19, 0.83,Form("%.2f < #it{p}_{T}^{#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[iPT2D-1],fArrPT2D[iPT2D]));
+            }
         }
         cDrawEff        ->  SaveAs((TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/")+TString("hEFF_SL_12D.pdf")).Data());
         delete cDrawEff;

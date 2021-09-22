@@ -9,8 +9,9 @@
 //
 //>->->->->->   Branching Ratio
 auto const  kBR                     =   0.492;
-auto const  kSysLow_BR              =   0.01;
-auto const  kSysHig_BR              =   0.01;
+auto const  kBRerr                  =   0.005;
+auto const  kSysLow_BR              =   kBRerr/kBR;
+auto const  kSysHig_BR              =   kBRerr/kBR;
 //
 //>->->->->->   Signal Extraction
 auto const  kSysLow_1D_SE           =   0.06;
@@ -37,6 +38,10 @@ auto const  kTrackingEff            =   -1.0; //Unused
 auto const  kSysLow_Tracking        =   0.01;
 auto const  kSysHig_Tracking        =   0.01;
 
+//
+auto const  kSignalMiss1D           =   0.960419;
+auto const  kSignalMiss2D           =   0.922404;
+
 //-//   Analysis settings
 auto        kDoMultiplicity         =   false;
 auto        kDoYield                =   false;
@@ -51,17 +56,17 @@ const   Float_t   fMaxIMMC  =   1.25;
 
 //-// Systematics Options
 //
-std::vector<TString>    sOptions    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ",  "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"   };
-const   Int_t   nOptions            =   1.;//sOptions.size();
-std::vector<TString>    sOption2    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ",  "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",  "BKG"   };
-const   Int_t   nOption2            =   1.;//sOption2.size();
+std::vector<TString>    sOptions    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"  };
+const   Int_t   nOptions            =   sOptions.size();
+std::vector<TString>    sOption2    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",  "BKG"   };
+const   Int_t   nOption2            =   sOption2.size();
 //
 //-//-//    PID
 //
 const   Int_t   nPIDFiles           =   6;
 std::vector<TString>    sOptiPID    =   {"#sigma_{TPC}^{vet} 3.3","#sigma_{TPC}^{vet} 2.7","#sigma_{TPC}^{aln} 5.5","#sigma_{TPC}^{aln} 4.5","#sigma_{TOF}^{vet} 3.3","#sigma_{TOF}^{vet} 2.7"};
-const   TString sPID_DT_Name        =   "LHC10_PID%i.root";
-const   TString sPID_MC_Name        =   "LHC14j4_PID%i.root";
+const   TString sPID_DT_Name        =   "20210805_LHC10X%s.root";
+const   TString sPID_MC_Name        =   "20210805_LHC14j4X%s.root";
 
 
 //------------------------------//
@@ -89,6 +94,7 @@ TString const   kMassResolution_Plot    =   kMassResolution_Dir_ + TString("Plot
 //-//-//-//     Signal Extraction
 //
 TString const   kAnalysis_SigExtr_Dir   =   TString("./result/%s/SignalExtraction/");
+TString const   kAnalysis_SgExSys_Dir   =   TString("./result/%s/SignalExtraction/Systematics/");
 TString const   kASigExtr_FitCheckPlt   =   kAnalysis_SigExtr_Dir + TString("FitCheck.root");
 TString const   kASigExtr_FitCheckRst   =   kAnalysis_SigExtr_Dir + TString("FitResults.root");
 TString const   kASigExtr_Plot_Direct   =   kAnalysis_SigExtr_Dir + TString("Plots/");
@@ -99,6 +105,11 @@ TString const   kAnalysis_SigExtp_Dir   =   TString("./result/%s/SignalExtrapola
 TString const   kASigExtp_FitCheckPlt   =   kAnalysis_SigExtp_Dir + TString("FitCheck.root");
 TString const   kASigExtp_FitCheckRst   =   kAnalysis_SigExtp_Dir + TString("FitResults.root");
 TString const   kASigExtp_Plot_Direct   =   kAnalysis_SigExtp_Dir + TString("Plots/");
+//
+//-//-//-//     Systematics
+//
+TString const   kAnalysis_Systemt_Dir   =   TString("./result/%s/Systematics/");
+TString const   kSystematicsPlot        =   kAnalysis_Systemt_Dir + TString("Plots/");
 //
 //-// -- -- -- -- -- -- -- -- -- -- -- -- -- Tree Names
 //
@@ -143,7 +154,7 @@ const   Float_t   fMaxPT1D  =   10.;
 //-// pT bins 2D
 const   Int_t     nBinPT2D  =   10;
 const   Float_t   fMinPT2D  =   0.4;
-const   Float_t   fMaxPT2D  =   10.;
+const   Float_t   fMaxPT2D  =   20.;
         Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
 
 //-// Muliplicity bins
@@ -288,9 +299,8 @@ void    fSetBinPT1D ()      {
     fArrPT1D[18]    =   10.; //0.4
     fArrPT1D[19]    =   13.; //0.4
     fArrPT1D[20]    =   16.; //0.4
-    fArrPT1D[21]    =   20.; //0.4
-     */
-    
+    fArrPT1D[21]    =   21.; //0.4
+    */
     fArrPT1D[0]     =   0.4; //0.1
     fArrPT1D[1]     =   0.5; //0.1
     fArrPT1D[2]     =   0.6; //0.1
@@ -315,9 +325,9 @@ void    fSetBinPT1D ()      {
 }
 void    fSetBinPT2D ()      {
     fArrPT2D[0]     =   0.40; //0.3
-    fArrPT2D[1]     =   0.70; //0.2
-    fArrPT2D[2]     =   0.90; //0.1
-    fArrPT2D[3]     =   1.00; //0.2
+    fArrPT2D[1]     =   0.80; //0.2
+    fArrPT2D[2]     =   1.00; //0.1
+    fArrPT2D[3]     =   1.10; //0.1
     fArrPT2D[4]     =   1.20; //0.2
     fArrPT2D[5]     =   1.40; //0.2
     fArrPT2D[6]     =   1.60; //0.4

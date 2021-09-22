@@ -21,11 +21,11 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
     TFile *insFileDT        =   new TFile   (fFileName.c_str());
     
     // Retrieving Event data TTree
-    TTree   *TPhiCandidate  =   (TTree*)insFileDT       ->Get(Form("%s%s",fPhiCandidate_Tree,"_name"));
-    TTree   *TKaonCandidate =   (TTree*)insFileDT       ->Get(Form("%s%s",fKaonCandidate_Tree,"_name"));
+    TTree   *TPhiCandidate  =   (TTree*)insFileDT       ->Get(Form("%s%s",fPhiCandidate_Tree,""));
+    TTree   *TKaonCandidate =   (TTree*)insFileDT       ->Get(Form("%s%s",fKaonCandidate_Tree,""));
     
     // Retrieving Event Count Histogram
-    TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList_name");
+    TList  *fQCOutputList   =   (TList*)insFileDT       ->Get("fQCOutputList");
     TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_FLL");
     TH1D   *fHEvCountMlt    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_V0M");
     
@@ -866,6 +866,7 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
     //
     if ( kDoYield )  {
         gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data())));
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/")).Data()));
         TFile *outFil2  =   new TFile   (Form(kAnalysis_InvMassHist,(TString("Yield")+kFolder).Data()),"recreate");
         //
         fHEventCount    ->Write();
@@ -878,13 +879,53 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
         //
         hREC_2D->Write();
         //
-        for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)
-        {
+        for (int iHisto = 0; iHisto < nBinPT2D; iHisto++)   {
             hREC_1D_in_PT_2D_bin[iHisto]   ->Write();
-            
-            for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)
-            {
+            for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)   {
+                
                 hREC_2D_in_PT[iHisto][jHisto]->Write();
+                
+                if ( hREC_2D_in_PT[iHisto][jHisto]->GetEntries() == 0 ) continue;
+                
+                gROOT->SetBatch(kTRUE);
+                
+                SetStyle();
+                
+                gStyle->SetPadTopMargin(0.2);
+                gStyle->SetPadRightMargin(0.18);
+                
+                TCanvas    *cDrawHisto  =   new TCanvas("cDrawHisto","cDrawHisto",1000,1000);
+                //
+                //  X axis
+                hREC_2D_in_PT[iHisto][jHisto]->GetXaxis()->SetLabelOffset(0.015);
+                hREC_2D_in_PT[iHisto][jHisto]->GetXaxis()->SetTitleOffset(1.5);
+                //
+                //  Y axis
+                hREC_2D_in_PT[iHisto][jHisto]->GetYaxis()->SetTitleOffset(1.75);
+                //
+                //  Z axis
+                hREC_2D_in_PT[iHisto][jHisto]->GetZaxis()->SetTitle(Form("Counts/( %.1f MeV/#it{c}^{2} )",1000*kBinningPrecision2D));
+                hREC_2D_in_PT[iHisto][jHisto]->GetZaxis()->SetTitleOffset(1.5);
+                //
+                hREC_2D_in_PT[iHisto][jHisto]->Draw("COLZ");
+                
+                uLatex->SetTextFont(60);
+                uLatex->SetTextSize(0.05);
+                uLatex->DrawLatexNDC(0.12, 0.95,"ALICE Performance");
+                uLatex->SetTextFont(42);
+                uLatex->SetTextSize(0.04);
+                uLatex->DrawLatexNDC(0.12, 0.90,"pp #sqrt{#it{s}}= 7 TeV");
+                uLatex->DrawLatexNDC(0.12, 0.85,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+                //
+                uLatex->DrawLatexNDC(0.50, 0.90,Form("%.2f < #it{p}_{T,#phi_{1}} < %.2f GeV/#it{c}",fArrPT2D[iHisto],fArrPT2D[iHisto+1]));
+                uLatex->DrawLatexNDC(0.50, 0.85,Form("%.2f < #it{p}_{T,#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[jHisto],fArrPT2D[jHisto+1]));
+                
+                cDrawHisto->SaveAs(Form("./result/Yield/PreProcessing/Plots/InvariantMass_%.1f_%.1f_%.1f_%.1f.pdf",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]));
+                cDrawHisto->SaveAs(Form("./result/Yield/PreProcessing/Plots/InvariantMass_%.1f_%.1f_%.1f_%.1f.eps",fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]));
+                delete cDrawHisto;
+                
+                gROOT->SetBatch(kFALSE);
+                
             }
         }
         //

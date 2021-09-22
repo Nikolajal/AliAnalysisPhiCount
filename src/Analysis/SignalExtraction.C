@@ -270,6 +270,7 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
         for ( auto hSave : fFitResults_1DYield )    {
             if ( strncmp(hSave->GetName(),"hRAW_1D",7) == 0 )   hSave->Scale(1.,"width");
             if ( strncmp(hSave->GetName(),"h1D_anBB",7) == 0 )  hSave->Scale(1.,"width");
+            if ( strncmp(hSave->GetName(),"h1D_anSS",7) == 0 )  hSave->Scale(1.,"width");
             hSave   ->  Write();
             if ( strncmp(hSave->GetName(),"h1D_bWidt",7) == 0 ) uPlotReferenceValue(hSave,kPhiMesonWidth,kPhiMesonWdErr)->SaveAs("./result/wid.pdf");
             if ( strncmp(hSave->GetName(),"h1D_bSlop",7) == 0 ) uPlotReferenceValue(hSave,0.001,0.0001)->SaveAs("./result/res.pdf");

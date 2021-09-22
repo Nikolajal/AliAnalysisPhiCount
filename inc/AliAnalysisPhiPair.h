@@ -18,7 +18,7 @@
 //>>    Performance Regulation Values
 auto const  kCPU_use                =   1;
 auto const  kNCycle_                =   3;
-auto const  kStatEvalCycles         =   4;
+auto const  kStatEvalCycles         =   300;
 auto const  kPrintIntervalPP        =   1000000;
 auto const  k2DErrorLimit           =   10.;
 auto const  kCPUStrategy            =   1;
@@ -41,8 +41,12 @@ std::vector<std::pair<TF1*,std::vector<float>>> fSystFitFunctions  =   {  {fMTEx
 //
 //*****
 
-Float_t             fMeasureMeanPT                  ( TF1 * fLowFit, TGraphAsymmErrors * gTotal, Bool_t fReFit = false );
-Float_t             fMeasureMeanPT                  ( TF1 * fLowFit, TH1F * gTotal, Bool_t fReFit = false );
+Float_t
+fMeasureMeanPT
+ ( TF1 * fLowFit, TGraphAsymmErrors * gTotal, Bool_t fReFit = false );
+Float_t
+fMeasureMeanPT
+ ( TF1 * fLowFit, TH1F * gTotal, Bool_t fReFit = false );
 //
 //-------------------------------------//
 //      Analysis Fit Functions         //
@@ -50,16 +54,16 @@ Float_t             fMeasureMeanPT                  ( TF1 * fLowFit, TH1F * gTot
 //
 //  --  --  General Analysis Functions  --  --  //
 //
-//_____________________________________________________________________________
-//
-void                        SetBoundaries                   ( TString fOption, Double_t &aValMin, Double_t &aValMax )   {
+void
+SetBoundaries
+ ( TString fOption, Double_t &aValMin, Double_t &aValMax )   {
     aValMin = 0.998;
     aValMax = 1.065;
     //----
     if ( fOption.Contains("RA") )
     {
         aValMin =   0.996;
-        aValMax =   1.015;
+        aValMax =   1.059;
     }
     if ( fOption.Contains("RB") )
     {
@@ -130,14 +134,11 @@ void                        SetBoundaries                   ( TString fOption, D
     }
 }
 //
-//_____________________________________________________________________________
-//
-//
 //  --  --  General Customisation Functions  --  --  //
 //
-//_____________________________________________________________________________
-//
-int                         fLegendSelect                   ( string fOption )  {
+int
+fLegendSelect
+ ( string fOption )  {
     if ( !fOption.compare("InvMass1D") )    return 1;
     if ( !fOption.compare("RapTru") )       return 1;
     if ( !fOption.compare("Rap") )          return 3;
@@ -145,28 +146,27 @@ int                         fLegendSelect                   ( string fOption )  
     if ( !fOption.compare("yInvMass2D") )   return 2;
     else return -1;
 }
-//
-//_____________________________________________________________________________
-//
-void                        fLegendMaker                    ( RooPlot * fRooPlot, const char * fSelect, TLegend * fLegend )
-{
+void
+fLegendMaker
+ ( RooPlot * fRooPlot, const char * fSelect, TLegend * fLegend )    {
     fLegend                     ->SetFillColorAlpha(kWhite,0.);
     fLegend                     ->SetLineColorAlpha(kWhite,0.);
+    fLegend                     ->SetTextSize(.03);
     switch (fLegendSelect(fSelect))
     {
         case 1:
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooData"), "Data",                 "EP");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooSS"),   "Fit (Sig)",            "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooBB"),   "Fit (Bkg)",            "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooMod"),  "Fit (Model)",          "L");
+            fLegend                     ->AddEntry(fRooPlot->findObject("RooData"), "stat errors",          "EP");
+            fLegend                     ->AddEntry(fRooPlot->findObject("RooSS"),   "Voigtian peak",        "L");
+            fLegend                     ->AddEntry(fRooPlot->findObject("RooBB"),   "#splitline{Chebychev}{background}", "L");
+            fLegend                     ->AddEntry(fRooPlot->findObject("RooMod"),  "Full model",           "L");
             break;
         case 2:
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooData"), "Data",                 "EP");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooSS"),   "Fit (Sig #times Sig)", "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooBS"),   "Fit (Bkg #times Sig)", "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooSB"),   "Fit (Sig #times Bkg)", "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooBB"),   "Fit (Bkg #times Bkg)", "L");
-            fLegend                     ->AddEntry(fRooPlot->findObject("RooMod"),  "Fit (Model)",          "L");
+            fLegend                     ->AddEntry(fRooPlot->findObject("RooData"), "stat errors",          "EP");
+            fLegend                     ->AddEntry(fRooPlot->findObject("RooSS"),   "Voigt #times Voigt", "L");
+            fLegend                     ->AddEntry(fRooPlot->findObject("RooBS"),   "Cheby #times Voigt", "L");
+            fLegend                     ->AddEntry(fRooPlot->findObject("RooSB"),   "Voigt #times Cheby", "L");
+            fLegend                     ->AddEntry(fRooPlot->findObject("RooBB"),   "Cheby #times Cheby", "L");
+            fLegend                     ->AddEntry(fRooPlot->findObject("RooMod"),  "Full model",          "L");
             break;
         case 3:
             fLegend                     ->AddEntry(fRooPlot->findObject("RooData"), "Data",                 "EP");
@@ -180,11 +180,9 @@ void                        fLegendMaker                    ( RooPlot * fRooPlot
             break;
     }
 }
-//
-//_____________________________________________________________________________
-//
-int                         fAxisSelect                     ( string fOption )
-{
+int
+fAxisSelect
+ ( string fOption ){
     if ( !fOption.compare("InvMass1D") )    return 1;
     if ( !fOption.compare("xInvMass2D") )   return 2;
     if ( !fOption.compare("yInvMass2D") )   return 3;
@@ -192,21 +190,19 @@ int                         fAxisSelect                     ( string fOption )
     if ( !fOption.compare("RapTru") )       return 4;
     else return -1;
 }
-//
-//_____________________________________________________________________________
-//
-void                        fAxisMaker                      ( RooPlot * fRooPlot, const char * fSelect )
-{
+void
+fAxisMaker
+ ( RooPlot * fRooPlot, const char * fSelect ){
     switch (fAxisSelect(fSelect))
     {
         case 1:
-            fRooPlot                    ->GetXaxis()->SetTitle("m_{K^{+}K^{-}} (GeV/c^{2})");
+            fRooPlot                    ->GetXaxis()->SetTitle("M_{KK} (GeV/#it{c}^{2})");
             break;
         case 2:
-            fRooPlot                    ->GetXaxis()->SetTitle("m^{x}_{K^{+}K^{-}} (GeV/c^{2})");
+            fRooPlot                    ->GetXaxis()->SetTitle("M_{KK,#phi_{1}} (GeV/#it{c}^{2})");
             break;
         case 3:
-            fRooPlot                    ->GetXaxis()->SetTitle("m^{y}_{K^{+}K^{-}} (GeV/c^{2})");
+            fRooPlot                    ->GetXaxis()->SetTitle("M_{KK,#phi_{2}} (GeV/#it{c}^{2})");
             break;
         case 4:
             fRooPlot                    ->GetXaxis()->SetTitle("|#Delta y| #phi_{1,2}");
@@ -216,11 +212,9 @@ void                        fAxisMaker                      ( RooPlot * fRooPlot
             break;
     }
 }
-//
-//_____________________________________________________________________________
-//
-int                         fPlotterSelect                  ( string fOption )
-{
+int
+fPlotterSelect
+ ( string fOption ){
     if ( !fOption.compare("InvMass1D") )    return 1;
     if ( !fOption.compare("RapTru") )       return 1;
     if ( !fOption.compare("Rap") )          return 3;
@@ -228,60 +222,54 @@ int                         fPlotterSelect                  ( string fOption )
     if ( !fOption.compare("yInvMass2D") )   return 2;
     else return -1;
 }
-//
-//_____________________________________________________________________________
-//
-void                        fRooPlotPlotter                 ( RooPlot * fRooPlot, const char * fSelect, RooAddPdf fModel , RooDataHist * fData )
-{
+void
+fRooPlotPlotter
+ ( RooPlot * fRooPlot, const char * fSelect, RooAddPdf fModel , RooDataHist * fData ){
     switch (fPlotterSelect(fSelect))
     {
         case 1:
-            fData                           ->plotOn(fRooPlot,      MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
-            fModel                          .plotOn (fRooPlot,      LineColor(4),                   LineStyle(kSolid), Name("RooMod"));
-            fModel                          .plotOn (fRooPlot,      Components("fBkg"),             LineStyle(kDashed), LineColor(38),      Name("RooBB"));
-            fModel                          .plotOn (fRooPlot,      Components("fSig"),             LineColor(2),       Name("RooSS"));
-            fData                           ->plotOn(fRooPlot,      MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
+            fData                           ->plotOn(fRooPlot,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
+            fModel                          .plotOn (fRooPlot,      LineColor(colors[2]),                   LineStyle(kSolid), Name("RooMod"));
+            fModel                          .plotOn (fRooPlot,      Components("fBkg"),             LineStyle(kDashed), LineColor(colors[2]),      Name("RooBB"));
+            fModel                          .plotOn (fRooPlot,      Components("fSig"),             LineColor(colors[1]),       Name("RooSS"));
+            fData                           ->plotOn(fRooPlot,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
             break;
         case 2:
-            fData                           ->plotOn(fRooPlot,      CutRange("fDrawRange"),         MarkerColor(38),    MarkerStyle(26) ,   Name("RooData"));
-            fModel                          .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  LineColor(4),       LineStyle(kSolid), Name("RooMod"));
-            fModel                          .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fBkg"), LineStyle(kDashed), LineColor(38),      Name("RooBB"));
-            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fSigSig"),LineColor(2),       Name("RooSS"));
-            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fSigBkg"),LineStyle(kDashed), LineColor(33),    Name("RooSB"));
-            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fBkgSig"),LineStyle(kDashed), LineColor(36),    Name("RooBS"));
-            fData                           ->plotOn(fRooPlot,      CutRange("fDrawRange"),         MarkerColor(38),    MarkerStyle(26) ,   Name("RooData"));
+            fData                           ->plotOn(fRooPlot,      CutRange("fDrawRange"),         MarkerColor(colors[0]),    MarkerStyle(markers[2]) ,   Name("RooData"));
+            fModel                          .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  LineColor(colors[2]),       LineStyle(kSolid), Name("RooMod"));
+            fModel                          .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fBkg"), LineStyle(kDashed), LineColor(colors[4]),      Name("RooBB"));
+            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fSigSig"),LineColor(colors[1]),       Name("RooSS"));
+            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fSigBkg"),LineStyle(kDashed), LineColor(colors[5]),    Name("RooSB"));
+            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fBkgSig"),LineStyle(kDashed), LineColor(colors[6]),    Name("RooBS"));
+            fData                           ->plotOn(fRooPlot,      CutRange("fDrawRange"),         MarkerColor(colors[0]),    MarkerStyle(markers[2]) ,   Name("RooData"));
             break;
         case 3:
-            fData                           ->plotOn(fRooPlot,      MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
-            fModel                          .plotOn (fRooPlot,      LineColor(4),                   LineStyle(kSolid), Name("RooMod"));
-            fModel                          .plotOn (fRooPlot,      Components("fBkg"),             LineStyle(kDashed), LineColor(38),      Name("RooBB"));
+            fData                           ->plotOn(fRooPlot,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
+            fModel                          .plotOn (fRooPlot,      LineColor(colors[1]),                   LineStyle(kSolid), Name("RooMod"));
+            fModel                          .plotOn (fRooPlot,      Components("fBkg"),             LineStyle(kDashed), LineColor(colors[2]),      Name("RooBB"));
             fModel                          .plotOn (fRooPlot,      Components("fBk2"),             LineStyle(kDashed), LineColor(33),      Name("RooB2"));
-            fModel                          .plotOn (fRooPlot,      Components("fSig"),             LineColor(2),       Name("RooSS"));
-            fData                           ->plotOn(fRooPlot,      MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
+            fModel                          .plotOn (fRooPlot,      Components("fSig"),             LineColor(colors[2]),       Name("RooSS"));
+            fData                           ->plotOn(fRooPlot,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
             break;
         default:
             cout << "Improper option, no changes made" << endl;
             break;
     }
 }
-//
-//_____________________________________________________________________________
-//
-void                        fRooPlotMaker                   ( RooPlot * fRooPlot, TLegend * fLegend, RooAddPdf fModel , RooDataHist * fData, const char * fSelect )
-{
+void
+fRooPlotMaker
+ ( RooPlot * fRooPlot, TLegend * fLegend, RooAddPdf fModel , RooDataHist * fData, const char * fSelect ){
+    fRooPlot->SetTitle("");
     fRooPlotPlotter(fRooPlot,fSelect,fModel,fData);
     fLegendMaker(fRooPlot,fSelect,fLegend);
     fAxisMaker(fRooPlot,fSelect);
 }
 //
-//_____________________________________________________________________________
-//
-//
 //  --  --  1D Analysis Functions  --  --  //
 //
-//_____________________________________________________________________________
-//
-RooFitResult               *fFitCoreModel                   ( TH1 * THdata, TH1F* hSlopReference, TString fName = "", TString fOption = "", Int_t PTindex = -1, Int_t PTDimension = 1, TString fPathToSave = "./result/SEFitCheck" )    {
+RooFitResult*
+fFitCoreModel
+ ( TH1 * THdata, TH1F* hSlopReference, TString fName = "", TString fOption = "", Int_t PTindex = -1, Int_t PTDimension = 1, TString fPathToSave = "./result/SEFitCheck" )    {
     //
     //>>    Silencing TCanvas Pop-Up and speeding Fit procedures
     gROOT->SetBatch(kTRUE);
@@ -311,8 +299,8 @@ RooFitResult               *fFitCoreModel                   ( TH1 * THdata, TH1F
     RooDataHist*    dataLoose   =   new RooDataHist   ("DataLoose", "DataLoose",    InvMass,        Import(*fLooseErrors(THdata))   );
     Int_t           kNCycle     =   kNCycle_;
     Float_t         fRescaleRes =   1.;
-    if ( fUseHighRes )  fRescaleRes = 1.1;
-    if ( fUseLowRes  )  fRescaleRes = 0.9;
+    if ( fUseHighRes )  fRescaleRes = 1.15;
+    if ( fUseLowRes  )  fRescaleRes = 0.95;
     //
     //>>    Background PDF Coefficients
     RooRealVar ch1, ch2, ch3, ch4;
@@ -365,6 +353,9 @@ RooFitResult               *fFitCoreModel                   ( TH1 * THdata, TH1F
         }
     }
     //
+    // Modify Raw with missing signal
+    
+    //
     if ( fSaveToFile || kSaveToFile )
     {
         hName                       = "InvMass";
@@ -380,6 +371,8 @@ RooFitResult               *fFitCoreModel                   ( TH1 * THdata, TH1F
             if ( PTDimension == 2 ) hTitle = Form("Invariant Mass of Kaons in pT %.1f-%.1f GeV for MC",fArrPT2D[PTindex],fArrPT2D[PTindex+1]);
         }
         
+        SetStyle();
+        
         TCanvas * fSaveToCanvas;
         if ( PTDimension == 1 )fSaveToCanvas   =   new TCanvas(
                                                 Form("PT_%.1f_%.1f_1D_%s",fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data()),
@@ -392,15 +385,34 @@ RooFitResult               *fFitCoreModel                   ( TH1 * THdata, TH1F
                                                 );
         
         RooPlot * fSaveToFrame      = InvMass.frame(Name(hName),Title(hTitle));
-        TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
+        TLegend * fLegend           = new TLegend   (0.18,0.85,0.33,0.60);
         
         fRooPlotMaker(fSaveToFrame,fLegend,*fMod,data,"InvMass1D");
         
+        if ( PTDimension == 1 )fSaveToFrame                ->GetYaxis()->SetTitle(Form("Counts/( %.1f MeV/#it{c}^{2} )",1000*kBinningPrecision1D));
+        if ( PTDimension == 2 )fSaveToFrame                ->GetYaxis()->SetTitle(Form("Counts/( %.1f MeV/#it{c}^{2} )",1000*kBinningPrecision2D));
+        
+        auto fMaximum   =   fSaveToFrame->GetMaximum();
+        fSaveToFrame    ->  SetMaximum(fMaximum*1.30);
+        
         fSaveToFrame                ->Draw("same");
         fLegend                     ->Draw("same");
+        
+        uLatex->SetTextFont(60);
+        uLatex->SetTextSize(0.05);
+        uLatex->DrawLatexNDC(0.59, 0.83,"ALICE Performance");
+        uLatex->SetTextFont(42);
+        uLatex->SetTextSize(0.04);
+        uLatex->DrawLatexNDC(0.59, 0.77,"pp #sqrt{#it{s}}= 7 TeV");
+        if ( PTDimension == 1 ) uLatex->DrawLatexNDC(0.59, 0.72,Form("%.2f < #it{p}_{T} < %.2f GeV/#it{c}",fArrPT1D[PTindex],fArrPT1D[PTindex+1]));
+        if ( PTDimension == 2 ) uLatex->DrawLatexNDC(0.59, 0.72,Form("%.2f < #it{p}_{T} < %.2f GeV/#it{c}",fArrPT2D[PTindex],fArrPT2D[PTindex+1]));
+        uLatex->DrawLatexNDC(0.59, 0.67,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+        
         fSaveToCanvas               ->Write ();
         if ( PTDimension == 1 )fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f_1D_%s.pdf",fPathToSave.Data(),fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data()));
         if ( PTDimension == 2 )fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f_1D_%s.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fName.Data()));
+        if ( PTDimension == 1 )fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f_1D_%s.eps",fPathToSave.Data(),fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data()));
+        if ( PTDimension == 2 )fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f_1D_%s.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fName.Data()));
         delete fSaveToCanvas;
     }
     
@@ -410,9 +422,9 @@ RooFitResult               *fFitCoreModel                   ( TH1 * THdata, TH1F
     return fFitResults;
 }
 //
-//_____________________________________________________________________________
-//
-std::vector<TH1F*>          FitModel                        ( TH1F **hTarget, TH1F* hSlopReference, RooFitResult** &fFitresultsStore, Int_t fDimension, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "" )  {
+std::vector<TH1F*>
+FitModel
+ ( TH1F **hTarget, TH1F* hSlopReference, RooFitResult** &fFitresultsStore, Int_t fDimension, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "" )  {
     std::vector<TH1F*>  fResults;
     if ( !fFitresultsStore )  {  fFitresultsStore = new RooFitResult*[((fDimension == 1)? nBinPT1D : nBinPT2D)]; }
     for ( Int_t iFit = 0; iFit < ((fDimension == 1)? nBinPT1D : nBinPT2D); iFit++ )
@@ -425,57 +437,90 @@ std::vector<TH1F*>          FitModel                        ( TH1F **hTarget, TH
         //
         //>>    Building Raw Count histograms
         if ( iFit == 0 )   {
-            Int_t   iTer = 0;
             for ( auto fCoeff : fFitresultsStore[iFit]->floatParsFinal() )   {
                 auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
                 if  ( fDimension == 1)  fResults.push_back( new TH1F(Form("%s%s_%s","h1D_",    N_Raw->GetName(), fNameFile.Data()),  Form("%s%s","h1D_",     N_Raw->GetName()),nBinPT1D,fArrPT1D) );
                 else                    fResults.push_back( new TH1F(Form("%s%s_%s","h2Dbin_", N_Raw->GetName(), fNameFile.Data()),  Form("%s%s","h2Dbin_",  N_Raw->GetName()),nBinPT2D,fArrPT2D) );
-                if ( strncmp(N_Raw->GetName(),"anSS",4) == 0 )   {
-                    if  ( fDimension == 1)  fResults.at(iTer)->SetName("hRAW_1D");
-                    else                    fResults.at(iTer)->SetName("hRAW_1D_in_2D_bin");
-                }
-                iTer++;
             }
             for ( auto fCoeff : fFitresultsStore[iFit]->constPars() )   {
                 auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
                 if  ( fDimension == 1)  fResults.push_back( new TH1F(Form("%s%s_%s","h1D_",    N_Raw->GetName(), fNameFile.Data()),  Form("%s%s","h1D_",     N_Raw->GetName()),nBinPT1D,fArrPT1D) );
                 else                    fResults.push_back( new TH1F(Form("%s%s_%s","h2Dbin_", N_Raw->GetName(), fNameFile.Data()),  Form("%s%s","h2Dbin_",  N_Raw->GetName()),nBinPT2D,fArrPT2D) );
             }
+            if  ( fDimension == 1)  {
+                fResults.push_back( new TH1F("hRAW_1D","hRAW_1D",nBinPT1D,fArrPT1D) );
+                fResults.push_back( new TH1F("hCOR_1D","hCOR_1D",nBinPT1D,fArrPT1D) );
+            }   else    {
+                fResults.push_back( new TH1F("hRAW_1D_in_2D_bin","hRAW_1D_in_2D_bin",nBinPT1D,fArrPT1D) );
+                fResults.push_back( new TH1F("hCOR_1D_in_2D_bin","hCOR_1D_in_2D_bin",nBinPT1D,fArrPT1D) );
+            }
         }
         //
         //>>    Filling Raw Count Histograms
         Int_t   iTer = 0;
+        Float_t fCount, fCounE, fMean, fWidth;
+        Double_t    fMin,   fMax;
         for ( auto fCoeff : fFitresultsStore[iFit]->floatParsFinal() )   {
             auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
             fResults.at(iTer)->SetBinContent          (iFit+1,N_Raw->getVal());
             fResults.at(iTer)->SetBinError            (iFit+1,N_Raw->getError());
+            if ( strncmp(N_Raw->GetName(),"anSS",4) == 0 )  {
+                fCount = N_Raw->getVal();
+                fCounE = N_Raw->getError();
+            }
+            if ( strncmp(N_Raw->GetName(),"bMass",5) == 0 ) fMean   =   N_Raw->getVal();
+            if ( strncmp(N_Raw->GetName(),"bWidt",5) == 0 ) fWidth  =   N_Raw->getVal();
             iTer++;
         }
         for ( auto fCoeff : fFitresultsStore[iFit]->constPars() )   {
             auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
             fResults.at(iTer)->SetBinContent          (iFit+1,N_Raw->getVal());
             fResults.at(iTer)->SetBinError            (iFit+1,N_Raw->getError());
+            if ( strncmp(N_Raw->GetName(),"bMass",5) == 0 ) fMean   =   N_Raw->getVal();
+            if ( strncmp(N_Raw->GetName(),"bWidt",5) == 0 ) fWidth  =   N_Raw->getVal();
             iTer++;
         }
+        //
+        RooRealVar      vIntU   =   RooRealVar      ("vIntU",   "vIntU",    2*kKaonMass,  1000 );
+        RooRealVar      vMean   =   RooRealVar      ("vMean",   "vMean",    fMean   );
+        RooRealVar      vStdv   =   RooRealVar      ("vStdv",   "vStdv",    fWidth  );
+        //
+        SetBoundaries(fOption,fMin,fMax);
+        //
+        vIntU.setRange("Full",2*kKaonMass,1000);
+        vIntU.setRange("Meas",fMin,fMax);
+        //
+        RooBreitWigner  hUtil   =   RooBreitWigner  ("hUtil",   "hUtil",    vIntU,  vMean,  vStdv);
+        //
+        Float_t         kCorr   =   hUtil.analyticalIntegral(1,"Meas")/hUtil.analyticalIntegral(1,"Full");
+        //
+        fResults.at(iTer)->SetBinContent          (iFit+1,fCount/kCorr);
+        fResults.at(iTer)->SetBinError            (iFit+1,fCounE/kCorr);
+        iTer++;
+        //
+        fResults.at(iTer)->SetBinContent          (iFit+1,kCorr);
+        fResults.at(iTer)->SetBinError            (iFit+1,0);
+        iTer++;
     }
     //
     return  fResults;
 }
-std::vector<TH1F*>          FitModel                        ( TH1F **hTarget, TH1F* hSlopReference, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
+std::vector<TH1F*>
+FitModel
+ ( TH1F **hTarget, TH1F* hSlopReference, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
     return FitModel(hTarget,hSlopReference,NULL_ROOFITPTR2,1,fOption,fTargetPath,fNameFile);
 }
-std::vector<TH1F*>          FitModel                        ( TH1F **hTarget, TH1F* hSlopReference, RooFitResult** &fFitresultsStore, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
+std::vector<TH1F*>
+FitModel
+ ( TH1F **hTarget, TH1F* hSlopReference, RooFitResult** &fFitresultsStore, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
     return FitModel(hTarget,hSlopReference,fFitresultsStore,2,fOption,fTargetPath,fNameFile);
 }
 //
-//_____________________________________________________________________________
-//
-//
 //  --  --  2D Analysis Functions  --  --  //
 //
-//_____________________________________________________________________________
-//
-RooFitResult               *fFitCoreModel                   ( TH2F * THdata, TH1F* hSlopReference, RooFitResult * fFitShapeX, RooFitResult * fFitShapeY, TString fName = "", TString fOption = "", Int_t PTindex = -1, Int_t PTjndex = -1, TString fPathToSave = "./result/SEFitCheck" )    {
+RooFitResult*
+fFitCoreModel
+ ( TH2F * THdata, TH1F* hSlopReference, RooFitResult * fFitShapeX, RooFitResult * fFitShapeY, TString fName = "", TString fOption = "", Int_t PTindex = -1, Int_t PTjndex = -1, TString fPathToSave = "./result/SEFitCheck" )    {
     //
     //>>    Silencing TCanvas Pop-Up and speeding Fit procedures
     gROOT->SetBatch(kTRUE);
@@ -590,16 +635,18 @@ RooFitResult               *fFitCoreModel                   ( TH2F * THdata, TH1
     // Save to file
     if ( fSaveToFile || kSaveToFile )
     {
+        SetStyle();
+        
         int         nBinsPrint      =   4;
-        double      dIncrement      =   (fInvMassValMax-fInvMassValMin)/nBinsPrint;
-        TLatex*     latext          =   new TLatex();
-        TCanvas*    cTotal          =   new TCanvas("","",0,45,1440,855);
+        double      dIncrement      =   0.014;//(fInvMassValMax-fInvMassValMin)/nBinsPrint;
+        TCanvas*    cTotal          =   new TCanvas("","",0,45,1800,1400);
                     cTotal          ->  SetTitle(Form("Slices of 2D Invariant Mass of Kaons in pT %.1f-%.1f GeV, %.1f-%.1f GeV",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
                     cTotal          ->  SetName(Form("PT_%.1f_%.1f__%.1f_%.1f_%s",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data()));
                     cTotal          ->  Divide(2,nBinsPrint);
         
                             xInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
                             yInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
+        
         for (int i = 0; i < nBinsPrint; i++)
         {
             hName                       = "Slice of 2D Invariant Mass of Kaons";
@@ -613,22 +660,54 @@ RooFitResult               *fFitCoreModel                   ( TH2F * THdata, TH1
                                                     );
             
             RooPlot * fSaveToFrame  =   yInvMass.frame(Name(hName),Title(hTitle));
-            TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
+            TLegend * fLegend           = new TLegend   (0.18,0.85,0.33,0.60);
 
                             xInvMass.setRange("fDrawRange",fInvMassValMin+i*dIncrement,fInvMassValMin+(i+1)*dIncrement);
                             yInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
 
             fRooPlotMaker(fSaveToFrame,fLegend,fMod,data,"yInvMass2D");
             
+            fSaveToCanvas->cd();
+            
+            fSaveToFrame                ->GetYaxis()->SetTitle(Form("Counts/( %.1f MeV/#it{c}^{2} )",1000*kBinningPrecision2D));
+            
+            auto fMaximum   =   fSaveToFrame->GetMaximum();
+            fSaveToFrame    ->  SetMaximum(fMaximum*1.30);
+            
+            fSaveToFrame                ->Draw("same");
+            fLegend                     ->Draw("same");
+            
+            uLatex->SetTextFont(60);
+            uLatex->SetTextSize(0.05);
+            uLatex->DrawLatexNDC(0.50, 0.83,"ALICE Performance");
+            uLatex->SetTextFont(42);
+            uLatex->SetTextSize(0.035);
+            uLatex->DrawLatexNDC(0.50, 0.77,"pp #sqrt{#it{s}}= 7 TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+            uLatex->DrawLatexNDC(0.50, 0.72,Form("%.2f < #it{p}_{T,#phi_{1}} < %.2f GeV/#it{c}",fArrPT2D[PTindex],fArrPT2D[PTindex+1]));
+            uLatex->DrawLatexNDC(0.51, 0.67,Form("%.2f < #it{p}_{T,#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
+            uLatex->DrawLatexNDC(0.50, 0.62,Form("%.3f < M_{KK,#phi_{1}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
+            
+            fSaveToCanvas               ->Write();
+            fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i));
+            fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i));
+            
             cTotal->cd( 2*i+1 );
             fSaveToFrame                ->Draw("same");
-            fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K^{+}K^{-}} < %.3f",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
-            fSaveToCanvas->cd();
-            fSaveToFrame                ->Draw("same");
-            fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{x}_{K^{+}K^{-}} < %.3f",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
-            fSaveToCanvas               ->Write();
+            if ( i == 0 )   {
+                fLegend                     ->Draw("same");
+                uLatex->SetTextFont(60);
+                uLatex->SetTextSize(0.05);
+                uLatex->DrawLatexNDC(0.55, 0.83,"ALICE Performance");
+                uLatex->SetTextFont(42);
+                uLatex->SetTextSize(0.04);
+                uLatex->DrawLatexNDC(0.55, 0.77,"pp #sqrt{#it{s}}= 7 TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+                uLatex->DrawLatexNDC(0.55, 0.72,Form("%.2f < #it{p}_{T,#phi_{1}} < %.2f GeV/#it{c}",fArrPT2D[PTindex],fArrPT2D[PTindex+1]));
+                uLatex->DrawLatexNDC(0.56, 0.67,Form("%.2f < #it{p}_{T,#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
+                uLatex->DrawLatexNDC(0.55, 0.62,Form("%.3f < M_{KK,#phi_{1}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
+            }   else    {
+                uLatex->DrawLatexNDC(0.55, 0.83,Form("%.3f < M_{KK,#phi_{1}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
+            }
+            
             delete fSaveToCanvas;
         }
                                         xInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
@@ -646,29 +725,48 @@ RooFitResult               *fFitCoreModel                   ( TH2F * THdata, TH1
                                                     );
             
             RooPlot * fSaveToFrame      =   xInvMass.frame(Name(hName),Title(hTitle));
-            TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
+            TLegend * fLegend           = new TLegend   (0.18,0.85,0.33,0.60);
             
                                         xInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
                                         yInvMass.setRange("fDrawRange",fInvMassValMin+i*dIncrement,fInvMassValMin+(i+1)*dIncrement);
                                                                             
             fRooPlotMaker(fSaveToFrame,fLegend,fMod,data,"xInvMass2D");
             
+            fSaveToCanvas->cd();
+            
+            fSaveToFrame                ->GetYaxis()->SetTitle(Form("Counts/( %.1f MeV/#it{c}^{2} )",1000*kBinningPrecision2D));
+            
+            auto fMaximum   =   fSaveToFrame->GetMaximum();
+            fSaveToFrame    ->  SetMaximum(fMaximum*1.30);
+            
+            fSaveToFrame                ->Draw("same");
+            fLegend                     ->Draw("same");
+            
+            uLatex->SetTextFont(60);
+            uLatex->SetTextSize(0.05);
+            uLatex->DrawLatexNDC(0.50, 0.83,"ALICE Performance");
+            uLatex->SetTextFont(42);
+            uLatex->SetTextSize(0.035);
+            uLatex->DrawLatexNDC(0.50, 0.77,"pp #sqrt{#it{s}}= 7 TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+            uLatex->DrawLatexNDC(0.50, 0.72,Form("%.2f < #it{p}_{T,#phi_{1}} < %.2f GeV/#it{c}",fArrPT2D[PTindex],fArrPT2D[PTindex+1]));
+            uLatex->DrawLatexNDC(0.51, 0.67,Form("%.2f < #it{p}_{T,#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
+            uLatex->DrawLatexNDC(0.50, 0.62,Form("%.3f < M_{KK,#phi_{2}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
+            
+            fSaveToCanvas               ->Write();
+            fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i+nBinsPrint));
+            fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i+nBinsPrint));
+            
             cTotal->cd( 2*i+2 );
             fSaveToFrame                ->Draw("same");
-            fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{y}_{K^{+}K^{-}} < %.3f",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
+            uLatex->DrawLatexNDC(0.50, 0.83,Form("%.3f < M_{KK,#phi_{2}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
             
-            fSaveToCanvas->cd();
-            fSaveToFrame                ->Draw("same");
-            fLegend                     ->Draw("same");
-            latext                      ->DrawLatexNDC(0.6, 0.85, Form("%.3f < m^{y}_{K^{+}K^{-}} < %.3f",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
-            fSaveToCanvas               ->Write();
             delete fSaveToCanvas;
         }
                                         xInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
                                         yInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
         cTotal ->Write();
         cTotal               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data()));
+        cTotal               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data()));
         delete cTotal;
     }
     
@@ -679,9 +777,9 @@ RooFitResult               *fFitCoreModel                   ( TH2F * THdata, TH1
     return fFitResults;
 }
 //
-//_____________________________________________________________________________
-//
-std::vector<TH2F*>          FitModel                        ( TH1F  **hShapeFit, TH1F* hSlopReference, TH2F***hTarget, RooFitResult*** &fFitresultsStore = NULL_ROOFITPTR3, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
+std::vector<TH2F*>
+FitModel
+ ( TH1F  **hShapeFit, TH1F* hSlopReference, TH2F***hTarget, RooFitResult*** &fFitresultsStore = NULL_ROOFITPTR3, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
     std::vector<TH2F*>  fResults;
     RooFitResult      **fShapeStore = nullptr;
     if ( !fFitresultsStore )    {
@@ -729,16 +827,8 @@ std::vector<TH2F*>          FitModel                        ( TH1F  **hShapeFit,
                 auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
                 fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,N_Raw->getVal());
                 fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
-                if ( iFit == jFit ) {
-                    fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,2.*N_Raw->getVal());
-                    fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,2.*N_Raw->getError());
-                }
-                iTer++;
-            }
-            for ( auto fCoeff : fFitresultsStore[iFit][jFit]->constPars() )   {
-                auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
-                fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,N_Raw->getVal());
-                fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
+                fResults.at(iTer)->SetBinContent          (jFit+1,iFit+1,N_Raw->getVal());
+                fResults.at(iTer)->SetBinError            (jFit+1,iFit+1,N_Raw->getError());
                 if ( iFit == jFit ) {
                     fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,2.*N_Raw->getVal());
                     fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,2.*N_Raw->getError());
@@ -749,7 +839,9 @@ std::vector<TH2F*>          FitModel                        ( TH1F  **hShapeFit,
     }
     return fResults;
 }
-std::vector<TH2F*>          FitModel                        ( TH2F***hTarget, TH1F* hSlopReference,  RooFitResult**  fShapeStore, RooFitResult*** &fFitresultsStore = NULL_ROOFITPTR3, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
+std::vector<TH2F*>
+FitModel
+ ( TH2F***hTarget, TH1F* hSlopReference,  RooFitResult**  fShapeStore, RooFitResult*** &fFitresultsStore = NULL_ROOFITPTR3, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
     std::vector<TH2F*>  fResults;
     if ( !fFitresultsStore )    {
         fFitresultsStore = new RooFitResult**[nBinPT2D];
@@ -795,16 +887,23 @@ std::vector<TH2F*>          FitModel                        ( TH2F***hTarget, TH
     }
     return fResults;
 }
-std::vector<TH2F*>          FitModel                        ( TH1F  **hShapeFit, TH1F* hSlopReference, TH2F***hTarget, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "",  std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
+std::vector<TH2F*>
+FitModel                        ( TH1F  **hShapeFit, TH1F* hSlopReference, TH2F***hTarget, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "",  std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
     return  FitModel(hShapeFit,hSlopReference,hTarget,NULL_ROOFITPTR3,fOption,fTargetPath,fNameFile);
 }
-std::vector<TH2F*>          FitModel                        ( TH1F  **hShapeFit, TH1F* hSlopReference, TH2F***hTarget, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
+std::vector<TH2F*>
+FitModel
+ ( TH1F  **hShapeFit, TH1F* hSlopReference, TH2F***hTarget, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
     return  FitModel(hShapeFit,hSlopReference,hTarget,NULL_ROOFITPTR3,fOption,fTargetPath,fNameFile,f1Din2DbinCheck);
 }
-std::vector<TH2F*>          FitModel                        ( TH2F***hTarget, TH1F* hSlopReference, RooFitResult**  fShapeStore, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "" )  {
+std::vector<TH2F*>
+FitModel
+ ( TH2F***hTarget, TH1F* hSlopReference, RooFitResult**  fShapeStore, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "" )  {
     return  FitModel(hTarget,hSlopReference,fShapeStore,NULL_ROOFITPTR3,"",fTargetPath,fNameFile,f1Din2DbinCheck);
 }
-std::vector<TH2F*>          FitModel                        ( TH2F***hTarget, TH1F* hSlopReference, RooFitResult**  fShapeStore, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
+std::vector<TH2F*>
+FitModel
+ ( TH2F***hTarget, TH1F* hSlopReference, RooFitResult**  fShapeStore, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
     return  FitModel(hTarget,hSlopReference,fShapeStore,NULL_ROOFITPTR3,fOption,fTargetPath,fNameFile,f1Din2DbinCheck);
 }
 //
@@ -821,17 +920,17 @@ void    SetAxis             ( Tclass * aTarget, string aOption = "" )   {
         if ( aOption.find("2D") != -1 )
         {
             // X-Axis formatting
-            aTarget->GetXaxis()->SetTitle("m_{K^{+}K^{-}} candidate #phi_{1} (GeV/c^{2})");
+            aTarget->GetXaxis()->SetTitle("M_{KK,#phi_{1}} (GeV/#it{c}^{2})");
             aTarget->GetXaxis()->SetTitleOffset(1.15);
             
             // Y-Axis formatting
-            aTarget->GetYaxis()->SetTitle("m_{K^{+}K^{-}} candidate #phi_{2} (GeV/c^{2})");
+            aTarget->GetYaxis()->SetTitle("M_{KK,#phi_{2}} (GeV/#it{c}^{2})");
             aTarget->GetYaxis()->SetTitleOffset(1.15);
         }
         else if ( aOption.find("1D") != -1 )
         {
             // X-Axis formatting
-            aTarget->GetXaxis()->SetTitle("m_{K^{+}K^{-}} (GeV/c^{2})");
+            aTarget->GetXaxis()->SetTitle("M_{KK} (GeV/#it{c}^{2})");
             aTarget->GetXaxis()->SetTitleOffset(1.15);
         }
     }
@@ -840,7 +939,7 @@ void    SetAxis             ( Tclass * aTarget, string aOption = "" )   {
         if ( aOption.find("DD") != -1 )
         {
             // X-Axis formatting
-            aTarget->GetXaxis()->SetTitle("p_{T} #phi_{2} (GeV/c)");
+            aTarget->GetXaxis()->SetTitle("#it{p}_{T,#phi_{2}} (GeV/#it{c})");
             aTarget->GetXaxis()->SetTitleOffset(1.15);
             
             // Y-Axis formatting
@@ -850,11 +949,11 @@ void    SetAxis             ( Tclass * aTarget, string aOption = "" )   {
         else if ( aOption.find("2D") != -1 )
         {
             // X-Axis formatting
-            aTarget->GetXaxis()->SetTitle("p_{T} #phi_{1} (GeV/c)");
+            aTarget->GetXaxis()->SetTitle("#it{p}_{T,#phi_{1}} (GeV/#it{c})");
             aTarget->GetXaxis()->SetTitleOffset(1.15);
                 
             // Y-Axis formatting
-            aTarget->GetYaxis()->SetTitle("p_{T} #phi_{2} (GeV/c)");
+            aTarget->GetYaxis()->SetTitle("#it{p}_{T,#phi_{2}} (GeV/#it{c})");
             aTarget->GetYaxis()->SetTitleOffset(1.15);
                 
             // Z-Axis formatting
@@ -864,7 +963,7 @@ void    SetAxis             ( Tclass * aTarget, string aOption = "" )   {
         else if ( aOption.find("1D") != -1 )
         {
             // X-Axis formatting
-            aTarget->GetXaxis()->SetTitle("p_{T} #phi (GeV/c)");
+            aTarget->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
             aTarget->GetXaxis()->SetTitleOffset(1.15);
             
             // Y-Axis formatting
@@ -942,16 +1041,27 @@ void                fChooseOption                   ( TString fOption ) {
 //
 //_____________________________________________________________________________
 //
-Double_t            fGammaPhiValue                  ( Double_t fYieldPhi, Double_t fYieldPhiPhi )  {
+Double_t
+fGammaPhiValue
+ ( Double_t fYieldPhi, Double_t fYieldPhiPhi )  {
     return  2*fYieldPhiPhi/fYieldPhi -fYieldPhi;
 }
-//
-//_____________________________________________________________________________
-//
-Double_t            fGammaPhiError                  ( Double_t fYieldPhi, Double_t fYieldPhiPhi, Double_t fErrorPhi, Double_t fErrorPhiPhi)  {
+Double_t
+fGammaPhiError
+ ( Double_t fYieldPhi, Double_t fYieldPhiPhi, Double_t fErrorPhi, Double_t fErrorPhiPhi)  {
     auto    fPar1   =   2*fErrorPhiPhi/fYieldPhi;
     auto    fPar2   =   (2*fYieldPhiPhi/(fYieldPhi*fYieldPhi)+1)*fErrorPhi;
     return  fPar1 + fPar2;
+}
+Double_t
+fSigmaPhiValue
+ ( Double_t fYieldPhi, Double_t fYieldPhiPhi )  {
+    return  2*fYieldPhiPhi + fYieldPhi -fYieldPhi*fYieldPhi;
+}
+Double_t
+fSigmaPhiError
+ ( Double_t fYieldPhi, Double_t fYieldPhiPhi, Double_t fErrorPhi, Double_t fErrorPhiPhi)  {
+    return sqrt( (1-2*fYieldPhi)*(1-2*fYieldPhi)*fErrorPhi*fErrorPhi + 4*fErrorPhiPhi*fErrorPhiPhi );
 }
 //
 //_____________________________________________________________________________
@@ -1045,7 +1155,8 @@ void                fFitLevyTsalis                  ( TGraphAsymmErrors* gToBeFi
 //_____________________________________________________________________________
 //
 TGraphAsymmErrors*
-fSetSystErrors                                      ( TGraphAsymmErrors*                gStatistics ) {
+fSetSystErrors
+ ( TGraphAsymmErrors*                gStatistics ) {
     TGraphAsymmErrors  *fResult =   new TGraphAsymmErrors(*gStatistics);
     for ( Int_t iPnt = 0; iPnt < fResult->GetN(); iPnt++ ) {
         auto    fYValue =   fResult ->  GetPointY(iPnt);
@@ -1055,7 +1166,8 @@ fSetSystErrors                                      ( TGraphAsymmErrors*        
     return fResult;
 }
 std::vector<TGraphAsymmErrors*>
-fSetSystErrors                                      ( std::vector<TGraphAsymmErrors*>   gStatistics ) {
+fSetSystErrors
+ ( std::vector<TGraphAsymmErrors*>   gStatistics ) {
     std::vector<TGraphAsymmErrors*> fResult;
     for ( auto& iGraph : gStatistics )  {
         TGraphAsymmErrors  *fCurrentGraph =   new TGraphAsymmErrors(*iGraph);
@@ -1069,23 +1181,37 @@ fSetSystErrors                                      ( std::vector<TGraphAsymmErr
     return fResult;
 }
 TH1F*
-fSetSystErrors                                      ( TH1F*                             hStatistics ) {
+fSetSystErrors
+ ( TH1F*                             hStatistics ) {
     TH1F               *fResult =   new TH1F            (*hStatistics);
+    //
+    TFile      *fReference      =   new TFile( Form("%s/Full_Systematics.root",(TString(Form(kAnalysis_Systemt_Dir,"yield"))).Data()) );
+    TH1F       *hReference      =   (TH1F*)(fReference->Get("h1DTotalSystematic"));
+    //
     for ( Int_t iBin = 0; iBin < fResult->GetNbinsX(); iBin++ ) {
         auto    fBinContent     =   fResult->GetBinContent( iBin );
-        fResult->SetBinError( iBin, fBinContent*sqrt(kSysHig_BR*kSysHig_BR+kSysHig_TR*kSysHig_TR+kSysHig_PD*kSysHig_PD+kSysHig_1D_SE*kSysHig_1D_SE) );
+        fResult->SetBinError( iBin, fBinContent*(hReference->GetBinContent(iBin)) );
     }
+    fReference->Close();
+    //
     return  fResult;
 }
 std::vector<TH1F*>
-fSetSystErrors                                      ( std::vector<TH1F*>                hStatistics ) {
+fSetSystErrors
+ ( std::vector<TH1F*>                hStatistics ) {
     std::vector<TH1F*> fResult;
+    //
+    TFile      *fReference      =   new TFile( Form("%s/Full_Systematics.root",(TString(Form(kAnalysis_Systemt_Dir,"yield"))).Data()) );
+    TH2F       *hReference      =   (TH2F*)(fReference->Get("h2DTotalSystematic"));
+    //
+    auto jBin = 0;
     for ( auto& iHisto : hStatistics )  {
         auto    fCurrentHisto   =   new TH1F(*iHisto);
         for ( Int_t iBin = 0; iBin < iHisto->GetNbinsX(); iBin++ ) {
-            auto    fBinContent     =   fCurrentHisto->GetBinContent( iBin );
-            fCurrentHisto->SetBinError( iBin, fBinContent*sqrt(4*(kSysHig_BR*kSysHig_BR+kSysHig_TR*kSysHig_TR+kSysHig_PD*kSysHig_PD)+kSysHig_2D_SE*kSysHig_2D_SE) );
+            auto    fBinContent     =   fCurrentHisto->GetBinContent( iBin+1 );
+            fCurrentHisto->SetBinError( iBin+1, fBinContent*hReference->GetBinContent(jBin+1,iBin+1) );
         }
+        jBin++;
         fResult.push_back(fCurrentHisto);
     }
     return fResult;
@@ -1141,9 +1267,10 @@ std::vector<float>  fEvaluateError                  ( bool fIsConditional, TGrap
     auto StatError          =   hStatIntegral->GetFunction("gaus")->GetParameter(2);
     fResult                 .push_back( StatError );
     fResult                 .push_back( StatError );
+    hStatIntegral           ->  SetMaximum( 1.2*hStatIntegral           ->  GetMaximum() );
     hStatIntegral           ->  Draw();
-    fText   ->  DrawLatexNDC(0.45,0.850,Form("Mean: %.3e %s",100*(StatErrorMean/fExtrap -1),"%"));
-    fText   ->  DrawLatexNDC(0.45,0.800,Form("#sigma_{Dev}: %.3e %s",100*(StatError)/(fExtrap),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErrorMean/fExtrap -1),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatError)/(fExtrap),"%"));
     //
     cDrawResult             ->  cd(3);
     uCleanOutsiders         ( fStatVariationMPT );
@@ -1157,16 +1284,17 @@ std::vector<float>  fEvaluateError                  ( bool fIsConditional, TGrap
     auto ReferenceMPT       =   (fMeanPT)/(fExtrap+fIntegral);
     fResult                 .push_back( StatErMPT );
     fResult                 .push_back( StatErMPT );
+    hStatIntegralMPT           ->  SetMaximum( 1.2*hStatIntegralMPT           ->  GetMaximum() );
     hStatIntegralMPT           ->  Draw();
-    fText   ->  DrawLatexNDC(0.45,0.850,Form("Mean: %.3e %s",100*(StatErMPTMean/ReferenceMPT -1),"%"));
-    fText   ->  DrawLatexNDC(0.45,0.800,Form("#sigma_{Dev}: %.3e %s",100*(StatErMPT)/(ReferenceMPT),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErMPTMean/ReferenceMPT -1),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatErMPT)/(ReferenceMPT),"%"));
     //
     cDrawResult             ->  cd(1);
     gTotal->Draw("same EP");
     //
     //  Write info on the Extrapolation:
-    fText   ->  DrawLatexNDC(0.45,0.825,Form("#frac{dN}{dy}: %.3e",fResult[0]));
-    fText   ->  DrawLatexNDC(0.45,0.650,Form("#sigma_{high}: %.3e %s",100*(fResult[2])/(fResult[0]),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.825,Form("1/N_{ev}dN/dy: %.2f",fResult[0]));
+    fText   ->  DrawLatexNDC(0.18,0.650,Form("#sigma_{high}: %.2f %s",100*(fResult[2])/(fResult[0]),"%"));
     //
     cDrawResult->Write();
     if ( fIsConditional )   cDrawResult->SaveAs(Form("result/yield/ExtrapolateCheck/2D/ErrorFits_%s.pdf",fName.Data()));
@@ -1177,11 +1305,12 @@ std::vector<float>  fEvaluateError                  ( bool fIsConditional, TGrap
 }
 std::vector<float>  fEvaluateError                  ( bool fIsConditional, TH1F* gStatic, TH1F* gMoveable, Float_t fIntegral, Double_t fMaximumFitRange = fMaxPT1D, Double_t fMinimumFitRange = fMinPT1D, TString fName = "", TString fFolder = "")  {
     //
+    std::vector<float> fResult;
+    //
     auto fExtrap    =   fLevyTsallis->Integral(0.,fMinPT1D);
     auto fMeanPT    =   fMeasureMeanPT(fLevyTsallis,gStatic);
     TH1F      *gTotal      =    fSumErrors(gStatic,gMoveable);
     gTotal->SetName("gTotal");
-    std::vector<float> fResult;
     //
     //  TCanvas w/ options
     auto    cDrawResult     =   new TCanvas("cDrawResult","cDrawResult",1800,600);
@@ -1192,9 +1321,9 @@ std::vector<float>  fEvaluateError                  ( bool fIsConditional, TH1F*
     gPad->SetLogy();
     //
     //  Draw Spectra
-    gTotal->SetMarkerStyle(26);
+    gTotal->SetMarkerStyle(markers[2]);
     gTotal->SetMarkerSize(2);
-    gTotal->SetMarkerColor(38);
+    gTotal->SetMarkerColor(colors[0]);
     gTotal->SetLineColor(kBlack);
     gTotal->Draw();
     //
@@ -1231,9 +1360,10 @@ std::vector<float>  fEvaluateError                  ( bool fIsConditional, TH1F*
     auto StatError          =   hStatIntegral->GetFunction("gaus")->GetParameter(2);
     fResult                 .push_back( StatError );
     fResult                 .push_back( StatError );
+    hStatIntegral           ->  SetMaximum( 1.2*hStatIntegral           ->  GetMaximum() );
     hStatIntegral           ->  Draw();
-    fText   ->  DrawLatexNDC(0.45,0.850,Form("Mean: %.3e %s",100*(StatErrorMean/fExtrap -1),"%"));
-    fText   ->  DrawLatexNDC(0.45,0.800,Form("#sigma_{Dev}: %.3e %s",100*(StatError)/(fExtrap),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErrorMean/fExtrap -1),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatError)/(fExtrap),"%"));
     //
     cDrawResult             ->  cd(3);
     uCleanOutsiders         ( fStatVariationMPT );
@@ -1245,9 +1375,10 @@ std::vector<float>  fEvaluateError                  ( bool fIsConditional, TH1F*
     auto ReferenceMPT       =   (fMeanPT)/(fExtrap+fIntegral);
     fResult                 .push_back( StatErMPT );
     fResult                 .push_back( StatErMPT );
+    hStatIntegralMPT           ->  SetMaximum( 1.2*hStatIntegralMPT           ->  GetMaximum() );
     hStatIntegralMPT           ->  Draw();
-    fText   ->  DrawLatexNDC(0.45,0.850,Form("Mean: %.3e %s",100*(StatErMPTMean/fMeanPT -1),"%"));
-    fText   ->  DrawLatexNDC(0.45,0.800,Form("#sigma_{Dev}: %.3e %s",100*(StatErMPT/fMeanPT),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErMPTMean/fMeanPT -1),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatErMPT/fMeanPT),"%"));
     //
     cDrawResult             ->  cd(1);
     gTotal->Draw("same EP");
@@ -1277,7 +1408,7 @@ std::vector<float>  fEvaluateError                  ( bool fIsConditional, TH1F*
     gPad->SetLogy();
     //
     //  Draw Spectra
-    gTotal->SetMarkerStyle(26);
+    gTotal->SetMarkerStyle(markers[2]);
     gTotal->SetMarkerSize(2);
     gTotal->SetMarkerColor(kRed);
     gTotal->SetLineColor(kBlack);
@@ -1331,9 +1462,10 @@ std::vector<float>  fEvaluateError                  ( bool fIsConditional, TH1F*
     auto StatError          =   hStatIntegral->GetRMS();//->GetFunction("gaus")->GetParameter(2);
     fResult                 .push_back( StatError );
     fResult                 .push_back( StatError );
+    hStatIntegral           ->  SetMaximum( 1.2*hStatIntegral           ->  GetMaximum() );
     hStatIntegral           ->  Draw();
-    fText   ->  DrawLatexNDC(0.45,0.850,Form("Mean: %.3e %s",100*(StatErrorMean/fExtrap -1),"%"));
-    fText   ->  DrawLatexNDC(0.45,0.800,Form("#sigma_{Dev}: %.3e %s",100*(StatError)/(fExtrap),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErrorMean/fExtrap -1),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatError)/(fExtrap),"%"));
     //
     cDrawResult             ->  cd(3);
     uCleanOutsiders         ( fStatVariationMPT );
@@ -1345,9 +1477,10 @@ std::vector<float>  fEvaluateError                  ( bool fIsConditional, TH1F*
     auto ReferenceMPT       =   (fMeanPT)/(fExtrap+fIntegral);
     fResult                 .push_back( StatErMPT );
     fResult                 .push_back( StatErMPT );
+    hStatIntegralMPT           ->  SetMaximum( 1.2*hStatIntegralMPT           ->  GetMaximum() );
     hStatIntegralMPT           ->  Draw();
-    fText   ->  DrawLatexNDC(0.45,0.850,Form("Mean: %.3e %s",100*(StatErMPTMean/fMeanPT -1),"%"));
-    fText   ->  DrawLatexNDC(0.45,0.800,Form("#sigma_{Dev}: %.3e %s",100*(StatErMPT/fMeanPT),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErMPTMean/fMeanPT -1),"%"));
+    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatErMPT/fMeanPT),"%"));
     //
     cDrawResult             ->  cd(1);
     lAll->Draw("same");
@@ -1367,7 +1500,7 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TGrap
     //  Optimisation mode
     gROOT->SetBatch(true);
     //
-    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err low, Stat err high, Syst err low, syst err high
+    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err low, Stat err high, Syst err low, syst err high, extp val, extp stat, extp sys
     Double_t   *fResult     =   new Double_t    [10];
     //
     //  Initialising the Fit Function
@@ -1399,7 +1532,7 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TGrap
     //
     //  Write info on the Extrapolation:
     TLatex  *fText   =   new TLatex();
-    fText   ->  DrawLatexNDC(0.5,0.825,Form("#frac{dN}{dy} in [%.1f;%.1f]: %.7f",0.,fMinPT1D,fResult[0]));
+    fText   ->  DrawLatexNDC(0.5,0.825,Form("1/N_{ev}dN/dy in [%.1f;%.1f]: %.7f",0.,fMinPT1D,fResult[0]));
     fText   ->  DrawLatexNDC(0.5,0.750,Form("Function: %s",fFitFunc->GetName()));
     fText   ->  DrawLatexNDC(0.5,0.700,Form("Fit range: [%.1f;%.1f]",fMinFitInt,fMaxFitInt));
     //  Save To File
@@ -1416,62 +1549,6 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TGrap
     fResult[3] = fResult[4] = fSystResults.at(0);
     fResult[6] = fResult[7] = fStatResults.at(2);
     fResult[8] = fResult[9] = fSystResults.at(2);
-    /*
-    // !TODO: Scorporare la multifucntion
-    //  Generate utility histogram to evaluate statistical error
-    std::vector<float> fMultiFitVariation;
-    TLegend    *lAll    =   new TLegend();
-    auto iTer = 0;
-    for ( auto iFuncRange : fSystFitFunctions )  {
-        //
-        //  Prepping Fit Function
-        auto    iFunc   =   iFuncRange.first;
-        iFunc->SetLineColor(fGetRainbowColor(iTer,true));
-        //
-        //  Prepping Associated Ranges
-        for ( auto iRange : iFuncRange.second )  {
-            fSetFunction(iFunc,fIntegral);
-            gTotal      ->  Fit(iFunc,"IMES","",fMinFitInt,iRange);
-            //
-            fMultiFitVariation.push_back(iFunc  ->Integral(0.,fMinPT1D));
-            //
-            //  Draw Function
-            iFunc->SetRange(0.,iRange);
-            cDrawResult             ->  cd(1);
-            iFunc->DrawCopy("same");
-            cDrawResult             ->  cd(2);
-            iFunc->DrawCopy("same");
-        }
-        //
-        //  TLegend
-        lAll    ->  AddEntry(iFunc,iFunc->GetName(),"L");
-        iTer++;
-    }
-    cDrawResult             ->  cd(3);
-    //
-    uCleanOutsiders         ( fMultiFitVariation );
-    auto    hMultiFitHisto  =   uBuildTH1F( fMultiFitVariation );
-    hMultiFitHisto          ->  SetNameTitle( Form("hMultiFit_%s",fName.Data()), "hMultiFit" );
-    fResult[3]              =   hMultiFitHisto->GetRMS();
-    fResult[4]              =   hMultiFitHisto->GetRMS();
-    hMultiFitHisto          ->  Draw();
-    //
-    cDrawResult             ->  cd(1);
-    //
-    lAll->Draw("same");
-    //
-    //  Write info on the Extrapolation:
-    fText   ->  DrawLatexNDC(0.5,0.825,Form("#frac{dN}{dy}: %.3e",fResult[0]));
-    fText   ->  DrawLatexNDC(0.5,0.750,Form("Mean: %.3e",hMultiFitHisto->GetMean()));
-    fText   ->  DrawLatexNDC(0.5,0.700,Form("#sigma_{low}: %.3e",fResult[3]));
-    fText   ->  DrawLatexNDC(0.5,0.650,Form("#sigma_{high}: %.3e",fResult[4]));
-    //
-    cDrawResult->Write();
-    if ( fIsConditional )   cDrawResult->SaveAs(Form("result/yield/ExtrapolateCheck/2D/MultiFitsError_%s.pdf",fName.Data()));
-    else                    cDrawResult->SaveAs(Form("result/yield/ExtrapolateCheck/1D/MultiFitsError_%s.pdf",fName.Data()));
-    delete cDrawResult;
-    //
-     */
     //_____________________________________
     //
     //  End Optimisation mode
@@ -1484,7 +1561,7 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TH1F*
     gROOT->SetBatch(true);
     //
     //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err low, Stat err high, Syst err low, syst err high
-    Double_t   *fResult     =   new Double_t    [10];
+    Double_t   *fResult     =   new Double_t    [13];
     //
     //  Initialising the Fit Function
     fSetFunction(fLevyTsallis,fIntegral);
@@ -1509,8 +1586,8 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TH1F*
     TCanvas                *cDrawResult =   new TCanvas(Form("%s_%s",gStatistics->GetName(),fName.Data()),"",1600,800);
     cDrawResult->Divide(2,1);
     gStyle  ->SetOptStat(0);
-    gTotal->SetMarkerStyle(26);
-    gTotal->SetMarkerColor(38);
+    gTotal->SetMarkerStyle(markers[2]);
+    gTotal->SetMarkerColor(colors[0]);
     gTotal->SetLineColor(kBlack);
     //
     //  Draw Spectra w/ function
@@ -1521,7 +1598,7 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TH1F*
     //
     //  Write info on the Extrapolation:
     TLatex  *fText   =   new TLatex();
-    fText   ->  DrawLatexNDC(0.5,0.825,Form("#frac{dN}{dy} in [%.1f;%.1f]: %.7f",0.,fMinPT1D,fResult[0]));
+    fText   ->  DrawLatexNDC(0.5,0.825,Form("1/N_{ev}dN/dy in [%.1f;%.1f]: %.7f",0.,fMinPT1D,fResult[0]));
     fText   ->  DrawLatexNDC(0.5,0.750,Form("Function: %s",fLevyTsallis->GetName()));
     fText   ->  DrawLatexNDC(0.5,0.700,Form("Fit range: [%.1f;%.1f]",fMinFitInt,fMaxFitInt));
     //
@@ -1540,9 +1617,9 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TH1F*
     else                    cDrawResult->   SaveAs(Form("%s/1D/EvaluationFit_%s.pdf",fFolder.Data(),fName.Data()));
     delete cDrawResult;
     //
-    fRandomGen->SetSeed(1);
+    uRandomGen->SetSeed(1);
     auto fStatResults                   =   fEvaluateError(fIsConditional,gSystematics,gStatistics,fIntegral,fMinFitInt,fMaxFitInt,TString("Stat_")+fName,fFolder);
-    fRandomGen->SetSeed(1);
+    uRandomGen->SetSeed(1);
     auto fSystResults                   =   fEvaluateError(fIsConditional,gStatistics,gSystematics,fIntegral,fMinFitInt,fMaxFitInt,TString("Syst_")+fName,fFolder);
     //
     auto fSystResuFit                   =   fEvaluateError(fIsConditional,gStatistics,gSystematics,fSystFitFunctions,fMinFitInt,fMaxFitInt,TString("SFit_")+fName,fFolder);
@@ -1675,7 +1752,7 @@ Double_t*           fMeasureFullYield               ( TH1F* gStatistics, TH1F* g
     gROOT->SetBatch(true);
     //
     // Result format:  Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err low, Stat err high, Syst err low, syst err high
-    Double_t   *fResult             =   new Double_t        [10];
+    Double_t   *fResult             =   new Double_t        [16];
     //
     bool fIsConditional = fName.Contains("2D");
     //
@@ -1693,7 +1770,7 @@ Double_t*           fMeasureFullYield               ( TH1F* gStatistics, TH1F* g
     fResult[2]  =   fIntegralStat +   fExtrapolResults[2];
     //
     //  Systematical Error of Result
-    fResult[3]  =   fIntegralSyst  +   fExtrapolResults[4];
+    fResult[3]  =   fIntegralSyst  +   fExtrapolResults[3];
     fResult[4]  =   fIntegralSyst  +   fExtrapolResults[4];
     //
     //  Mean Value of pT
@@ -1706,6 +1783,16 @@ Double_t*           fMeasureFullYield               ( TH1F* gStatistics, TH1F* g
     //  Systematical Error of Result
     fResult[8]  =   fResult[5]*( fExtrapolResults[8]/fExtrapolResults[5] + fResult[3]/fResult[0] );
     fResult[9]  =   fResult[5]*( fExtrapolResults[9]/fExtrapolResults[5] + fResult[4]/fResult[0] );
+    //
+    //  Extrapolation only
+    fResult[10] =   fExtrapolResults[0];
+    fResult[11] =   fExtrapolResults[1];
+    fResult[12] =   fExtrapolResults[3];
+    //
+    //  Extrapolation only
+    fResult[13] =   fIntegral;
+    fResult[14] =   fIntegralStat;
+    fResult[15] =   fIntegralSyst;
     //
     // End Optimisation mode
     gROOT->SetBatch(false);
@@ -1945,8 +2032,8 @@ RooFitResult*   fExtrapolateModelLEGACYROOFIT               ( TH1F *HData, TStri
     
     RooPlot * fSaveToFrame      = TransMom.frame(Name(fName.Data()),Title(fName.Data()));
     
-    RData                           ->plotOn(fSaveToFrame,      MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
-    fModel                          .plotOn (fSaveToFrame,      LineColor(4),                   LineStyle(kDashed), Name("RooMod"));
+    RData                           ->plotOn(fSaveToFrame,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
+    fModel                          .plotOn (fSaveToFrame,      LineColor(colors[1]),                   LineStyle(kDashed), Name("RooMod"));
     
     fSaveToFrame                ->Draw("same");
     fSaveToCanvas               ->Write();
@@ -2195,8 +2282,8 @@ RooFitResult*   FitModelRap                         ( TH1D * THdata, TH1D * THbk
         RooPlot * fSaveToFrame      = fRap_.frame();
         TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
         
-        bkg1                        ->plotOn(fSaveToFrame,      MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
-        fBkg1_Model                 ->plotOn (fSaveToFrame,      LineColor(4),                   LineStyle(kDashed), Name("RooMod"));
+        bkg1                        ->plotOn(fSaveToFrame,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
+        fBkg1_Model                 ->plotOn (fSaveToFrame,      LineColor(colors[1]),                   LineStyle(kDashed), Name("RooMod"));
         
         fSaveToFrame                ->Draw("same");
         fLegend                     ->Draw("same");
@@ -2209,9 +2296,9 @@ RooFitResult*   FitModelRap                         ( TH1D * THdata, TH1D * THbk
         RooPlot * fSaveToFram2      = fRap_.frame();
         TLegend * fLegen2           = new TLegend   (0.12,0.60,0.30,0.85);
             
-        bkg2                        ->plotOn    (fSaveToFram2,  MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
-        fBkg2_Model                 ->plotOn    (fSaveToFram2,  LineColor(4),                   LineStyle(kDashed), Name("RooMod"));
-        fBkg2_Model                 ->plotOn    (fSaveToFram2,  Components("fBkg2_Tria"),       LineStyle(kDashed), LineColor(38),      Name("RooBB"));
+        bkg2                        ->plotOn    (fSaveToFram2,  MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
+        fBkg2_Model                 ->plotOn    (fSaveToFram2,  LineColor(colors[1]),                   LineStyle(kDashed), Name("RooMod"));
+        fBkg2_Model                 ->plotOn    (fSaveToFram2,  Components("fBkg2_Tria"),       LineStyle(kDashed), LineColor(colors[2]),      Name("RooBB"));
         fBkg2_Model                 ->plotOn    (fSaveToFram2,  Components("fBkg2_MdBk1"),      LineStyle(kDashed), LineColor(33),      Name("RooBS"));
 
         fLegen2                     ->SetFillColor(kWhite);
@@ -2232,11 +2319,11 @@ RooFitResult*   FitModelRap                         ( TH1D * THdata, TH1D * THbk
         RooPlot * fSaveToFram3      = fRap_.frame();
         TLegend * fLegen3           = new TLegend   (0.12,0.60,0.30,0.85);
             
-        data                        ->plotOn    (fSaveToFram3,  MarkerColor(38),            MarkerStyle(26),    Name("RooData"));
-        fSign_Model                 ->plotOn    (fSaveToFram3,  LineColor(4),               LineStyle(kDashed), Name("RooMod"));
-        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fBkg2_MdBk1"),  LineStyle(kDashed), LineColor(38),      Name("RooBB"));
-        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fSign_Tria"),   LineStyle(kDashed), LineColor(2),       Name("RooBS"));
-        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fSign_Sign"),   LineStyle(kSolid),  LineColor(2),       Name("RooSS"));
+        data                        ->plotOn    (fSaveToFram3,  MarkerColor(colors[0]),            MarkerStyle(markers[2]),    Name("RooData"));
+        fSign_Model                 ->plotOn    (fSaveToFram3,  LineColor(colors[1]),               LineStyle(kDashed), Name("RooMod"));
+        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fBkg2_MdBk1"),  LineStyle(kDashed), LineColor(colors[2]),      Name("RooBB"));
+        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fSign_Tria"),   LineStyle(kDashed), LineColor(colors[2]),       Name("RooBS"));
+        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fSign_Sign"),   LineStyle(kSolid),  LineColor(colors[2]),       Name("RooSS"));
         
         fLegen3                     ->SetFillColor(kWhite);
         fLegen3                     ->SetLineColor(kWhite);
@@ -2643,10 +2730,10 @@ std::pair<std::vector<float>,TH1F*>     uIntegralError                  ( std::v
     auto siggg = fResultsss->GetParameter(2);
     hStatIntegral->Draw();
     fResultsss->Draw("same");
-    //Latx->DrawLatexNDC(0.60,0.80,Form("OLD : %.4f",1.e6*fIntegralStat));
-    //Latx->DrawLatexNDC(0.60,0.80,Form("OLD : %.4f",1.e6*sqrt(fErr)));
-    Latx->DrawLatexNDC(0.60,0.75,Form("GSS : %.4f",1.e6*siggg));
-    Latx->DrawLatexNDC(0.60,0.70,Form("RMS : %.4f",1.e6*hStatIntegral->GetRMS()));
+    //uLatex->DrawLatexNDC(0.60,0.80,Form("OLD : %.4f",1.e6*fIntegralStat));
+    //uLatex->DrawLatexNDC(0.60,0.80,Form("OLD : %.4f",1.e6*sqrt(fErr)));
+    uLatex->DrawLatexNDC(0.60,0.75,Form("GSS : %.4f",1.e6*siggg));
+    uLatex->DrawLatexNDC(0.60,0.70,Form("RMS : %.4f",1.e6*hStatIntegral->GetRMS()));
     
     hStatIntegral->SetName("NEW_-1");
     hStatIntegral->Write();
@@ -2660,9 +2747,9 @@ std::pair<std::vector<float>,TH1F*>     uIntegralError                  ( std::v
         fResultsss = hConditional->GetFunction("gaus");
         siggg = fResultsss->GetParameter(2);
         fResultsss->Draw("same");
-        //Latx->DrawLatexNDC(0.60,0.80,Form("OLD : %.4f",1.e6*hRES_2D_Cond2_Stat_INT->GetBinError(iTer+1)));
-        Latx->DrawLatexNDC(0.60,0.75,Form("GSS : %.4f",1.e6*siggg));
-        Latx->DrawLatexNDC(0.60,0.70,Form("RMS : %.4f",1.e6*hConditional->GetRMS()));
+        //uLatex->DrawLatexNDC(0.60,0.80,Form("OLD : %.4f",1.e6*hRES_2D_Cond2_Stat_INT->GetBinError(iTer+1)));
+        uLatex->DrawLatexNDC(0.60,0.75,Form("GSS : %.4f",1.e6*siggg));
+        uLatex->DrawLatexNDC(0.60,0.70,Form("RMS : %.4f",1.e6*hConditional->GetRMS()));
         hConditional->Write();
     }
     
@@ -2684,9 +2771,9 @@ std::pair<std::vector<float>,TH1F*>     uIntegralError                  ( std::v
     auto fResulFits = hStatExtrapol->GetFunction("gaus");
     siggg = fResulFits->GetParameter(2);
     fResulFits->DrawCopy("same");
-    //Latx->DrawLatexNDC(0.60,0.80,Form("OLD : %.4f",1.e6*fExtrapolResults[1]));
-    Latx->DrawLatexNDC(0.60,0.75,Form("GSS : %.4f",1.e6*siggg));
-    Latx->DrawLatexNDC(0.60,0.70,Form("RMS : %.4f",1.e6*hStatIntegral->GetRMS()));
+    //uLatex->DrawLatexNDC(0.60,0.80,Form("OLD : %.4f",1.e6*fExtrapolResults[1]));
+    uLatex->DrawLatexNDC(0.60,0.75,Form("GSS : %.4f",1.e6*siggg));
+    uLatex->DrawLatexNDC(0.60,0.70,Form("RMS : %.4f",1.e6*hStatIntegral->GetRMS()));
     
     hStatIntegral->SetName("ENEW_-1");
     hStatIntegral->Write();
@@ -2700,9 +2787,9 @@ std::pair<std::vector<float>,TH1F*>     uIntegralError                  ( std::v
         fResultsss = hConditional->GetFunction("gaus");
         siggg = fResultsss->GetParameter(2);
         fResultsss->Draw("same");
-        //Latx->DrawLatexNDC(0.60,0.80,Form("OLD : %.4f",1.e6*hRES_2D_Cond2_Stat_EXT->GetBinError(iTer+1)));
-        Latx->DrawLatexNDC(0.60,0.75,Form("GSS : %.4f",1.e6*siggg));
-        Latx->DrawLatexNDC(0.60,0.70,Form("RMS : %.4f",1.e6*hConditional->GetRMS()));
+        //uLatex->DrawLatexNDC(0.60,0.80,Form("OLD : %.4f",1.e6*hRES_2D_Cond2_Stat_EXT->GetBinError(iTer+1)));
+        uLatex->DrawLatexNDC(0.60,0.75,Form("GSS : %.4f",1.e6*siggg));
+        uLatex->DrawLatexNDC(0.60,0.70,Form("RMS : %.4f",1.e6*hConditional->GetRMS()));
         
         hConditional->Write();
     }

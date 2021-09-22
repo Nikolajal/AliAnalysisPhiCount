@@ -12,8 +12,7 @@ void Production_SignalExtraction ( bool fSilent = true, TString fOption = "" )
     //>-> OPTIONS
     
     // Silencing warnings for smoother running
-    if ( fSilent )
-    {
+    if ( fSilent )  {
         gErrorIgnoreLevel = kWarning;
         RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
         RooMsgService::instance().setSilentMode(fSilent);
@@ -186,16 +185,16 @@ void Production_SignalExtraction ( bool fSilent = true, TString fOption = "" )
     //
     for ( Int_t iSys = 0; iSys < nOptions; iSys++ ) {
         //
-        gROOT                       ->  ProcessLine (Form(".! mkdir -p ./result/yield/ExtractionSystematics/ExtractionCheck/%s/1D/",sOptions.at(iSys).Data()));
-        TFile      *fCheckFit       =   new TFile   (Form("./result/yield/ExtractionSystematics/ExtractionCheck/%s/1D/CheckFitResults_%s.root",sOptions.at(iSys).Data(),sOptions.at(iSys).Data()),"recreate");
+        gROOT                       ->  ProcessLine (Form(".! mkdir -p %s/Systematics/ExtractionCheck/%s/1D/",(Form(kAnalysis_SigExtr_Dir,"yield")),sOptions.at(iSys).Data()));
+        TFile      *fCheckFit       =   new TFile   (Form("%s/Systematics/ExtractionCheck/%s/1D/CheckFitResults_%s.root",(Form(kAnalysis_SigExtr_Dir,"yield")),sOptions.at(iSys).Data(),sOptions.at(iSys).Data()),"recreate");
         //
         //>>    Fit the Model
-        auto    fFitResults_1DYield = FitModel        (hREC_1D_in_PT,hSlop_Reference,Form("./result/yield/ExtractionSystematics/ExtractionCheck/%s/1D/",sOptions.at(iSys).Data()),sOptions.at(iSys).Data(),sOptions.at(iSys).Data());
+        auto    fFitResults_1DYield = FitModel        (hREC_1D_in_PT,hSlop_Reference,Form("%s/Systematics/ExtractionCheck/%s/1D/",(Form(kAnalysis_SigExtr_Dir,"yield")),sOptions.at(iSys).Data()),sOptions.at(iSys).Data(),sOptions.at(iSys).Data());
         //
         //>>    Progressive Count
         fProgrCount++;
         //
-        TFile      *fResultFit       =   new TFile   (Form("./result/yield/ExtractionSystematics/ExtractionCheck/%s/1D/FitResults_%s.root",sOptions.at(iSys).Data(),sOptions.at(iSys).Data()),"recreate");
+        TFile      *fResultFit       =   new TFile   (Form("%s/Systematics/ExtractionCheck/%s/1D/FitResults_%s.root",(Form(kAnalysis_SigExtr_Dir,"yield")),sOptions.at(iSys).Data(),sOptions.at(iSys).Data()),"recreate");
         for ( auto hSave : fFitResults_1DYield )    {
             if ( strncmp(hSave->GetName(),"hRAW_1D",7) == 0 )   hSave->Scale(1.,"width");
             if ( strncmp(hSave->GetName(),"h1D_anBB",7) == 0 )  hSave->Scale(1.,"width");
@@ -219,18 +218,18 @@ void Production_SignalExtraction ( bool fSilent = true, TString fOption = "" )
     //
     for ( Int_t iSys = 0; iSys < nOption2; iSys++ ) {
         //
-        gROOT                       ->  ProcessLine (Form(".! mkdir -p ./result/yield/ExtractionSystematics/ExtractionCheck/%s/2D/",sOption2.at(iSys).Data()));
-        TFile      *fCheckFit       =   new TFile   (Form("./result/yield/ExtractionSystematics/ExtractionCheck/%s/2D/CheckFitResults_%s.root",sOption2.at(iSys).Data(),sOption2.at(iSys).Data()),"recreate");
+        gROOT                       ->  ProcessLine (Form(".! mkdir -p %s/Systematics/ExtractionCheck/%s/2D/",(Form(kAnalysis_SigExtr_Dir,"yield")),sOption2.at(iSys).Data()));
+        TFile      *fCheckFit       =   new TFile   (Form("%s/Systematics/ExtractionCheck/%s/2D/CheckFitResults_%s.root",(Form(kAnalysis_SigExtr_Dir,"yield")),sOption2.at(iSys).Data(),sOption2.at(iSys).Data()),"recreate");
         //
         //>>    Fit
         std::vector<TH1F*>  f1DCheck;
-        auto    fFitResults_2DYield = FitModel(hREC_1D_in_PT_2D_bin,hSlop_Referen2D,hREC_2D_in_PT,f1DCheck,Form("./result/yield/ExtractionSystematics/ExtractionCheck/%s/2D/",sOption2.at(iSys).Data()),sOption2.at(iSys).Data(),sOption2.at(iSys).Data());
+        auto    fFitResults_2DYield = FitModel(hREC_1D_in_PT_2D_bin,hSlop_Referen2D,hREC_2D_in_PT,f1DCheck,Form("%s/Systematics/ExtractionCheck/%s/2D/",(Form(kAnalysis_SigExtr_Dir,"yield")),sOption2.at(iSys).Data()),sOption2.at(iSys).Data(),sOption2.at(iSys).Data());
         //
         //Progressive Count
         fProgrCount++;
         //
         //
-        TFile      *fResultFit       =   new TFile   (Form("./result/yield/ExtractionSystematics/ExtractionCheck/%s/2D/FitResults_%s.root",sOption2.at(iSys).Data(),sOption2.at(iSys).Data()),"recreate");
+        TFile      *fResultFit       =   new TFile   (Form("%s/Systematics/ExtractionCheck/%s/2D/FitResults_%s.root",(Form(kAnalysis_SigExtr_Dir,"yield")),sOption2.at(iSys).Data(),sOption2.at(iSys).Data()),"recreate");
         for ( auto hSave : f1DCheck )    {
             if ( strncmp(hSave->GetName(),"hRAW_1D_in_2D_bin",17) == 0 )    hSave->Scale(1.,"width");
             if ( strncmp(hSave->GetName(),"2Dbin_anBB",17) == 0 )           hSave->Scale(1.,"width");

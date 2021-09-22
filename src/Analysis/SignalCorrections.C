@@ -27,6 +27,7 @@ void SignalCorrections ( TString fOption = "", bool fSilent = true, TString kFol
     gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,"Yield")));
     gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,"Yield"))+TString("/1D"));
     gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,"Yield"))+TString("/2D"));
+    gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,"Yield"))+TString("/Full"));
     
     
     // Recovering the histograms-------------------------------------------------------------------------------
@@ -118,8 +119,8 @@ void SignalCorrections ( TString fOption = "", bool fSilent = true, TString kFol
     auto        kN_Trg          =   (hEvntEff->GetBinContent(kEventCount::kTrigger));
     auto        kN_Vtx          =   (hEvntEff->GetBinContent(kEventCount::kVertex));
     auto        kN_MB           =   (hEvntEff->GetBinContent(kEventCount::kVertex10));
-    Double_t    f1DCorrection   =   (1./kBR)        *(kTriggerEff/kN_MB)*(kN_Vtx/kN_Trg);
-    Double_t    f2DCorrection   =   (1./(kBR*kBR))  *(kTriggerEff/kN_MB)*(kN_Vtx/kN_Trg);
+    Double_t    f1DCorrection   =   (1./kBR)        *(1./kN_MB) *(kTriggerEff/1.)   *(1./kSignalMiss1D) *(kN_Vtx/kN_Trg);
+    Double_t    f2DCorrection   =   (1./(kBR*kBR))  *(1./kN_MB) *(kTriggerEff/1.)   *(1./kSignalMiss2D) *(kN_Vtx/kN_Trg);
     //
     // >-> YIELD ANALYSIS //
     //
@@ -144,6 +145,14 @@ void SignalCorrections ( TString fOption = "", bool fSilent = true, TString kFol
     hName   =   Form("hRES_2D_Cond2_Syst");
     hTitle  =   Form("hRES_2D_Cond2_Syst");
     TH1F       *hRES_2D_Cond2_Syst              =   new TH1F(hName,hTitle,nBinPT2D,fArrPT2D);
+    //
+    hName   =   Form("hRES_2D_Cond3_Stat");
+    hTitle  =   Form("hRES_2D_Cond3_Stat");
+    TH1F       *hRES_2D_Cond3_Stat              =   new TH1F(hName,hTitle,nBinPT2D,fArrPT2D);
+    //
+    hName   =   Form("hRES_2D_Cond3_Syst");
+    hTitle  =   Form("hRES_2D_Cond3_Syst");
+    TH1F       *hRES_2D_Cond3_Syst              =   new TH1F(hName,hTitle,nBinPT2D,fArrPT2D);
     //
     hName   =   Form("gConditional_Mean_PT");
     hTitle  =   Form("gConditional_Mean_PT");
@@ -174,7 +183,7 @@ void SignalCorrections ( TString fOption = "", bool fSilent = true, TString kFol
     fPrintLoopTimer("Fit_for_extrapolation",fProgrCount,fTotalCount,1);
     //
     gYieldResult            ->  SetPoint        ( 0,    1,      fResults[0]  );
-    gYieldResult            ->  SetPointEX      ( 0,    0,      0            );
+    gYieldResult            ->  SetPointEX      ( 0,    0.1,    0.1          );
     gYieldResult            ->  SetPointEY      ( 0,    0,      fResults[1],    fResults[2] );
     gYieldResult            ->  SetPointEY      ( 0,    1,      fResults[3],    fResults[4] );
     gConditional_Mean_PT    ->  SetPoint        ( 0,    -2,     fResults[5] );
@@ -197,21 +206,44 @@ void SignalCorrections ( TString fOption = "", bool fSilent = true, TString kFol
         gConditional_Mean_PT    ->  SetPointEY      ( iFit+1,   0,          fResults[6],    fResults[7] );
         gConditional_Mean_PT    ->  SetPointEY      ( iFit+1,   1,          fResults[8],    fResults[9] );
         //
-        hRES_2D_Cond2_Stat  ->  SetBinContent   ( iFit+1, fResults[0] );
-        hRES_2D_Cond2_Stat  ->  SetBinError     ( iFit+1, fResults[1] );
-        hRES_2D_Cond2_Syst  ->  SetBinContent   ( iFit+1, fResults[0] );
-        hRES_2D_Cond2_Syst  ->  SetBinError     ( iFit+1, fResults[3] );
+        hRES_2D_Cond2_Stat  ->  SetBinContent   ( iFit+1, fResults[10] );
+        hRES_2D_Cond2_Stat  ->  SetBinError     ( iFit+1, fResults[11] );
+        hRES_2D_Cond2_Syst  ->  SetBinContent   ( iFit+1, fResults[10] );
+        hRES_2D_Cond2_Syst  ->  SetBinError     ( iFit+1, fResults[12] );
+        //
+        hRES_2D_Cond3_Stat  ->  SetBinContent   ( iFit+1, fResults[13] );
+        hRES_2D_Cond3_Stat  ->  SetBinError     ( iFit+1, fResults[14] );
+        hRES_2D_Cond3_Syst  ->  SetBinContent   ( iFit+1, fResults[13] );
+        hRES_2D_Cond3_Syst  ->  SetBinError     ( iFit+1, fResults[15] );
     }
     //
-    fResults = fMeasureFullYield(hRES_2D_Cond2_Stat,hRES_2D_Cond2_Syst,"2D");
-    gYieldResult            ->  SetPoint        ( 1,    2,      fResults[0] );
-    gYieldResult            ->  SetPointEX      ( 1,    0,      0           );
-    gYieldResult            ->  SetPointEY      ( 1,    0,      fResults[1],    fResults[2] );
-    gYieldResult            ->  SetPointEY      ( 1,    1,      fResults[3],    fResults[4] );
-    gConditional_Mean_PT    ->  SetPoint        ( nBinPT2D+1,   -1,     fResults[5] );
-    gConditional_Mean_PT    ->  SetPointEX      ( nBinPT2D+1,   0.5,    0.5         );
-    gConditional_Mean_PT    ->  SetPointEY      ( nBinPT2D+1,   0,      fResults[6],    fResults[7] );
-    gConditional_Mean_PT    ->  SetPointEY      ( nBinPT2D+1,   1,      fResults[8],    fResults[9] );
+    auto fResult2       = fMeasureFullYield(hRES_2D_Cond2_Stat,hRES_2D_Cond2_Syst,"2D");
+    //
+    auto fExtrap_1_Stat =   0.;
+    auto fExtrap_1_Syst =   0.;
+    auto fExtrap_1_Val_ =   hRES_2D_Cond2_Stat->IntegralAndError(-1.,10000.,fExtrap_1_Stat,"width");
+         fExtrap_1_Val_ =   hRES_2D_Cond2_Syst->IntegralAndError(-1.,10000.,fExtrap_1_Syst,"width");
+    //
+    cout << fExtrap_1_Val_ << endl;
+    //
+    auto fExtrap_2_Val_ =   fResult2[10];
+    auto fExtrap_2_Stat =   fResult2[11];
+    auto fExtrap_2_Syst =   fResult2[12];
+    //
+    cout << fExtrap_2_Val_ << endl;
+    //
+    auto fIntegral_Stat =   0.;
+    auto fIntegral_Syst =   0.;
+    auto fIntegral_Val_ =   uHistoIntegralAndError(hRES_2D_Cond1_Stat,fIntegral_Stat);
+         fIntegral_Val_ =   uHistoIntegralAndError(hRES_2D_Cond1_Syst,fIntegral_Syst);
+    //
+    cout << fIntegral_Val_ << endl;
+    cout << fIntegral_Val_ + fExtrap_1_Val_ + fExtrap_2_Val_/2. << endl;
+    //
+    gYieldResult            ->  SetPoint        ( 1,    2,      fIntegral_Val_ + fExtrap_1_Val_ + fExtrap_2_Val_/2. );
+    gYieldResult            ->  SetPointEX      ( 1,    0.1,    0.1         );
+    gYieldResult            ->  SetPointEY      ( 1,    0,      SquareSum({ fIntegral_Stat, fExtrap_1_Stat, fExtrap_2_Stat/2. }),   SquareSum({ fIntegral_Stat, fExtrap_1_Stat, fExtrap_2_Stat/2. }));
+    gYieldResult            ->  SetPointEY      ( 1,    1,      SquareSum({ fIntegral_Syst, fExtrap_1_Syst, fExtrap_2_Syst/2. }),   SquareSum({ fIntegral_Syst, fExtrap_1_Syst, fExtrap_2_Syst/2. }));
     //
     fStopTimer("Fit_for_extrapolation");
     //
@@ -242,6 +274,11 @@ void SignalCorrections ( TString fOption = "", bool fSilent = true, TString kFol
         gConditional_Mean_PT    ->Write();
         hRES_2D_Cond2_Stat      ->Write();
         hRES_2D_Cond2_Syst      ->Write();
+        //
+        gYieldResult            ->Write();
+        //
+        gROOT->SetBatch(kTRUE);
+        //
         for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ ) {
             hName   =   Form("hRES_2D_Cond1_Stat_%i",iFit);
             hTitle  =   Form("Conditional Spectrum in p_{T} [%.2f-%.2f] Stat Err",fArrPT2D[iFit],fArrPT2D[iFit+1]);
@@ -273,10 +310,16 @@ void SignalCorrections ( TString fOption = "", bool fSilent = true, TString kFol
         delete      cDrawFullResults;
         //
         cDrawResult = new TCanvas();
+        gPad->SetLogy();
         uSetHisto(gYieldResult);
-        gYieldResult->Draw("APE ; E5");
-        cDrawResult ->  SaveAs(Form("%s%s",Form(kASigExtp_Plot_Direct,"Yield"),"/TEST.pdf"));
+        TLegend    *lLegend =   new TLegend();
+        lLegend->AddEntry(gYieldResult,"Point","P");
+        gYieldResult->Draw("APS ; 2 ; 5");
+        lLegend->Draw("same");
+        cDrawResult ->  SaveAs(Form("%s%s",Form(kASigExtp_Plot_Direct,"Yield"),"/Full/Production.pdf"));
         delete      cDrawResult;
+        //
+        gROOT->SetBatch(kFALSE);
         //
         outFil2->Close();
     }
