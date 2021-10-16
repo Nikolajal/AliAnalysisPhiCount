@@ -1,0 +1,129 @@
+\section{Results}
+\label{sec:Results}
+The results of this analysis note are a measurement of inclusive $\phi$ meson yield and inclusive $\phi$-meson pair. In addition to these, the mean p$_{\text{T}}$ of the inclusive spectrum and conditional spectra are presented. The yields are then combined to evaluate new parameters characterising the $\phi$ meson production statistics.
+
+\subsection{$\phi$-meson inclusive yield}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{../result/Yield/SignalExtrapolation/Plots/1D/Yield_1D.pdf}
+\label{fig:spectrum1D}
+\caption{}
+\end{figure}
+
+\subsection{$\phi$-meson pair inclusive yield}
+
+\begin{figure}[!h]
+	\centering
+		\includegraphics[width=0.495\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_0.pdf}
+		\includegraphics[width=0.495\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_1.pdf}\\
+		\includegraphics[width=0.495\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_2.pdf}
+		\includegraphics[width=0.495\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_3.pdf}\\
+		\includegraphics[width=0.495\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_4.pdf}
+		\includegraphics[width=0.495\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_5.pdf}\\
+		\includegraphics[width=0.495\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_6.pdf}
+		\includegraphics[width=0.495\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_7.pdf}
+\end{figure}
+
+\begin{figure}[!h]
+	\centering
+		\includegraphics[width=0.495\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_8.pdf}
+		\includegraphics[width=0.495\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_9.pdf}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{../result/Yield/SignalExtrapolation/Plots/Full/Production.pdf}
+\caption{\hl{Didascalia}}
+\label{fig:Production}
+\end{figure}
+
+\subsection{$\phi$-meson production distribution}
+The access to the $\phi$-meson pair yield makes it possible to study the production statistics in a new way. If we take a look at the definition of the inclusive yield:
+\begin{equation}
+\frac{\text{dN}^2_{\phi}}{\text{dp}_{\text{T}}\text{d}y} = \langle \text{Y}_{1\phi} \rangle = \Big( n_{1\phi} + 2\times n_{2\phi} + 3\times n_{3\phi} + \dots \Big)
+\label{eq:}
+\end{equation}
+we see that we can generalise the n-tuple inclusive yield as:
+\begin{equation}
+\langle \text{Y}_{i\phi} \rangle = \sum_{k=0}^{\infty} \binom{k}{i}\times n_{k\phi} = \sum_{k=0}^{\infty} \frac{k!}{i!(k-i)!} \times n_{k\phi} 
+\label{eq:}
+\end{equation}
+In terms of statistical properties of the $\phi$-meson production mechanism we can see the relations
+\begin{equation}
+\mu = \langle \text{Y}_{1\phi} \rangle \qquad \sigma^2 = \langle \text{Y}_{1\phi}^2 \rangle -  \langle \text{Y}_{1\phi} \rangle^2
+\label{eq:}
+\end{equation}
+We can now directly measure $\langle \text{Y}_{1\phi} \rangle^2$ but not $\langle \text{Y}_{1\phi}^2 \rangle$, even though we can recover this information by the mean of $\langle \text{Y}_{2\phi} \rangle$:
+\begin{equation}
+\langle \text{Y}_{2\phi} \rangle = \sum_{k=0}^{\infty} \frac{k(k-1)}{2} \times n_{k\phi} = \frac{1}{2} \sum_{k=0}^{\infty} (k^2-k) \times n_{k\phi} = \frac{1}{2}\langle \text{Y}^2_{1\phi} \rangle - \frac{1}{2}\langle \text{Y}_{1\phi} \rangle \to \langle \text{Y}^2_{1\phi} \rangle = 2\langle \text{Y}_{2\phi} \rangle + \langle \text{Y}_{1\phi} \rangle
+\label{eq:}
+\end{equation}
+Then, the distribution variance can be expressed as:
+\begin{equation}
+\sigma^2 = \langle \text{Y}_{1\phi}^2 \rangle -  \langle \text{Y}_{1\phi} \rangle^2 = \Big(  2\langle \text{Y}_{2\phi} \rangle + \langle \text{Y}_{1\phi} \rangle \Big) - \langle \text{Y}_{1\phi} \rangle^2
+\label{eq:}
+\end{equation}
+This expression uses our measurements many times and many of them are correlated so the uncertainty is set to be significant. Another way to use this newfound information with an uncertainty more under control is to use the ratios:
+\begin{equation}
+\frac{\langle \text{Y}_{2\phi} \rangle} {\langle \text{Y}_{1\phi} \rangle^2}\qquad \frac{\sigma^2}{\mu} = \frac{2\langle \text{Y}_{2\phi} \rangle + \langle \text{Y}_{1\phi} \rangle - \langle \text{Y}_{1\phi} \rangle^2}{\langle \text{Y}_{1\phi} \rangle} = 1 + \frac{2\langle \text{Y}_{2\phi} \rangle}{\langle \text{Y}_{1\phi} \rangle} - \frac{ \langle \text{Y}_{1\phi} \rangle^2}{\langle \text{Y}_{1\phi} \rangle} = 1 + \frac{2\langle \text{Y}_{2\phi} \rangle}{\langle \text{Y}_{1\phi} \rangle} - \langle \text{Y}_{1\phi} \rangle
+\label{eq:}
+\end{equation}
+where for the second ratio we expect it to be 1 for a poissonian distribution. We can also redefine the second ratio to represent the distance from the poissonian behaviour with:
+ \begin{equation}
+\gamma_{\phi} =  \frac{\sigma^2}{\mu} - 1 = \frac{2\langle \text{Y}_{2\phi} \rangle}{\langle \text{Y}_{1\phi} \rangle} - \langle \text{Y}_{1\phi} \rangle
+\label{eq:}
+\end{equation}
+where $\gamma_\phi$ is a new parameter that describes the accordance with a poissonian behaviour of the production statistics. 
+
+\subsection{Comparison to other results}
+
+\begin{table}
+\centering
+\begin{tabular}{c | l | l | c}
+$\sqrt{s}$ [TeV]		&dN/dy									&$\langle p_{T}\rangle$ [GeV/c]		&Ref.\\
+\hline
+\hline
+0.9				&0.021	$\pm$0.004	$\pm$0.003			&								&\cite{phi_0.9}\\
+\hline
+2.76				&0.0260	$\pm$0.0004	$\pm$0.003			&								&\cite{phi_2.76}\\
+\hline
+5.02				&0.0301	$\pm$0.0002	$\pm$0.0025			&								&\cite{phi_5.02}\\
+\hline
+7				&0.032	$\pm$0.0004	$^{+0.004}_{-0.0035}$	&								&\cite{PrevPub}\\
+7				&0.0318	$\pm$0.0003	$\pm$0.0025			&								&\cite{phi_8}\\
+\color{red}{7}		&\color{red}{0.03290 $\pm$0.00017	$\pm$0.0015}	&								&\color{red}{This work}\\
+\hline
+8				&0.0335	$\pm$0.0003	$\pm$0.0030			&								&\cite{phi_8}\\
+\hline
+13				&0.03734	$\pm$0.00040	$\pm$0.00213			&								&\cite{phi_13}\\
+\hline
+\end{tabular}
+\caption{Measured Inclusive yield compared to previous measurements}
+\label{22}
+\end{table}
+
+\begin{table}
+\centering
+\begin{tabular}{c | l | l | c}
+\hline
+$\sqrt{s}$ [TeV]		&7													&Ref.\\
+\hline
+\hline
+\color{red}{dN$_{\phi\phi}$/dy}	&\color{red}{0.00150 $\pm$0.00007	$\pm$0.00007}		&\color{red}{This work}\\
+\hline
+\color{red}{$\gamma_{\phi}$}	&\color{red}{0.058 $\pm$0.006	$\pm$0.01}			&\color{red}{This work}\\
+\hline
+\color{red}{$\sigma^2_{\phi}$}	&\color{red}{0.0348 $\pm$0.0014	$\pm$0.0014}		&\color{red}{This work}\\
+\hline
+
+\end{tabular}
+\caption{New Measured quantities results}
+\label{22}
+\end{table}
+
+
+
+
+
+
+

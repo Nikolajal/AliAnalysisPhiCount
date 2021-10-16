@@ -6,7 +6,9 @@
 //
 void
 GeneralAnalysis
-( TH1F* hStandard, std::vector<TH1F*> hVariations, TString fFolder ) {
+( TH1F* hStandard, std::vector<TH1F*> hVariations, TString fFolder, Bool_t kNoBarlowCheck = false  ) {
+    //
+    gErrorIgnoreLevel   =   kWarning;
     //
     // --------- FIND THE SYSTEMATICAL RELEVANT VARIATIONS
     //
@@ -15,6 +17,9 @@ GeneralAnalysis
     gROOT   ->  ProcessLine ( Form(".! mkdir -p %s",(fFolder+TString("/plots/BinByBinCheck/1D/")).Data()) );
     auto fRelevantVariations    =  uIsRelevantVariation(hStandard,hVariations,(fFolder+TString("/plots/BarlowCheck/1D/")).Data(),"1D");
     //
+    if ( kNoBarlowCheck )   {
+        for ( auto fRelvenant : fRelevantVariations ) fRelvenant = true;
+    }
     // --------- USE THE SYSTEMATICAL RELEVANT VARIATIONS TO DETERMINE THE UNCERTAINTY
     //
     //for ( [...] ) Loop to exclude non Barlow variations
@@ -29,6 +34,9 @@ GeneralAnalysis
     uStackSystematic->SetMinimum(0);
     uStackSystematic->SetMaximum(uStackSystematic->GetMaximum()*1.3);
     uStackSystematic->Draw("");
+    uStackSystematic->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    uStackSystematic->GetYaxis()->SetTitleOffset(1.5);
+    uStackSystematic->GetYaxis()->SetTitle("Systematic Uncertainty (%)");
     lLegend->AddEntry((TH1F*)uStackSystematic->GetHists()->At(0),"#mu contr.","F");
     lLegend->AddEntry((TH1F*)uStackSystematic->GetHists()->At(1),"#sigma contr.","F");
     lLegend->Draw();
@@ -39,11 +47,15 @@ GeneralAnalysis
     uBuildSystematicError(hStandard,hVariations,(fFolder+TString("/plots/BinByBinCheck/1D/")).Data(),"1D",fRelevantVariations)->Write();
     fOutput->Close();
     //
+    gErrorIgnoreLevel   =   kInfo;
+    //
 }
 //
 void
 GeneralAnalysis
-( TH2F* hStandard, std::vector<TH2F*> hVariations, TString fFolder ) {
+( TH2F* hStandard, std::vector<TH2F*> hVariations, TString fFolder, Bool_t kNoBarlowCheck = false ) {
+    //
+    gErrorIgnoreLevel   =   kWarning;
     //
     // --------- FIND THE SYSTEMATICAL RELEVANT VARIATIONS
     //
@@ -51,6 +63,10 @@ GeneralAnalysis
     gROOT   ->  ProcessLine ( Form(".! mkdir -p %s",(fFolder+TString("/plots/BarlowCheck/2D/")).Data()) );
     gROOT   ->  ProcessLine ( Form(".! mkdir -p %s",(fFolder+TString("/plots/BinByBinCheck/2D/")).Data()) );
     auto fRelevantVariations    =  uIsRelevantVariation(hStandard,hVariations,(fFolder+TString("/plots/BarlowCheck/2D/")).Data(),"2D",true);
+    //
+    if ( kNoBarlowCheck )   {
+        for ( auto fRelvenant : fRelevantVariations ) fRelvenant = true;
+    }
     //
     // --------- USE THE SYSTEMATICAL RELEVANT VARIATIONS TO DETERMINE THE UNCERTAINTY
     //
@@ -72,6 +88,10 @@ GeneralAnalysis
         uStackSystematic.at(i)->SetMinimum(0);
         uStackSystematic.at(i)->SetMaximum(uStackSystematic.at(i)->GetMaximum()*1.4);
         uStackSystematic.at(i)->Draw("");
+        uStackSystematic.at(i)->GetXaxis()->SetTitle("#it{p}_{T,#phi_{1}} (GeV/#it{c})");
+        uStackSystematic.at(i)->GetYaxis()->SetTitleOffset(1.5);
+        uStackSystematic.at(i)->GetYaxis()->SetTitle("Systematic Uncertainty (%)");
+        uLatex->DrawLatexNDC(0.5,0.82,Form("#it{p}_{T,#phi_{2}} (GeV/#it{c}) #in [%.1f;%.1f]",fArrPT2D[i],fArrPT2D[i+1]));
         lLegend->Draw();
         c1->SaveAs((fFolder+TString("/plots/Full_2D_Sys_")+TString(Form("%i.pdf",i))).Data());
         gROOT->SetBatch(kFALSE);
@@ -82,6 +102,296 @@ GeneralAnalysis
     uBuildSystematicError(hStandard,hVariations,(fFolder+TString("/plots/BinByBinCheck/2D/")).Data(),"2D",fRelevantVariations,true)->Write();
     fOutput->Close();
     //
+    gErrorIgnoreLevel   =   kInfo;
+    //
+}
+//
+void
+GeneralAnalysis
+( TH1F* hStandard, std::vector<TH1F*> hVariations, TH2F* h2Standard, std::vector<TH2F*> h2Variations, TString fFolder = "" ) {
+    uEvaluateRatioError(hStandard,hVariations,h2Standard,h2Variations,fFolder);
+    //
+    //! TODO: (1) This is a temporary fix, please address it AYEC.
+    //! **** (1)
+    TFile*  fInputData  =   new TFile   ( Form(kASigExtp_FitCheckRst,"Yield/Systematics/Standard/") );
+    TH1F*   fUtilityC1  =   (TH1F*)(fInputData->Get("hRES_2D_Cond2_Stat"));
+    TH1F*   fUtilityC2  =   (TH1F*)(fInputData->Get("hRES_2D_Cond2_Syst"));
+    //! **** (1)
+    //
+    gROOT->SetBatch();
+    //
+    gErrorIgnoreLevel   =   kFatal;
+    //
+    fSetAllBins();
+    //
+    gROOT    ->  ProcessLine(Form(".! mkdir -p %s/plots/1D/",fFolder.Data()));
+    gROOT    ->  ProcessLine(Form(".! mkdir -p %s/plots/2D/",fFolder.Data()));
+    //
+    fStartTimer("Systematic uncertainties determination: 1D");
+    auto    k1DStandardExtrap   =   fExtrapolateModel(false,hStandard,fSetSystErrors(hStandard),0.032,"SystEval",fMinPT1D,fMaxPT1D,fFolder+TString("/plots/"));
+    auto    k1DStandardIntegr   =   hStandard->Integral("width");
+    auto    k1DFullYieldStand   =   k1DStandardIntegr + k1DStandardExtrap[0];
+    //
+    std::vector<Float_t>   k1DVariationExtrap;
+    std::vector<Float_t>   k1DVariationIntegr;
+    std::vector<Float_t>   k1DVariationFull__;
+    std::vector<Float_t>   k1DVariatinExtVanl;
+    std::vector<Float_t>   k1DVariatinIntVanl;
+    int iTer = 0;
+    for ( auto  h1DVarHisto : hVariations ) {
+        fPrintLoopTimer("Systematic uncertainties determination: 1D",iTer+1,hVariations.size()+1,1);
+        auto    k1DVariatinExtrap   =   fExtrapolateModel(false,h1DVarHisto,fSetSystErrors(h1DVarHisto),0.032,"SystEval",fMinPT1D,fMaxPT1D,fFolder+TString("/plots/"));
+        auto    k1DVariatinIntegr   =   h1DVarHisto->Integral("width");
+        k1DVariatinIntVanl.push_back( k1DVariatinIntegr );
+        k1DVariatinExtVanl.push_back( k1DVariatinExtrap[0] );
+        k1DVariationIntegr.push_back( 1 - (k1DVariatinIntegr/k1DStandardIntegr) );
+        k1DVariationExtrap.push_back( 1 - (k1DVariatinExtrap[0]/k1DStandardExtrap[0]) );
+        k1DVariationFull__.push_back( 1 - ( (k1DVariatinIntegr+k1DVariatinExtrap[0]) / (k1DStandardIntegr+k1DStandardExtrap[0]) ) );
+        iTer++;
+    }
+    //
+    //      1D Integral Error
+    TH1F       *h1DIntegralError    =   uBuildTH1F(k1DVariationIntegr,2000,0,-0.5,0.5);
+    auto        f1DIntegralError    =   0.;
+    f1DIntegralError               +=   fabs(h1DIntegralError->GetMean());
+    f1DIntegralError               +=   h1DIntegralError->GetRMS();
+    //
+    //      1D Extrapolation Error
+    TH1F       *h1DExtrapolError    =   uBuildTH1F(k1DVariationExtrap,2000,0,-0.5,0.5);
+    auto        f1DExtrapolError    =   0.;
+    f1DExtrapolError               +=   fabs(h1DExtrapolError->GetMean());
+    f1DExtrapolError               +=   h1DExtrapolError->GetRMS();
+    //
+    //      1D Calculated ( INT + EXT ) Error
+    TH1F       *h1DCalculatError    =   uBuildTH1F(k1DVariationFull__,2000,0,-0.5,0.5);
+    auto        f1DCalculatError    =   0.;
+    f1DCalculatError               +=   fabs(h1DCalculatError->GetMean());
+    f1DCalculatError               +=   h1DCalculatError->GetRMS();
+    //
+    fStopTimer("Systematic uncertainties determination: 1D");
+    fStartTimer("Systematic uncertainties determination: 2D");
+    //
+    hName   =   Form("h2DStandard_Extrap");
+    hTitle  =   Form("h2DStandard_Extrap");
+    TH1F       *h2DStandard_Extrap_Stat =   new TH1F(hName,hTitle,nBinPT2D,fArrPT2D);
+    TH1F       *h2DStandard_Extrap_Syst =   new TH1F(hName,hTitle,nBinPT2D,fArrPT2D);
+    //
+    for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ ) {
+        //
+        auto hTarget    =   h2Standard->ProjectionX(Form("Proj_STD_%i",iFit+1),iFit+1,iFit+1);
+        //
+        auto fResults   =   fExtrapolateModel(true,hTarget,fSetSystErrors(hTarget,iFit),0.0005,Form("SystEval2D_%i",iFit),fMinPT2D,fMaxPT2D,fFolder+TString("/plots/"));
+        //
+        h2DStandard_Extrap_Stat  ->  SetBinContent   ( iFit+1, fResults[0] );
+        h2DStandard_Extrap_Syst  ->  SetBinContent   ( iFit+1, fResults[0] );
+        //
+        //! **** (1)
+        h2DStandard_Extrap_Stat  ->  SetBinError     ( iFit+1, fUtilityC1->GetBinError(iFit+1) );
+        h2DStandard_Extrap_Syst  ->  SetBinError     ( iFit+1, fUtilityC2->GetBinError(iFit+1) );
+        //! **** (1)
+    }
+    //
+    auto    k2DStandardExtrap_Ut    =   fExtrapolateModel(true,h2DStandard_Extrap_Stat,h2DStandard_Extrap_Syst,0.0005,Form("SystEval2D_2D"),fMinPT2D,fMaxPT2D,fFolder+TString("/plots/"));
+    auto    k2DStandardExtrap       =   k2DStandardExtrap_Ut[0] + 2*h2DStandard_Extrap_Stat->Integral("width");
+    auto    k2DStandardIntegr       =   h2Standard->Integral("width");
+    auto    k2DFullYieldStand       =   k2DStandardIntegr + k2DStandardExtrap;
+    //
+    std::vector<Float_t>   k2DVariationExtrap;
+    std::vector<Float_t>   k2DVariationIntegr;
+    std::vector<Float_t>   k2DVariationFull__;
+    std::vector<Float_t>   k2DVariationFullR1;
+    std::vector<Float_t>   k2DVariationFullR2;
+    std::vector<Float_t>   k2DVariationFullP1;
+    std::vector<Float_t>   k2DVariationFullP2;
+    iTer = 0;
+    for ( auto  h2DVarHisto : h2Variations ) {
+        fPrintLoopTimer("Systematic uncertainties determination: 2D",iTer+1,h2Variations.size()+1,1);
+        if ( iTer+1 > hVariations.size() ) continue;
+        for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ ) {
+            //
+            auto hTarget    =   h2DVarHisto->ProjectionX(Form("Proj_STD_%i",iFit+1),iFit+1,iFit+1);
+            //
+            auto fResults   =   fExtrapolateModel(true,hTarget,fSetSystErrors(hTarget,iFit),0.0005,Form("SystEval2D_%i",iFit),fMinPT2D,fMaxPT2D,fFolder+TString("/plots/"));
+            //
+            h2DStandard_Extrap_Stat  ->  SetBinContent   ( iFit+1, fResults[0] );
+            h2DStandard_Extrap_Syst  ->  SetBinContent   ( iFit+1, fResults[0] );
+            //! **** (1)
+            h2DStandard_Extrap_Stat  ->  SetBinError     ( iFit+1, fUtilityC1->GetBinError(iFit+1) );
+            h2DStandard_Extrap_Syst  ->  SetBinError     ( iFit+1, fUtilityC2->GetBinError(iFit+1) );
+            //! **** (1)
+        }
+        auto    k2DVariatinExtrap_Ut    =   fExtrapolateModel(true,h2DStandard_Extrap_Stat,h2DStandard_Extrap_Syst,0.0005,Form("SystEval2D_2D"),fMinPT2D,fMaxPT2D,fFolder+TString("/plots/"));
+        auto    k2DVariatinExtrap       =   k2DVariatinExtrap_Ut[0] + 2*h2DStandard_Extrap_Stat->Integral("width");
+        auto    k2DVariatinIntegr       =   h2DVarHisto->Integral("width");
+        k2DVariationIntegr.push_back( 1 - (k2DVariatinIntegr/k2DStandardIntegr) );
+        k2DVariationExtrap.push_back( 1 - (k2DVariatinExtrap/k2DStandardExtrap) );
+        k2DVariationFull__.push_back( 1 - ( (k2DVariatinIntegr+k2DVariatinExtrap) / (k2DStandardIntegr+k2DStandardExtrap) ) );
+        auto    k2DFullYieldVarit       =   k2DVariatinIntegr + k2DVariatinExtrap;
+        auto    k1DVariatinExtrap       =   k1DVariatinExtVanl.at(iTer);
+        auto    k1DVariatinIntegr       =   k1DVariatinIntVanl.at(iTer);
+        auto    k1DFullYieldVarit       =   k1DVariatinIntegr + k1DVariatinExtrap;
+        //
+        //  Ratios and composite quantitites;
+        auto    kR1 =   (k2DFullYieldVarit*k1DFullYieldStand)/(k1DFullYieldVarit*k2DFullYieldStand);
+        auto    kR2 =   (k2DFullYieldVarit*k1DFullYieldStand*k1DFullYieldStand)/(k2DFullYieldStand*k1DFullYieldVarit*k1DFullYieldVarit);
+        auto    kP1 =   (fSigmaPhiValue(k1DFullYieldVarit,k2DFullYieldVarit))/(fSigmaPhiValue(k1DFullYieldStand,k2DFullYieldStand));
+        auto    kP2 =   (fGammaPhiValue(k1DFullYieldVarit,k2DFullYieldVarit))/(fGammaPhiValue(k1DFullYieldStand,k2DFullYieldStand));
+        k2DVariationFullR1.push_back( 1 - kR1 );
+        k2DVariationFullR2.push_back( 1 - kR2 );
+        k2DVariationFullP1.push_back( 1 - kP1 );
+        k2DVariationFullP2.push_back( 1 - kP2 );
+        iTer++;
+    }
+    //
+    //      2D Integral Error
+    TH1F       *h2DIntegralError    =   uBuildTH1F(k2DVariationIntegr,2000,0,-0.5,0.5);
+    auto        f2DIntegralError    =   0.;
+    f2DIntegralError               +=   fabs(h2DIntegralError->GetMean());
+    f2DIntegralError               +=   h2DIntegralError->GetRMS();
+    //
+    //      2D Extrapolation Error
+    TH1F       *h2DExtrapolError    =   uBuildTH1F(k2DVariationExtrap,2000,0,-0.5,0.5);
+    auto        f2DExtrapolError    =   0.;
+    f2DExtrapolError               +=   fabs(h2DExtrapolError->GetMean());
+    f2DExtrapolError               +=   h2DExtrapolError->GetRMS();
+    //
+    //      2D Calculated Error
+    TH1F       *h2DCalculatError    =   uBuildTH1F(k2DVariationFull__,2000,0,-0.5,0.5);
+    auto        f2DCalculatError    =   0.;
+    f2DCalculatError               +=   fabs(h2DCalculatError->GetMean());
+    f2DCalculatError               +=   h2DCalculatError->GetRMS();
+    //
+    //      Ratio 1 Calculated Error
+    TH1F       *hR1CalculatError    =   uBuildTH1F(k2DVariationFullR1,2000,0,-0.5,0.5);
+    auto        fR1CalculatError    =   0.;
+    fR1CalculatError               +=   fabs(hR1CalculatError->GetMean());
+    fR1CalculatError               +=   hR1CalculatError->GetRMS();
+    //
+    //      Ratio 2 Calculated Error
+    TH1F       *hR2CalculatError    =   uBuildTH1F(k2DVariationFullR2,2000,0,-0.5,0.5);
+    auto        fR2CalculatError    =   0.;
+    fR2CalculatError               +=   fabs(hR2CalculatError->GetMean());
+    fR2CalculatError               +=   hR2CalculatError->GetRMS();
+    //
+    //      Parameter 1 Calculated Error
+    TH1F       *hP1CalculatError    =   uBuildTH1F(k2DVariationFullP1,2000,0,-0.5,0.5);
+    auto        fP1CalculatError    =   0.;
+    fP1CalculatError               +=   fabs(hP1CalculatError->GetMean());
+    fP1CalculatError               +=   hP1CalculatError->GetRMS();
+    //
+    //      Parameter 2 Calculated Error
+    TH1F       *hP2CalculatError    =   uBuildTH1F(k2DVariationFullP2,2000,0,-0.5,0.5);
+    auto        fP2CalculatError    =   0.;
+    fP2CalculatError               +=   fabs(hP2CalculatError->GetMean());
+    fP2CalculatError               +=   hP2CalculatError->GetRMS();
+    //
+    fStopTimer("Systematic uncertainties determination: 2D");
+    //
+    TH1F   *hCalculateFull_Sng   =   new TH1F("hCalculateFull_Sng",   "", 6,  0,  6);
+    hCalculateFull_Sng->GetYaxis()->SetTitle("Systematic uncertainty (%)");
+    hCalculateFull_Sng->GetXaxis()->SetNdivisions(6);
+    hCalculateFull_Sng->GetXaxis()->SetBinLabel(hCalculateFull_Sng->GetXaxis()->FindBin(0.5),"#LT Y_{#phi} #GT");
+    hCalculateFull_Sng->GetXaxis()->SetBinLabel(hCalculateFull_Sng->GetXaxis()->FindBin(1.5),"#LT Y_{#phi#phi} #GT");
+    hCalculateFull_Sng->GetXaxis()->SetBinLabel(hCalculateFull_Sng->GetXaxis()->FindBin(2.5),"#frac{ #LT Y_{#phi#phi} #GT }{ #LT Y_{#phi} #GT  }");
+    hCalculateFull_Sng->GetXaxis()->SetBinLabel(hCalculateFull_Sng->GetXaxis()->FindBin(3.5),"#frac{ #LT Y_{#phi#phi} #GT }{ #LT Y_{#phi} #GT^{2}  }");
+    hCalculateFull_Sng->GetXaxis()->SetBinLabel(hCalculateFull_Sng->GetXaxis()->FindBin(4.5),"#sigma^{2}_{#phi}");
+    hCalculateFull_Sng->GetXaxis()->SetBinLabel(hCalculateFull_Sng->GetXaxis()->FindBin(5.5),"#gamma_{#phi}");
+    hCalculateFull_Sng->GetXaxis()->LabelsOption("h");
+    hCalculateFull_Sng->GetXaxis()->SetLabelSize(0.04);
+    hCalculateFull_Sng->SetMarkerColor(colors[4]);
+    hCalculateFull_Sng->SetLineWidth(3);
+    hCalculateFull_Sng->SetMarkerStyle(markers[5]);
+    hCalculateFull_Sng->SetBinContent(1,f1DCalculatError);
+    hCalculateFull_Sng->SetBinContent(2,f2DCalculatError);
+    hCalculateFull_Sng->SetBinContent(3,fR1CalculatError);
+    hCalculateFull_Sng->SetBinContent(4,fR2CalculatError);
+    hCalculateFull_Sng->SetBinContent(5,fP1CalculatError);
+    hCalculateFull_Sng->SetBinContent(6,fP2CalculatError);
+    hCalculateFull_Sng->SetBinError  (1,0);
+    hCalculateFull_Sng->SetBinError  (2,0);
+    hCalculateFull_Sng->SetBinError  (3,0);
+    hCalculateFull_Sng->SetBinError  (4,0);
+    hCalculateFull_Sng->SetBinError  (5,0);
+    hCalculateFull_Sng->SetBinError  (6,0);
+    hCalculateFull_Sng->Scale(100);
+    //
+    TH1F   *hIntegral_Sng   =   new TH1F("hIntegral_Sng",   "", 6,  0,  6);
+    hIntegral_Sng->SetMarkerColor(colors[1]);
+    hIntegral_Sng->SetLineWidth(3);
+    hIntegral_Sng->SetMarkerStyle(markers[2]);
+    hIntegral_Sng->SetBinContent(1,f1DIntegralError);
+    hIntegral_Sng->SetBinContent(2,f2DIntegralError);
+    hIntegral_Sng->SetBinError  (1,0);
+    hIntegral_Sng->SetBinError  (2,0);
+    hIntegral_Sng->SetBinError  (3,0);
+    hIntegral_Sng->SetBinError  (4,0);
+    hIntegral_Sng->SetBinError  (5,0);
+    hIntegral_Sng->SetBinError  (6,0);
+    hIntegral_Sng->SetMinimum   (0.);
+    hIntegral_Sng->Scale(100);
+    //
+    TH1F   *hCombined_Sng   =   new TH1F("hCombined_Sng",   "", 6,  0,  6);
+    hCombined_Sng->SetMarkerColor(colors[2]);
+    hCombined_Sng->SetLineWidth(3);
+    hCombined_Sng->SetMarkerStyle(markers[3]);
+    hCombined_Sng->SetBinContent(1,sqrt(f1DIntegralError*f1DIntegralError*k1DStandardIntegr*k1DStandardIntegr + f1DExtrapolError*f1DExtrapolError*k1DStandardExtrap[0]*k1DStandardExtrap[0]) / (k1DStandardIntegr+k1DStandardExtrap[0]));
+    hCombined_Sng->SetBinContent(2,sqrt(f2DIntegralError*f2DIntegralError*k2DStandardIntegr*k2DStandardIntegr + f2DExtrapolError*f2DExtrapolError*k2DStandardExtrap*k2DStandardExtrap) / (k2DStandardIntegr+k2DStandardExtrap));
+    hCombined_Sng->SetBinContent(3,sqrt(f1DCalculatError*f1DCalculatError+f2DCalculatError*f2DCalculatError));
+    hCombined_Sng->SetBinContent(4,sqrt(4*f1DCalculatError*f1DCalculatError+f2DCalculatError*f2DCalculatError));
+    hCombined_Sng->SetBinContent(5,fSigmaPhiError(k1DFullYieldStand,0.5*k2DFullYieldStand,k1DFullYieldStand*f1DCalculatError,0.5*k2DFullYieldStand*f2DCalculatError)/fSigmaPhiValue(k1DFullYieldStand,0.5*k2DFullYieldStand));
+    hCombined_Sng->SetBinContent(6,fGammaPhiError(k1DFullYieldStand,0.5*k2DFullYieldStand,k1DFullYieldStand*f1DCalculatError,0.5*k2DFullYieldStand*f2DCalculatError)/fGammaPhiValue(k1DFullYieldStand,0.5*k2DFullYieldStand));
+    hCombined_Sng->SetBinError  (1,0);
+    hCombined_Sng->SetBinError  (2,0);
+    hCombined_Sng->SetBinError  (3,0);
+    hCombined_Sng->SetBinError  (4,0);
+    hCombined_Sng->SetBinError  (5,0);
+    hCombined_Sng->SetBinError  (6,0);
+    hCombined_Sng->Scale(100);
+    //
+    TH1F   *hExtrapolate_Sng   =   new TH1F("hExtrapolate_Sng",   "", 6,  0,  6);
+    hExtrapolate_Sng->SetMarkerColor(colors[3]);
+    hExtrapolate_Sng->SetLineWidth(3);
+    hExtrapolate_Sng->SetMarkerStyle(markers[4]);
+    hExtrapolate_Sng->SetBinContent(1,f1DExtrapolError);
+    hExtrapolate_Sng->SetBinContent(2,f2DExtrapolError);
+    hExtrapolate_Sng->SetBinError  (1,0);
+    hExtrapolate_Sng->SetBinError  (2,0);
+    hExtrapolate_Sng->SetBinError  (3,0);
+    hExtrapolate_Sng->SetBinError  (4,0);
+    hExtrapolate_Sng->SetBinError  (5,0);
+    hExtrapolate_Sng->SetBinError  (6,0);
+    hExtrapolate_Sng->Scale(100);
+    //
+    hCalculateFull_Sng->SetMaximum( 1.25*max( hCalculateFull_Sng->GetMaximum(), max ( hCombined_Sng->GetMaximum(), max ( hExtrapolate_Sng->GetMaximum() , hIntegral_Sng->GetMaximum() ) ) ) );
+    //
+    TLegend*    lLegend =   new TLegend(0.2,0.77,0.7,0.92);
+    lLegend     ->  SetFillColorAlpha(0.,0.);
+    lLegend     ->  SetLineColorAlpha(0.,0.);
+    lLegend     ->  SetNColumns(4);
+    lLegend     ->  AddEntry(hIntegral_Sng,"Int Err","P");
+    lLegend     ->  AddEntry(hExtrapolate_Sng,"Ext Err","P");
+    lLegend     ->  AddEntry(hCombined_Sng,"Sq(I+E) Err","P");
+    lLegend     ->  AddEntry(hCalculateFull_Sng,"Calc Err","P");
+    //
+    TCanvas*    c1  = new TCanvas("2","22",1200,1200);
+    hCalculateFull_Sng->Draw("EP SAME MIN0");
+    hIntegral_Sng->Draw("EP SAME");
+    hExtrapolate_Sng->Draw("EP SAME");
+    hCombined_Sng->Draw("EP SAME");
+    lLegend->Draw("same");
+    c1->SaveAs(Form("%s/plots/Ratio_Analysis.pdf",fFolder.Data()));
+    delete c1;
+    //
+    TFile      *fOutput =   new TFile   (Form("%s%s",fFolder.Data(),"/RT_Systematic.root"),"recreate");
+    hCalculateFull_Sng->Scale(0.01);
+    hCalculateFull_Sng->Write();
+    fOutput->Close();
+    //
+    gROOT->SetBatch(kFALSE);
+    //
+    gErrorIgnoreLevel   =   kPrint;
+    //
+    return;
 }
 //
 void
@@ -113,30 +423,32 @@ GeneralAnalysis
         }
     }
     //
-    // ---------  --------- GLOBAL TRACKING
+    TH1F   *hRTBranchingRatio     =   new TH1F    ("hRTBranchingRatio","hRTBranchingRatio",6,0,6);
     //
-    TH1F   *hRTBranchingRatio     =   new TH1F    ("hRTBranchingRatio","hRTBranchingRatio",2,0,2);
-    for ( Int_t iPT1D = 0; iPT1D < nBinPT1D; iPT1D++ )    {
-        hRTBranchingRatio->SetBinContent(iPT1D+1,kSysLow_BR);
-    }
-    //
-    TH1F   *h1DITSTPCMatch_     =   new TH1F    ("h1DITSTPCMatch_","h1DITSTPCMatch_",nBinPT1D,fArrPT1D);
-    for ( Int_t iPT1D = 0; iPT1D < nBinPT1D; iPT1D++ )    {
-        h1DITSTPCMatch_->SetBinContent(iPT1D+1,.08);
-    }
-    h1DITSTPCMatch_           ->  SetLineStyle(1);
-    h1DITSTPCMatch_           ->  SetLineColor(colors[5]);
-    //
-    TH2F   *h2DITSTPCMatch_   =   new TH2F    ("h2DITSTPCMatch_","h2DITSTPCMatch_",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )    {
-        for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )    {
-            h2DITSTPCMatch_->SetBinContent(iPT2D+1,jPT2D+1,.16);
-        }
-    }
-    //
-    TH1F   *hRTITSTPCMatch_     =   new TH1F    ("hRTITSTPCMatch_","hRTITSTPCMatch_",2,0,2);
-    hRTITSTPCMatch_->SetBinContent(1,0.);
-    hRTITSTPCMatch_->SetBinContent(2,0.);
+    TH1F   *hRTNormalisationH     =   new TH1F    ("hRTNormalisation_","hRTNormalisation_",6,0,6);
+    TH1F   *hRTNormalisationL     =   new TH1F    ("hRTNormalisation_","hRTNormalisation_",6,0,6);
+    hRTNormalisationH->SetBinContent(1,+1.*kSysHig_TE);
+    hRTNormalisationH->SetBinContent(2,+1.*kSysHig_TE);
+    hRTNormalisationH->SetBinContent(3,+1.*0.);
+    hRTNormalisationH->SetBinContent(4,+0.0451296/1.41657);
+    hRTNormalisationH->SetBinContent(5,+0.00246015/0.0349741);
+    hRTNormalisationH->SetBinContent(6,+0.00116127/0.0604572);
+    hRTNormalisationL->SetBinContent(1,-1.*kSysLow_TE);
+    hRTNormalisationL->SetBinContent(2,-1.*kSysLow_TE);
+    hRTNormalisationL->SetBinContent(3,-1.*0.);
+    hRTNormalisationL->SetBinContent(4,-0.0435496/1.41657);
+    hRTNormalisationL->SetBinContent(5,-0.00119453/0.0349741);
+    hRTNormalisationL->SetBinContent(6,-0.00239997/0.0604572);
+    hRTNormalisationH                 ->  SetLineWidth(1);
+    hRTNormalisationH                 ->  SetLineStyle(1);
+    hRTNormalisationH                 ->  SetLineColor(colors[6]);
+    hRTNormalisationH                 ->  SetFillColorAlpha(colors[6],0.5);
+    hRTNormalisationL                 ->  SetLineWidth(1);
+    hRTNormalisationL                 ->  SetLineStyle(1);
+    hRTNormalisationL                 ->  SetLineColor(colors[6]);
+    hRTNormalisationL                 ->  SetFillColorAlpha(colors[6],0.5);
+    hRTNormalisationH                 ->  Scale(100);
+    hRTNormalisationL                 ->  Scale(100);
     //
     // --------- RECOVERING CALCULATED UNCERTAINTIES HISTOGRAMS
     //
@@ -151,7 +463,10 @@ GeneralAnalysis
     TH2F       *h2DSignalExtraction     =   (TH2F*)(f2DSignalExtraction->Get("hRAW_2D"));
     //
     TFile      *fRTSignalExtraction     =   new TFile(Form("%s%s",Form(kAnalysis_SgExSys_Dir,"yield/Systematics/Standard/"),"/RT_Systematic.root"));
-    TH1F       *hRTSignalExtraction     =   (TH1F*)(fRTSignalExtraction->Get("hStandard"));
+    TH1F       *hRTSignalExtraction     =   (TH1F*)(fRTSignalExtraction->Get("hCalculateFull_Sng"));
+    hRTSignalExtraction                 ->  SetLineWidth(1);
+    hRTSignalExtraction                 ->  SetLineStyle(1);
+    hRTSignalExtraction                 ->  SetLineColor(colors[2]);
     //
     // ---------  --------- PID
     TFile      *f1DParticleIdentif_     =   new TFile(Form("%s%s",Form(kAnalysis_Systemt_Dir,"yield"),"/PID/1D_Systematic.root"));
@@ -163,7 +478,10 @@ GeneralAnalysis
     TH2F       *h2DParticleIdentif_     =   (TH2F*)(f2DParticleIdentif_->Get("h2DStandard"));
     //
     TFile      *fRTParticleIdentif_     =   new TFile(Form("%s%s",Form(kAnalysis_Systemt_Dir,"yield"),"/PID/RT_Systematic.root"));
-    TH1F       *hRTParticleIdentif_     =   (TH1F*)(fRTParticleIdentif_->Get("hStandard"));
+    TH1F       *hRTParticleIdentif_     =   (TH1F*)(fRTParticleIdentif_->Get("hCalculateFull_Sng"));
+    hRTParticleIdentif_                 ->  SetLineWidth(1);
+    hRTParticleIdentif_                 ->  SetLineStyle(1);
+    hRTParticleIdentif_                 ->  SetLineColor(colors[3]);
     //
     // ---------  --------- ANALYSIS CUTS
     TFile      *f1DAnalysisCuts____     =   new TFile(Form("%s%s",Form(kAnalysis_Systemt_Dir,"yield"),"/TRK/1D_Systematic.root"));
@@ -175,44 +493,73 @@ GeneralAnalysis
     TH2F       *h2DAnalysisCuts____     =   (TH2F*)(f2DAnalysisCuts____->Get("h2DStandard"));
     //
     TFile      *fRTAnalysisCuts____     =   new TFile(Form("%s%s",Form(kAnalysis_Systemt_Dir,"yield"),"/TRK/RT_Systematic.root"));
-    TH1F       *hRTAnalysisCuts____     =   (TH1F*)(fRTAnalysisCuts____->Get("hStandard"));
+    TH1F       *hRTAnalysisCuts____     =   (TH1F*)(fRTAnalysisCuts____->Get("hCalculateFull_Sng"));
+    hRTAnalysisCuts____                 ->  SetLineWidth(1);
+    hRTAnalysisCuts____                 ->  SetLineStyle(1);
+    hRTAnalysisCuts____                 ->  SetLineColor(colors[4]);
+    //
+    // ---------  --------- GLOBAL TRACKING
+    TFile      *f1DGlobalTracking__     =   new TFile(Form("%s%s",Form(kAnalysis_Systemt_Dir,"yield"),"/GTK/1D_Systematic.root"));
+    TH1F       *h1DGlobalTracking__     =   (TH1F*)(f1DGlobalTracking__->Get("hRES_1D_Stat"));
+    h1DGlobalTracking__                 ->  SetLineStyle(1);
+    h1DGlobalTracking__                 ->  SetLineColor(colors[5]);
+    //
+    TFile      *f2DGlobalTracking__     =   new TFile(Form("%s%s",Form(kAnalysis_Systemt_Dir,"yield"),"/GTK/2D_Systematic.root"));
+    TH2F       *h2DGlobalTracking__     =   (TH2F*)(f2DGlobalTracking__->Get("h2DStandard"));
+    //
+    TFile      *fRTGlobalTracking__     =   new TFile(Form("%s%s",Form(kAnalysis_Systemt_Dir,"yield"),"/GTK/RT_Systematic.root"));
+    TH1F       *hRTGlobalTracking__     =   (TH1F*)(fRTGlobalTracking__->Get("hCalculateFull_Sng"));
+    hRTGlobalTracking__                 ->  SetLineWidth(1);
+    hRTGlobalTracking__                 ->  SetLineStyle(1);
+    hRTGlobalTracking__                 ->  SetLineColor(colors[5]);
     //
     // --------- BUILDING TOTAL UNCERTAINTY HISTOGRAM
     //
     TH1F   *h1DTotalSystematic     =   new TH1F    ("h1DTotalSystematic","h1DTotalSystematic",nBinPT1D,fArrPT1D);
     for ( Int_t iPT1D = 0; iPT1D < nBinPT1D; iPT1D++ )    {
-        h1DTotalSystematic->SetBinContent(iPT1D+1,SquareSum( {h1DBranchingRatio->GetBinContent(iPT1D+1), h1DSignalExtraction->GetBinContent(iPT1D+1), h1DParticleIdentif_->GetBinContent(iPT1D+1), h1DAnalysisCuts____->GetBinContent(iPT1D+1), h1DITSTPCMatch_->GetBinContent(iPT1D+1)} ));
+        h1DTotalSystematic->SetBinContent(iPT1D+1,SquareSum( {h1DBranchingRatio->GetBinContent(iPT1D+1), h1DSignalExtraction->GetBinContent(iPT1D+1), h1DParticleIdentif_->GetBinContent(iPT1D+1), h1DAnalysisCuts____->GetBinContent(iPT1D+1), h1DGlobalTracking__->GetBinContent(iPT1D+1)} ));
     }
     h1DTotalSystematic->SetLineWidth(2);
     h1DTotalSystematic->SetLineColor(kBlack);
     h1DTotalSystematic->SetMinimum(.0);
     h1DTotalSystematic->SetMaximum(1.3*h1DTotalSystematic->GetMaximum());
+    h1DTotalSystematic->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    h1DTotalSystematic->GetYaxis()->SetTitleOffset(1.5);
+    h1DTotalSystematic->GetYaxis()->SetTitle("Systematic Uncertainty (%)");
     //
     TH2F   *h2DTotalSystematic     =   new TH2F    ("h2DTotalSystematic","h2DTotalSystematic",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
     for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )    {
         for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )    {
-            h2DTotalSystematic->SetBinContent(iPT2D+1,jPT2D+1,SquareSum( {h2DBranchingRatio->GetBinContent(iPT2D+1,jPT2D+1), h2DSignalExtraction->GetBinContent(iPT2D+1,jPT2D+1), h2DParticleIdentif_->GetBinContent(iPT2D+1,jPT2D+1), h2DAnalysisCuts____->GetBinContent(iPT2D+1,jPT2D+1), h2DITSTPCMatch_->GetBinContent(iPT2D+1,jPT2D+1) } ));
+            h2DTotalSystematic->SetBinContent(iPT2D+1,jPT2D+1,SquareSum( {h2DBranchingRatio->GetBinContent(iPT2D+1,jPT2D+1), h2DSignalExtraction->GetBinContent(iPT2D+1,jPT2D+1), h2DParticleIdentif_->GetBinContent(iPT2D+1,jPT2D+1), h2DAnalysisCuts____->GetBinContent(iPT2D+1,jPT2D+1), h2DGlobalTracking__->GetBinContent(iPT2D+1,jPT2D+1) } ));
         }
     }
     //
-    TH1F   *hRTTotalSystematic     =   new TH1F    ("hRTTotalSystematic","hRTTotalSystematic",2,0,2);
-    for ( Int_t iPTRT = 0; iPTRT < 2; iPTRT++ )    {
-        hRTTotalSystematic->SetBinContent(iPTRT+1,SquareSum( { iPTRT == 0? kSysLow_BR : 0, hRTSignalExtraction->GetBinContent(iPTRT+1), hRTParticleIdentif_->GetBinContent(iPTRT+1), hRTAnalysisCuts____->GetBinContent(iPTRT+1)} ));
+    TH1F   *hRTTotalSystematic     =   (TH1F*)(hRTSignalExtraction->Clone());
+    hRTTotalSystematic->GetXaxis()->SetBinLabel(hRTTotalSystematic->GetXaxis()->FindBin(4.5),"#sigma^{2}_{#phi}");
+    for ( Int_t iPTRT = 0; iPTRT < 6; iPTRT++ )    {
+        hRTBranchingRatio->SetBinContent(iPTRT+1, ((0.005)/(0.08))*hRTGlobalTracking__->GetBinContent(iPTRT+1));
+        hRTBranchingRatio->SetBinError(iPTRT+1, 0);
+        hRTTotalSystematic->SetBinContent(iPTRT+1,SquareSum( { hRTSignalExtraction->GetBinContent(iPTRT+1), hRTParticleIdentif_->GetBinContent(iPTRT+1), hRTAnalysisCuts____->GetBinContent(iPTRT+1), hRTGlobalTracking__->GetBinContent(iPTRT+1), hRTBranchingRatio->GetBinContent(iPTRT+1)} ));
     }
+    hRTTotalSystematic->SetLineWidth(2);
+    hRTTotalSystematic->SetLineColor(kBlack);
+    hRTTotalSystematic->Scale(100);
+    hRTTotalSystematic->SetMaximum(1.4*hRTTotalSystematic->GetMaximum());
+    hRTTotalSystematic->SetMinimum(1.4*hRTNormalisationL->GetMinimum());
     //
     // --------- FINAL CANVAS 1D
     //
     gROOT->SetBatch();
     //
-    TLegend    *lLegend                 =   new TLegend(0.17,0.87,0.42,0.72);
+    TLegend    *lLegend                 =   new TLegend(0.17,0.87,0.82,0.76);
     lLegend     ->  SetFillColorAlpha(kWhite,0.);
     lLegend     ->  SetLineColorAlpha(kWhite,0.);
-    lLegend     ->  SetNColumns(2);
-    lLegend     ->  AddEntry(h1DTotalSystematic,    "Total","L");
+    lLegend     ->  SetNColumns(4);
+    lLegend     ->  AddEntry(h1DTotalSystematic,    "Total (No Norm.)","L");
     lLegend     ->  AddEntry(h1DBranchingRatio,     "Branching Ratio","L");
     lLegend     ->  AddEntry(h1DSignalExtraction,   "Signal Extraction","L");
     lLegend     ->  AddEntry(h1DParticleIdentif_,   "PID","L");
-    lLegend     ->  AddEntry(h1DITSTPCMatch_,       "Global Tracking","L");
+    lLegend     ->  AddEntry(h1DGlobalTracking__,   "Global Tracking","L");
     lLegend     ->  AddEntry(h1DAnalysisCuts____,   "Analysis cuts","L");
     //
     TCanvas    *cFullSyst               =   new TCanvas();
@@ -222,7 +569,7 @@ GeneralAnalysis
     h1DSignalExtraction                 ->  Draw("same");
     h1DParticleIdentif_                 ->  Draw("same");
     h1DAnalysisCuts____                 ->  Draw("same");
-    h1DITSTPCMatch_                     ->  Draw("same");
+    h1DGlobalTracking__                 ->  Draw("same");
     lLegend                             ->  Draw("same");
     cFullSyst                           ->  SaveAs(Form("%s/1DFullSyst.pdf",Form(kSystematicsPlot,"yield")));
     delete cFullSyst;
@@ -232,15 +579,19 @@ GeneralAnalysis
     gROOT->SetBatch();
     //
     for ( Int_t iPT = 0; iPT < nBinPT2D; iPT++ )    {
-        cFullSyst                       =   new TCanvas();
+        cFullSyst                           =   new TCanvas();
         gPad                                ->  SetLogx();
         //
-        auto hTotal = h2DTotalSystematic  ->  ProjectionY(Form("2DFL_%i",iPT),iPT+1,iPT+1);
+        auto hTotal = h2DTotalSystematic    ->  ProjectionY(Form("2DFL_%i",iPT),iPT+1,iPT+1);
         hTotal  ->SetLineWidth(2);
         hTotal  ->SetLineColor(kBlack);
         hTotal  ->SetMinimum(.0);
         hTotal  ->SetMaximum(1.3*hTotal->GetMaximum());
+        hTotal  ->GetXaxis()->SetTitle("#it{p}_{T,#phi_{1}} (GeV/#it{c})");
+        hTotal  ->GetYaxis()->SetTitleOffset(1.5);
+        hTotal  ->GetYaxis()->SetTitle("Systematic Uncertainty (%)");
         hTotal  ->Draw();
+        uLatex  ->DrawLatexNDC(0.15,0.05,Form("#it{p}_{T,#phi_{2}} (GeV/#it{c}) #in [%.1f;%.1f]",fArrPT2D[iPT],fArrPT2D[iPT+1]));
         //
         auto hBranch=   h2DBranchingRatio   ->  ProjectionY(Form("2DBR_%i",iPT),iPT+1,iPT+1);
         hBranch ->  SetLineStyle(1);
@@ -252,7 +603,7 @@ GeneralAnalysis
         hSigEx  ->  SetLineColor(colors[2]);
         hSigEx  ->  Draw("SAME");
         //
-        auto hPID =   h2DParticleIdentif_ ->  ProjectionY(Form("2DPD_%i",iPT),iPT+1,iPT+1);
+        auto hPID =   h2DParticleIdentif_   ->  ProjectionY(Form("2DPD_%i",iPT),iPT+1,iPT+1);
         hPID  ->  SetLineStyle(1);
         hPID  ->  SetLineColor(colors[3]);
         hPID  ->  Draw("SAME");
@@ -262,972 +613,48 @@ GeneralAnalysis
         hAnCut  ->  SetLineColor(colors[4]);
         hAnCut  ->  Draw("SAME");
         //
-        auto hITSPC =   h2DITSTPCMatch_ ->  ProjectionY(Form("2DIT_%i",iPT),iPT+1,iPT+1);
+        auto hITSPC =   h2DGlobalTracking__ ->  ProjectionY(Form("2DIT_%i",iPT),iPT+1,iPT+1);
         hITSPC  ->  SetLineStyle(1);
         hITSPC  ->  SetLineColor(colors[5]);
         hITSPC  ->  Draw("SAME");
         //
-        lLegend                                 ->  Draw("same");
-        cFullSyst                       ->  SaveAs(Form("%s/2DFullSyst_%i.pdf",Form(kSystematicsPlot,"yield"),iPT));
+        lLegend                             ->  Draw("same");
+        cFullSyst                           ->  SaveAs(Form("%s/2DFullSyst_%i.pdf",Form(kSystematicsPlot,"yield"),iPT));
         delete cFullSyst;
     }
     //
-    TFile      *fIn_Data        =   new TFile   (Form(kASigExtp_FitCheckRst,"Yield"));
-    TH1F       *h1DYieldHisto   =   (TH1F*)(fIn_Data->Get("hRES_1D_Stat"));
+    TH1F   *hRTBaseLineInfo             =   new TH1F    ("hRTBranchingRatio","hRTBranchingRatio",6,0,6);
+    hRTBaseLineInfo                     ->  SetLineWidth(1);
+    hRTBaseLineInfo                     ->  SetLineStyle(3);
+    hRTBaseLineInfo                     ->  SetLineColor(colors[0]);
     //
-    for ( Int_t iX = 0; iX < h1DYieldHisto->GetNbinsX(); iX++ )   {
-        auto fIgnore = .08;
-        h1DYieldHisto->SetBinError(iX+1,sqrt( h1DTotalSystematic->GetBinContent(iX+1)*h1DTotalSystematic->GetBinContent(iX+1) - fIgnore*fIgnore )*h1DYieldHisto->GetBinContent(iX+1));
-    }
-    //
-    TH2F       *h2DYieldHisto   =   new TH2F("h2DYieldHisto","h2DYieldHisto",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    for ( Int_t iX = 0; iX < h2DYieldHisto->GetNbinsX(); iX++ )   {
-        auto fSlice =   (TH1F*)(fIn_Data->Get(Form("hRES_2D_Cond1_Stat_%i",iX)));
-        for ( Int_t iY = 0; iY < h2DYieldHisto->GetNbinsY(); iY++ )   {
-            auto fIgnore = .16;
-            h2DYieldHisto->SetBinContent    (iX+1,iY+1,fSlice->GetBinContent(iY+1));
-            h2DYieldHisto->SetBinError      (iX+1,iY+1,sqrt( h2DTotalSystematic->GetBinContent(iX+1,iY+1)*h2DTotalSystematic->GetBinContent(iX+1,iY+1) - fIgnore*fIgnore )*fSlice->GetBinContent(iY+1));
-        }
-    }
-    //
-    auto    k1DStdIntegralErr  =   0.;
-    auto    k2DStdIntegralErr  =   0.;
-    auto    k1DStdIntegral     =   h1DYieldHisto->IntegralAndError(-1,10000,k1DStdIntegralErr,"width");
-    auto    k2DStdIntegral     =   h2DYieldHisto->IntegralAndError(-1,10000,-1,10000,k2DStdIntegralErr,"width");
-            k1DStdIntegralErr /=   k1DStdIntegral;
-            k2DStdIntegralErr /=   k2DStdIntegral;
-    //
-    hRTTotalSystematic->GetYaxis()->SetTitle("Systematic uncertainty (%)");
-    hRTTotalSystematic->GetXaxis()->SetNdivisions(2);
-    hRTTotalSystematic->GetXaxis()->SetBinLabel(hRTTotalSystematic->GetXaxis()->FindBin(0.5),"#LT Y_{2#phi} #GT / #LT Y_{1#phi} #GT");
-    hRTTotalSystematic->GetXaxis()->SetBinLabel(hRTTotalSystematic->GetXaxis()->FindBin(1.5),"#LT Y_{2#phi} #GT / #LT Y_{1#phi} #GT^{2}");
-    hRTTotalSystematic->GetXaxis()->LabelsOption("h");
-    hRTTotalSystematic->SetMarkerColor(colors[3]);
-    hRTTotalSystematic->SetLineWidth(3);
-    hRTTotalSystematic->SetMarkerStyle(markers[3]);
-    hRTTotalSystematic->SetBinError  (1,0);
-    hRTTotalSystematic->SetBinError  (2,0);
-    hRTTotalSystematic->Scale(100);
-    //
-    TH1F   *hSimple     =   new TH1F("hLinear",     "", 2,  0,  2);
-    hSimple->SetMarkerColor(colors[2]);
-    hSimple->SetLineWidth(3);
-    hSimple->SetMarkerStyle(markers[4]);
-    hSimple->SetBinContent(1,k1DStdIntegralErr+k2DStdIntegralErr);
-    hSimple->SetBinContent(2,2*k1DStdIntegralErr+k2DStdIntegralErr);
-    hSimple->SetBinError  (1,0);
-    hSimple->SetBinError  (2,0);
-    hSimple->Scale(100);
-    //
-    TH1F   *hSquare     =   new TH1F("hSquare",     "", 2,  0,  2);
-    hSquare->SetMarkerColor(colors[1]);
-    hSquare->SetLineWidth(3);
-    hSquare->SetMarkerStyle(markers[5]);
-    hSquare->SetBinContent(1,SquareSum( {k1DStdIntegralErr,k2DStdIntegralErr} ));
-    hSquare->SetBinContent(2,SquareSum( {2*k1DStdIntegralErr,k2DStdIntegralErr} ));
-    hSquare->SetBinError  (1,0);
-    hSquare->SetBinError  (2,0);
-    hSquare->Scale(100);
-    //
-    auto fMaximum  = max ( hSimple->GetMaximum(), hRTTotalSystematic->GetMaximum() );
-    hRTTotalSystematic->SetMaximum(fMaximum*1.3);
-    //
-    TCanvas    *c1 = new TCanvas("Ratio");
-    //
-    auto lLegen2     =   new TLegend(0.18,0.82,0.33,0.72);
-    lLegen2     ->  AddEntry( hRTTotalSystematic,    "Ratio err.", "P" );
-    lLegen2     ->  AddEntry( hSimple,      "Linear err.", "P" );
-    lLegen2     ->  AddEntry( hSquare,      "Square err.", "P" );
-    //
-    hRTTotalSystematic->Draw("][ EP MIN0");
-    hSimple->Draw("SAME EP ][");
-    hSquare->Draw("SAME EP ][");
-    lLegen2->Draw("same");
-    //
-    c1          ->  SaveAs(Form("%s/RTFullSyst.pdf",Form(kSystematicsPlot,"yield")));
-    delete c1;
-    
-    
-    
-    /*
-    
-    
-    auto    iTer    =   0;
-    std::vector<Float_t>   kSimpleRatio;
-    std::vector<Float_t>   kSquareRatio;
-    auto    k1DStdIntegralErr  =   0.;
-    auto    k2DStdIntegralErr  =   0.;
-    auto    k1DStdIntegral     =   h1DStandard->IntegralAndError(-1,10000,k1DStdIntegralErr,"width");
-    auto    k2DStdIntegral     =   h2DStandard->IntegralAndError(-1,10000,-1,10000,k2DStdIntegralErr,"width");
-            k1DStdIntegralErr /=   k1DStdIntegral;
-            k2DStdIntegralErr /=   k2DStdIntegral;
-    //
-    for ( auto hVariation : h1DVariations )   {
-        //
-        if ( h1DEfficiency ) h1DVariations.at(iTer)->Divide(h1DEfficiency);
-        if ( h2DEfficiency ) h2DVariations.at(iTer)->Divide(h2DEfficiency);
-        auto    k1Dintegral     =   h1DVariations.at(iTer)->Integral("width");
-        auto    k2Dintegral     =   h2DVariations.at(iTer)->Integral("width");
-        //
-        kSimpleRatio.push_back((k1DStdIntegral*k2Dintegral)/(k1Dintegral*k2DStdIntegral)-1);
-        kSquareRatio.push_back((k1DStdIntegral*k1DStdIntegral*k2Dintegral)/(k1Dintegral*k1Dintegral*k2DStdIntegral)-1);
-        iTer++;
-    }
-    //
-    TH1F       *hSimpleRatioError   =   uBuildTH1F(kSimpleRatio,2000,0,-0.5,0.5);
-    auto        fSimpleRatioError   =   0.;
-    TH1F       *hSquareRatioError   =   uBuildTH1F(kSquareRatio,2000,0,-0.5,0.5);
-    auto        fSquareRatioError   =   0.;
-    fSimpleRatioError   +=  fabs(hSimpleRatioError->GetMean());
-    fSimpleRatioError   +=  hSimpleRatioError->GetRMS();
-    fSquareRatioError   +=  fabs(hSquareRatioError->GetMean());
-    fSquareRatioError   +=  hSquareRatioError->GetRMS();
-    //
-    TH1F   *hStandard   =   new TH1F("hStandard",   "", 2,  0,  2);
-    hStandard->GetYaxis()->SetTitle("Systematic uncertainty (%)");
-    hStandard->GetXaxis()->SetNdivisions(2);
-    hStandard->GetXaxis()->SetBinLabel(hStandard->GetXaxis()->FindBin(0.5),"#LT Y_{2#phi} #GT / #LT Y_{1#phi} #GT");
-    hStandard->GetXaxis()->SetBinLabel(hStandard->GetXaxis()->FindBin(1.5),"#LT Y_{2#phi} #GT / #LT Y_{1#phi} #GT^{2}");
-    hStandard->GetXaxis()->LabelsOption("h");
-    hStandard->SetMarkerColor(colors[3]);
-    hStandard->SetLineWidth(3);
-    hStandard->SetMarkerStyle(markers[3]);
-    hStandard->SetBinContent(1,fSimpleRatioError);
-    hStandard->SetBinContent(2,fSquareRatioError);
-    hStandard->SetBinError  (1,0);
-    hStandard->SetBinError  (2,0);
-    hStandard->Scale(100);
-    TH1F   *hSimple     =   new TH1F("hLinear",     "", 2,  0,  2);
-    hSimple->SetMarkerColor(colors[2]);
-    hSimple->SetLineWidth(3);
-    hSimple->SetMarkerStyle(markers[4]);
-    hSimple->SetBinContent(1,k1DStdIntegralErr+k2DStdIntegralErr);
-    hSimple->SetBinContent(2,2*k1DStdIntegralErr+k2DStdIntegralErr);
-    hSimple->SetBinError  (1,0);
-    hSimple->SetBinError  (2,0);
-    hSimple->Scale(100);
-    TH1F   *hSquare     =   new TH1F("hSquare",     "", 2,  0,  2);
-    hSquare->SetMarkerColor(colors[1]);
-    hSquare->SetLineWidth(3);
-    hSquare->SetMarkerStyle(markers[5]);
-    hSquare->SetBinContent(1,SquareSum( {k1DStdIntegralErr,k2DStdIntegralErr} ));
-    hSquare->SetBinContent(2,SquareSum( {2*k1DStdIntegralErr,k2DStdIntegralErr} ));
-    hSquare->SetBinError  (1,0);
-    hSquare->SetBinError  (2,0);
-    hSquare->Scale(100);
-    //
-    auto fMaximum  = 100 * max ( 2*k1DStdIntegralErr+k2DStdIntegralErr, max (fSimpleRatioError, fSquareRatioError ) );
-    hStandard->SetMaximum(fMaximum*1.3);
-    //
-    gROOT->SetBatch();
-    TCanvas    *c1 = new TCanvas("Ratio");
-    //
-    TLegend    *lLegend = new TLegend(0.18,0.82,0.33,0.72);
-    lLegend     ->  AddEntry( hStandard,    "Ratio err.", "P" );
-    lLegend     ->  AddEntry( hSimple,      "Linear err.", "P" );
-    lLegend     ->  AddEntry( hSquare,      "Square err.", "P" );
-    //
-    hStandard->Draw("][ EP MIN0");
-    hSimple->Draw("SAME EP ][");
-    hSquare->Draw("SAME EP ][");
-    lLegend->Draw("same");
-    //
-    cFullSyst                       ->  SaveAs(Form("%s/RTFullSyst_%i.pdf",Form(kSystematicsPlot,"yield"),iPT));
-    delete c1;
-    */
-    
-    
-    
-    
+    cFullSyst               =   new TCanvas();
+    hRTSignalExtraction                 ->  Scale(100.);
+    hRTParticleIdentif_                 ->  Scale(100.);
+    hRTAnalysisCuts____                 ->  Scale(100.);
+    hRTGlobalTracking__                 ->  Scale(100.);
+    hRTBranchingRatio                   ->  Scale(100.);
+    hRTTotalSystematic                  ->  Draw("SAME MIN0");
+    hRTSignalExtraction                 ->  Draw("SAME");
+    hRTParticleIdentif_                 ->  Draw("SAME");
+    hRTAnalysisCuts____                 ->  Draw("SAME");
+    hRTGlobalTracking__                 ->  Draw("SAME");
+    hRTBranchingRatio                   ->  Draw("SAME");
+    hRTNormalisationH                   ->  Draw("SAME HIST B");
+    hRTNormalisationL                   ->  Draw("SAME HIST B");
+    hRTBaseLineInfo                     ->  Draw("SAME");
+    lLegend                             ->  AddEntry( hRTNormalisationL, "Normalisation", "F" );
+    lLegend                             ->  Draw("SAME");
+    cFullSyst                           ->  SaveAs(Form("%s/RTFullSyst.pdf",Form(kSystematicsPlot,"yield")));
+    delete cFullSyst;
     //
     gROOT->SetBatch(kFALSE);
     //
     TFile      *fOutput =   new TFile( Form("%s/Full_Systematics.root",(TString(Form(kAnalysis_Systemt_Dir,"yield"))).Data()), "RECREATE" );
-    //
     h1DTotalSystematic->Write();
     h2DTotalSystematic->Write();
+    hRTTotalSystematic->Scale(0.01);
     hRTTotalSystematic->Write();
-    //
     fOutput->Close();
 }
 //
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*
-    auto    uWhichIsToBeconsidered  =   uBuildSystematicStack(h2D_Syst[0],uVariation2);
-    //
-    TH2F* fCheckMap = (TH2F*)h2D_Syst[0]->Clone();
-    TCanvas*    cCanvas =   new TCanvas("cCanvas","cCanvas",1500,1200);
-    cCanvas->Divide(5,4);
-    cCanvas->cd(1);
-    gPad->SetLogx();
-    uBuildSystematicStack(h1D_Syst[0],uVariations)->Draw("HIST F");
-    for ( Int_t iVar = 0; iVar < uWhichIsToBeconsidered.size(); iVar++ )    {
-        cCanvas->cd(iVar+2);
-        gPad->SetLogx();
-        for ( Int_t jVar = 0; jVar < uWhichIsToBeconsidered.size(); jVar++ )    {
-            auto fHistArray = uWhichIsToBeconsidered.at(iVar)->GetStack();
-            auto fYValue = ((TH1F*)fHistArray->At(0))->GetBinContent(jVar+1);
-            fYValue += ((TH1F*)fHistArray->At(1))->GetBinContent(jVar+1);
-            fCheckMap->SetBinContent(iVar+1,jVar+1,fYValue);
-        }
-        auto f2Dhist = uBuildSystAndStatStack(h2D_Syst[0],uWhichIsToBeconsidered.at(iVar)(;
-        f2Dhist->Draw("HIST F");
-    }
-    //
-    TCanvas    *hSystErrMap =   new TCanvas();
-    gPad->SetLogx();
-    gPad->SetLogy();
-    fCheckMap->Draw("COLZ");
-    //
-    uBuildSystAndStatStack(h1D_Syst[0],uBuildSystematicStack(h1D_Syst[0],uVariations));
-    //
-    TFile  *fOut    =   new TFile("Test.root","RECREATE");
-    fCheckMap->Write();
-    fOut->Close();
-    //
-     */
-/*
-    
-    // Creating the histograms-------------------------------------------------------------------------------
-    //
-    hName               =   Form("h1D_Syst_Bin_StSy");
-    hTitle              =   Form("Fractional variation of raw yield for bin of PT [%.2f#;%.2f]",fArrPT1D[0],fArrPT1D[nBinPT1D]);
-    TH1F   *h1D_Syst_Bin_StSy   =   new TH1F (hName,hTitle,1000,-.5,.5);
-    //
-    hName               =   Form("h2D_Syst_Bin_StSy");
-    hTitle              =   Form("Fractional variation of raw yield for bin of PT [%.2f#;%.2f]",fArrPT1D[0],fArrPT1D[nBinPT1D]);
-    TH1F   *h2D_Syst_Bin_StSy   =   new TH1F (hName,hTitle,400,-2.,2.);
-    //
-    hName               =   Form("h1D_Stat_Bin");
-    hTitle              =   Form("h1D_Stat_Bin");
-    TH1F   *h1D_Stat_Bin    =   new TH1F (hName,hTitle,nBinPT1D,fArrPT1D);
-    //
-    TH1F  **h1D_Syst_Bin    =   new TH1F   *[nBinPT1D+1];
-    hName               =   Form("h1D_Syst_Bin_PT_%.2f_%.2f",fArrPT1D[0],fArrPT1D[nBinPT1D]);
-    hTitle              =   Form("Fractional variation of raw yield for bin of PT [%.2f#;%.2f]",fArrPT1D[0],fArrPT1D[nBinPT1D]);
-    h1D_Syst_Bin[0]  =   new TH1F (hName,hTitle,1000,-.5,.5);
-    h1D_Syst_Bin[0]  ->SetTitle(Form("Fractional variation of raw yield for bin %i",-1));
-    h1D_Syst_Bin[0]  ->GetXaxis()->SetTitle("Fractional variation");
-    for ( Int_t iAll = 1; iAll <= nBinPT1D; iAll++ )
-    {
-        hName               =   Form("h1D_Syst_Bin_PT_%.2f_%.2f",fArrPT1D[iAll-1],fArrPT1D[iAll]);
-        hTitle              =   Form("Fractional variation of raw yield for bin of PT [%.2f#;%.2f]",fArrPT1D[iAll-1],fArrPT1D[iAll]);
-        h1D_Syst_Bin[iAll]  =   new TH1F (hName,hTitle,1000,-.5,.5);
-        h1D_Syst_Bin[iAll]  ->SetTitle(Form("Fractional variation of raw yield for bin %i",iAll));
-        h1D_Syst_Bin[iAll]  ->GetXaxis()->SetTitle("Fractional variation");
-    }
-    //
-    TH2F   *hCheckFull1D        =   new TH2F("hCheckFull1D","hCheckFull1D",nBinPT1D,fArrPT1D,nBinSyst,fArrSyst);
-    //
-    TH1F   *h2D_Syst_Bin_All;
-    hName                       =   Form("h2D_Syst_Bin_PT_%.2f_%.2f_%.2f_%.2f",fArrPT2D[0],fArrPT2D[nBinPT2D],fArrPT2D[0],fArrPT2D[nBinPT2D]);
-    hTitle                      =   Form("Fractional variation of raw yield for bin of PT [%.2f#;%.2f] [%.2f#;%.2f]",fArrPT2D[0],fArrPT2D[nBinPT2D],fArrPT2D[0],fArrPT2D[nBinPT2D]);
-    h2D_Syst_Bin_All            =   new TH1F    (hName,hTitle,400,-2.,2.);
-    h2D_Syst_Bin_All            ->  SetTitle(Form("Fractional variation of raw yield for bin %i",-1));
-    h2D_Syst_Bin_All            ->  GetXaxis()  ->  SetTitle("Fractional variation");
-    //
-    TH2F   *h2D_Stat_Bin;
-    hName                       =   Form("h2D_Stat_Bin");
-    hTitle                      =   Form("h2D_Stat_Bin");
-    h2D_Stat_Bin                =   new TH2F    (hName,hTitle,nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    //
-    TH1F ***h2D_Syst_Bin        =   new TH1F  **[nBinPT2D];
-    TH2F  **hCheckFull2D        =   new TH2F   *[nBinPT2D];
-    for ( Int_t iAll = 0; iAll < nBinPT2D; iAll++ ) {
-        h2D_Syst_Bin[iAll]      =   new TH1F   *[nBinPT2D];
-        hName                   =   Form("hCheckFull2D_%i",iAll);
-        hCheckFull2D[iAll]      =   new TH2F(hName,hName,nBinPT2D,fArrPT2D,nBinSyst,fArrSyst);
-        for ( Int_t jAll = 0; jAll < nBinPT2D; jAll++ ) {
-            hName                       =   Form("h2D_Syst_Bin_PT_%.2f_%.2f_%.2f_%.2f",fArrPT2D[iAll],fArrPT2D[iAll+1],fArrPT2D[jAll],fArrPT2D[jAll+1]);
-            hTitle                      =   Form("Fractional variation of raw yield for bin of PT [%.2f#;%.2f] [%.2f#;%.2f]",fArrPT2D[iAll],fArrPT2D[iAll+1],fArrPT2D[jAll],fArrPT2D[jAll+1]);
-            h2D_Syst_Bin[iAll][jAll]    =   new TH1F (hName,hTitle,1000,-.5,.5);
-            h2D_Syst_Bin[iAll][jAll]    ->  SetTitle(Form("Fractional variation of raw yield for bin %i",iAll+1));
-            h2D_Syst_Bin[iAll][jAll]    ->  GetXaxis()  ->  SetTitle("Fractional variation");
-        }
-    }
-    //------------//
-    //  ANALYSIS  //
-    //------------//
-    
-    // Output File for Fit Check
-    TFile*  outFileFit  =   new TFile("./result/yield/ExtractionSystematics/ExtractionSystematics_CheckRatioAndBins.root","recreate");
-    
-    //------ 1D Histograms ------//
-    //
-    TGraphAsymmErrors     **g1D_Stat            =   new TGraphAsymmErrors  *[nOptions+1];
-    for ( Int_t iTer = 0; iTer <= nOptions; iTer++ )    {
-        auto fCheck = new TH1F (*h1D_Syst[iTer]);
-        fCheck->Divide(h1D_Syst[iTer],h1D_Syst[0]);
-        fCheck->Write();
-        g1D_Stat[iTer]     =   fTH1_to_TGAsymmErrors(h1D_Syst[iTer]);
-    }
-    //
-    TGraphAsymmErrors     **g1D_Stat_VarErr     =   new TGraphAsymmErrors  *[nOptions+1];
-    for ( Int_t iTer = 1; iTer <= nOptions; iTer++ )    {
-        g1D_Stat_VarErr[iTer]     =   new TGraphAsymmErrors();
-    }
-    //
-    TGraphAsymmErrors  *g1D_Stat_Err        =   new TGraphAsymmErrors   ();
-    TGraphAsymmErrors  *g1D_Syst_Err        =   new TGraphAsymmErrors   ();
-    for ( Int_t iPT1D = 0; iPT1D < nBinPT1D; iPT1D++ )  {
-        //
-        auto    fStandard       =   g1D_Stat[0]         ->GetPointY     (iPT1D);
-        auto    fStdError       =   g1D_Stat[0]         ->GetErrorYhigh (iPT1D);
-        h1D_Stat_Bin            ->  SetBinContent(iPT1D+1,fStdError/fStandard);
-        //
-        auto    fXPoint         =   fArrPT1D[iPT1D] + .5*(fArrPT1D[iPT1D+1] - fArrPT1D[iPT1D]);
-        auto    fXError         =   .5*(fArrPT1D[iPT1D+1] - fArrPT1D[iPT1D]);
-        auto    fYPoint         =   0.;
-        auto    fYErrorHig      =   g1D_Stat[0]         ->GetErrorYhigh (iPT1D) / (fStandard);
-        auto    fYErrorLow      =   g1D_Stat[0]         ->GetErrorYlow  (iPT1D) / (fStandard);
-        g1D_Stat_Err            ->  SetPoint        (iPT1D, fXPoint,    fYPoint);
-        g1D_Stat_Err            ->  SetPointError   (iPT1D, fXError,    fXError,    fYErrorHig, fYErrorLow);
-        g1D_Syst_Err            ->  SetPoint        (iPT1D, fXPoint,    fYPoint);
-        if ( iPT1D == 0  || iPT1D == 19 ) g1D_Syst_Err            ->  SetPointError   (iPT1D, fXError,    fXError,    0.040, 0.040);
-        if ( iPT1D >= 1  && iPT1D <= 8  ) g1D_Syst_Err            ->  SetPointError   (iPT1D, fXError,    fXError,    0.010, 0.010);
-        if ( iPT1D >= 9  && iPT1D <= 14 ) g1D_Syst_Err            ->  SetPointError   (iPT1D, fXError,    fXError,    0.015, 0.015);
-        if ( iPT1D >= 15 && iPT1D <= 18 ) g1D_Syst_Err            ->  SetPointError   (iPT1D, fXError,    fXError,    0.035, 0.035);
-        //
-        for ( Int_t iTer = 1; iTer <= nOptions; iTer++ )    {
-            auto    fVariatin       =   g1D_Stat[iTer]          ->GetPointY     (iPT1D);
-            //
-            auto    fYErrVrHig      =   g1D_Stat[iTer]         ->GetErrorYhigh (iPT1D) / (fStandard);
-            auto    fYErrVrLow      =   g1D_Stat[iTer]         ->GetErrorYlow  (iPT1D) / (fStandard);
-            //
-            auto    fYFrac          =   fVariatin / fStandard - 1;
-            auto    fYFracEHig      =   sqrt( fabs(fYErrorHig*fYErrorHig - fYErrVrHig*fYErrVrHig) );
-            auto    fYFracELow      =   sqrt( fabs(fYErrorLow*fYErrorLow - fYErrVrLow*fYErrVrLow) );
-            g1D_Stat_VarErr[iTer]   ->  SetPoint        (iPT1D, fXPoint,    fYFrac);
-            g1D_Stat_VarErr[iTer]   ->  SetPointError   (iPT1D, fXError,    fXError,    fYFracEHig, fYFracELow);
-            //
-            if ( fVariatin - fStandard == 0 ) continue;
-            if ( fBarlowCheck(fStandard,max(fStandard*fYErrorHig,fStandard*fYErrorLow),fVariatin,max(fStandard*fYErrVrHig,fStandard*fYErrVrLow)) )   continue;
-            h1D_Syst_Bin[iPT1D+1]   ->  Fill(fYFrac);
-            h1D_Syst_Bin[0]         ->  Fill(fYFrac);
-            hCheckFull1D            ->  Fill(fXPoint,fYFrac);
-        }
-    }
-    //
-    h1D_Syst_Bin_StSy->Write();
-    for ( Int_t iPT1D = 0; iPT1D <= nBinPT1D; iPT1D++ )  {
-        h1D_Syst_Bin[iPT1D] ->  Write();
-    }
-    //
-    //------ 2D Histograms ------//
-    //
-    TGraphAsymmErrors    ***g2D_Stat            =   new TGraphAsymmErrors  **[nOption2+1];
-    for ( Int_t iTer = 0; iTer <= nOption2; iTer++ )    {
-        auto fCheck = new TH2F (*h2D_Syst[iTer]);
-        fCheck->Divide(h2D_Syst[iTer],h2D_Syst[0]);
-        fCheck->Write();
-        g2D_Stat[iTer]     =   fTH2_to_TGAsymmErrors(h2D_Syst[iTer]);
-    }
-    //
-    TGraphAsymmErrors    ***g2D_Stat_VarErr        =   new TGraphAsymmErrors **[nBinPT2D];
-    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )    {
-        g2D_Stat_VarErr[iPT2D]      =   new TGraphAsymmErrors   *[nOption2+1];
-        for ( Int_t iTer = 1; iTer <= nOption2; iTer++ )    {
-            g2D_Stat_VarErr[iPT2D][iTer]   =   new TGraphAsymmErrors();
-        }
-    }
-    //
-    TH2F*   h2D_Syst_Ful3   =   new TH2F    ("h2D_Syst_Ful3","h2D_Syst_Full_Averaged",      nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    TGraphAsymmErrors     **g2D_Stat_Err        =   new TGraphAsymmErrors  *[nBinPT2D];
-    TGraphAsymmErrors     **g2D_Syst_Err        =   new TGraphAsymmErrors  *[nBinPT2D];
-    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
-        g2D_Stat_Err[iPT2D]     =   new TGraphAsymmErrors();
-        g2D_Syst_Err[iPT2D]     =   new TGraphAsymmErrors();
-        for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )  {
-            //
-            auto    fStandard       =   g2D_Stat[0][iPT2D]         ->GetPointY     (jPT2D);
-            auto    fStdError       =   g2D_Stat[0][iPT2D]         ->GetErrorYhigh (jPT2D);
-            h2D_Stat_Bin            ->  SetBinContent(iPT2D+1,jPT2D+1,fStdError/fStandard);
-            //
-            auto    fXPoint         =   fArrPT2D[jPT2D] + .5*(fArrPT2D[jPT2D+1] - fArrPT2D[jPT2D]);
-            auto    fXError         =   .5*(fArrPT2D[jPT2D+1] - fArrPT2D[jPT2D]);
-            auto    fYPoint         =   0.;
-            auto    fYErrorHig      =   g2D_Stat[0][iPT2D]          ->GetErrorYhigh (jPT2D) / (fStandard);
-            auto    fYErrorLow      =   g2D_Stat[0][iPT2D]          ->GetErrorYlow  (jPT2D) / (fStandard);
-            g2D_Stat_Err[iPT2D]     ->  SetPoint        (jPT2D, fXPoint,    fYPoint);
-            g2D_Stat_Err[iPT2D]     ->  SetPointError   (jPT2D, fXError,    fXError,    fYErrorHig, fYErrorLow);
-            g2D_Syst_Err[iPT2D]     ->  SetPoint        (jPT2D, fXPoint,    fYPoint);
-            g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.050, 0.050);
-            if ( iPT2D == 0  || jPT2D == 0  )       g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.075, 0.075);
-            else if ( iPT2D == 9  || jPT2D == 9  )  g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.150, 0.150);
-            else if ( iPT2D == 1  || jPT2D == 1  )  g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.075, 0.075);
-            else if ( iPT2D == 4  || jPT2D == 4  )  g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.075, 0.075);
-            else if ( iPT2D == 6  || jPT2D == 6  )  g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.075, 0.075);
-            else if ( iPT2D == 8  || jPT2D == 8  )  g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.075, 0.075);
-            //
-            // Specific Points
-            //
-            if ( iPT2D == 0  && jPT2D == 9  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.200, 0.200);
-            if ( iPT2D == 9  && jPT2D == 0  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.200, 0.200);
-            //
-            if ( iPT2D == 0  && jPT2D == 6  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.150, 0.150);
-            if ( iPT2D == 6  && jPT2D == 0  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.150, 0.150);
-            //
-            if ( iPT2D == 2  && jPT2D == 9  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.220, 0.220);
-            if ( iPT2D == 9  && jPT2D == 2  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.220, 0.220);
-            //
-            if ( iPT2D == 3  && jPT2D == 9  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.070, 0.070);
-            if ( iPT2D == 9  && jPT2D == 3  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.070, 0.070);
-            //
-            if ( iPT2D == 5  && jPT2D == 9  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.050, 0.050);
-            if ( iPT2D == 9  && jPT2D == 5  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.050, 0.050);
-            //
-            if ( iPT2D == 1  && jPT2D == 2  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.040, 0.040);
-            if ( iPT2D == 2  && jPT2D == 1  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.040, 0.040);
-            //
-            if ( iPT2D == 1  && jPT2D == 3  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.040, 0.040);
-            if ( iPT2D == 3  && jPT2D == 1  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.040, 0.040);
-            //
-            if ( iPT2D == 1  && jPT2D == 4  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.040, 0.040);
-            if ( iPT2D == 4  && jPT2D == 1  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.040, 0.040);
-            //
-            if ( iPT2D == 7  && jPT2D == 9  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.090, 0.090);
-            if ( iPT2D == 9  && jPT2D == 7  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.090, 0.090);
-            //
-            if ( iPT2D == 2  && jPT2D == 5  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.030, 0.030);
-            if ( iPT2D == 5  && jPT2D == 2  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.030, 0.030);
-            //
-            if ( iPT2D == 2  && jPT2D == 0  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.120, 0.120);
-            if ( iPT2D == 0  && jPT2D == 2  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.120, 0.120);
-            //
-            // Diagonal
-            if ( iPT2D == 0  && jPT2D == 0  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.400, 0.400);
-            if ( iPT2D == 1  && jPT2D == 1  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.040, 0.040);
-            if ( iPT2D == 2  && jPT2D == 2  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.070, 0.070);
-            if ( iPT2D == 3  && jPT2D == 3  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.050, 0.050);
-            if ( iPT2D == 4  && jPT2D == 4  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.100, 0.100);
-            if ( iPT2D == 5  && jPT2D == 5  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.080, 0.080);
-            if ( iPT2D == 6  && jPT2D == 6  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.140, 0.140);
-            if ( iPT2D == 7  && jPT2D == 7  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.050, 0.050);
-            if ( iPT2D == 8  && jPT2D == 8  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.100, 0.100);
-            if ( iPT2D == 9  && jPT2D == 9  ) g2D_Syst_Err[iPT2D]            ->  SetPointError   (jPT2D, fXError,    fXError,    0.130, 0.130);
-            //
-            //
-            auto fVal = g2D_Syst_Err[iPT2D] -> GetErrorYlow(jPT2D);
-            h2D_Syst_Ful3->SetBinContent( iPT2D+1, jPT2D+1, fVal) ;//
-            //
-            for ( Int_t iTer = 1; iTer <= nOption2; iTer++ )    {
-                auto    fVariatin       =   g2D_Stat[iTer][iPT2D]       ->GetPointY     (jPT2D);
-                auto    fVarError       =   g2D_Stat[iTer][iPT2D]       ->GetErrorYhigh (jPT2D);
-                //
-                auto    fYErrVrHig      =   g2D_Stat[iTer][iPT2D]       ->GetErrorYhigh (jPT2D) / (fStandard);
-                auto    fYErrVrLow      =   g2D_Stat[iTer][iPT2D]       ->GetErrorYlow  (jPT2D) / (fStandard);
-                //
-                auto    fYFrac          =   fVariatin / fStandard - 1;
-                auto    fYFracEHig      =   sqrt( fabs(fYErrorHig*fYErrorHig - fYErrVrHig*fYErrVrHig) );
-                auto    fYFracELow      =   sqrt( fabs(fYErrorLow*fYErrorLow - fYErrVrLow*fYErrVrLow) );
-                g2D_Stat_VarErr[iPT2D][iTer]    ->  SetPoint        (jPT2D, fXPoint,    fYFrac);
-                g2D_Stat_VarErr[iPT2D][iTer]    ->  SetPointError   (jPT2D, fXError,    fXError,    fYFracEHig, fYFracELow);
-                //
-                if ( fVariatin - fStandard == 0 ) continue;
-                if ( fBarlowCheck(fStandard,max(fStandard*fYErrorHig,fStandard*fYErrorLow),fVariatin,max(fStandard*fYErrVrHig,fStandard*fYErrVrLow)) )   continue;
-                h2D_Syst_Bin[iPT2D][jPT2D]  ->  Fill(fYFrac);
-                h2D_Syst_Bin_All            ->  Fill(fYFrac);
-                hCheckFull2D[iPT2D]         ->  Fill(fXPoint,fYFrac);
-            }
-        }
-    }
-    //
-    h2D_Syst_Bin_StSy->Write();
-    h2D_Syst_Bin_All->Write();
-    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
-        for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )  {
-            h2D_Syst_Bin[iPT2D][jPT2D] ->  Write();
-        }
-    }
-    //
-    //------ Ratio Histograms ------//
-    //
-    TH1F * hRatio1DVar  =   new TH1F("hRatio1DVar",     "<Y^{SE}_{#phi}>",          nOptions,0,nOptions);
-    TH1F * hRatio2DVar  =   new TH1F("hRatio2DVar",     "<Y^{SE}_{#phi#phi}>",      nOptions,0,nOptions);
-    TH1F * hRatio1D     =   new TH1F("hRatio1D",        "",                         50,-.05,.05);
-    TH1F * hRatio2D     =   new TH1F("hRatio2D",        "",                         50,-.05,.05);
-    hRatio1DVar         -> GetXaxis() -> SetTitle("Variation");
-    hRatio2DVar         -> GetXaxis() -> SetTitle("Variation");
-    hRatio1D            -> GetXaxis() -> SetTitle("Variation");
-    hRatio2D            -> GetXaxis() -> SetTitle("Variation");
-    hRatio1DVar         -> GetXaxis() -> SetTitleOffset(1.5);
-    hRatio2DVar         -> GetXaxis() -> SetTitleOffset(1.5);
-    hRatio1DVar         -> GetYaxis() -> SetTitle("Fractional Deviation");
-    hRatio2DVar         -> GetYaxis() -> SetTitle("Fractional Deviation");
-    auto iBin = 1;
-    for ( auto iName : sOptions )   {
-        hRatio1DVar        ->GetXaxis()    ->  SetBinLabel(iBin,iName);
-        hRatio2DVar        ->GetXaxis()    ->  SetBinLabel(iBin,iName);
-        iBin++;
-    }
-    
-    TH1F * fCheckRatio  =   new TH1F("fCheckRatio", "<Y_{#phi#phi}> / <Y_{#phi}>",nOptions,0,nOptions);
-    TH1F * fCheckRatio2 =   new TH1F("fCheckRatio2","<Y_{#phi#phi}> / <Y_{#phi}>^{2}",nOptions,0,nOptions);
-    fCheckRatio     -> GetXaxis() -> SetTitle("Variation");
-    fCheckRatio2    -> GetXaxis() -> SetTitle("Variation");
-    fCheckRatio     -> GetXaxis() -> SetTitleOffset(1.5);
-    fCheckRatio2    -> GetXaxis() -> SetTitleOffset(1.5);
-    fCheckRatio     -> GetYaxis() -> SetTitle("Fractional Deviation");
-    fCheckRatio2    -> GetYaxis() -> SetTitle("Fractional Deviation");
-    fCheckRatio->GetXaxis()->LabelsOption("v");
-    fCheckRatio2->GetXaxis()->LabelsOption("v");
-    TH1F * fCheckRati_  =   new TH1F("fCheckRati_", "",50,-.05,.05);
-    TH1F * fCheckRati_2 =   new TH1F("fCheckRati_2","",50,-.05,.05);
-    fCheckRati_     -> GetXaxis() -> SetTitle("Fractional Deviation");
-    fCheckRati_2    -> GetXaxis() -> SetTitle("Fractional Deviation");
-    for ( Int_t iTer = 1; iTer <= nOptions; iTer++ )  {
-        auto f1DRefErr =  0.;
-        auto f1DRefHst = new TH1F(*h1D_Syst[0]);
-        f1DRefHst->Divide(hEFF_1D);
-        auto f1DRefInt = f1DRefHst->IntegralAndError(-1,1000,f1DRefErr,"width");
-        auto f1DTstErr =  0.;
-        auto f1DTstHst = new TH1F(*h1D_Syst[iTer]);
-        f1DTstHst->Divide(hEFF_1D);
-        auto f1DTstInt = f1DTstHst->IntegralAndError(-1,1000,f1DTstErr,"width");
-        auto f2DRefErr =  0.;
-        auto f2DRefHst = new TH2F(*h2D_Syst[0]);
-        f2DRefHst->Divide(hEFF_2D);
-        auto f2DRefInt = f2DRefHst->IntegralAndError(-1,1000,-1,1000,f2DRefErr,"width");
-        auto f2DTstErr =  0.;
-        auto f2DTstHst = new TH2F(*h2D_Syst[iTer]);
-        f2DTstHst->Divide(hEFF_2D);
-        auto f2DTstInt = f2DTstHst->IntegralAndError(-1,1000,-1,1000,f2DTstErr,"width");
-        auto fRatio1Ref =   f2DRefInt/f1DRefInt;
-        auto fRatio1Trg =   f2DTstInt/f1DTstInt;
-        auto fRatio2Ref =   f2DRefInt/(f1DRefInt*f1DRefInt);
-        auto fRatio2Trg =   f2DTstInt/(f1DTstInt*f1DTstInt);
-        fCheckRatio     ->  SetBinContent       (iTer,  fRatio1Trg/fRatio1Ref -1.);
-        fCheckRatio2    ->  SetBinContent       (iTer,  fRatio2Trg/fRatio2Ref -1.);
-        fCheckRati_     ->  Fill                (fRatio1Trg/fRatio1Ref -1.);
-        fCheckRati_2    ->  Fill                (fRatio2Trg/fRatio2Ref -1.);
-    }
-    TCanvas * c1 = new TCanvas("","",1600,1600);
-    c1->Divide(2,2);
-    c1->cd(1);
-    gStyle->SetOptStat(0);
-    fCheckRatio->Draw();
-    c1->cd(2);
-    gStyle->SetOptStat(0);
-    fCheckRatio2->Draw();
-    c1->cd(3);
-    gStyle->SetOptStat(0);
-    fCheckRati_->Draw();
-    c1->cd(4);
-    gStyle->SetOptStat(0);
-    fCheckRati_2->Draw();
-    c1->SaveAs("./result/yield/ExtractionSystematics/1D_2D.pdf");
-    delete c1;
-    TH1F * fChec2Ratio  =   new TH1F("fCheckRatio", "",nOption2-nOptions,nOptions,nOption2);
-    TH1F * fChec2Ratio2 =   new TH1F("fCheckRatio2","",nOption2-nOptions,nOptions,nOption2);
-    TH1F * fChec2Rati_  =   new TH1F("fCheckRati_", "",50,-.05,.05);
-    TH1F * fChec2Rati_2 =   new TH1F("fCheckRati_2","",50,-.05,.05);
-    for ( Int_t iTer = nOptions+1; iTer <= nOption2; iTer++ )  {
-        auto f1DRefErr =  0.;
-        auto f1DRefInt = h1D_Syst[0]->IntegralAndError(-1,1000,f1DRefErr,"width");
-        auto f1DTstErr =  0.;
-        auto f1DTstInt = h1D_Syst[0]->IntegralAndError(-1,1000,f1DTstErr,"width");
-        auto f2DRefErr =  0.;
-        auto f2DRefInt = h2D_Syst[0]->IntegralAndError(-1,1000,-1,1000,f2DRefErr,"width");
-        auto f2DTstErr =  0.;
-        auto f2DTstInt = h2D_Syst[iTer]->IntegralAndError(-1,1000,-1,1000,f2DTstErr,"width");
-        auto fRatio1Ref =   f2DRefInt/f1DRefInt;
-        auto fRatio1Trg =   f2DTstInt/f1DTstInt;
-        auto fRatio2Ref =   f2DRefInt/(f1DRefInt*f1DRefInt);
-        auto fRatio2Trg =   f2DTstInt/(f1DTstInt*f1DTstInt);
-        fChec2Ratio     ->  SetBinContent       (iTer-nOptions,  fRatio1Trg/fRatio1Ref -1.);
-        fChec2Ratio2    ->  SetBinContent       (iTer-nOptions,  fRatio2Trg/fRatio2Ref -1.);
-        fChec2Rati_     ->  Fill                (fRatio1Trg/fRatio1Ref -1.);
-        fChec2Rati_2    ->  Fill                (fRatio2Trg/fRatio2Ref -1.);
-    }
-    TCanvas * c2 = new TCanvas("","",1600,1600);
-    c2->Divide(2,2);
-    c2->cd(1);
-    gStyle->SetOptStat(0);
-    fChec2Ratio->Draw();
-    c2->cd(2);
-    gStyle->SetOptStat(0);
-    fChec2Ratio2->Draw();
-    c2->cd(3);
-    gStyle->SetOptStat(0);
-    fChec2Rati_->Draw();
-    c2->cd(4);
-    gStyle->SetOptStat(0);
-    fChec2Rati_2->Draw();
-    c2->SaveAs("./result/yield/ExtractionSystematics/2D.pdf");
-    delete c2;
-    //
-    gROOT->SetBatch(true);
-    // Output File for Fit Check
-    TFile*  outFileFi2  =   new TFile("./result/yield/ExtractionSystematics/ExtractionSystematics_MeanAndRMS.root","recreate");
-    //
-    TH1F*   h1D_Syst_Mean   =   new TH1F    ("h1D_Syst_Mean","h1D_Syst_Mean",nBinPT1D,fArrPT1D);
-    TH1F*   h1D_Syst_RMS_   =   new TH1F    ("h1D_Syst_RMS_","h1D_Syst_RMS_",nBinPT1D,fArrPT1D);
-    TH1F*   h1D_Syst_Full   =   new TH1F    ("h1D_Syst_Full","h1D_Syst_Full",nBinPT1D,fArrPT1D);
-    TH1F*   h1D_Syst_Ful2   =   new TH1F    ("h1D_Syst_Ful2","h1D_Syst_Full",nBinPT1D,fArrPT1D);
-    for ( Int_t iPT1D = 1; iPT1D <= nBinPT1D; iPT1D++ )  {
-        h1D_Syst_Mean   ->SetBinContent (iPT1D,  fabs( h1D_Syst_Bin[iPT1D] ->  GetMean() ) );
-        h1D_Syst_RMS_   ->SetBinContent (iPT1D,  h1D_Syst_Bin[iPT1D] ->  GetRMS());
-        h1D_Syst_Full   ->SetBinContent (iPT1D,  h1D_Syst_Bin[iPT1D] ->  GetRMS() + fabs(h1D_Syst_Bin[iPT1D] ->  GetMean() ));
-        h1D_Syst_Ful2   ->SetBinContent (iPT1D,  h1D_Syst[0]->GetBinContent(iPT1D));
-        h1D_Syst_Ful2   ->SetBinError   (iPT1D,  h1D_Syst[0]->GetBinContent(iPT1D)*g1D_Syst_Err->GetErrorYlow(iPT1D));
-    }
-    h1D_Stat_Bin    ->  Write();
-    h1D_Syst_Mean   ->  Write();
-    h1D_Syst_RMS_   ->  Write();
-    h1D_Syst_Full   ->  Write();
-    h1D_Syst_Ful2   ->  Write();
-    //
-    TH2F*   h2D_Syst_Mean   =   new TH2F    ("h2D_Syst_Mean","h2D_Syst_Mean",               nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    TH2F*   h2D_Syst_RMS_   =   new TH2F    ("h2D_Syst_RMS_","h2D_Syst_RMS_",               nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    TH2F*   h2D_Syst_Full   =   new TH2F    ("h2D_Syst_Full","h2D_Syst_Full",               nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    TH2F*   h2D_Syst_Ful2   =   new TH2F    ("h2D_Syst_Ful2","h2D_Syst_Full",               nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
-    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
-        for ( Int_t jPT2D = 0; jPT2D < nBinPT2D; jPT2D++ )  {
-            h2D_Syst_Mean   ->SetBinContent (iPT2D+1,jPT2D+1, fabs( h2D_Syst_Bin[iPT2D][jPT2D] ->  GetMean()) );
-            h2D_Syst_RMS_   ->SetBinContent (iPT2D+1,jPT2D+1, h2D_Syst_Bin[iPT2D][jPT2D] ->  GetRMS());
-            h2D_Syst_Full   ->SetBinContent (iPT2D+1,jPT2D+1, h2D_Syst_Bin[iPT2D][jPT2D] ->  GetRMS() + fabs(h2D_Syst_Bin[iPT2D][jPT2D] ->  GetMean() ));
-            h2D_Syst_Ful2   ->SetBinContent (iPT2D+1,jPT2D+1, h2D_Syst[0]->GetBinContent(iPT2D+1,jPT2D+1));
-            h2D_Syst_Ful2   ->SetBinError   (iPT2D+1,jPT2D+1, h2D_Syst[0]->GetBinContent(iPT2D+1,jPT2D+1)*g2D_Syst_Err[iPT2D]->GetErrorYlow(jPT2D));
-        }
-    }
-    SetAxis(h2D_Stat_Bin,"PT 2D");
-    h2D_Stat_Bin    ->  Write();
-    SetAxis(h2D_Syst_Mean,"PT 2D");
-    h2D_Syst_Mean   ->  Write();
-    SetAxis(h2D_Syst_RMS_,"PT 2D");
-    h2D_Syst_RMS_   ->  Write();
-    SetAxis(h2D_Syst_Full,"PT 2D");
-    h2D_Syst_Full   ->  Write();
-    SetAxis(h2D_Syst_Ful2,"PT 2D");
-    h2D_Syst_Ful2   ->  Write();
-    SetAxis(h2D_Syst_Ful3,"PT 2D");
-    h2D_Syst_Ful3   ->  Write();
-    
-    TCanvas* cCompare = new TCanvas("","",1800,600);
-    cCompare->Divide(3,1);
-    cCompare->cd(1);
-    gPad->SetLogx();
-    gPad->SetLogy();
-    h2D_Syst_Full->Scale(100);
-    h2D_Syst_Full->DrawCopy("colz text28");
-    cCompare->cd(2);
-    gPad->SetLogx();
-    gPad->SetLogy();
-    h2D_Syst_Ful3->Scale(100);
-    h2D_Syst_Ful3->Draw("colz text28");
-    cCompare->cd(3);
-    gPad->SetLogx();
-    gPad->SetLogy();
-    h2D_Syst_Full->Add(h2D_Syst_Ful3,-1.);
-    h2D_Syst_Full->Draw("colz text28");
-    cCompare->SaveAs("dddd.pdf");
-    delete cCompare;
-    //
-    TH1F * fChec3Rati_  =   new TH1F("Ratio Errors", "<Y_{#phi#phi}> / <Y_{#phi}>",500,0.,5.);
-    fChec3Rati_->GetXaxis()->SetTitle("Relative Uncertainty (%)");
-    TH1F * fChec4Rati_  =   new TH1F("Square Combine Errors", "",500,0.,5.);
-    TH1F * fChec5Rati_  =   new TH1F("Ratio Errors", "<Y_{#phi#phi}> / <Y_{#phi}>^{2}",500,0.,5.);
-    fChec5Rati_->GetXaxis()->SetTitle("Relative Uncertainty (%)");
-    TH1F * fChec6Rati_  =   new TH1F("Square Combine Errors", "",500,0.,5.);
-    TH1F * fChec7Rati_  =   new TH1F("Linear Combine Errors", "",500,0.,5.);
-    TH1F * fChec8Rati_  =   new TH1F("Linear Combine Errors", "",500,0.,5.);
-    TLegend * L1 = new TLegend(0.9,0.9,0.5,0.8);
-    L1->AddEntry(fChec3Rati_,"Ratio Errors");
-    L1->AddEntry(fChec4Rati_,"Square Combined Errors");
-    L1->AddEntry(fChec7Rati_,"Linear Combined Errors");
-    TCanvas * c3 = new TCanvas("","",1000,500);
-    c3->Divide(2,1);
-    c3->cd(1);
-    gStyle->SetOptStat(0);
-    fChec3Rati_->Fill(100*(fCheckRati_->  GetRMS() + fabs(fCheckRati_ ->  GetMean() )));
-    fChec3Rati_->SetLineColor(kRed);
-    fChec3Rati_->Draw("");
-    auto h1D_Syst_Ful2_Err  = 0.;
-    auto h1D_Syst_Ful2_Hst = new TH1F(*h1D_Syst_Ful2);
-    h1D_Syst_Ful2_Hst->Divide(hEFF_1D);
-    auto h1D_Syst_Ful2_Int  = h1D_Syst_Ful2_Hst->IntegralAndError(-1,1000,h1D_Syst_Ful2_Err,"width");
-    auto h2D_Syst_Ful2_Err  = 0.;
-    auto h2D_Syst_Ful2_Hst = new TH2F(*h2D_Syst_Ful2);
-    h2D_Syst_Ful2_Hst->Divide(hEFF_2D);
-    auto h2D_Syst_Ful2_Int  = h2D_Syst_Ful2_Hst->IntegralAndError(-1,1000,-1,1000,h2D_Syst_Ful2_Err,"width");
-    auto hTarget            = sqrt( (h1D_Syst_Ful2_Err*h1D_Syst_Ful2_Err)/(h1D_Syst_Ful2_Int*h1D_Syst_Ful2_Int) + (h2D_Syst_Ful2_Err*h2D_Syst_Ful2_Err)/(h2D_Syst_Ful2_Int*h2D_Syst_Ful2_Int) );
-    fChec4Rati_->Fill(100*hTarget);
-    fChec4Rati_->SetLineColor(kBlue);
-    fChec4Rati_->Draw("SAME");
-    hTarget  = (h1D_Syst_Ful2_Err)/(h1D_Syst_Ful2_Int) + (h2D_Syst_Ful2_Err)/(h2D_Syst_Ful2_Int);
-    fChec7Rati_->SetLineColor(kGreen-2);
-    fChec7Rati_->Fill(100*hTarget);
-    fChec7Rati_->Draw("SAME");
-    L1->Draw("same");
-    c3->cd(2);
-    gStyle->SetOptStat(0);
-    fChec5Rati_->Fill(100*(fCheckRati_2->  GetRMS() + fabs(fCheckRati_2 ->  GetMean() )) );
-    fChec5Rati_->SetLineColor(kRed);
-    fChec5Rati_->Draw("");
-    hTarget            = sqrt( 4*(h1D_Syst_Ful2_Err*h1D_Syst_Ful2_Err)/(h1D_Syst_Ful2_Int*h1D_Syst_Ful2_Int) + (h2D_Syst_Ful2_Err*h2D_Syst_Ful2_Err)/(h2D_Syst_Ful2_Int*h2D_Syst_Ful2_Int) );
-    fChec6Rati_->Fill(100*hTarget);
-    fChec6Rati_->SetLineColor(kBlue);
-    fChec6Rati_->Draw("SAME");
-    hTarget  = 2*(h1D_Syst_Ful2_Err)/(h1D_Syst_Ful2_Int) + (h2D_Syst_Ful2_Err)/(h2D_Syst_Ful2_Int);
-    fChec8Rati_->SetLineColor(kGreen-2);
-    fChec8Rati_->Fill(100*hTarget);
-    fChec8Rati_->Draw("SAME");
-    L1->Draw("same");
-    c3->SaveAs("./result/yield/ExtractionSystematics/12D_Check.pdf");
-    delete c3;
-    //
-    TLatex         *latext              =   new TLatex();
-    TCanvas        *cDrawComparison     =   new TCanvas("cDrawComparison","");
-    TLegend        *cComparisonLegend   =   new TLegend(0.15,0.75,0.25,0.85);
-    //
-    gStyle                              ->  SetOptStat(0);
-    //
-    h1D_Stat_Bin                        ->  SetLineWidth(3);
-    h1D_Stat_Bin                        ->  SetLineColor(kBlue);
-    h1D_Stat_Bin                        ->  SetMinimum(0);
-    h1D_Stat_Bin                        ->  SetMaximum(0.07);
-    h1D_Syst_RMS_                       ->  SetLineWidth(3);
-    h1D_Syst_RMS_                       ->  SetLineColor(kRed);
-    //
-    cComparisonLegend                   ->  SetLineColorAlpha(1,0.);
-    cComparisonLegend                   ->  AddEntry(h1D_Stat_Bin,"Stat.","L");
-    cComparisonLegend                   ->  AddEntry(h1D_Syst_RMS_,"Syst.","L");
-    //
-    h1D_Stat_Bin                        ->  Draw();
-    h1D_Syst_RMS_                       ->  Draw("SAME");
-    cComparisonLegend                   ->  Draw("SAME");
-    cDrawComparison                     ->  SaveAs("./result/yield/ExtractionSystematics/_Syst_Stat_overimp.pdf");
-    cDrawComparison                     ->  SaveAs("./result/yield/ExtractionSystematics/_Syst_Stat_overimp.png");
-    cDrawComparison                     ->  Write();
-    //
-    delete cDrawComparison;
-    delete cComparisonLegend;
-    //
-                    cDrawComparison     =   new TCanvas("cDrawComparison","");
-    gStyle                              ->  SetOptStat(0);
-    //
-    TF1            *fFlatDist           =   new TF1("fFlatDist","pol0",-100.,100.);
-    //
-    h1D_Syst_Mean                       ->  SetLineWidth(3);
-    h1D_Syst_Mean                       ->  SetLineColor(kBlue);
-    h1D_Syst_Mean                       ->  Fit(fFlatDist,"IMREQ0S");
-    //
-                    cComparisonLegend   =   new TLegend(0.15,0.75,0.35,0.85);
-    cComparisonLegend                   ->  SetLineColorAlpha(1,0.);
-    cComparisonLegend                   ->  AddEntry(h1D_Syst_Mean,"Mean of Bin Distr.","L");
-    //
-    h1D_Syst_Mean                       ->  Draw();
-    cComparisonLegend                   ->  Draw("SAME");
-    fFlatDist                           ->  Draw("SAME");
-    latext                              ->  DrawLatexNDC(0.6, 0.83, Form("MEAN:  %3f",fFlatDist->GetParameter(0)));
-    latext                              ->  DrawLatexNDC(0.6, 0.75, Form("ERROR: %3f",fFlatDist->GetParError(0)));
-    cDrawComparison                     ->  SaveAs("./result/yield/ExtractionSystematics/_Mean_1D.pdf");
-    cDrawComparison                     ->  SaveAs("./result/yield/ExtractionSystematics/_Mean_1D.png");
-    cDrawComparison                     ->  Write();
-    //
-    
-    
-    //
-    TCanvas                *cDrawCollection = new TCanvas("","",1600,1600);
-    cDrawCollection->Divide(4,3);
-    
-    auto Check              =   fMultipleError(g1D_Stat_Err,g1D_Syst_Err,g1D_Stat_VarErr,1,nOptions,sOptions);
-    gPad->SetLogx(true);
-    auto fMultiGrap1        =   (TMultiGraph*)Check ->  GetPrimitive   ("cDrawAllGraphs");
-    fMultiGrap1             ->  SetMaximum(+0.15);
-    fMultiGrap1             ->  SetMinimum(-0.15);
-    SetAxis(fMultiGrap1,"PT 1D");
-    fMultiGrap1             ->  GetYaxis()->SetTitle("Fractional Variation");
-    fMultiGrap1             ->  SetTitle(Form("PID Systematic in 1D"));
-    Check                   ->  SaveAs("./result/yield/ExtractionSystematics/SE_ERROR_1D.pdf");
-    Check                   ->  SaveAs("./result/yield/ExtractionSystematics/SE_ERROR_1D.png");
-    Check                   ->  Write();
-    cDrawCollection         ->  cd(1);
-    Check                   ->  DrawClonePad();
-    gPad->SetLogx(true);
-    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
-        auto Check2D        =   fMultipleError  (g2D_Stat_Err[iPT2D],g2D_Syst_Err[iPT2D],g2D_Stat_VarErr[iPT2D],1,nOption2,sOption2);
-        gPad->SetLogx(true);
-        auto fMultiGrap2    =   (TMultiGraph*)Check2D             ->  GetPrimitive   ("cDrawAllGraphs");
-        fMultiGrap2         ->  SetMaximum(+0.5);
-        fMultiGrap2         ->  SetMinimum(-0.5);
-        SetAxis(fMultiGrap2,"PT DD");
-        fMultiGrap2         ->  GetYaxis()->SetTitle("Fractional Variation");
-        fMultiGrap2             ->  SetTitle(Form("PID Systematic in 2D, PT %.1f-%.1f",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1]));
-        Check2D             ->  SaveAs  (Form("./result/yield/ExtractionSystematics/SE_ERROR_2D_PT_Bin_%.1f_%.1f.pdf",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1]));
-        Check2D             ->  SaveAs  (Form("./result/yield/ExtractionSystematics/SE_ERROR_2D_PT_Bin_%.1f_%.1f.png",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1]));
-        Check2D             ->  Write   ();
-        cDrawCollection     ->  cd(2+iPT2D);
-        gPad->SetLogx(true);
-        Check2D             ->  DrawClonePad();
-    }
-    cDrawCollection                   ->  SaveAs("./result/yield/ExtractionSystematics/SE_ERROR_FULL.pdf");
-    cDrawCollection                   ->  SaveAs("./result/yield/ExtractionSystematics/SE_ERROR_FULL.png");
-    //
-    delete  cDrawCollection;
-    delete  cComparisonLegend;
-    //
-    cDrawCollection = new TCanvas("","",1600,1600);
-    gPad->SetLogx(true);
-    cDrawCollection->Divide(4,3);
-    //
-    THStack  *hSystStack_1D =   new THStack("","");
-    h1D_Syst_Mean           ->  SetFillColorAlpha(2,0.1);
-    h1D_Syst_Mean           ->  SetLineColorAlpha(2,1.0);
-    h1D_Syst_Mean           ->  SetLineWidth(1.2);
-    hSystStack_1D           ->  Add(h1D_Syst_Mean);
-    h1D_Syst_RMS_           ->  SetFillColorAlpha(4,0.1);
-    h1D_Syst_RMS_           ->  SetLineColorAlpha(4,1.0);
-    h1D_Syst_RMS_           ->  SetLineWidth(1.2);
-    hSystStack_1D           ->  Add(h1D_Syst_RMS_);
-    //
-    cComparisonLegend   =   new TLegend(0.15,0.75,0.35,0.85);
-    cComparisonLegend       ->  SetLineColorAlpha(1,0.);
-    cComparisonLegend       ->  SetFillColorAlpha(1,0.);
-    
-    TMultiGraph    *cDrawAllGraphs      =   new TMultiGraph("cDrawAllGraphs","");
-    //
-    g1D_Stat_Err                              ->  SetFillColorAlpha(kGray,0.75);
-    g1D_Syst_Err                              ->  SetFillColorAlpha(kGray+2,0.5);
-    //
-    cDrawAllGraphs                      ->  Add         (g1D_Stat_Err,      "AE2");
-    cDrawAllGraphs                      ->  Add         (g1D_Syst_Err,      "AE2");
-    //
-    //
-    cComparisonLegend       ->  AddEntry(g1D_Stat_Err,"Stat. Err.","F");
-    cComparisonLegend       ->  AddEntry(g1D_Syst_Err,"Syst. Err.","F");
-    cComparisonLegend       ->  AddEntry(h1D_Syst_Mean,"Mean Contr.","F");
-    cComparisonLegend       ->  AddEntry(h1D_Syst_RMS_,"RMS Contr.","F");
-    //
-    TCanvas     *cStackShow =   new TCanvas();
-    gPad->SetLogx(true);
-    cDrawAllGraphs     ->  Draw("ALP");
-    cDrawAllGraphs     ->  GetYaxis()->SetTitle("Fractional Variation");
-    cDrawAllGraphs     ->  SetMinimum(0.0);
-    cDrawAllGraphs     ->  SetMaximum(0.1);
-    SetAxis(cDrawAllGraphs,"PT 1D");
-    hSystStack_1D           ->  Draw("same");
-    cComparisonLegend       ->  Draw("same");
-    
-    cDrawCollection         ->  cd(1);
-    cStackShow              ->  DrawClonePad();
-    //
-    cStackShow              ->  SaveAs("./result/yield/ExtractionSystematics/SE_ERROR_SYST_1D.pdf");
-    cStackShow              ->  SaveAs("./result/yield/ExtractionSystematics/SE_ERROR_SYST_1D.png");
-    //
-    delete  cStackShow;
-    delete  cComparisonLegend;
-    //
-    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
-        //
-        cComparisonLegend   =   new TLegend(0.15,0.75,0.35,0.85);
-        cComparisonLegend       ->  SetLineColorAlpha(1,0.);
-        cComparisonLegend       ->  SetFillColorAlpha(1,0.);
-        //
-        auto    hSlice_Mean     =   h2D_Syst_Mean->ProjectionY("Mean",iPT2D+1,iPT2D+1);
-        auto    hSlice_RMS_     =   h2D_Syst_RMS_->ProjectionY("RMS_",iPT2D+1,iPT2D+1);
-        //
-        THStack  *hSystStack_2D =   new THStack("","");
-        hSlice_Mean             ->  SetFillColorAlpha(2,0.1);
-        hSlice_Mean             ->  SetLineColorAlpha(2,1.0);
-        hSlice_Mean             ->  SetLineWidth(1.2);
-        hSystStack_2D           ->  Add(hSlice_Mean);
-        hSlice_RMS_             ->  SetFillColorAlpha(4,0.1);
-        hSlice_RMS_             ->  SetLineColorAlpha(4,1.0);
-        hSlice_RMS_             ->  SetLineWidth(1.2);
-        hSystStack_2D           ->  Add(hSlice_RMS_);
-        //
-        TMultiGraph    *cDrawAllGraphs      =   new TMultiGraph("cDrawAllGraphs","");
-        //
-        g2D_Stat_Err[iPT2D]                              ->  SetFillColorAlpha(kGray,0.75);
-        g2D_Syst_Err[iPT2D]                              ->  SetFillColorAlpha(kGray+2,0.5);
-        //
-        cDrawAllGraphs                      ->  Add         (g2D_Stat_Err[iPT2D],      "AE2");
-        cDrawAllGraphs                      ->  Add         (g2D_Syst_Err[iPT2D],      "AE2");
-        //
-        //
-        cComparisonLegend       ->  AddEntry(g2D_Stat_Err[iPT2D],"Stat. Err.","F");
-        cComparisonLegend       ->  AddEntry(g2D_Syst_Err[iPT2D],"Syst. Err.","F");
-        cComparisonLegend       ->  AddEntry(hSlice_Mean,"Mean Contr.","F");
-        cComparisonLegend       ->  AddEntry(hSlice_RMS_,"RMS Contr.","F");
-        //
-                    cStackShow  =   new TCanvas("StackShow","StackShow");
-        gPad->SetLogx(true);
-        cDrawAllGraphs     ->  Draw("ALP");
-        cDrawAllGraphs     ->  GetYaxis()->SetTitle("Fractional Variation");
-        cDrawAllGraphs     ->  SetMinimum(0.0);
-        cDrawAllGraphs     ->  SetMaximum(0.5);
-        SetAxis(cDrawAllGraphs,"PT DD");
-        hSystStack_2D           ->  Draw("same");
-        cComparisonLegend       ->  Draw("same");
-        //
-        cDrawCollection         ->  cd(2+iPT2D);
-        cStackShow              ->  DrawClonePad();
-        //
-        cStackShow             ->  SaveAs  (Form("./result/yield/ExtractionSystematics/SE_ERROR_SYST_2D_PT_Bin_%.1f_%.1f.pdf",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1]));
-        cStackShow             ->  SaveAs  (Form("./result/yield/ExtractionSystematics/SE_ERROR_SYST_2D_PT_Bin_%.1f_%.1f.png",fArrPT2D[iPT2D],fArrPT2D[iPT2D+1]));
-        //
-        delete cStackShow;
-        delete cComparisonLegend;
-    }
-    cDrawCollection                   ->  SaveAs("./result/yield/ExtractionSystematics/SE_ERROR_SYST_FULL.pdf");
-    cDrawCollection                   ->  SaveAs("./result/yield/ExtractionSystematics/SE_ERROR_SYST_FULL.png");
-    //
-    delete  cDrawCollection;
-    //
-    cDrawCollection = new TCanvas("","",1600,1600);
-    //
-    gPad->SetLogx(true);
-    hCheckFull1D->Draw("colz");
-    cDrawCollection                   ->  SaveAs("./result/yield/ExtractionSystematics/SE_ERROR_SYST_FULL_1D.pdf");
-    cDrawCollection                   ->  SaveAs("./result/yield/ExtractionSystematics/SE_ERROR_SYST_FULL_1D.png");
-    //
-    delete  cDrawCollection;
-    //
-    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )  {
-        cDrawCollection = new TCanvas("","",1600,1600);
-        //
-        gPad->SetLogx(true);
-        hCheckFull2D[iPT2D]->Draw("colz");
-        cDrawCollection                   ->  SaveAs(Form("./result/yield/ExtractionSystematics/SE_ERROR_SYST_FULL_2D_%i.pdf",iPT2D));
-        cDrawCollection                   ->  SaveAs(Form("./result/yield/ExtractionSystematics/SE_ERROR_SYST_FULL_2D_%i.png",iPT2D));
-        //
-        delete  cDrawCollection;
-    }
-    //
-    // >-> Close input File
-    //
-    outFileFit->Close();
-    outFileFi2->Close();
-    //
-    for ( Int_t iTer = 0; iTer <= nOptions; iTer++ )    {
-        insFileH1D[iTer]->Close();
-    }
-    //
-    for ( Int_t iTer = 0; iTer < nOption2; iTer++ )    {
-        insFileH2D[iTer]->Close();
-    }
-    //
-    gROOT->SetBatch(false);
-    return;
-}
-*/

@@ -1,0 +1,399 @@
+\section{Systematics}
+\label{sec:Systematics}
+Various classes of systematic uncertainties related to the measurements performed with this analysis have been considered and are explained in details in the following sections. The classes that have been considered are:
+\begin{enumerate}
+\item Signal Extraction
+\item PID Selection
+\item	Global Tracking Efficiency
+\item	Analysis Cuts
+\item Material Budget
+\item Hadronic Interaction
+\item	Global Tracking Efficiency
+\item	Signal Extrapolation
+\end{enumerate}
+Each class is made of a number of sources that will be evaluated as possible systematically relevant variations. To this end a Barlow check will be performed. Then, all classes will be scrutinised for possible correlations or anti-correlations for insluvie yields or their combinations.
+
+\paragraph{Barlow Check}
+The Barlow check is a test designed to discriminate a statistical fluctuation from a systematic variation. After repeating the analysis process a number of times with as many different results, let's call them $y_i \pm \sigma_i$, one can compare them to the default measurement $y_c \pm \sigma_c$ defining the Barlow error as:
+\begin{equation}
+\Delta\sigma_i = \sqrt{|\sigma_i^2-\sigma_c^2|}
+\end{equation}\
+Using this error one can then define a Barlow parameter $n_i$ defined as:
+\begin{equation}
+n_i = \frac{\Delta y_i}{\sqrt{|\sigma_i^2-\sigma_c^2|}} =  \frac{|y_i - y_c|}{\sqrt{|\sigma_i^2-\sigma_c^2|}}
+\end{equation}
+This parameter define the fluctuation as within statistical uncertainty if $n_i \leq 1$, systematical otherwise. For each systematical variation the Barlow check is applied and a histogram is filled with the Barlow parameter $n_i$ of all p$_{T}$ bin. Then the source is scrutinised to determine wether it is a statistically significant variation. To discard the source as a systematical significant contribution the distribution we built should satisfy at least 3 of the following requirements:
+\begin{itemize}
+\item $|\text{mean}| \leq 0.1$
+\item $\sigma \leq 1.1$
+\item Area within $\pm 1 \sigma$ $\geq$ 60\%
+\item Area within $\pm 2 \sigma$ $\geq$ 88\%
+\end{itemize}
+For each p$_{T}$ bin a histogram is filled with all the sources deemed systematical and the uncertainty is considered as the sum of the RMS and absolute value of the mean.
+
+\paragraph{Inclusive yield and ratio uncertainties}
+The system described above is working when evaluating the single bin uncertainty. This approach does not take into consideration the possible bin-by-bin correlations of the systematic classes. To this goal, a further study has been performed to determine the impact of such correlations on the total uncertainty.\\
+\indent The full analysis is ran for each variation before any study is performed. Then, a first round of systematic analysis is performed to assign the bin-by-bin uncertainty as described in the previous paragraph. Subsequently the standard analysis is run with the calculated uncertainties to find the mean value result for both the inclusive yields and ratios. Subsequently the measured spectra for each variation deemed systematical are assigned the previously calculated systematical uncertainty and the extrapolation method is performed, without estimating the corresponding uncertainties. This gives a variation inclusive yield $\big( \langle $Y$_{\phi}^{\text{XXX}} \rangle$, $\langle $Y$_{\phi\phi}^{\text{XXX}} \rangle$, where XXX is the name of the variation as reported in the following tables $\big)$ which can be directly compared to the standard value to build a variation histogram, such as the one used to evaluate the class uncertainty for the single bin.\\
+\indent Once the procedure produces the inclusive yields for each variation the ratio uncertainty calculation is straightforward: the ratio of the variation yields is compared to the standard ratio.\\
+\indent The systematical uncertainty for the class for the inclusive yields and the ratios is then the sum of the histogram RMS and absolute value of the mean.
+\hl{Implement the syst check}
+
+\newpage
+\subsection{Signal Extraction}
+The signal extraction systematic represents the uncertainty related to the signal and background estimation of the fit on the invariant mass distributions. The process is to repeat the fits on the standard dataset for each fit parameter or shape variation, one at a time, and determine the extent by which the results differ. A list of all the standard conditions and variations that have been performed can be found in Table \ref{tab:Syst_SE}.
+\begin{table}
+\center
+\begin{tabular}{c|r|r|r}
+					&\textbf{Default}							&\textbf{Shorthand}		&\textbf{Variation}		\\
+					\\ \hline \\
+Fit Range				&[ 0.998 - 1.065 ]							&\texttt{\blue{RA}}			&[ 0.996 - 1.059 ]\\
+					&										&\texttt{\blue{RB}}			&[ 0.996 - 1.062 ]\\
+					&										&\texttt{\blue{RC}}			&[ 0.996 - 1.065 ]\\
+					&										&\texttt{\blue{RD}}			&[ 0.996 - 1.068 ]\\
+					&										&\texttt{\blue{RE}}			&[ 0.996 - 1.071 ]\\
+					&										&\texttt{\blue{RF}}			&[ 0.998 - 1.059 ]\\
+					&										&\texttt{\blue{RG}}			&[ 0.998 - 1.062 ]\\
+					&										&\texttt{\blue{RH}}			&[ 0.998 - 1.068 ]\\
+					&										&\texttt{\blue{RI}}			&[ 0.998 - 1.071 ]\\
+					&										&\texttt{\blue{RJ}}			&[ 1.000 - 1.059 ]\\
+					&										&\texttt{\blue{RK}}			&[ 1.000 - 1.062 ]\\
+					&										&\texttt{\blue{RL}}			&[ 1.000 - 1.065 ]\\
+					&										&\texttt{\blue{RM}}			&[ 1.000 - 1.068 ]\\
+					&										&\texttt{\blue{RN}}			&[ 1.000 - 1.071 ]\\
+					\\ \hline \\
+$\phi$-meson Mass		&Free									&N/A						&Free\\
+					\\ \hline \\
+$\phi$-meson Width		&Fixed \SI{4.249}{\mega\electronvolt}\cite{PDG}	&\texttt{\blue{WDT}}			&Free\\
+					\\ \hline \\
+Mass Resolution		&Fixed									&\texttt{\blue{RSH}}			&Fixed $+$10\%\\
+					&										&\texttt{\blue{RSL}}			&Fixed $-$10\%\\
+					\\ \hline \\
+Background shape		&3° \v{C}eby\v{s}\"{e}v 						&\texttt{\blue{DG2}}			&2° \v{C}eby\v{s}\"{e}v \\
+					&										&\texttt{\blue{DG4}}			&4° \v{C}eby\v{s}\"{e}v \\
+					\\ \hline \\
+2D Background shape	&Fixed									&\texttt{\blue{BKG}}			&Free\\
+					\\ \hline \\
+
+\end{tabular}
+\caption{List of all Standard Fit conditions with the variations used to establish the systematic uncertainty with their shorthand notation.}
+\label{tab:Syst_SE}
+\end{table}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RA.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RB.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RC.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RD.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RE.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RF.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RG.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RH.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RI.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RJ.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RK.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RL.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RM.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RN.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RSH.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_RSL.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_DG2.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_DG4.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/1D/1D_WDT.pdf}
+		\caption{Barlow analysis of each source for the Signal Extraction class, see Table \ref{tab:Syst_SE} for the legend.}
+		\label{fig:Barlow_SEX_1D}
+\end{figure}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RA.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RB.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RC.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RD.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RE.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RF.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RG.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RH.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RI.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RJ.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RK.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RL.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RM.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RN.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RSH.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_RSL.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_DG2.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_DG4.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_WDT.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/BarlowCheck/2D/2D_BKG.pdf}
+		\caption{Variations from Standard in 2D analysis.}
+		\label{fig:Barlow_SEX_2D}
+\end{figure}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Full_1D_Sys.pdf}
+		\caption{Signal Extraction Systematic uncertainty in the 1D analysis.}
+		\label{fig:Total_SEX_1D}
+\end{figure}
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Full_2D_Sys_0.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Full_2D_Sys_1.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Full_2D_Sys_2.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Full_2D_Sys_3.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Full_2D_Sys_4.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Full_2D_Sys_5.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Full_2D_Sys_6.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Full_2D_Sys_7.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Full_2D_Sys_8.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Full_2D_Sys_9.pdf}
+		\caption{Signal Extraction Systematic uncertainty in the 2D analysis.}
+		\label{fig:Total_SEX_2D}
+\end{figure}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.99\linewidth]{../result/Yield/Systematics/Standard/SignalExtraction/Systematics/plots/Ratio_Analysis.pdf}
+		\caption{\hl{Ratio errors for two different ratio types}}
+		\label{}
+\end{figure}
+
+\newpage
+\subsection{PID Selection}
+The PID selection systematic represents the uncertainty related to the PID selection performed to identify tracks as charged kaons. The process is to repeat the fits on different datasets for each variation, one at a time, and determine the extent by which the results differ. A list of all the standard conditions and variations that have been performed can be found in Tab. \ref{tab:Syst_PID}.
+\begin{table}
+\center
+\begin{tabular}{c|r|r|r}
+					&\textbf{Default}							&\textbf{Shorthand}			&\textbf{Variation}		\\
+					\\ \hline \\
+Stand alone TPC		&3$\sigma_{\text{Kaons}}$					&\texttt{\blue{PID1}}			&$+$10\%\\
+					&										&\texttt{\blue{PID2}}			&$-$10\%\\
+					\\ \hline \\
+Vetoed TPC			&5$\sigma_{\text{Kaons}}$					&\texttt{\blue{PID3}}			&$+$10\%\\
+					&										&\texttt{\blue{PID4}}			&$-$10\%\\
+					\\ \hline \\
+TOF veto				&3$\sigma_{\text{Kaons}}$					&\texttt{\blue{PID5}}			&$+$10\%\\
+					&										&\texttt{\blue{PID6}}			&$-$10\%\\
+					\\ \hline \\
+
+\end{tabular}
+\caption{List of all Standard PID selections with the variation used to establish the systematic uncertainty}
+\label{tab:Syst_PID}
+\end{table}
+
+\newpage
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/1D/1D_PID1.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/1D/1D_PID2.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/1D/1D_PID3.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/1D/1D_PID4.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/1D/1D_PID5.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/1D/1D_PID6.pdf}
+		\caption{Barlow analysis of each source for the Signal Extraction class, see Table \ref{tab:Syst_PID} for the legend.}
+		\label{fig:Barlow_PID_1D}
+\end{figure}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/2D/2D_PID1.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/2D/2D_PID2.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/2D/2D_PID3.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/2D/2D_PID4.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/2D/2D_PID5.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/BarlowCheck/2D/2D_PID6.pdf}
+		\caption{Barlow analysis of each source for the Signal Extraction class, see Table \ref{tab:Syst_PID} for the legend.}
+		\label{fig:Barlow_PID_2D}
+\end{figure}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/Full_1D_Sys.pdf}
+		\caption{Final Signal Extraction Systematic uncertainty in 1D analysis}
+		\label{}
+\end{figure}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/Full_2D_Sys_0.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/Full_2D_Sys_1.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/Full_2D_Sys_2.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/Full_2D_Sys_3.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/Full_2D_Sys_4.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/Full_2D_Sys_5.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/Full_2D_Sys_6.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/Full_2D_Sys_7.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/Full_2D_Sys_8.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/PID/plots/Full_2D_Sys_9.pdf}
+		\caption{Final Signal Extraction Systematic uncertainty in 2D analysis}
+		\label{}
+\end{figure}
+
+\newpage
+\begin{figure}
+	\centering
+		\includegraphics[width=0.99\linewidth]{../result/Yield/Systematics/PID/plots/Ratio_Analysis.pdf}
+		\caption{Ratio errors for two different ratio types}
+		\label{}
+\end{figure}
+
+\newpage
+\subsection{Analysis Cuts}
+Analysis cuts represents the error due to the quality cuts applied to the track. To evaluate its magnitude the analysis is run multiple times variating the parameters of the standard selection. A List of all the standard Track Quality Cuts and their variation is listed in Table \ref{tab:Syst_AC}.
+
+\begin{table}
+\center
+\begin{tabular}{c|r|r|r}
+								&\textbf{Default}							&\textbf{Shorthand}			&\textbf{Variation}		\\
+								\\ \hline \\
+Maximum DCA$_{\text{z}}$			&2										&\texttt{\blue{TRK1}}			&0.2\\
+								&2										&\texttt{\blue{TRK2}}			&1.0\\
+								\\ \hline \\
+Maximum DCA$_{\text{xy}}$			&$7\sigma$ 0.0182+0.0350/p$_{\text{T}}^{1.01}$	&\texttt{\blue{TRK3}}			&$4\sigma$\\
+								\\ \hline \\
+$|V_{\text{z}}|$						&\SI{10}{\centi\meter}						&\texttt{\blue{TRK4}}			&\SI{8}{\centi\meter}\\
+								\\ \hline \\
+Minimum TPC clusters 				&70									 	&\texttt{\blue{TRK5}}			&80\\
+				 				&70									 	&\texttt{\blue{TRK6}}			&100\\
+								\\ \hline \\
+Maximum $\chi^2_{TPC}$ per Cluster	&4										&\texttt{\blue{TRK7}}			&3\\
+								&4										&\texttt{\blue{TRK8}}			&5\\
+								\\ \hline \\
+Maximum $\chi^2_{TPC}$ in Global Constrained	&36								&\texttt{\blue{TRK9}}			&32\\
+								&36										&\texttt{\blue{TRK10}}		&40\\
+								\\ \hline \\
+Maximum $\chi^2_{TPC}$ per Cluster	&4										&\texttt{\blue{TRK11}}		&3\\
+								&4										&\texttt{\blue{TRK12}}		&5\\
+								\\ \hline \\
+TPC and ITS refit					&Required								&N/A						&Required\\
+								\\ \hline \\
+Reject Kink Daughter				&Required								&N/A						&Required\\
+								\\ \hline \\
+1 Cluster in SPD					&Required								&N/A						&Required\\
+								\\ \hline \\
+
+\end{tabular}
+\caption{List of all Standard Track Cuts conditions with the variation used to establish the systematic uncertainty}
+\label{tab:Syst_AC}
+\end{table}
+
+\newpage
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK1.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK2.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK3.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK4.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK5.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK6.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK7.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK8.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK9.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK10.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK11.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/1D/1D_TRK12.pdf}
+		\caption{Variations from Standard in 1D analysis}
+		\label{}
+\end{figure}
+
+\newpage
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK1.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK2.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK3.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK4.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK5.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK6.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK7.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK8.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK9.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK10.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK11.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/BarlowCheck/2D/2D_TRK12.pdf}
+		\caption{Variations from Standard in 1D analysis}
+		\label{}
+\end{figure}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.495\linewidth]{../result/Yield/Systematics/TRK/plots/Full_1D_Sys.pdf}
+		\caption{Final Signal Extraction Systematic uncertainty in 1D analysis}
+		\label{}
+\end{figure}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/Full_2D_Sys_0.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/Full_2D_Sys_1.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/Full_2D_Sys_2.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/Full_2D_Sys_3.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/Full_2D_Sys_4.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/Full_2D_Sys_5.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/Full_2D_Sys_6.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/Full_2D_Sys_7.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/Full_2D_Sys_8.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/TRK/plots/Full_2D_Sys_9.pdf}
+		\caption{Final Signal Extraction Systematic uncertainty in 2D analysis}
+		\label{}
+\end{figure}
+
+\newpage
+\begin{figure}
+	\centering
+		\includegraphics[width=0.99\linewidth]{../result/Yield/Systematics/TRK/plots/Ratio_Analysis.pdf}
+		\caption{\hl{check the extrapolation method to evaluate unc.}}
+		\label{}
+\end{figure}
+
+\subsection{Global Tracking Efficiency}
+Global Tracking Efficiency represents the uncertainty on the TPC-ITS efficiency of track matching. It is listed as 4\% per track in various publications for Run 1 Data \cite{PrevPubMult}. In an attempt to generalise the approach described in the previous paragraphs, 4\% variation spectra are generated by shifting coherently all standard spectrum points by a value determined randomically from a gaussian of mean 1 and standard deviation 0.04. These spectra are then treated as independent sources and go through the same analysis prescribed to the other sources, without checking for the statistical significance with the Barlow Check. This procedure is done to have a number of spectra that can be used evaluate the impact of this uncertainty on ratios and derived quantities.
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.99\linewidth]{../result/Yield/Systematics/GTK/plots/Ratio_Analysis.pdf}
+		\caption{\hl{check the extrapolation method to evaluate unc.}}
+		\label{}
+\end{figure}
+
+\subsection{Material Budget}
+Material Budget systematic represents how accurately we can reproduce the Material Budget of the detector. The evaluation of this uncertainty is done through the production of a simulated dataset in which the material of the detector is diminuished or augmented by a reasonable amount ( usually a few percent up to fifteen percent ). The efficiency calculated in this special production is then compared to the standard efficiency by their ratio. For each bin the uncertainty will be assigned as the absolute difference between the ratio result and 1.
+
+\subsection{Hadronic Interaction}
+Hadronic Interaction systematic represents how accurately we can reproduce the interaction of the particle with the detector material in our simulation. To evaluate this uncertainty we use the same approach described in the Material Budget paragraph, where the variated simulation makes use of a different Geant version for the particle propagation in the detectors.
+
+\subsection{Total uncertainty}
+The total systematical uncertainty used for the single bin is the square sum of all the uncertainty classes.
+
+\newpage
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/plots/1DFullSyst.pdf}
+		\caption{Summary of Systematic Uncertainties by source in 1D analysis}
+		\label{fig:FINAL_SYST_1D}
+\end{figure}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/plots/2DFullSyst_0.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/plots/2DFullSyst_1.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/plots/2DFullSyst_2.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/plots/2DFullSyst_3.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/plots/2DFullSyst_4.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/plots/2DFullSyst_5.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/plots/2DFullSyst_6.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/plots/2DFullSyst_7.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/plots/2DFullSyst_8.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/Systematics/plots/2DFullSyst_9.pdf}
+		\caption{Summary of Systematic Uncertainties by source in 2D analysis}
+		\label{fig:FINAL_SYST_2D}
+\end{figure}
+
+\newpage
+\begin{figure}
+	\centering
+		\includegraphics[width=\linewidth]{../result/Yield/Systematics/plots/RTFullSyst.pdf}
+		\caption{Summary of Systematic Uncertainties by source in 1D analysis}
+		\label{fig:FINAL_SYST_RT}
+\end{figure}

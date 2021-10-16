@@ -377,7 +377,8 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
         Bool_t  fCheckFill4 =   false;
         
         // Discarding Pile-up events
-        if ( fCheckMask(evPhiCandidate.EventMask,1) ) continue;
+        //if ( kDoYield           &&  fCheckMask(evPhiCandidate.EventMask,1) ) continue;
+        //if ( kDoMultiplicity    &&  ( fCheckMask(evPhiCandidate.EventMask,1) || fCheckMask(evPhiCandidate.EventMask,2) )) continue;
         
         fHEventCount_PhiCandidate_General_in_MT->Fill(evPhiCandidate.Multiplicity);
         for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )  {
@@ -405,7 +406,7 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
                 for ( Int_t iPhi = 0; iPhi < U_nAccept-1; iPhi++ )    {
                     auto fPT1 = evPhiCandidate.pT[U_AccCand[iPhi]];
                     auto fPT2 = evPhiCandidate.pT[U_AccCand[iPhi+1]];
-                    if ( fPT2 > fPT1 )  {
+                    if ( fPT2 >= fPT1 )  {
                         fN++;
                         continue;
                     }
@@ -423,7 +424,7 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
         // >>-->>-->> Multiplicity
         //
         Int_t   iMult               =   fGetBinMult(evPhiCandidate.Multiplicity);
-        evPhiCandidate.kHasMult     =   evPhiCandidate.iMult != -1;
+        evPhiCandidate.kHasMult     =   iMult != -1;
         //
         for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )    {
             // Must have at least 1 candidate
@@ -475,12 +476,12 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
             // >->-->-> Multiplicity
             //
                 if ( evPhiCandidate.kHasMult && kDoMultiplicity )  {
-                    hREC_1D_in_MT[iMult+1]                      ->  Fill(iInvarMass);
-                    hREC_1D_in_MT_in_PT[iMult+1][iPT1D]         ->  Fill(iInvarMass);
-                    hREC_1D_in_MT_in_PT_2D_bin[iMult+1][iPT2D]  ->  Fill(iInvarMass);
-                    hREC_1D_in_MT[0]                            ->  Fill(iInvarMass);
-                    hREC_1D_in_MT_in_PT[0][iPT1D]               ->  Fill(iInvarMass);
-                    hREC_1D_in_MT_in_PT_2D_bin[0][iPT2D]        ->  Fill(iInvarMass);
+                    hREC_1D_in_MT[iMult+1]                          ->  Fill(iInvarMass);
+                    hREC_1D_in_MT_in_PT[iMult+1][iPT1D]             ->  Fill(iInvarMass);
+                    hREC_1D_in_MT_in_PT_2D_bin[iMult+1][iPT2D]      ->  Fill(iInvarMass);
+                    hREC_1D_in_MT[0]                                ->  Fill(iInvarMass);
+                    hREC_1D_in_MT_in_PT[0][iPT1D]                   ->  Fill(iInvarMass);
+                    hREC_1D_in_MT_in_PT_2D_bin[0][iPT2D]            ->  Fill(iInvarMass);
                 }
             }
             //
@@ -534,10 +535,10 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
                 // >->-->-> Multiplicity
                 //
                     if ( evPhiCandidate.kHasMult && kDoMultiplicity )  {
-                        hREC_2D_in_MT[iMult+1]                      ->  Fill(iInvarMass,jInvarMass,0.5);
-                        hREC_2D_in_MT_in_PT[iMult+1][iPT2D][jPT2D]  ->  Fill(iInvarMass,jInvarMass,0.5);
-                        hREC_2D_in_MT[0]                            ->  Fill(iInvarMass,jInvarMass,0.5);
-                        hREC_2D_in_MT_in_PT[0][iPT2D][jPT2D]        ->  Fill(iInvarMass,jInvarMass,0.5);
+                        hREC_2D_in_MT[iMult+1]                      ->  Fill(iInvarMass,jInvarMass);
+                        hREC_2D_in_MT_in_PT[iMult+1][iPT2D][jPT2D]  ->  Fill(iInvarMass,jInvarMass);
+                        hREC_2D_in_MT[0]                            ->  Fill(iInvarMass,jInvarMass);
+                        hREC_2D_in_MT_in_PT[0][iPT2D][jPT2D]        ->  Fill(iInvarMass,jInvarMass);
                     }
                 }
                 //

@@ -1,7 +1,7 @@
 #include "../../inc/AliAnalysisPhiPair.h"
 // !TODO: All Set!
 
-void MassResolution ( bool fSilent = true )   {
+void MassResolution ( TString fOption = "", bool fSilent = true )   {
     //---------------------//
     //  Setting up input   //
     //---------------------//
@@ -11,10 +11,13 @@ void MassResolution ( bool fSilent = true )   {
         RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
         RooMsgService::instance().setSilentMode(fSilent);
     }
+    fChooseOption(fOption);
     //
     // Retrieving Data
     //
-    TFile *insFileDT        =   new TFile   (Form(kMassResolution_Prod,"Yield"));
+    TFile *insFileDT;
+    if ( kDoYield )         insFileDT =   new TFile   (Form(kMassResolution_Prod,"Yield"));
+    if ( kDoMultiplicity )  insFileDT =   new TFile   (Form(kMassResolution_Prod,"Multiplicity"));
     //
     //---------------------//
     //  Setting up input   //
@@ -186,7 +189,8 @@ void MassResolution ( bool fSilent = true )   {
         hMRS_1D[iFit]       ->  Draw("SAME");
         fGaussFitRslt       ->  SetRange( kFull_Mean-(2)*kFull_STDV, kFull_Mean+(2)*kFull_STDV  );
         fGaussFitRslt       ->  Draw("SAME");
-        cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Yield")+TString(Form("3SigGuassFit_1D_%i.pdf",iFit)));
+        if ( kDoYield )         cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Yield")+TString(Form("3SigGuassFit_1D_%i.pdf",iFit)));
+        if ( kDoMultiplicity )  cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString(Form("3SigGuassFit_1D_%i.pdf",iFit)));
         delete              cDrawPlot;
         //
                             cDrawPlot   =   new TCanvas();
@@ -195,7 +199,8 @@ void MassResolution ( bool fSilent = true )   {
         fSig                .plotOn (fSaveToFrame,      LineColor(4),                   LineStyle(kSolid), Name("RooMod"));
         fSaveToFrame        ->  SetTitle("");
         fSaveToFrame        ->  Draw();
-        cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Yield")+TString(Form("MDSVoigtFit_1D_%i.pdf",iFit)));
+        if ( kDoYield )         cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Yield")+TString(Form("MDSVoigtFit_1D_%i.pdf",iFit)));
+        if ( kDoMultiplicity )  cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString(Form("MDSVoigtFit_1D_%i.pdf",iFit)));
         delete              cDrawPlot;
     }
     for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ ) {
@@ -239,7 +244,8 @@ void MassResolution ( bool fSilent = true )   {
         hMRS_1D_in_2D_bin[iFit]       ->  Draw("SAME");
         fGaussFitRslt       ->  SetRange( kFull_Mean-(2)*kFull_STDV, kFull_Mean+(2)*kFull_STDV  );
         fGaussFitRslt       ->  Draw("SAME");
-        cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Yield")+TString(Form("3SigGuassFit_2D_%i.pdf",iFit)));
+        if ( kDoYield )         cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Yield")+TString(Form("3SigGuassFit_2D_%i.pdf",iFit)));
+        if ( kDoMultiplicity )  cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Mutliplicity")+TString(Form("3SigGuassFit_2D_%i.pdf",iFit)));
         delete              cDrawPlot;
         //
                             cDrawPlot   =   new TCanvas();
@@ -247,7 +253,8 @@ void MassResolution ( bool fSilent = true )   {
         data                ->plotOn(fSaveToFrame,      MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
         fSig                .plotOn (fSaveToFrame,      LineColor(4),                   LineStyle(kSolid), Name("RooMod"));
         fSaveToFrame        ->  Draw();
-        cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Yield")+TString(Form("MDSVoigtFit_2D_%i.pdf",iFit)));
+        if ( kDoYield )         cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Yield")+TString(Form("MDSVoigtFit_2D_%i.pdf",iFit)));
+        if ( kDoMultiplicity )  cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString(Form("MDSVoigtFit_2D_%i.pdf",iFit)));
         delete              cDrawPlot;
     }
     //
@@ -262,7 +269,8 @@ void MassResolution ( bool fSilent = true )   {
     hSigmaCnt_1D_in_2D_bin->Scale(1000);
     hSigmaHig_1D_in_2D_bin->Scale(1000);
     //
-    gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kMassResolution_Plot,"Yield")));
+    if ( kDoYield )         gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kMassResolution_Plot,"Yield")));
+    if ( kDoMultiplicity )  gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kMassResolution_Plot,"Multiplicity")));
     TCanvas        *cAllResolutions_1D  =   new TCanvas();
     gPad            ->  SetLogx();
     //
@@ -292,7 +300,8 @@ void MassResolution ( bool fSilent = true )   {
     hSigmaHig_1D->Draw("SAME");
     //
     lLegend         ->Draw("SAME");
-    cAllResolutions_1D->SaveAs(Form(kMassResolution_Plot,"Yield")+TString("cAllResolutions_1D.pdf"));
+    if ( kDoYield )         cAllResolutions_1D->SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString("cAllResolutions_1D.pdf"));
+    if ( kDoMultiplicity )  cAllResolutions_1D->SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString("cAllResolutions_1D.pdf"));
     delete      cAllResolutions_1D;
     //
                 cAllResolutions_1D  =   new TCanvas();
@@ -314,10 +323,12 @@ void MassResolution ( bool fSilent = true )   {
     hSigmaHig_1D_N->Draw("SAME");
     //
     lLegend         ->Draw("SAME");
-    cAllResolutions_1D->SaveAs(Form(kMassResolution_Plot,"Yield")+TString("cAllResolutions_1D_N.pdf"));
+    if ( kDoYield )         cAllResolutions_1D->SaveAs(Form(kMassResolution_Plot,"Yield")+TString("cAllResolutions_1D_N.pdf"));
+    if ( kDoMultiplicity )  cAllResolutions_1D->SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString("cAllResolutions_1D_N.pdf"));
     delete      cAllResolutions_1D;
     //
-    gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kMassResolution_Plot,"Yield")));
+    if ( kDoYield )         gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kMassResolution_Plot,"Yield")));
+    if ( kDoMultiplicity )  gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kMassResolution_Plot,"Multiplicity")));
     TCanvas    *cAllResolutions_1D_in_2D_bin  =   new TCanvas();
     gPad            ->  SetLogx();
     //
@@ -342,7 +353,8 @@ void MassResolution ( bool fSilent = true )   {
     hSigmaHig_1D_in_2D_bin->Draw("SAME");
     //
     lLegend         ->Draw("SAME");
-    cAllResolutions_1D_in_2D_bin->SaveAs(Form(kMassResolution_Plot,"Yield")+TString("cAllResolutions_1D_in_2D_bin.pdf"));
+    if ( kDoYield )         cAllResolutions_1D_in_2D_bin->SaveAs(Form(kMassResolution_Plot,"Yield")+TString("cAllResolutions_1D_in_2D_bin.pdf"));
+    if ( kDoMultiplicity )  cAllResolutions_1D_in_2D_bin->SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString("cAllResolutions_1D_in_2D_bin.pdf"));
     delete      cAllResolutions_1D_in_2D_bin;
     //
                 cAllResolutions_1D_in_2D_bin  =   new TCanvas();
@@ -364,7 +376,8 @@ void MassResolution ( bool fSilent = true )   {
     hSigmaHig_1D_in_2D_bin_N->Draw("SAME");
     //
     lLegend         ->Draw("SAME");
-    cAllResolutions_1D_in_2D_bin->SaveAs(Form(kMassResolution_Plot,"Yield")+TString("cAllResolutions_1D_in_2D_bin_N.pdf"));
+    if ( kDoYield )         cAllResolutions_1D_in_2D_bin->SaveAs(Form(kMassResolution_Plot,"Yield")+TString("cAllResolutions_1D_in_2D_bin_N.pdf"));
+    if ( kDoMultiplicity )  cAllResolutions_1D_in_2D_bin->SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString("cAllResolutions_1D_in_2D_bin_N.pdf"));
     delete      cAllResolutions_1D_in_2D_bin;
     //
     gROOT->SetBatch(kFALSE);
@@ -375,17 +388,33 @@ void MassResolution ( bool fSilent = true )   {
     //
     // >> All Analysis Utility
     //
-    gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kMassResolution_Dir_,"Yield")));
-    TFile *outFil0  =   new TFile   (Form(kMassResolution_Anal,"Yield"),"recreate");
-    //
-    hSigmaLow_1D->Write();
-    hSigmaCnt_1D->Write();
-    hSigmaHig_1D->Write();
-    hSigmaLow_1D_in_2D_bin->Write();
-    hSigmaCnt_1D_in_2D_bin->Write();
-    hSigmaHig_1D_in_2D_bin->Write();
-    //
-    outFil0->Close();
+    if ( kDoYield ) {
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kMassResolution_Dir_,"Yield")));
+        TFile *outFil0  =   new TFile   (Form(kMassResolution_Anal,"Yield"),"recreate");
+        //
+        hSigmaLow_1D->Write();
+        hSigmaCnt_1D->Write();
+        hSigmaHig_1D->Write();
+        hSigmaLow_1D_in_2D_bin->Write();
+        hSigmaCnt_1D_in_2D_bin->Write();
+        hSigmaHig_1D_in_2D_bin->Write();
+        //
+        outFil0->Close();
+    }
+    if ( kDoMultiplicity ) {
+        gROOT           ->  ProcessLine(Form(".! mkdir -p %s",Form(kMassResolution_Dir_,"Multiplicity")));
+        TFile *outFil0  =   new TFile   (Form(kMassResolution_Anal,"Multiplicity"),"recreate");
+        //
+        hSigmaLow_1D->Write();
+        hSigmaCnt_1D->Write();
+        hSigmaHig_1D->Write();
+        hSigmaLow_1D_in_2D_bin->Write();
+        hSigmaCnt_1D_in_2D_bin->Write();
+        hSigmaHig_1D_in_2D_bin->Write();
+        //
+        outFil0->Close();
+    }
+    
     //
     // >-> Close input File
     //

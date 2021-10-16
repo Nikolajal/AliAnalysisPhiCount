@@ -1,0 +1,147 @@
+\section{Results}
+\label{sec:Results}
+In this section the final results for this analysis are presented. First, an overview of the inclusive $\phi$-meson yield and inclusive $\phi$-meson pair yield is given, then an excursus on the calculation of new combinations of these yields and related results are presented.
+
+\subsection{$\phi$-meson inclusive yield}
+The inclusive $\phi$-meson yield has been extensively studied and was previously measured in a subset of the Dataset used for this analysis. A summary of these results is reported in Table \ref{tab:Final_results_1D}.
+
+\begin{table}
+	\centering
+		\begin{tabular}{c | l | l | c}
+		$\sqrt{s}$ [TeV]		&dN/dy										&$\langle p_{T}\rangle$ [GeV/c]				&Ref.\\
+			\hline
+			\hline
+			0.9				&0.021	$\pm$0.004	$\pm$0.003			&										&\cite{phi_0.9}\\
+			\hline
+			2.76				&0.0260	$\pm$0.0004	$\pm$0.003			&										&\cite{phi_2.76}\\
+			\hline
+			5.02				&0.0301	$\pm$0.0002	$\pm$0.0025			&										&\cite{phi_5.02}\\
+			\hline
+			7				&0.032	$\pm$0.0004	$^{+0.004}_{-0.0035}$	&										&\cite{PrevPub}\\
+			7				&0.0318	$\pm$0.0003	$\pm$0.0025			&										&\cite{phi_8}\\
+			\color{red}{7}		&\color{red}{0.0330 $\pm$0.0003	$\pm$0.0027 $^{+ 0.0024}_{-0.0012}$}	&					&\color{red}{This work}\\
+			\hline
+			8				&0.0335	$\pm$0.0003	$\pm$0.0030			&										&\cite{phi_8}\\
+			\hline
+			13				&0.03734	$\pm$0.00040	$\pm$0.00213			&										&\cite{phi_13}\\
+			\hline
+		\end{tabular}
+	\caption{Measured Inclusive $\phi$-meson yield compared to previous measurements.}
+	\label{tab:Final_results_1D}
+\end{table}
+
+The final p$_{\text{T}}$ spectrum for the $\phi$ meson production can be seen in Figure \ref{fig:spectrum1D}.
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.64\textwidth]{../result/Yield/SignalExtrapolation/Plots/1D/Yield_1D.pdf}
+	\label{fig:spectrum1D}
+	\caption{p$_{\text{T}}$ spectrum for the $\phi$ meson}
+\end{figure}
+
+\subsection{$\phi$-meson pair inclusive yield}
+The inclusive $\phi$-meson pair yield is the new result of this analysis. This is the first report of such a measurement and the subsequent combinations, a summary of which is reported in Table \ref{tab:new_parameters}.
+
+\begin{figure}[!h]
+	\centering
+		\includegraphics[width=0.32\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_0.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_1.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_2.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_3.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_4.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_5.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_6.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_7.pdf}
+		\includegraphics[width=0.32\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_8.pdf}\\
+		\includegraphics[width=0.32\linewidth]{../result/Yield/SignalExtrapolation/Plots/2D/Yield_2D_9.pdf}
+	\label{fig:spectrum2D}
+	\caption{Conditional p$_{\text{T}}$ spectra for the $\phi$ meson}
+\end{figure}
+
+
+\subsection{$\phi$-meson production distribution}
+The access to the $\phi$-meson pair yield makes it possible to study the production statistics in a new way. If we take a look at the definition of the inclusive yield:
+\begin{equation}
+\frac{\text{dN}^2_{\phi}}{\text{dp}_{\text{T}}\text{d}y} = \langle \text{Y}_{1\phi} \rangle = \Big( n_{1\phi} + 2\times n_{2\phi} + 3\times n_{3\phi} + \dots \Big)
+\label{eq:}
+\end{equation}
+we see that we can generalise the n-tuple inclusive yield as:
+\begin{equation}
+\langle \text{Y}_{i\phi} \rangle = \sum_{k=0}^{\infty} \binom{k}{i}\times n_{k\phi} = \sum_{k=0}^{\infty} \frac{k!}{i!(k-i)!} \times n_{k\phi} 
+\label{eq:}
+\end{equation}
+In terms of statistical properties of the $\phi$-meson production mechanism we can see the relations
+\begin{equation}
+\mu = \langle \text{Y}_{1\phi} \rangle \qquad \sigma^2 = \langle \text{Y}_{1\phi}^2 \rangle -  \langle \text{Y}_{1\phi} \rangle^2
+\label{eq:}
+\end{equation}
+We can now directly measure $\langle \text{Y}_{1\phi} \rangle^2$ but not $\langle \text{Y}_{1\phi}^2 \rangle$, even though we can recover this information by the mean of $\langle \text{Y}_{2\phi} \rangle$:
+\begin{equation}
+\langle \text{Y}_{2\phi} \rangle = \sum_{k=0}^{\infty} \frac{k(k-1)}{2} \times n_{k\phi} = \frac{1}{2} \sum_{k=0}^{\infty} (k^2-k) \times n_{k\phi} = \frac{1}{2}\langle \text{Y}^2_{1\phi} \rangle - \frac{1}{2}\langle \text{Y}_{1\phi} \rangle \to \langle \text{Y}^2_{1\phi} \rangle = 2\langle \text{Y}_{2\phi} \rangle + \langle \text{Y}_{1\phi} \rangle
+\label{eq:}
+\end{equation}
+Then, the distribution variance can be expressed as:
+\begin{equation}
+\sigma^2 = \langle \text{Y}_{1\phi}^2 \rangle -  \langle \text{Y}_{1\phi} \rangle^2 = \Big(  2\langle \text{Y}_{2\phi} \rangle + \langle \text{Y}_{1\phi} \rangle \Big) - \langle \text{Y}_{1\phi} \rangle^2
+\label{eq:}
+\end{equation}
+This expression uses our measurements many times and many of them are correlated so the uncertainty is set to be significant. Another way to use this newfound information with an uncertainty more under control is to use the ratios:
+\begin{equation}
+\frac{\langle \text{Y}_{2\phi} \rangle} {\langle \text{Y}_{1\phi} \rangle^2}\qquad \frac{\sigma^2}{\mu} = \frac{2\langle \text{Y}_{2\phi} \rangle + \langle \text{Y}_{1\phi} \rangle - \langle \text{Y}_{1\phi} \rangle^2}{\langle \text{Y}_{1\phi} \rangle} = 1 + \frac{2\langle \text{Y}_{2\phi} \rangle}{\langle \text{Y}_{1\phi} \rangle} - \frac{ \langle \text{Y}_{1\phi} \rangle^2}{\langle \text{Y}_{1\phi} \rangle} = 1 + \frac{2\langle \text{Y}_{2\phi} \rangle}{\langle \text{Y}_{1\phi} \rangle} - \langle \text{Y}_{1\phi} \rangle
+\label{eq:}
+\end{equation}
+where for the second ratio we expect it to be 1 for a poissonian distribution. We can also redefine the second ratio to represent the distance from the poissonian behaviour with:
+ \begin{equation}
+\gamma_{\phi} =  \frac{\sigma^2}{\mu} - 1 = \frac{2\langle \text{Y}_{2\phi} \rangle}{\langle \text{Y}_{1\phi} \rangle} - \langle \text{Y}_{1\phi} \rangle
+\label{eq:}
+\end{equation}
+where $\gamma_\phi$ is a new parameter that describes the accordance with a poissonian behaviour of the production statistics. 
+
+\begin{table}
+	\centering
+	\begin{tabular}{ c |l c }
+		\hline
+		Quantity ( $\times 10^3$ )														&																&Ref.\\
+		\hline
+		\hline
+		\multirow{2}{*}{\color{red}{dN$_{\phi\phi}$/dy}}										&\multirow{2}{*}{\color{red}{1.54 $\pm$0.08	$\pm$0.24$^{+ 0.11}_{-0.05}$}}		&\multirow{2}{*}{\color{red}{This work}}\\
+		\\
+		\hline
+		\multirow{2}{*}{\color{red}{$\langle\text{Y}_{\phi\phi}\rangle$/$\langle\text{Y}_{\phi}\rangle$}}	&\multirow{2}{*}{\color{red}{46.7 $\pm$2.5		$\pm$4.7 	$^{+ 0}_{-0}$}}			&\multirow{2}{*}{\color{red}{This work}}\\
+		\\
+		\hline
+		\multirow{2}{*}{\color{red}{$\sigma^2_{\phi}$}}										&\multirow{2}{*}{\color{red}{35.0 $\pm$3.4 	$\pm$3.2 $^{+ 2.5}_{-1.2}$}}		&\multirow{2}{*}{\color{red}{This work}}\\
+		\\
+		\hline
+		\multirow{2}{*}{\color{red}{$\gamma_{\phi}$}}										&\multirow{2}{*}{\color{red}{60.5 $\pm$6.1		$\pm$6.5	$^{+ 1.2}_{-2.4}$}}		&\multirow{2}{*}{\color{red}{This work}}\\
+		\\
+		\hline
+		\hline
+		Quantity																	&																&Ref.\\
+		\hline
+		\hline
+		\multirow{2}{*}{\color{red}{$\langle\text{Y}_{\phi\phi}\rangle$/$\langle\text{Y}_{\phi}\rangle^2$}}	&\multirow{2}{*}{\color{red}{1.42 $\pm$0.09	$\pm$0.07$^{+ 0.05}_{-0.04}$}}		&\multirow{2}{*}{\color{red}{This work}}\\
+		\\
+		\hline
+	\end{tabular}
+	\caption{New Measured quantities results}
+	\label{tab:new_parameters}
+\end{table}
+
+\subsection{Mean p$_{\text{T}}$}
+The mean p$_{\text{T}}$ of the 
+
+\ref{tab:Final_results_1D}
+
+\begin{figure}
+	\centering
+		\includegraphics[width=\textwidth]{../result/Yield/SignalExtrapolation/Plots/Full/Production.pdf}
+	\caption{\hl{Didascalia}}
+	\label{fig:Production}
+\end{figure}
+
+\subsection{Results discussion and prospects}
+The presented results are the first measurement of the $\phi$-meson pair yield in pp collisions at \SI{7}{\tera\electronvolt}.\\
+\indent \\
+\indent This analysis note is meant to be a first standardisation of the approach in this kind of measurement and will be followed by more smilar measurements, notably in pp, p-Pb and Pb-Pb at 5 TeV to provide a useful comparison among different collision systems. Moreover, using the high statistics taken at 5 TeV, a differentiation in multiplicity is planned to be performed in the near future together with other differential studies such as event spherocity and effective energy.
+

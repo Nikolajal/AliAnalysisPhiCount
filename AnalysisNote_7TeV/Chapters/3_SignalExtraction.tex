@@ -1,0 +1,86 @@
+\section{Signal Extraction}
+\label{sec:SignalExtraction}
+The Raw yield of the the $\phi(1020)$ is measured via the invariant-mass reconstruction technique in the decay channel $\phi \to $K$^+$K$^-$. The yield of the $\phi(1020)$ pair is measured via a generalisation of the invariant-mass reconstruction technique in the same decay channel. The Data samples used for the analysis are discussed in Section \ref{sec:Dataset_and_event_selection}., the list of bins used in the p$_{\text{T}}$ differential analysis are listed in Table \ref{tab:PTbins}.
+\begin{table}
+\center
+\begin{tabular}{ccc|ccc||ccc}
+\multicolumn{6}{c}{1D Analysis} 					&\multicolumn{3}{c}{2D Analysis}\\
+Bin	&Min		&Max	&Bin		&Min		&Max	&Bin		&Min		&Max\\
+\hline
+1	&0.4		&0.5		&11		&1.8		&2.0		&1		&0.4		&0.7\\
+2	&0.5		&0.6		&12		&2.0		&2.4		&2		&0.7		&0.9\\
+3	&0.6		&0.7		&13		&2.4		&2.8		&3		&0.9		&1.0\\
+4	&0.7		&0.8		&14		&2.8		&3.2		&4		&1.0		&1.2\\
+5	&0.8		&0.9		&15		&3.2		&3.6		&5		&1.2		&1.4\\
+6	&0.9		&1.0		&16		&3.6		&4.0		&6		&1.4		&1.6\\
+7	&1.0		&1.2		&17		&4.0		&5.0		&7		&1.6		&2.0\\
+8	&1.2		&1.4		&18		&5.0		&6.0		&8		&2.0		&2.8\\
+9	&1.4		&1.6		&19		&6.0		&8.0		&9		&2.8		&4.0\\
+10	&1.6		&1.8		&20 		&8.0		&10.		&10		&4.0		&10.\\
+\end{tabular}
+\caption{The p$_{\text{T}}$ bins used in the analysis, all values are in \SI{}{\giga \electronvolt \per \clight}}
+\label{tab:PTbins}
+\end{table}
+
+\subsection{Extraction of $\phi$ meson}
+Charged Kaons used in the analysis are requested to pass the selections on track and PID as described in Section \ref{sec:Trackselection}. The Invariant mass of the candidate is taken combining the quadri-momentum of selected tracks, after they are assigned PDG mass for charged Kaons \SI{493.677}{\mega\electronvolt\per\clight\squared}\cite{PDG}. The rapidity of the $\phi$-meson candidate is requested to be within $|y| < 0.5$. For each event, all unlike sign pairs of Kaons are used, generating a distribution with the signal on top of a random combinatorial background.\\
+\indent For reasons that will become clear in the next section, we do not make use of the background subtraction technique. Instead the signal extraction is done through a 2-component Fit, one to model the signal and one to model the background:
+\begin{equation}
+f_{\text{total}}(\text{m}_{\text{K}^+\text{K}^-}) = f_{\text{sig}}(\text{m}_{\text{K}^+\text{K}^-}) + f_{\text{bkg}}(\text{m}_{\text{K}^+\text{K}^-})
+\end{equation}
+\subsubsection{Signal Component} The signal component is modelled through a Voigtian function. This function is the convolution of the non-relativistic Breit-Wigner $f_{\text{BW}}(\text{x},\text{m},\Gamma)$ and a Gaussian $f_{\text{Gaus}}(\text{x},\mu,\sigma)$:
+\begin{eqnarray}
+V(\text{m}_{\text{K}^+\text{K}^-};\Gamma_{\phi},\text{m}_{\phi},\sigma) = A_{\text{sig}}\int_{-\infty}^{+\infty}\frac{1}{\sigma\sqrt{2\pi}}\exp{\Big[ -\frac{(\text{m}_{\text{K}^+\text{K}^-}-\text{m}_{\phi})^2}{2\sigma^2} \Big]}\frac{1}{2\pi}\frac{\Gamma_{\phi}}{(\text{m}_{\text{K}^+\text{K}^-}-\text{m}_{\phi})^2+(\Gamma_{\phi}/2)^2}\text{d}\text{m}_{\text{K}^+\text{K}^-}
+\end{eqnarray}
+where $\Gamma_{\phi}$ is the $\phi$-meson width, $\text{m}_{\phi}$ is the $\phi$-meson mass and $\sigma$ is the invariant mass resolution.
+\subsubsection{Background Component} The background component is modelled through a \v{C}eby\v{s}\"{e}v polynomial of third degree:
+\begin{eqnarray}
+\text{\v{C}}(\text{m}_{\text{K}^+\text{K}^-};\text{c}_i) = A_{\text{bkg}}\Big[1+ c_1\Big(\text{m}_{\text{K}^+\text{K}^-}\Big)+ c_2\Big(2\text{m}_{\text{K}^+\text{K}^-}^2-1\Big)+ c_3\Big(4\text{m}_{\text{K}^+\text{K}^-}^3-3\text{m}_{\text{K}^+\text{K}^-}\Big)\Big]
+\end{eqnarray}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{../result/Yield/SignalExtraction/Plots/1D/PT_5.0_6.0_1D_.pdf}
+\caption{Example of the Fit results used to extract the yield of $\phi$ mesons in $p_{\text{T}}$ bin [5.0,6.0] \SI{}{\giga\electronvolt}. Highlighted in solid dark blue is the model, in dashed light blue the background and in solid red the signal.}
+\label{fig:1Dfit}
+\end{figure}
+
+\subsubsection{Missing Signal}
+The fit procedure only evaluates how many $\phi$ mesons are in the fit range. Event though that is plenty enough to find most of the mesons, some still elude this number. To recover the missing yield we use the Width and Mean from the fit to build a Breit-Wigner, then we integrate it from the low mass limit to infinity. The low mass limit is the physical limit equivalent to the mass of the two daughter kaons.
+\begin{equation}
+f_{miss} = \frac{\int_{0.995}^{1000}BW}{\int_{0.998}^{1.065}BW} \approx 0.974
+\end{equation}
+Then, the raw count is given as
+\begin{equation}
+N_{\text{RAW}} = \frac{S}{f_{miss}}
+\end{equation}
+Where S is the signal resulting from the fit.
+
+
+\subsection{Extraction of $\phi$-meson pair}
+Charged Kaons used in the analysis are requested to pass the selections on track and PID as described in Section \ref{sec:Trackselection}. The Invariant mass of the candidate is taken combining the quadri-momentum of selected tracks, after they are assigned PDG mass for charged Kaons \SI{493.677}{\mega\electronvolt\per\clight\squared}\cite{PDG}. The rapidity of the $\phi$-meson candidate is requested to be within $|y| < 0.5$. For each unlike sign pairs of Kaons are used and paired together to produce a $\phi$-meson pair candidate, taking care of excluding all the candidates that use the same kaon track twice. For example, if the first $\phi$-meson candidate is made from the kaons labeled 4 (positive) and 7 (negative) it will not be coupled to the pair made from the kaons labeled 6 (positive) and 7 (negative), as it would not be physical to have a single kaon come from two different decays.\\
+\indent For the signal extraction procedure, one builds the 2-Dimensional Invariant-mass distribution of these candidates, essentially plotting one invariant-mass against the other's. During this procedure care is taken not to double count the pair: if the pair has an Invariant-mass of [1.01,0.99] \SI{}{\giga\electronvolt\per\clight\squared} it should not be counted once as is and once as [0.99,1.01] \SI{}{\giga\electronvolt\per\clight\squared}. We then introduce an arbitrary ordering in p$_{\text{T}}$, where the first $\phi$-meson candidate in the pair is always the one with lower p$_{\text{T}}$: extending this example, we have a pair ( [mass; p$_{\text{T}}$ ] ) as  \{ [0.99; 2.00]  ; [1.01; 8.00] \}. This filling scheme is based on the necessity to avoid counting $\phi$-meson pairs that are not statistically independent such as the ones from the same $\phi$-meson candidates with places switched. The pair will then be used to fill once the differential histograms corresponding to the chosen p$_{\text{T}}$ bin combination [2.00,8.00] but not for the opposite (but equivalent) [8.00,2.00]. This ordering can be done on the basis of the 2D spectrum symmetry for opposite permutations of p$_{\text{T}}$ bins. In fact it is easy to imagine that such ordering will leave half the spectrum unpopulated. As a consequence, only a fit on the upper half and diagonal of the spectrum is performed, assigning the results and errors to the conjugate bins.\\
+\indent Once the Invariant-mass distribution is made, a procedure similar to the one discussed above is performed. A functions is used to fit the distribution in order to extract the signal fraction. In this section, for the sake of clarity, the invariant mass of the paired $\phi$-mesons will be referred to as m$_{\phi}^{(i)}$, where i is an index in \{1,2\}.\\
+\begin{equation}
+f^{\text{2D}}_{\text{total}}(\text{m}_{\phi}^{(1)},\text{m}_{\phi}^{(2)}) = f^{\text{2D}}_{\text{sig}}(\text{m}_{\phi}^{(1)},\text{m}_{\phi}^{(2)}) + f^{\text{2D}}_{\text{bkg}}(\text{m}_{\phi}^{(1)},\text{m}_{\phi}^{(2)}) 
+\end{equation}
+\indent The composite functions $ f^{\text{2D}}_{\text{sig}}$ and $ f^{\text{2D}}_{\text{bkg}}$ are found combining the components of the $\phi$-meson yield. Indeed, the distribution can be modelled as:
+\begin{eqnarray}
+ f^{\text{2D}}_{\text{sig}}(\text{m}_{\phi}^{(1)},\text{m}_{\phi}^{(2)}) =  f_{\text{sig}}(\text{m}_{\phi}^{(1)}) \times  f_{\text{sig}}(\text{m}_{\phi}^{(2)})
+ \end{eqnarray}
+\subsubsection{Signal Component} In other words we model the signal, the $\phi$-meson pair yield, as the fraction of the distribution described by combining the two signal functions from the single invariant-mass distributions.
+\subsubsection{Background Components} The background model is made by combining the background functions of the single invariant-mass distributions, in addition to the combinatorial components of signal and background of the single invariant-mass distributions. Essentially ending up as:
+\begin{eqnarray}
+ f^{\text{2D}}_{\text{bkg}}(\text{m}_{\phi}^{(1)},\text{m}_{\phi}^{(2)}) &= f_{\text{sig}}(\text{m}_{\phi}^{(1)}) \times  f_{\text{bkg}}(\text{m}_{\phi}^{(2)}) +\\
+&+ f_{\text{bkg}}(\text{m}_{\phi}^{(1)}) \times  f_{\text{sig}}(\text{m}_{\phi}^{(2)}) +\\
+&+ f_{\text{bkg}}(\text{m}_{\phi}^{(1)}) \times  f_{\text{bkg}}(\text{m}_{\phi}^{(2)}) 
+\end{eqnarray}
+Where the background is increasingly difficult to separate form the signal component given its peak shape.\\
+\indent Given the high number of free parameters and the relatively low statistics for this dataset, the parameters  for the 2D fit are determined in the single invariant-mass distribution and then fed to the 2-Dimensional model. Thus, the fit procedure only evaluates the relative magnitude of these 4 components ( 1 for the signal and 3 for the background ). An example of this fit result can be seen in Fig. \ref{fig:2Dfit}. It is worth noting that the typical peak shape of the signal of the $\phi$-meson yield is now part of the background and only a small fraction of the central peak is signal we are interested in. This can be seen more clearly in Fig. \ref{fig:2Dfit}. For the sake of clarity the 2-Dimensional distribution has been sliced into four 1-Dimensional histograms.
+
+\begin{figure}
+\centering
+\includegraphics[width=1.05\textwidth]{../result/Yield/SignalExtraction/Plots/2D/PT_1.4_1.6__1.6_2.0_.pdf}
+\caption{Example of the Fit results used to extract the yield of $\phi$-meson pairs in $p_{\text{T}}$ bin [1.4;1.6][1.6;2.0] \SI{}{\giga\electronvolt \per \clight}. Highlighted in solid dark blue is the model, in various dashed light blue shades the background components and in solid red the signal. Each columns represents a slice of the 2-Dimensional Invariant mass distribution in intervals [0.998;1.015], [1.015;1.031], [1.031;1.048] and [1.048;1.065] \SI{}{\giga\electronvolt \per \clight \squared} along the X-axis (left) and along the Y-axis (right).}
+\label{fig:2Dfit}
+\end{figure}

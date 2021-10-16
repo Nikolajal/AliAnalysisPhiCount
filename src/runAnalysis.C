@@ -1,4 +1,5 @@
 #include "../inc/AliAnalysisPhiPair.h"
+#include "./Analysis/FinalPlots.cpp"
 #include "./Analysis/SignalExtraction.C"
 #include "./Analysis/SignalCorrections.C"
 #include "./Analysis/MassResolution.C"
@@ -27,9 +28,10 @@ void runAnalysis ( string fFileNameDT = "", string fFileNameMC = "", Int_t nEven
     //  Pre-Processing the Trees into histograms
     PreProcessing(fFileNameDT,fFileNameMC,fOption,nEventsCut);
     //  Evaluating the resolution
-    MassResolution();
+    MassResolution(fOption);
     //  Signal Extraction
     SignalExtraction(fOption,true);
     //  Sepctra correction and integration
     SignalCorrections(fOption,true);
+    //FinalPlots();
 }

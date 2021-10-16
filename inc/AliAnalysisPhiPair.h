@@ -18,7 +18,7 @@
 //>>    Performance Regulation Values
 auto const  kCPU_use                =   1;
 auto const  kNCycle_                =   3;
-auto const  kStatEvalCycles         =   300;
+auto        kStatEvalCycles         =   1000;
 auto const  kPrintIntervalPP        =   1000000;
 auto const  k2DErrorLimit           =   10.;
 auto const  kCPUStrategy            =   1;
@@ -43,10 +43,97 @@ std::vector<std::pair<TF1*,std::vector<float>>> fSystFitFunctions  =   {  {fMTEx
 
 Float_t
 fMeasureMeanPT
- ( TF1 * fLowFit, TGraphAsymmErrors * gTotal, Bool_t fReFit = false );
-Float_t
-fMeasureMeanPT
- ( TF1 * fLowFit, TH1F * gTotal, Bool_t fReFit = false );
+ ( TF1 * fLowFit, TGraphAsymmErrors * gTotal, Bool_t fReFit = false );//! TODO: TO BE CLEAN
+template < class Tclass >
+Float_t                 fEvaluateMeanPT
+ ( Tclass* fTotalUncertaintySpectrum, TF1 * fLowPTModel = nullptr, Bool_t kRequestReFit = false )   {
+    //
+    //  Result
+    Float_t fResult = 0;
+    Float_t fDenominator = 0;
+    //
+    //  Re-Fit if requested
+    if ( kRequestReFit && fLowPTModel )    fTotalUncertaintySpectrum->Fit(fLowPTModel, "IMEQS");
+    //
+    //  Storing necessary information
+    std::vector<float>  fBinIntegrals;
+    std::vector<float>  fBinWidth;
+    std::vector<float>  fBinMeanPT;
+    //
+    //  Extrapolated Contribution
+    if ( fLowPTModel )     {
+        fBinIntegrals.  push_back( fLowPTModel->Integral( 0., fTotalUncertaintySpectrum->GetBinLowEdge(1) ) );
+        fBinWidth.      push_back( 1. );
+        fBinMeanPT.     push_back( fLowPTModel->Moment( 1, 0, fTotalUncertaintySpectrum->GetBinLowEdge(1) ) );
+    }
+    //
+    //  Integrated Contribution
+    for ( Int_t iBin = 1; iBin <= fTotalUncertaintySpectrum->GetNbinsX(); iBin++ )   {
+        fBinIntegrals.  push_back( fTotalUncertaintySpectrum->GetBinContent(iBin) );
+        fBinWidth.      push_back( fTotalUncertaintySpectrum->GetBinWidth(iBin) );
+        fBinMeanPT.     push_back( fTotalUncertaintySpectrum->GetBinCenter(iBin) );
+    }
+    //
+    //  Calculate Mean PT
+    for ( Int_t iBin = 0; iBin < fBinWidth.size(); iBin++ )   {
+        fResult +=  fBinIntegrals.at(iBin)*fBinWidth.at(iBin)*fBinMeanPT.at(iBin);
+        fDenominator    += fBinIntegrals.at(iBin)*fBinWidth.at(iBin);
+    }
+    return fResult/fDenominator;
+}
+template < class Tclass >
+void                    fEvaluateMeanPT
+ ( Tclass* fTotalUncertaintySpectrum, Double_t &kError )   {
+    //
+    //  Result
+    Float_t fResult = 0;
+    Float_t fDenominator = 0;
+    //
+    //  Storing necessary information
+    std::vector<float>  fBinIntegrals;
+    std::vector<float>  fBinWidth;
+    std::vector<float>  fBinMeanPT;
+    //
+    //  Integrated Contribution
+    for ( Int_t iBin = 1; iBin <= fTotalUncertaintySpectrum->GetNbinsX(); iBin++ )   {
+        fBinIntegrals.  push_back( fTotalUncertaintySpectrum->GetBinContent(iBin) + fTotalUncertaintySpectrum->GetBinError(iBin) );
+        fBinWidth.      push_back( fTotalUncertaintySpectrum->GetBinWidth(iBin) );
+        fBinMeanPT.     push_back( fTotalUncertaintySpectrum->GetBinCenter(iBin) );
+    }
+    //
+    //  Calculate Mean PT
+    for ( Int_t iBin = 0; iBin < fBinWidth.size(); iBin++ )   {
+        fResult +=  fBinIntegrals.at(iBin)*fBinWidth.at(iBin)*fBinMeanPT.at(iBin);
+        fDenominator    += fBinIntegrals.at(iBin)*fBinWidth.at(iBin);
+    }
+    //
+    auto    kUpperLimit =   fResult/fDenominator;
+    //
+    fResult = 0;
+    fDenominator = 0;
+    //
+    //  Storing necessary information
+    fBinIntegrals.clear();
+    fBinWidth.clear();
+    fBinMeanPT.clear();
+    //
+    //  Integrated Contribution
+    for ( Int_t iBin = 1; iBin <= fTotalUncertaintySpectrum->GetNbinsX(); iBin++ )   {
+        fBinIntegrals.  push_back( fTotalUncertaintySpectrum->GetBinContent(iBin) - fTotalUncertaintySpectrum->GetBinError(iBin) );
+        fBinWidth.      push_back( fTotalUncertaintySpectrum->GetBinWidth(iBin) );
+        fBinMeanPT.     push_back( fTotalUncertaintySpectrum->GetBinCenter(iBin) );
+    }
+    //
+    //  Calculate Mean PT
+    for ( Int_t iBin = 0; iBin < fBinWidth.size(); iBin++ )   {
+        fResult +=  fBinIntegrals.at(iBin)*fBinWidth.at(iBin)*fBinMeanPT.at(iBin);
+        fDenominator    += fBinIntegrals.at(iBin)*fBinWidth.at(iBin);
+    }
+    //
+    auto    kLowerLimit =   fResult/fDenominator;
+    //
+    kError  =   fabs ( kUpperLimit - kLowerLimit ) / 2. ;
+}
 //
 //-------------------------------------//
 //      Analysis Fit Functions         //
@@ -1056,12 +1143,12 @@ fGammaPhiError
 Double_t
 fSigmaPhiValue
  ( Double_t fYieldPhi, Double_t fYieldPhiPhi )  {
-    return  2*fYieldPhiPhi + fYieldPhi -fYieldPhi*fYieldPhi;
+    return  2*fYieldPhiPhi + fYieldPhi - fYieldPhi*fYieldPhi;
 }
 Double_t
 fSigmaPhiError
  ( Double_t fYieldPhi, Double_t fYieldPhiPhi, Double_t fErrorPhi, Double_t fErrorPhiPhi)  {
-    return sqrt( (1-2*fYieldPhi)*(1-2*fYieldPhi)*fErrorPhi*fErrorPhi + 4*fErrorPhiPhi*fErrorPhiPhi );
+    return SquareSum( { 2*fErrorPhiPhi, (-1+fYieldPhi)*fErrorPhi } );
 }
 //
 //_____________________________________________________________________________
@@ -1078,7 +1165,7 @@ void                fSetFunction                    ( TF1* fFitFunction = fLevyT
     //____________________________________________dN/dy
     auto    ndNdy   =   fFitFunction    ->GetParNumber("dN_dy");
     if ( ndNdy != -1 )   {
-        fFitFunction    ->  SetParLimits(ndNdy,0.,1.);
+        fFitFunction    ->  SetParLimits(ndNdy,1.e-12,1.);
         fFitFunction    ->  SetParameter(ndNdy,fIntegral);
     }
     //
@@ -1154,62 +1241,38 @@ void                fFitLevyTsalis                  ( TGraphAsymmErrors* gToBeFi
 //
 //_____________________________________________________________________________
 //
-TGraphAsymmErrors*
+template < class Tclass >
+Tclass*
 fSetSystErrors
- ( TGraphAsymmErrors*                gStatistics ) {
-    TGraphAsymmErrors  *fResult =   new TGraphAsymmErrors(*gStatistics);
-    for ( Int_t iPnt = 0; iPnt < fResult->GetN(); iPnt++ ) {
-        auto    fYValue =   fResult ->  GetPointY(iPnt);
-        fResult ->  SetPointEYhigh  ( iPnt, fYValue*sqrt(kSysHig_BR*kSysHig_BR+kSysHig_TR*kSysHig_TR+kSysHig_PD*kSysHig_PD+kSysHig_1D_SE*kSysHig_1D_SE) );
-        fResult ->  SetPointEYlow   ( iPnt, fYValue*sqrt(kSysLow_BR*kSysLow_BR+kSysLow_TR*kSysLow_TR+kSysLow_PD*kSysLow_PD+kSysLow_1D_SE*kSysLow_1D_SE) );
-    }
-    return fResult;
-}
-std::vector<TGraphAsymmErrors*>
-fSetSystErrors
- ( std::vector<TGraphAsymmErrors*>   gStatistics ) {
-    std::vector<TGraphAsymmErrors*> fResult;
-    for ( auto& iGraph : gStatistics )  {
-        TGraphAsymmErrors  *fCurrentGraph =   new TGraphAsymmErrors(*iGraph);
-        for ( Int_t iPnt = 0; iPnt < fCurrentGraph->GetN(); iPnt++ ) {
-            auto    fYValue =   fCurrentGraph ->  GetPointY(iPnt);
-            fCurrentGraph ->  SetPointEYhigh  ( iPnt, fYValue*sqrt(4*(kSysHig_BR*kSysHig_BR+kSysHig_TR*kSysHig_TR+kSysHig_PD*kSysHig_PD)+kSysHig_2D_SE*kSysHig_2D_SE) );
-            fCurrentGraph ->  SetPointEYlow   ( iPnt, fYValue*sqrt(4*(kSysLow_BR*kSysLow_BR+kSysLow_TR*kSysLow_TR+kSysLow_PD*kSysLow_PD)+kSysLow_2D_SE*kSysLow_2D_SE) );
-        }
-        fResult.push_back(fCurrentGraph);
-    }
-    return fResult;
-}
-TH1F*
-fSetSystErrors
- ( TH1F*                             hStatistics ) {
-    TH1F               *fResult =   new TH1F            (*hStatistics);
+ ( Tclass*                          hStatistics ) {
+    auto        fResult         =   (Tclass*)(hStatistics->Clone());
     //
     TFile      *fReference      =   new TFile( Form("%s/Full_Systematics.root",(TString(Form(kAnalysis_Systemt_Dir,"yield"))).Data()) );
-    TH1F       *hReference      =   (TH1F*)(fReference->Get("h1DTotalSystematic"));
+    Tclass     *hReference      =   (Tclass*)(fReference->Get("h1DTotalSystematic"));
     //
     for ( Int_t iBin = 0; iBin < fResult->GetNbinsX(); iBin++ ) {
         auto    fBinContent     =   fResult->GetBinContent( iBin );
-        fResult->SetBinError( iBin, fBinContent*(hReference->GetBinContent(iBin)) );
+        fResult->SetBinError( iBin, fBinContent*0.1);//(hReference->GetBinContent(iBin)));
     }
     fReference->Close();
     //
     return  fResult;
 }
-std::vector<TH1F*>
+template < class Tclass >
+std::vector<Tclass*>
 fSetSystErrors
- ( std::vector<TH1F*>                hStatistics ) {
-    std::vector<TH1F*> fResult;
+ ( std::vector<Tclass*>             hStatistics ) {
+    std::vector<Tclass*> fResult;
     //
     TFile      *fReference      =   new TFile( Form("%s/Full_Systematics.root",(TString(Form(kAnalysis_Systemt_Dir,"yield"))).Data()) );
     TH2F       *hReference      =   (TH2F*)(fReference->Get("h2DTotalSystematic"));
     //
     auto jBin = 0;
     for ( auto& iHisto : hStatistics )  {
-        auto    fCurrentHisto   =   new TH1F(*iHisto);
+        auto    fCurrentHisto   =   new Tclass(*iHisto);
         for ( Int_t iBin = 0; iBin < iHisto->GetNbinsX(); iBin++ ) {
             auto    fBinContent     =   fCurrentHisto->GetBinContent( iBin+1 );
-            fCurrentHisto->SetBinError( iBin+1, fBinContent*hReference->GetBinContent(jBin+1,iBin+1) );
+            fCurrentHisto->SetBinError( iBin+1, fBinContent*0.1);//(hReference->GetBinContent(jBin+1,iBin+1)));
         }
         jBin++;
         fResult.push_back(fCurrentHisto);
@@ -1217,210 +1280,201 @@ fSetSystErrors
     return fResult;
 }
 //
+template < class Tclass >
+Tclass*
+fSetSystErrors
+( Tclass* hTarget,                  Int_t jBin ) {
+    Tclass* hResult         =   (Tclass*)(hTarget->Clone());
+    TFile*  fReference      =   new TFile( Form("%s/Full_Systematics.root",(TString(Form(kAnalysis_Systemt_Dir,"yield"))).Data()) );
+    TH2F*   hReference      =   (TH2F*)(fReference->Get("h2DTotalSystematic"));
+    for ( Int_t iBin = 0; iBin < hTarget->GetNbinsX(); iBin++ ) {
+        hResult->SetBinError    ( iBin+1, (hTarget->GetBinContent( iBin+1 ))*0.1);//(hReference->GetBinContent(jBin+1,iBin+1)) );
+    }
+    return hResult;
+}
+//
 //_____________________________________________________________________________
 //
-std::vector<float>  fEvaluateError                  ( bool fIsConditional, TGraphAsymmErrors* gStatic, TGraphAsymmErrors* gMoveable, Float_t fIntegral, TF1* fFitFunc, Double_t fMaximumFitRange = fMaxPT1D, Double_t fMinimumFitRange = fMinPT1D, TString fName = "", TString fFolder = "")  {
-    auto fExtrap    =   fFitFunc->Integral(0.,fMinPT1D);
-    auto fMeanPT    =   fMeasureMeanPT(fFitFunc,gStatic);
-    TGraphAsymmErrors      *gTotal      =   new TGraphAsymmErrors(*(fSumErrors(gStatic,gMoveable)));
+//!    TODO: Generalise and move to alianalysis utility, add function from outside
+template < class Tclass >
+std::vector<float>
+fEvaluateExtrapolationUncertainty
+ ( bool fIsConditional, Tclass* fStaticUncertaintySpectrum, Tclass* fVariableUncertaintySpectrum, Float_t fIntegral, Double_t fMaximumFitRange = fMaxPT1D, Double_t fMinimumFitRange = fMinPT1D, TString fName = "", TString fFolder = "", Int_t kEvaluationCycles = kStatEvalCycles )  {
+    //
+    //  Result container
+    //  Format: [0] Stat Extrap Unc //! TODO: update
     std::vector<float> fResult;
     //
-    //  TCanvas w/ options
-    auto    cDrawResult     =   new TCanvas("","",1500,500);
-    auto    fText           =   new TLatex();
-    gStyle->SetOptStat(0);
-    cDrawResult             ->  Divide(3,1);
-    cDrawResult             ->  cd(1);
-    gPad->SetLogy();
+    //  Build the Total Uncertainty Spectrum
+    Tclass*     fTotalUncertaintySpectrum   =   fSumErrors( fStaticUncertaintySpectrum, fVariableUncertaintySpectrum );
+                fTotalUncertaintySpectrum   ->  SetName("TotalUncertaintySpectrum");
+    //
+    //  Measure the baselines
+    fTotalUncertaintySpectrum       ->  Fit( fLevyTsallis, "Q",         "R", fMinimumFitRange,  fMaximumFitRange );
+    fTotalUncertaintySpectrum       ->  Fit( fLevyTsallis, "QMES",      "R", fMinimumFitRange,  fMaximumFitRange );
+    fTotalUncertaintySpectrum       ->  Fit( fLevyTsallis, "QMESI",     "R", fMinimumFitRange,  fMaximumFitRange );
+    //
+    auto    fStandardIntegral       =   fTotalUncertaintySpectrum->Integral("width");
+    auto    fStandardExtrapolation  =   fLevyTsallis->Integral(0.,fMinPT1D);
+    auto    fStandardYield          =   fStandardIntegral+fStandardExtrapolation;
+    auto    fStandardMeanPT         =   fEvaluateMeanPT( fTotalUncertaintySpectrum, fLevyTsallis );
+    //
+    //  Canvas to draw the Results checks
+    SetStyle();
+    auto    cDrawResults            =   new TCanvas("cDrawResult","cDrawResult",1800,600);
+    gStyle                          ->  SetOptStat(0);
+    cDrawResults                    ->  Divide(3,1);
+    cDrawResults                    ->  cd(1);
+    gPad                            ->  SetLogy();
     //
     //  Draw Spectra
-    gTotal->Draw();
-    gTotal->SetMarkerStyle(20);
-    gTotal->SetMarkerColor(kBlue);
-    gTotal->SetLineColor(kBlue);
+    fTotalUncertaintySpectrum       ->  SetMarkerStyle(markers[2]);
+    fTotalUncertaintySpectrum       ->  SetMarkerSize(2);
+    fTotalUncertaintySpectrum       ->  SetMarkerColor(colors[0]);
+    fTotalUncertaintySpectrum       ->  SetLineColor(kBlack);
+    fTotalUncertaintySpectrum       ->  DrawClone("EP");
     //
     //  Generate utility histogram to evaluate statistical error
-    std::vector<float> fStatVariation;
-    std::vector<float> fStatVariationMPT;
-    for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
+    std::vector<float> fYieldVariation;
+    std::vector<float> fPTVariation;
+    //
+    //  Loop requested times
+    //      Protection against unreasonable values
+    if ( kEvaluationCycles < 2 )    {
+        kEvaluationCycles = kStatEvalCycles;
+        cout << "[WARNING] Evaluation cycles must be at least 2, set to default value";
+        if ( kEvaluationCycles < 2 ) {
+            kEvaluationCycles = 10;
+            cout << "[WARNING] Default evaluation cycles is invalid, set to 10";
+        }
+    }
+    for ( Int_t iFit = 0; iFit < kEvaluationCycles; iFit++ )  {
+        //
+        //  Dump Canvas
+        auto    cDump   =   new TCanvas();
+        //  Randomise points
+        auto    fCurrentUtilitySpectrum =   uRandomizePoints( fStaticUncertaintySpectrum, fVariableUncertaintySpectrum );
+        //
+        //  //! TODO: Looks like a cheap fix
+        //
         //  Set Standard Fit
-        fSetFunction(fFitFunc,fIntegral);
+        fSetFunction        (fLevyTsallis,  fCurrentUtilitySpectrum->Integral());
+        fCurrentUtilitySpectrum    ->  Fit (fLevyTsallis,  "Q");
+        fCurrentUtilitySpectrum    ->  Fit (fLevyTsallis,  "QEMS",  "", fMinimumFitRange,fMaximumFitRange);
+        fCurrentUtilitySpectrum    ->  Fit (fLevyTsallis,  "QEMSI", "", fMinimumFitRange,fMaximumFitRange);
         //
-        //  Generating the Fit TGraph
-        auto fSubject   =   uRandomizePoints(gStatic,gMoveable);
+        delete  cDump;
         //
-        fSubject    ->  Fit(fFitFunc,   "IMESQ","", fMinimumFitRange,fMaximumFitRange);
+        fYieldVariation.push_back( fStandardIntegral + fLevyTsallis->Integral(0.,fMinPT1D) );
         //
-        fStatVariation.push_back(   fFitFunc  ->Integral(0.,fMinPT1D));
-        //
-        fStatVariationMPT.push_back(fMeasureMeanPT(fFitFunc,fSubject));
+        fPTVariation.push_back( fEvaluateMeanPT( fTotalUncertaintySpectrum, fLevyTsallis ) );
         //
         //  Draw Function
-        fFitFunc->DrawCopy("same");
+        cDrawResults->cd(1);
+        fCurrentUtilitySpectrum->GetFunction("LevyTsallis")->DrawCopy("SAME");
     }
-    cDrawResult             ->  cd(2);
-    uCleanOutsiders         ( fStatVariation );
-    auto    hStatIntegral   =   uBuildTH1F( fStatVariation, 50 );
-    hStatIntegral           ->  SetNameTitle( Form("hIntegral_%s",fName.Data()), "dN/dy variations" );
-    hStatIntegral           ->  Fit("gaus","IMESQ","");
-    auto StatErrorMean      =   hStatIntegral->GetFunction("gaus")->GetParameter(1);
-    auto StatError          =   hStatIntegral->GetFunction("gaus")->GetParameter(2);
-    fResult                 .push_back( StatError );
-    fResult                 .push_back( StatError );
-    hStatIntegral           ->  SetMaximum( 1.2*hStatIntegral           ->  GetMaximum() );
-    hStatIntegral           ->  Draw();
-    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErrorMean/fExtrap -1),"%"));
-    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatError)/(fExtrap),"%"));
     //
-    cDrawResult             ->  cd(3);
-    uCleanOutsiders         ( fStatVariationMPT );
-    auto    hStatIntegralMPT   =   uBuildTH1F( fStatVariationMPT, 50 );
-    hStatIntegralMPT           ->  SetNameTitle( Form("hIntegralMPT_%s",fName.Data()), "Mean p_{T} variations" );
-    hStatIntegralMPT           ->  Fit("gaus","IMESQ","");
-    auto StatErMPTMean      =   hStatIntegralMPT->GetFunction("gaus")->GetParameter(1);
-    auto StatErMPT          =   hStatIntegralMPT->GetFunction("gaus")->GetParameter(2);
-    //auto StatErMPTMean      =   hStatIntegralMPT->GetMean();
-    //auto StatErMPT          =   hStatIntegralMPT->GetRMS();
-    auto ReferenceMPT       =   (fMeanPT)/(fExtrap+fIntegral);
-    fResult                 .push_back( StatErMPT );
-    fResult                 .push_back( StatErMPT );
-    hStatIntegralMPT           ->  SetMaximum( 1.2*hStatIntegralMPT           ->  GetMaximum() );
-    hStatIntegralMPT           ->  Draw();
-    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErMPTMean/ReferenceMPT -1),"%"));
-    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatErMPT)/(ReferenceMPT),"%"));
+    cDrawResults                ->  cd(2);
     //
-    cDrawResult             ->  cd(1);
-    gTotal->Draw("same EP");
+    //  Build the Variation histogram, fixed to 50 bins
+    auto    hYieldVariations    =   uBuildTH1F( fYieldVariation, 50 );
+    hYieldVariations            ->  SetNameTitle( Form("hYieldVariations_%s",fName.Data()), "dN/dy variations" );
     //
-    //  Write info on the Extrapolation:
-    fText   ->  DrawLatexNDC(0.18,0.825,Form("1/N_{ev}dN/dy: %.2f",fResult[0]));
-    fText   ->  DrawLatexNDC(0.18,0.650,Form("#sigma_{high}: %.2f %s",100*(fResult[2])/(fResult[0]),"%"));
+    //  Gauss Fit
+    hYieldVariations            ->  Fit( "gaus", "IEMQS" );
+    auto fErrorMean             =   hYieldVariations->GetFunction("gaus")->GetParameter(1);
+    auto fErrorSTDV             =   hYieldVariations->GetFunction("gaus")->GetParameter(2);
+    auto fErrorFULL             =   fabs( fErrorMean - fStandardYield ) + fErrorSTDV;
     //
-    cDrawResult->Write();
-    if ( fIsConditional )   cDrawResult->SaveAs(Form("result/yield/ExtrapolateCheck/2D/ErrorFits_%s.pdf",fName.Data()));
-    else                    cDrawResult->SaveAs(Form("result/yield/ExtrapolateCheck/1D/ErrorFits_%s.pdf",fName.Data()));
-    delete cDrawResult;
+    //  Save in Results
+    fResult.push_back(fErrorFULL);
+    fResult.push_back(fErrorFULL);
+    //
+    //  Draw the results
+    hYieldVariations            ->  SetMaximum( 1.4*hYieldVariations->GetMaximum() );
+    hYieldVariations            ->  Draw();
+    uLatex                      ->  DrawLatexNDC(0.20,0.83,Form("#sigma_{Mean}: %.2f %s",   100*fabs(fErrorMean-fStandardYield)/(fStandardYield),"%"));
+    uLatex                      ->  DrawLatexNDC(0.60,0.83,Form("#sigma_{Tot}: %.2f %s",    100*(fabs(fErrorMean-fStandardYield)+fErrorSTDV)/(fStandardYield),"%"));
+    uLatex                      ->  DrawLatexNDC(0.23,0.77,Form("#sigma_{Dev}: %.2f %s",    100*(fErrorSTDV)/(fStandardYield),"%"));
+    //
+    cDrawResults                ->  cd(3);
+    //
+    //  Build the Variation histogram, fixed to 50 bins
+    auto    hPTVariation        =   uBuildTH1F( fPTVariation, 50 );
+    hPTVariation                ->  SetNameTitle( Form("hYieldVariations_%s",fName.Data()), "dN/dy variations" );
+    //
+    //  Gauss Fit
+    hPTVariation                ->  Fit( "gaus", "IEMQS" );
+    fErrorMean                  =   hPTVariation->GetFunction("gaus")->GetParameter(1);
+    fErrorSTDV                  =   hPTVariation->GetFunction("gaus")->GetParameter(2);
+    fErrorFULL                  =   fabs( fErrorMean - fStandardMeanPT ) + fErrorSTDV;
+    //
+    //  Save in Results
+    fResult.push_back(fErrorFULL);
+    fResult.push_back(fErrorFULL);
+    //
+    //  Draw the results
+    hPTVariation                ->  SetMaximum( 1.4*hPTVariation->GetMaximum() );
+    hPTVariation                ->  Draw();
+    uLatex                      ->  DrawLatexNDC(0.20,0.83,Form("#sigma_{Mean}: %.2f %s",   100*fabs(fErrorMean-fStandardMeanPT)/(fStandardMeanPT),"%"));
+    uLatex                      ->  DrawLatexNDC(0.60,0.83,Form("#sigma_{Tot}: %.2f %s",    100*(fabs(fErrorMean-fStandardMeanPT)+fErrorSTDV)/(fStandardMeanPT),"%"));
+    uLatex                      ->  DrawLatexNDC(0.23,0.77,Form("#sigma_{Dev}: %.2f %s",    100*(fErrorSTDV)/(fStandardMeanPT),"%"));
+    //
+    cDrawResults             ->  cd(1);
+    fTotalUncertaintySpectrum->Draw("same EP");
+    //
+    cDrawResults->Write();
+    if ( fIsConditional )   cDrawResults->SaveAs(Form("%s/2D/ErrorFits_%s.pdf",fFolder.Data(),fName.Data()));
+    else                    cDrawResults->SaveAs(Form("%s/1D/ErrorFits_%s.pdf",fFolder.Data(),fName.Data()));
+    delete cDrawResults;
     //
     return fResult;
 }
-std::vector<float>  fEvaluateError                  ( bool fIsConditional, TH1F* gStatic, TH1F* gMoveable, Float_t fIntegral, Double_t fMaximumFitRange = fMaxPT1D, Double_t fMinimumFitRange = fMinPT1D, TString fName = "", TString fFolder = "")  {
+//
+template < class Tclass >
+std::vector<float>
+fEvaluateExtrapolationUncertainty
+ ( bool fIsConditional, Tclass* fStaticUncertaintySpectrum, Tclass* fVariableUncertaintySpectrum, std::vector<std::pair<TF1*,std::vector<float>>> fSystFunc, Double_t fMaximumFitRange = fMaxPT1D, Double_t fMinimumFitRange = fMinPT1D, TString fName = "", TString fFolder = "" )  {
     //
+    //  Result container
+    //  Format: [0] Stat Extrap Unc //! TODO: update
     std::vector<float> fResult;
     //
-    auto fExtrap    =   fLevyTsallis->Integral(0.,fMinPT1D);
-    auto fMeanPT    =   fMeasureMeanPT(fLevyTsallis,gStatic);
-    TH1F      *gTotal      =    fSumErrors(gStatic,gMoveable);
-    gTotal->SetName("gTotal");
+    //  Build the Total Uncertainty Spectrum
+    Tclass*     fTotalUncertaintySpectrum   =   fSumErrors( fStaticUncertaintySpectrum, fVariableUncertaintySpectrum );
+                fTotalUncertaintySpectrum   ->  SetName("TotalUncertaintySpectrum");
     //
-    //  TCanvas w/ options
-    auto    cDrawResult     =   new TCanvas("cDrawResult","cDrawResult",1800,600);
-    auto    fText           =   new TLatex();
-    gStyle->SetOptStat(0);
-    cDrawResult             ->  Divide(3,1);
-    cDrawResult             ->  cd(1);
-    gPad->SetLogy();
+    //  Measure the baselines
+    fTotalUncertaintySpectrum       ->  Fit( fLevyTsallis, "Q",         "R", fMinimumFitRange,  fMaximumFitRange );
+    fTotalUncertaintySpectrum       ->  Fit( fLevyTsallis, "QMES",      "R", fMinimumFitRange,  fMaximumFitRange );
+    fTotalUncertaintySpectrum       ->  Fit( fLevyTsallis, "QMESI",     "R", fMinimumFitRange,  fMaximumFitRange );
     //
-    //  Draw Spectra
-    gTotal->SetMarkerStyle(markers[2]);
-    gTotal->SetMarkerSize(2);
-    gTotal->SetMarkerColor(colors[0]);
-    gTotal->SetLineColor(kBlack);
-    gTotal->Draw();
+    auto    fStandardIntegral       =   fTotalUncertaintySpectrum->Integral("width");
+    auto    fStandardExtrapolation  =   fLevyTsallis->Integral(0.,fMinPT1D);
+    auto    fStandardMeanPT         =   fEvaluateMeanPT( fTotalUncertaintySpectrum );
     //
-    //  Generate utility histogram to evaluate statistical error
-    std::vector<float> fStatVariation;
-    std::vector<float> fStatVariationMPT;
-    for ( Int_t iFit = 0; iFit < kStatEvalCycles; iFit++ )  {
-        //  Set Standard Fit
-        fSetFunction(fLevyTsallis,fIntegral);
-        //
-        auto dump = new TCanvas();
-        //  Generating the Fit TGraph
-        auto fSubject   =   uRandomizePoints(gStatic,gMoveable);
-        //
-        fSubject    ->  Fit(fLevyTsallis,   "EMRQS","", fMinimumFitRange,fMaximumFitRange);
-        fSubject    ->  Fit(fLevyTsallis,   "EMRQSI","", fMinimumFitRange,fMaximumFitRange);
-        //
-        delete dump;
-        //
-        fStatVariation.push_back(   fLevyTsallis  ->Integral(0.,fMinPT1D));
-        //
-        fStatVariationMPT.push_back(fMeasureMeanPT(fLevyTsallis,fSubject));
-        //
-        //  Draw Function
-        cDrawResult->cd(1);
-        fSubject->GetFunction("LevyTsallis")->DrawCopy("SAME");
-    }
-    cDrawResult             ->  cd(2);
-    uCleanOutsiders         ( fStatVariation );
-    auto    hStatIntegral   =   uBuildTH1F( fStatVariation, 50 );
-    hStatIntegral           ->  SetNameTitle( Form("hIntegral_%s",fName.Data()), "dN/dy variations" );
-    hStatIntegral           ->  Fit("gaus","I EM R Q S","");
-    auto StatErrorMean      =   hStatIntegral->GetFunction("gaus")->GetParameter(1);
-    auto StatError          =   hStatIntegral->GetFunction("gaus")->GetParameter(2);
-    fResult                 .push_back( StatError );
-    fResult                 .push_back( StatError );
-    hStatIntegral           ->  SetMaximum( 1.2*hStatIntegral           ->  GetMaximum() );
-    hStatIntegral           ->  Draw();
-    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErrorMean/fExtrap -1),"%"));
-    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatError)/(fExtrap),"%"));
-    //
-    cDrawResult             ->  cd(3);
-    uCleanOutsiders         ( fStatVariationMPT );
-    auto    hStatIntegralMPT   =   uBuildTH1F( fStatVariationMPT, 50 );
-    hStatIntegralMPT           ->  SetNameTitle( Form("hIntegralMPT_%s",fName.Data()), "Mean p_{T} variations" );
-    hStatIntegralMPT           ->  Fit("gaus","I EM R Q S","");
-    auto StatErMPTMean      =   hStatIntegralMPT->GetFunction("gaus")->GetParameter(1);
-    auto StatErMPT          =   hStatIntegralMPT->GetFunction("gaus")->GetParameter(2);
-    auto ReferenceMPT       =   (fMeanPT)/(fExtrap+fIntegral);
-    fResult                 .push_back( StatErMPT );
-    fResult                 .push_back( StatErMPT );
-    hStatIntegralMPT           ->  SetMaximum( 1.2*hStatIntegralMPT           ->  GetMaximum() );
-    hStatIntegralMPT           ->  Draw();
-    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErMPTMean/fMeanPT -1),"%"));
-    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatErMPT/fMeanPT),"%"));
-    //
-    cDrawResult             ->  cd(1);
-    gTotal->Draw("same EP");
-    //
-    cDrawResult->Write();
-    if ( fIsConditional )   cDrawResult->SaveAs(Form("%s/2D/ErrorFits_%s.pdf",fFolder.Data(),fName.Data()));
-    else                    cDrawResult->SaveAs(Form("%s/1D/ErrorFits_%s.pdf",fFolder.Data(),fName.Data()));
-    delete cDrawResult;
-    //
-    return fResult;
-}
-std::vector<float>  fEvaluateError                  ( bool fIsConditional, TH1F* gStatic, TH1F* gMoveable, std::vector<std::pair<TF1*,std::vector<float>>> fSystFunc, Double_t fMaximumFitRange = fMaxPT1D, Double_t fMinimumFitRange = fMinPT1D, TString fName = "", TString fFolder = "")  {
-    //
-    auto fExtrap    =   fLevyTsallis->Integral(0.,fMinPT1D);
-    auto fIntegral  =   fLevyTsallis->Integral(fMinPT1D,fMaxPT1D);
-    auto fMeanPT    =   fMeasureMeanPT(fLevyTsallis,gStatic);
-    TH1F      *gTotal      =    fSumErrors(gStatic,gMoveable);
-    gTotal->SetName("gTotal");
-    std::vector<float> fResult;
-    //
-    //  TCanvas w/ options
-    auto    cDrawResult     =   new TCanvas("cDrawResult","cDrawResult",1800,600);
-    auto    fText           =   new TLatex();
-    gStyle->SetOptStat(0);
-    cDrawResult             ->  Divide(3,1);
-    cDrawResult             ->  cd(1);
-    gPad->SetLogy();
+    //  Canvas to draw the Results checks
+    SetStyle();
+    auto    cDrawResults            =   new TCanvas("cDrawResult","cDrawResult",1800,600);
+    gStyle                          ->  SetOptStat(0);
+    cDrawResults                    ->  Divide(3,1);
+    cDrawResults                    ->  cd(1);
+    gPad                            ->  SetLogy();
     //
     //  Draw Spectra
-    gTotal->SetMarkerStyle(markers[2]);
-    gTotal->SetMarkerSize(2);
-    gTotal->SetMarkerColor(kRed);
-    gTotal->SetLineColor(kBlack);
-    gTotal->GetXaxis()->SetRangeUser(0.,3.0);
-    gTotal->Draw();
+    fTotalUncertaintySpectrum       ->  SetMarkerStyle(markers[2]);
+    fTotalUncertaintySpectrum       ->  SetMarkerSize(2);
+    fTotalUncertaintySpectrum       ->  SetMarkerColor(colors[0]);
+    fTotalUncertaintySpectrum       ->  SetLineColor(kBlack);
+    fTotalUncertaintySpectrum       ->  GetXaxis()  ->  SetRangeUser(0.,4.0);
+    fTotalUncertaintySpectrum       ->  DrawClone("EP");
     //
     //  Generate utility histogram to evaluate statistical error
-    std::vector<float> fStatVariation;
-    std::vector<float> fStatVariationMPT;
-    TLegend    *lAll    =   new TLegend(0.35,0.15,0.6,0.3);
-    lAll->SetLineColorAlpha(kWhite,0.);
-    lAll->SetFillColorAlpha(kWhite,0.);
+    std::vector<float> fYieldVariation;
+    std::vector<float> fPTVariation;
+    TLegend    *lFitFunctions   =   new TLegend(0.35,0.15,0.6,0.3);
+    lFitFunctions   ->  SetLineColorAlpha(kWhite,0.);
+    lFitFunctions   ->  SetFillColorAlpha(kWhite,0.);
     auto iTer = 0;
     auto jTer = 0;
     for ( auto iFuncRange : fSystFunc )  {
@@ -1428,141 +1482,101 @@ std::vector<float>  fEvaluateError                  ( bool fIsConditional, TH1F*
         //  Prepping Fit Function
         fSetAllFunctions();
         auto    iFunc   =   iFuncRange.first;
-        iFunc->SetLineColor(fGetRainbowColor(iTer,true));
+        iFunc->SetLineColor( fGetRainbowColor(iTer,true) );
         //
         //  Prepping Associated Ranges
         for ( auto iRange : iFuncRange.second )  {
-            fSetFunction(iFunc,fIntegral);
+            fSetFunction(iFunc);
             //
-            gTotal      ->  Fit(iFunc,          "EMRQS","", fMinimumFitRange,iRange);
-            gTotal      ->  Fit(iFunc,          "EMRQSI","",fMinimumFitRange,iRange);
+            fTotalUncertaintySpectrum      ->  Fit(iFunc,          "EMRQS","", fMinPT1D,fMaxPT1D);
+            fTotalUncertaintySpectrum      ->  Fit(iFunc,          "EMRQS","", fMinPT1D,fMaxPT1D);
+            fTotalUncertaintySpectrum      ->  Fit(iFunc,          "EMRQS","", fMinimumFitRange,iRange);
+            fTotalUncertaintySpectrum      ->  Fit(iFunc,          "EMRQSI","",fMinimumFitRange,iRange);
             //
-            fStatVariation.push_back(iFunc  ->Integral(0.,fMinPT1D));
-            fStatVariationMPT.push_back(iFunc  ->Integral(0.,fMinPT1D));
+            fYieldVariation.push_back   ( fStandardIntegral + iFunc  ->Integral(0.,fMinPT1D) );
+            fPTVariation.push_back      ( fEvaluateMeanPT( fTotalUncertaintySpectrum, iFunc ) );
             //
             //  Draw Function
             iFunc->SetRange(0.,iRange);
-            cDrawResult             ->  cd(1);
-            iFunc->DrawCopy("same");
-            cDrawResult             ->  cd(2);
+            cDrawResults            ->  cd(1);
             iFunc->DrawCopy("same");
             jTer++;
         }
         //
         //  TLegend
-        lAll    ->  AddEntry(iFunc,iFunc->GetName(),"L");
+        lFitFunctions    ->  AddEntry(iFunc,iFunc->GetName(),"L");
         iTer++;
     }
-    cDrawResult             ->  cd(2);
-    uCleanOutsiders         ( fStatVariation );
-    auto    hStatIntegral   =   uBuildTH1F( fStatVariation );
-    hStatIntegral           ->  SetNameTitle( Form("hIntegral_%s",fName.Data()), "dN/dy variations" );
-    //hStatIntegral           ->  Fit("gaus","I EM R Q S","");
-    auto StatErrorMean      =   hStatIntegral->GetMean();//GetFunction("gaus")->GetParameter(1);
-    auto StatError          =   hStatIntegral->GetRMS();//->GetFunction("gaus")->GetParameter(2);
-    fResult                 .push_back( StatError );
-    fResult                 .push_back( StatError );
-    hStatIntegral           ->  SetMaximum( 1.2*hStatIntegral           ->  GetMaximum() );
-    hStatIntegral           ->  Draw();
-    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErrorMean/fExtrap -1),"%"));
-    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatError)/(fExtrap),"%"));
     //
-    cDrawResult             ->  cd(3);
-    uCleanOutsiders         ( fStatVariationMPT );
-    auto    hStatIntegralMPT   =   uBuildTH1F( fStatVariationMPT );
-    hStatIntegralMPT           ->  SetNameTitle( Form("hIntegralMPT_%s",fName.Data()), "Mean p_{T} variations" );
-    //hStatIntegralMPT           ->  Fit("gaus","I EM R Q S","");
-    auto StatErMPTMean      =   hStatIntegralMPT->GetMean();//->GetFunction("gaus")->GetParameter(1);
-    auto StatErMPT          =   hStatIntegralMPT->GetRMS();//->GetFunction("gaus")->GetParameter(2);
-    auto ReferenceMPT       =   (fMeanPT)/(fExtrap+fIntegral);
-    fResult                 .push_back( StatErMPT );
-    fResult                 .push_back( StatErMPT );
-    hStatIntegralMPT           ->  SetMaximum( 1.2*hStatIntegralMPT           ->  GetMaximum() );
-    hStatIntegralMPT           ->  Draw();
-    fText   ->  DrawLatexNDC(0.18,0.850,Form("Mean: %.2f %s",100*(StatErMPTMean/fMeanPT -1),"%"));
-    fText   ->  DrawLatexNDC(0.18,0.800,Form("#sigma_{Dev}: %.2f %s",100*(StatErMPT/fMeanPT),"%"));
+    cDrawResults                ->  cd(2);
     //
-    cDrawResult             ->  cd(1);
-    lAll->Draw("same");
-    gTotal->Draw("same EP");
+    //  Build the Variation histogram, fixed to 50 bins
+    auto    hYieldVariations    =   uBuildTH1F( fYieldVariation, 10 );
+    hYieldVariations            ->  SetNameTitle( Form("hYieldVariations_%s",fName.Data()), "dN/dy variations" );
     //
-    cDrawResult->Write();
-    if ( fIsConditional )   cDrawResult->SaveAs(Form("%s/2D/ErrorFits_%s.pdf",fFolder.Data(),fName.Data()));
-    else                    cDrawResult->SaveAs(Form("%s/1D/ErrorFits_%s.pdf",fFolder.Data(),fName.Data()));
-    delete cDrawResult;
+    //  Gauss Fit
+    auto fErrorMean             =   hYieldVariations->GetMean();
+    auto fErrorSTDV             =   hYieldVariations->GetRMS();
+    auto fErrorFULL             =   fabs( fErrorMean - ( fStandardExtrapolation + fStandardIntegral ) ) + fErrorSTDV;
+    //
+    //  Save in Results
+    fResult.push_back(fErrorFULL);
+    fResult.push_back(fErrorFULL);
+    //
+    //  Draw the results
+    hYieldVariations            ->  SetMaximum( 1.4*hYieldVariations->GetMaximum() );
+    hYieldVariations            ->  Draw();
+    uLatex                      ->  DrawLatexNDC(0.20,0.83,Form("#sigma_{Mean}: %.2f %s",   100*fabs(fErrorMean-fStandardExtrapolation-fStandardIntegral)/(fStandardExtrapolation+fStandardIntegral),"%"));
+    uLatex                      ->  DrawLatexNDC(0.60,0.83,Form("#sigma_{Tot}: %.2f %s",    100*(fabs(fErrorMean-fStandardExtrapolation-fStandardIntegral)+fErrorSTDV)/(fStandardExtrapolation+fStandardIntegral),"%"));
+    uLatex                      ->  DrawLatexNDC(0.23,0.77,Form("#sigma_{Dev}: %.2f %s",    100*(fErrorSTDV)/(fStandardExtrapolation+fStandardIntegral),"%"));
+    //
+    cDrawResults                ->  cd(3);
+    //
+    //  Build the Variation histogram, fixed to 50 bins
+    auto    hPTVariation        =   uBuildTH1F( fPTVariation, 10 );
+    hPTVariation                ->  SetNameTitle( Form("hYieldVariations_%s",fName.Data()), "dN/dy variations" );
+    //
+    //  Gauss Fit
+    fErrorMean                  =   hPTVariation->GetMean();
+    fErrorSTDV                  =   hPTVariation->GetRMS();
+    fErrorFULL                  =   fabs( fErrorMean - fStandardMeanPT ) + fErrorSTDV;
+    //
+    //  Save in Results
+    fResult.push_back(fErrorFULL);
+    fResult.push_back(fErrorFULL);
+    //
+    //  Draw the results
+    hPTVariation                ->  SetMaximum( 1.4*hPTVariation->GetMaximum() );
+    hPTVariation                ->  Draw();
+    uLatex                      ->  DrawLatexNDC(0.20,0.83,Form("#sigma_{Mean}: %.2f %s",   100*fabs(fErrorMean-fStandardMeanPT)/(fStandardMeanPT),"%"));
+    uLatex                      ->  DrawLatexNDC(0.60,0.83,Form("#sigma_{Tot}: %.2f %s",    100*(fabs(fErrorMean-fStandardMeanPT)+fErrorSTDV)/(fStandardMeanPT),"%"));
+    uLatex                      ->  DrawLatexNDC(0.23,0.77,Form("#sigma_{Dev}: %.2f %s",    100*(fErrorSTDV)/(fStandardMeanPT),"%"));
+    //
+    cDrawResults                ->  cd(1);
+    lFitFunctions               ->  Draw("same");
+    fTotalUncertaintySpectrum   ->  Draw("same EP");
+    //
+    cDrawResults->Write();
+    if ( fIsConditional )   cDrawResults->SaveAs(Form("%s/2D/ErrorFits_%s.pdf",fFolder.Data(),fName.Data()));
+    else                    cDrawResults->SaveAs(Form("%s/1D/ErrorFits_%s.pdf",fFolder.Data(),fName.Data()));
+    delete cDrawResults;
     //
     return fResult;
 }
 //
 //_____________________________________________________________________________
 //
-Double_t*           fExtrapolateModel               ( bool fIsConditional, TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, Double_t fIntegral = 0.032, TString fName = "ExtrapolateSignal", TF1* fFitFunc = fLevyTsallis, Double_t fMaximumFitRange = fMaxPT1D, Double_t fMinimumFitRange = fMinPT1D, TString fFolder = "" )    {
-    //  Optimisation mode
-    gROOT->SetBatch(true);
-    //
-    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err low, Stat err high, Syst err low, syst err high, extp val, extp stat, extp sys
-    Double_t   *fResult     =   new Double_t    [10];
-    //
-    //  Initialising the Fit Function
-    fSetFunction(fFitFunc,fIntegral);
-    fFitFunc->SetLineColor(kRed);
-    fFitFunc->SetRange(0.,fMaxPT1D);
-    //
-    //  Setting the Fit Range
-    Double_t    fMaxFitInt  =   TMath::Min( fMaximumFitRange, (double)fMaxPT1D );
-    Double_t    fMinFitInt  =   TMath::Max( fMinimumFitRange, (double)fMinPT1D );
-    //
-    //  Generating a Total Error Spectra to fit and extrapolating at low pT
-    TGraphAsymmErrors      *gTotal      =   new TGraphAsymmErrors(*(fSumErrors(gStatistics,gSystematics)));
-    //
-    //  Fitting a first time to evaluate integral in non-measured region
-    gTotal                              ->  Fit(fFitFunc,"BIMRSQEX","",fMinFitInt,fMaxFitInt);
-    fResult[0]                          =   fFitFunc  ->Integral(0.,fMinPT1D);
-    //
-    fResult[5]                          =   fMeasureMeanPT(fFitFunc,gTotal);
-    //
-    //  TCanvas w/ options
-    TCanvas                *cDrawResult =   new TCanvas(Form("%s_%s",gStatistics->GetName(),fName.Data()));
-    gStyle  ->SetOptStat(0);
-    gPad    ->SetLogy();
-    //
-    //  Draw Spectra w/ function
-    gTotal  ->Draw();
-    fFitFunc->Draw("same");
-    //
-    //  Write info on the Extrapolation:
-    TLatex  *fText   =   new TLatex();
-    fText   ->  DrawLatexNDC(0.5,0.825,Form("1/N_{ev}dN/dy in [%.1f;%.1f]: %.7f",0.,fMinPT1D,fResult[0]));
-    fText   ->  DrawLatexNDC(0.5,0.750,Form("Function: %s",fFitFunc->GetName()));
-    fText   ->  DrawLatexNDC(0.5,0.700,Form("Fit range: [%.1f;%.1f]",fMinFitInt,fMaxFitInt));
-    //  Save To File
-    cDrawResult->Write();
-    //  Graphical Check
-    if ( fIsConditional )   cDrawResult->   SaveAs(Form("%s/2D/EvaluationFit_%s.pdf",fFolder.Data(),fName.Data()));
-    else                    cDrawResult->   SaveAs(Form("%s/1D/EvaluationFit_%s.pdf",fFolder.Data(),fName.Data()));
-    delete cDrawResult;
-    //
-    auto fStatResults                   =   fEvaluateError(fIsConditional,gSystematics,gStatistics,fIntegral,fFitFunc,fMinFitInt,fMaxFitInt,TString("Stat_")+fName,fFolder);
-    auto fSystResults                   =   fEvaluateError(fIsConditional,gStatistics,gSystematics,fIntegral,fFitFunc,fMinFitInt,fMaxFitInt,TString("Syst_")+fName,fFolder);
-    //
-    fResult[1] = fResult[2] = fStatResults.at(0);
-    fResult[3] = fResult[4] = fSystResults.at(0);
-    fResult[6] = fResult[7] = fStatResults.at(2);
-    fResult[8] = fResult[9] = fSystResults.at(2);
-    //_____________________________________
-    //
-    //  End Optimisation mode
-    gROOT->SetBatch(false);
-    //
-    return fResult;
-}
-Double_t*           fExtrapolateModel               ( bool fIsConditional, TH1F* gStatistics, TH1F* gSystematics, Double_t fIntegral = 0.032, TString fName = "ExtrapolateSignal", Double_t fMaximumFitRange = fMaxPT1D, Double_t fMinimumFitRange = fMinPT1D, TString fFolder = ""  )    {
+template < class Tclass >
+Double_t*
+fExtrapolateModel
+ ( bool fIsConditional, Tclass* gStatistics, Tclass* gSystematics, Double_t fIntegral = 0.032, TString fName = "ExtrapolateSignal", Double_t fMaximumFitRange = fMaxPT1D, Double_t fMinimumFitRange = fMinPT1D, TString fFolder = ""  )    {
     //  Optimisation mode
     gROOT->SetBatch(true);
     //
     //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err low, Stat err high, Syst err low, syst err high
     Double_t   *fResult     =   new Double_t    [13];
     //
+    fLevyTsallis->Draw();
     //  Initialising the Fit Function
     fSetFunction(fLevyTsallis,fIntegral);
     fLevyTsallis->SetLineColor(kRed);
@@ -1573,14 +1587,14 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TH1F*
     Double_t    fMinFitInt  =   TMath::Max( fMinimumFitRange, (double)fMinPT1D );
     //
     //  Generating a Total Error Spectra to fit and extrapolating at low pT
-    TH1F      *gTotal      =   new TH1F(*(fSumErrors(gStatistics,gSystematics)));
+    Tclass      *gTotal      =   new Tclass(*(fSumErrors(gStatistics,gSystematics)));
     //
     //  Fitting a first time to evaluate integral in non-measured region
     gTotal                              ->  Fit(fLevyTsallis,"EMRQS","",fMinFitInt,fMaxFitInt);
     gTotal                              ->  Fit(fLevyTsallis,"EMRQSI","",fMinFitInt,fMaxFitInt);
     fResult[0]                          =   fLevyTsallis  ->Integral(0.,fMinPT1D);
     //
-    fResult[5]                          =   fMeasureMeanPT(fLevyTsallis,gTotal);
+    fResult[5]                          =   fEvaluateMeanPT(gTotal,fLevyTsallis);
     //
     //  TCanvas w/ options
     TCanvas                *cDrawResult =   new TCanvas(Form("%s_%s",gStatistics->GetName(),fName.Data()),"",1600,800);
@@ -1604,10 +1618,10 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TH1F*
     //
     cDrawResult->cd(2);
     gPad    ->SetLogy();
-    auto gTotalCloseUp = (TH1F*)gTotal->Clone();
+    auto gTotalCloseUp = (Tclass*)gTotal->Clone();
     gTotalCloseUp->GetXaxis()->SetRangeUser(0.01,2.5);
     gTotalCloseUp->Draw();
-    fLevyTsallis->Draw("same");
+    //fLevyTsallis->Draw("same");
     //
     //  Save To File
     cDrawResult->Write();
@@ -1618,11 +1632,11 @@ Double_t*           fExtrapolateModel               ( bool fIsConditional, TH1F*
     delete cDrawResult;
     //
     uRandomGen->SetSeed(1);
-    auto fStatResults                   =   fEvaluateError(fIsConditional,gSystematics,gStatistics,fIntegral,fMinFitInt,fMaxFitInt,TString("Stat_")+fName,fFolder);
+    auto fStatResults                   =   fEvaluateExtrapolationUncertainty(fIsConditional,gSystematics,gStatistics,fIntegral,fMinFitInt,fMaxFitInt,TString("Stat_")+fName,fFolder);
     uRandomGen->SetSeed(1);
-    auto fSystResults                   =   fEvaluateError(fIsConditional,gStatistics,gSystematics,fIntegral,fMinFitInt,fMaxFitInt,TString("Syst_")+fName,fFolder);
+    auto fSystResults                   =   fEvaluateExtrapolationUncertainty(fIsConditional,gStatistics,gSystematics,fIntegral,fMinFitInt,fMaxFitInt,TString("Syst_")+fName,fFolder);
     //
-    auto fSystResuFit                   =   fEvaluateError(fIsConditional,gStatistics,gSystematics,fSystFitFunctions,fMinFitInt,fMaxFitInt,TString("SFit_")+fName,fFolder);
+    auto fSystResuFit                   =   fEvaluateExtrapolationUncertainty(fIsConditional,gStatistics,gSystematics,fSystFitFunctions,fMinFitInt,fMaxFitInt,TString("SFit_")+fName,fFolder);
     //
     fResult[1] = fResult[2] = fStatResults.at(0);
     fResult[3] = fResult[4] = SquareSum( { fSystResults.at(0), fSystResuFit.at(0) } );
@@ -1651,46 +1665,6 @@ Double_t*           fExtrapolateModel               ( std::vector<TH1F*>  gStati
 //
 //_____________________________________________________________________________
 //
-Double_t*           fIntegrateModel                 ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "IntegrateSignal" )      {
-    //  Optimisation mode
-    gROOT->SetBatch(true);
-    //
-    Int_t   fNPoints =   gStatistics ->  GetN();
-    if  ( fNPoints  != gSystematics ->  GetN() )
-    {
-        cout << "[ERROR] Systematics and Statistics do not have the same number of points! Skipping this one..." << endl;
-        return nullptr;
-    }
-    //  Result format: Integral, Stat err low, Stat err high, Syst err low, syst err high
-    Double_t   *fResult = new   Double_t    [5];
-    //
-    //  Calculate Integral and mean pT
-    for ( Int_t iFill = 0; iFill < 5; iFill++ ) fResult[iFill]  =   0;
-    for ( Int_t iFit = 0; iFit < fNPoints; iFit++ ) {
-        auto    fXBinCentr      =   ( gStatistics ->  GetPointX(iFit) );
-        auto    fYValue         =   ( gStatistics ->  GetPointY(iFit) );
-        auto    fXBinWidth      =   ( gStatistics ->  GetErrorXhigh(iFit)    +   gStatistics ->  GetErrorXlow(iFit) );
-        auto    fYErrStatLow    =   ( gStatistics ->  GetErrorYlow(iFit) );
-        auto    fYErrStatHigh   =   ( gStatistics ->  GetErrorYhigh(iFit) );
-        auto    fYErrSystLow    =   ( gSystematics ->  GetErrorYlow(iFit) );
-        auto    fYErrSystHigh   =   ( gSystematics ->  GetErrorYhigh(iFit) );
-        //
-        fResult[0]             +=   fXBinWidth*fYValue;
-        fResult[1]             +=   fXBinWidth*fYErrStatLow*fXBinWidth*fYErrStatLow;
-        fResult[2]             +=   fXBinWidth*fYErrStatHigh*fXBinWidth*fYErrStatHigh;
-        fResult[3]             +=   fXBinWidth*fYErrSystLow;
-        fResult[4]             +=   fXBinWidth*fYErrSystHigh;
-    }
-    for ( Int_t iTer = 1; iTer <= 2; iTer++ )    {
-        auto fTemp      =   fResult[iTer];
-        fResult[iTer]   =   sqrt(fTemp);
-    }
-    //
-    //  End Optimisation mode
-    gROOT->SetBatch(false);
-    //
-    return fResult;
-}
 Double_t*           fIntegrateModel                 ( std::vector<TH1F*>  gStatistics, std::vector<TH1F*>  gSystematics, TString fName = "IntegrateSignal", TString fFolder = ""  )     {
     //  Optimisation mode
     gROOT->SetBatch(true);
@@ -1708,45 +1682,6 @@ Double_t*           fIntegrateModel                 ( std::vector<TH1F*>  gStati
 //
 //_____________________________________________________________________________
 //
-Double_t*           fMeasureFullYield               ( TGraphAsymmErrors* gStatistics, TGraphAsymmErrors* gSystematics, TString fName = "MeasureFullYield" )     {
-    // Optimisation mode
-    gROOT->SetBatch(true);
-    //
-    // Result format:  Integral, Stat err low, Stat err high, Syst err low, syst err high, Mean pT, Stat err low, Stat err high, Syst err low, syst err high
-    Double_t   *fResult             =   new Double_t        [10];
-    //
-    bool fIsConditional = fName.Contains("2D");
-    //
-    auto        fIntegralResults    =   fIntegrateModel     (gStatistics,gSystematics,fName);
-    auto        fExtrapolResults    =   fExtrapolateModel   (fIsConditional,gStatistics,gSystematics,fIntegralResults[0],fName);
-    //
-    //  Mean Value of Result
-    fResult[0]  =   fIntegralResults[0] +   fExtrapolResults[0];
-    //
-    //  Statistical Error of Result
-    fResult[1]  =   fIntegralResults[1] +   fExtrapolResults[1];
-    fResult[2]  =   fIntegralResults[2] +   fExtrapolResults[2];
-    //
-    //  Systematical Error of Result
-    fResult[3]  =   fIntegralResults[3] +   fExtrapolResults[4];
-    fResult[4]  =   fIntegralResults[3] +   fExtrapolResults[4];
-    //
-    //  Mean Value of pT
-    fResult[5]  =   fExtrapolResults[5]/fResult[0];
-    //
-    //  Statistical Error of Result
-    fResult[6]  =   fResult[5]*( fExtrapolResults[6]/fExtrapolResults[5] + fResult[1]/fResult[0] );
-    fResult[7]  =   fResult[5]*( fExtrapolResults[7]/fExtrapolResults[5] + fResult[2]/fResult[0] );
-    //
-    //  Systematical Error of Result
-    fResult[8]  =   fResult[5]*( fExtrapolResults[8]/fExtrapolResults[5] + fResult[3]/fResult[0] );
-    fResult[9]  =   fResult[5]*( fExtrapolResults[9]/fExtrapolResults[5] + fResult[4]/fResult[0] );
-    //
-    // End Optimisation mode
-    gROOT->SetBatch(false);
-    //
-    return fResult;
-}
 Double_t*           fMeasureFullYield               ( TH1F* gStatistics, TH1F* gSystematics, TString fName = "MeasureFullYield", TString fFolder = ""  )     {
     // Optimisation mode
     gROOT->SetBatch(true);
@@ -1761,28 +1696,31 @@ Double_t*           fMeasureFullYield               ( TH1F* gStatistics, TH1F* g
     auto        fIntegral           =   gStatistics->IntegralAndError(-1,1000,fIntegralStat,"width");
                                         gSystematics->IntegralAndError(-1,1000,fIntegralSyst,"width");
     auto        fExtrapolResults    =   fExtrapolateModel   (fIsConditional,gStatistics,gSystematics,fIntegral,fName,fMinPT1D,fMaxPT1D,fFolder);
+    Double_t    fIntegralMeanPTStat, fIntegralMeanPTSyst;
+    fEvaluateMeanPT( gStatistics, fIntegralMeanPTStat );
+    fEvaluateMeanPT( gSystematics, fIntegralMeanPTSyst );
     //
     //  Mean Value of Result
     fResult[0]  =   fIntegral +   fExtrapolResults[0];
     //
     //  Statistical Error of Result
-    fResult[1]  =   fIntegralStat +   fExtrapolResults[1];
-    fResult[2]  =   fIntegralStat +   fExtrapolResults[2];
+    fResult[1]  =   SquareSum( { fIntegralStat, fExtrapolResults[1] } );
+    fResult[2]  =   SquareSum( { fIntegralStat, fExtrapolResults[2] } );
     //
     //  Systematical Error of Result
-    fResult[3]  =   fIntegralSyst  +   fExtrapolResults[3];
-    fResult[4]  =   fIntegralSyst  +   fExtrapolResults[4];
+    fResult[3]  =   SquareSum( { fIntegralSyst, fExtrapolResults[3] } );
+    fResult[4]  =   SquareSum( { fIntegralSyst, fExtrapolResults[4] } );
     //
     //  Mean Value of pT
-    fResult[5]  =   fExtrapolResults[5]/fResult[0];
+    fResult[5]  =   fExtrapolResults[5];
     //
     //  Statistical Error of Result
-    fResult[6]  =   fResult[5]*( fExtrapolResults[6]/fExtrapolResults[5] + fResult[1]/fResult[0] );
-    fResult[7]  =   fResult[5]*( fExtrapolResults[7]/fExtrapolResults[5] + fResult[2]/fResult[0] );
+    fResult[6]  =   SquareSum( { fIntegralStat, fExtrapolResults[1] } );
+    fResult[7]  =   SquareSum( { fIntegralStat, fExtrapolResults[2] } );
     //
     //  Systematical Error of Result
-    fResult[8]  =   fResult[5]*( fExtrapolResults[8]/fExtrapolResults[5] + fResult[3]/fResult[0] );
-    fResult[9]  =   fResult[5]*( fExtrapolResults[9]/fExtrapolResults[5] + fResult[4]/fResult[0] );
+    fResult[8]  =   SquareSum( { fIntegralSyst, fExtrapolResults[3] } );
+    fResult[9]  =   SquareSum( { fIntegralSyst, fExtrapolResults[4] } );
     //
     //  Extrapolation only
     fResult[10] =   fExtrapolResults[0];
@@ -1841,19 +1779,22 @@ Double_t*           fMeasureFullYield               ( std::vector<TH1F*>  gStati
 //
 Double_t            fEvaluateINELgt0                ( Int_t iMultBin, TH1  *hMultCounter)  {
     Double_t    fResult =   0;
-    Int_t       fUppLimit   =   fArrMult[nBinMult];
-    Int_t       fLowLimit   =   fArrMult[0];
-    if  ( iMultBin > -1  && iMultBin < nBinMult)  {
-        fUppLimit   =   fArrMult[iMultBin+1];
-        fLowLimit   =   fArrMult[iMultBin];
-    }   else    {
-        cout << "[WARNING] Invalid index, returning full multiplicity count" << endl;
+    auto    kUtilCount  =   (TH1F*)(hMultCounter->Clone());
+    for ( Int_t iTer = 1; iTer <= kUtilCount->GetNbinsX(); iTer++ ) {
+        auto    kBinCenter  =   hMultCounter->GetBinCenter(iTer);
+        if ( kBinCenter < kMltTrgECls[0] || kBinCenter > kMltTrgECls[nMltTrgECls-1] ) continue;
+        auto    kBinContent =   hMultCounter->GetBinContent(iTer);
+        for ( Int_t iTe2 = 1; iTe2 < nMltTrgECls; iTe2++ )  {
+            if ( kBinCenter < kMltTrgECls[iTe2] )   {
+                kUtilCount->SetBinContent(iTer,kBinContent/kMultTrgEff[iTe2-1]);
+                break;
+            }
+        }
     }
-    for ( Int_t iBin = 1; iBin <= hMultCounter->GetNbinsX(); iBin++ )   {
-        auto fMultValue = hMultCounter->GetBinCenter(iBin);
-        if ( fMultValue < fLowLimit )   continue;
-        if ( fMultValue > fUppLimit )   break;
-        fResult  +=  hMultCounter->GetBinContent(iBin)/kMultTrgEff[fGetBinMultEff(iBin-1.5)];
+    if ( iMultBin < 0 || iMultBin > nBinMult )  {
+        for ( Int_t iTer = 0; iTer < nBinMult; iTer++ ) fResult += fEvaluateINELgt0(iTer,kUtilCount);
+    } else {
+        fResult =   (kUtilCount->Integral(2+fArrMult[iMultBin],1+fArrMult[iMultBin+1]));
     }
     return      fResult;
 }
@@ -1933,422 +1874,11 @@ Bool_t      fSetCandidates                      ( TTree* TPhiCnd, Struct_PhiCand
 //
 //_____________________________________________________________________________
 //
-//------------------------------//
-//    ANALYSISI LEGACY Fncs     //
-//------------------------------//
-
-TH1F*           fCheckPublishedData  ( TH1F* fMyResults, TH1F* hPublishedResults, TGraphAsymmErrors* gPublishedResults )    {
-    TH1F   *fCheck  =   new TH1F(*hPublishedResults);
-    fCheck->Divide(fMyResults,hPublishedResults);
-    for ( int i = 0; i < fCheck->GetNbinsX(); i++ ) {
-        auto pubError   =   gPublishedResults->GetErrorYhigh(i);
-        auto pubValY   =   gPublishedResults->GetPointY(i);
-        auto myError    =   fMyResults->GetBinError(i+1);
-        auto myValY    =   fMyResults->GetBinContent(i+1);
-        auto checkVal   =   fCheck->GetBinContent(i+1);
-        fCheck->SetBinError (i+1,checkVal*sqrt((pubError*pubError/(pubValY*pubValY))+(myError*myError/(myValY*myValY))));
-    }
-    return fCheck;
-}
-
-TH1F*           fCheckPublishedData  ( TH1D* fMyResults, TH1F* hPublishedResults, TGraphAsymmErrors* gPublishedResults )    {
-    TH1F   *fCheck  =   new TH1F(*hPublishedResults);
-    fCheck->Divide(fMyResults,hPublishedResults);
-    for ( int i = 0; i < fCheck->GetNbinsX(); i++ ) {
-        auto pubError   =   gPublishedResults->GetErrorYhigh(i);
-        auto pubValY   =   gPublishedResults->GetPointY(i);
-        auto myError    =   fMyResults->GetBinError(i+1);
-        auto myValY    =   fMyResults->GetBinContent(i+1);
-        auto checkVal   =   fCheck->GetBinContent(i+1);
-        fCheck->SetBinError (i+1,checkVal*sqrt((pubError*pubError/(pubValY*pubValY))+(myError*myError/(myValY*myValY))));
-    }
-    return fCheck;
-}
-
-TH1D           *fCheckPublishedData     ( TH1D* fMyResults, TH1* fPublishedResults )   {
-    auto    fCheck  =   new TH1D(*fMyResults);
-    fCheck->Divide(fMyResults,fPublishedResults);
-    return  fCheck;
-}
-
-TH1D           *fCheckPublishedData     ( TH1D* fMyResults, TGraphAsymmErrors* fPublishedResults )   {
-    auto    fCheck  =   new TH1D(*fMyResults);
-    fCheck->Divide(fMyResults,(fPublishedResults->GetHistogram()));
-    return  fCheck;
-}
-
-TH1F           *fCheckPublishedData     ( TGraphAsymmErrors* fMyResults, TH1* fPublishedResults )   {
-    auto    fCheck  =   new TH1F(*(fMyResults->GetHistogram()));
-    fCheck->Divide((fMyResults->GetHistogram()),fPublishedResults);
-    return  fCheck;
-}
-
-TH1F           *fCheckPublishedData     ( TGraphAsymmErrors* fMyResults, TGraphAsymmErrors* fPublishedResults )   {
-    auto    fCheck  =   new TH1F(*(fMyResults->GetHistogram()));
-    fCheck->Divide((fMyResults->GetHistogram()),(fPublishedResults->GetHistogram()));
-    return  fCheck;
-}
-
-RooFitResult*   fExtrapolateModelLEGACYROOFIT               ( TH1F *HData, TString fName = "ExtrapolateSignal" ) {
-    
-    // Check is worth fitting
-    if ( !fIsWorthFitting( HData ) ) return nullptr;
-    
-    auto nEntries = HData->GetEntries();
-    
-    // Silencing TCanvas Pop-Up
-    gROOT->SetBatch();
-    
-    // Global Variables
-    RooRealVar TransMom = RooRealVar        ("TransMom","TransMom",0.4,1.6);
-    RooDataHist* RData  = new RooDataHist   (fName.Data(),fName.Data(),TransMom,Import(*HData));
-    
-    // Signal PDF Parameters
-    RooRealVar          n_value ("n_value", "n_value",  6.7,    2.01,    20.);
-    RooRealVar          exp_par ("exp_par", "exp_par",  .272,   0.1,    2.);
-    RooRealVar          prt_mss ("prt_mss", "prt_mss",  kPhiMesonMass_);
-    
-    // Normalisation Coefficients
-    RooRealVar          Sig_str ("Sig_str", "Sig_str",  0.033, 0.2, 0.4);
-    
-    // Formulas
-    TString             LevyTsl ("((x[0]-1)*(x[0]-2))/(x[0]*x[1]*(x[0]*x[1]+x[2]*(x[0]-2)))*x[3]*(TMath::Power(1+(sqrt(x[2]*x[2]+x[3]*x[3])-x[2])/(x[0]*x[1]),(-x[0])))");
-
-    // PDFs
-    RooGenericPdf       fModel  ("fModel",  "fModel",   LevyTsl.Data(), RooArgList( n_value,    exp_par,    prt_mss,  TransMom));
-    
-    RooFitResult *result;
-    
-    //TransMom.setRange("FitRange",0.4,1.6);
-    result = fModel.chi2FitTo(*RData,Save(),Minos(true),NumCPU(kCPU_use));
-    result = fModel.fitTo(*RData,Save(),Minos(true),NumCPU(kCPU_use));
-    
-    // Un-Silencing TCanvas Pop-Up
-    gROOT->SetBatch(false);
-    
-    
-    auto fSaveToCanvas   =   new TCanvas();
-    gPad->SetLogy();
-    
-    RooPlot * fSaveToFrame      = TransMom.frame(Name(fName.Data()),Title(fName.Data()));
-    
-    RData                           ->plotOn(fSaveToFrame,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
-    fModel                          .plotOn (fSaveToFrame,      LineColor(colors[1]),                   LineStyle(kDashed), Name("RooMod"));
-    
-    fSaveToFrame                ->Draw("same");
-    fSaveToCanvas               ->Write();
-    fSaveToCanvas               ->SaveAs("check.pdf");
-    
-    return result;
-}
-
-//
-template < class Tclass >
-Double_t*       fExtrapolateModel               ( Tclass *THdata, TString fName = "ExtrapolateSignal", TF1* fFitFunc = fLevyTsallis) {
-    // Optimisation mode
-    gROOT->SetBatch(true);
-    
-    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
-    Double_t   *fResult = new   Double_t    [6];
-    
-    // Setting -1. for the default
-    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
-    
-    // Set Standard Fit
-    fSetFunction(fFitFunc);
-    
-    // Fit the Spectra
-    THdata->Fit(fFitFunc,"IMREQ0S","",fMinPT1D,10.);
-    
-    // Save to further checks
-    TCanvas * fCheckFit = new TCanvas();
-    gPad->SetLogy();
-    THdata      ->Draw("same");
-    fFitFunc  ->Draw("same");
-    fCheckFit   ->Write();
-    fCheckFit   ->SaveAs(Form("./yield/ExtrapolateCheck/%s.pdf",fName.Data()));
-    
-    fResult[0]  =   fFitFunc->Integral(0.,fMinPT1D);
-    fResult[1]  =   fFitFunc->IntegralError(0.,fMinPT1D);
-    
-    // End Optimisation mode
-    gROOT->SetBatch(false);
-    
-    return fResult;
-}
-//
-//_____________________________________________________________________________
-//
-template < class Tclass >
-Double_t*           fIntegrateModel                 ( Tclass *THdata, TString fName = "IntegrateSignal" )    {
-    // Optimisation mode
-    gROOT->SetBatch(true);
-    
-    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
-    Double_t   *fResult = new   Double_t    [6];
-    
-    // Setting -1. for the default
-    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
-    
-    fResult[0]  =   THdata  ->IntegralAndError(-1.,100,fResult[1],"width");
-    //fSetSystErr(THdata)     ->IntegralAndError(-1.,100,fResult[2],"width");
-    
-    return fResult;
-    
-    // End Optimisation mode
-    gROOT->SetBatch(false);
-}
-//
-//_____________________________________________________________________________
-//
-template < class Tclass >
-Double_t*           fMeasureFullYield               ( Tclass *THdata, TString fName = "MeasureFullYield" ) {
-    // Optimisation mode
-    gROOT->SetBatch(true);
-    
-    // Result format: Integral, Stat err, Syst err, Mean pT, Stat err, Syst err
-    Double_t   *fResult             =   new Double_t        [6];
-    
-    // Setting -1. for the default
-    for ( Int_t iFill = 0; iFill < 6; iFill++ ) fResult[iFill]  =   -1.;
-    
-    auto        fIntegralResults    =   fIntegrateModel     (THdata,fName);
-    auto        fExtrapolResults    =   fExtrapolateModel   (THdata,fName);
-    
-    fResult[0]  =   fIntegralResults[0] +   fExtrapolResults[0];
-    fResult[1]  =   fIntegralResults[1] +   fExtrapolResults[1];
-    
-    return fResult;
-    
-    // End Optimisation mode
-    gROOT->SetBatch(false);
-}
-//
-//_____________________________________________________________________________
-//
-RooFitResult*   FitModelRap                         ( TH1D * THdata, TH1D * THbkg1,  TH1D * THbkg2,  const char* fName = "", Bool_t fSaveToFile = false, Int_t PTindex = -1, Int_t PTDimension = 1, string fOption = "" )
-{
-    //FitModelRap(      hBKG_SIG_Rap,       hBKG_BKG_Rap,       hBKG_BKG_BKG_SIG_Rap);
-    
-    // Silencing TCanvas Pop-Up
-    gROOT->SetBatch();
-    
-    // Check there is a reasonable amount of entries
-    if ( !fIsWorthFitting( THdata ) ) return nullptr;
-    
-    // Global Variables
-    Int_t nDataEntries          = THdata->GetEntries();
-    Int_t nBkg1Entries          = THbkg1->GetEntries();
-    Int_t nBkg2Entries          = THbkg2->GetEntries();
-    RooRealVar fRap_        = RooRealVar        ("Rapidity","Rapidity",-1.,1.);
-    RooDataHist* data       = new RooDataHist   (fName,fName,fRap_,Import(*THdata));
-    RooDataHist* dataLoose  = new RooDataHist   (fName,fName,fRap_,Import(*fLooseErrors(THdata)));
-    RooDataHist* bkg1       = new RooDataHist   (fName,fName,fRap_,Import(*THbkg1));
-    RooDataHist* bkg1Loose  = new RooDataHist   (fName,fName,fRap_,Import(*fLooseErrors(THbkg1)));
-    RooDataHist* bkg2       = new RooDataHist   (fName,fName,fRap_,Import(*THbkg2));
-    RooDataHist* bkg2Loose  = new RooDataHist   (fName,fName,fRap_,Import(*fLooseErrors(THbkg2)));
-    Int_t kNCycle           = kNCycle_;
-    
-    // Combinatorial Background
-    //
-    //>->-> Variables
-    //
-    RooRealVar         *rBkg1_Cf00      =   new RooRealVar      ("rBkg1_Cf00","rBkg1_Cf00",     .05, 0., 1.);
-    RooRealVar         *rBkg1_Cf01      =   new RooRealVar      ("rBkg1_Cf01","rBkg1_Cf01",     .5, -100., 100);
-    RooRealVar         *rBkg1_Cf02      =   new RooRealVar      ("rBkg1_Cf02","rBkg1_Cf02",     .005, 0., 1);
-    //
-    RooRealVar         *rBkg1_Mean      =   new RooRealVar      ("rBkg1_Mean","rBkg1_Mean",     0.);
-    RooRealVar         *rBkg1_Widt      =   new RooRealVar      ("rBkg1_Widt","rBkg1_Widt",     .005, 0., 1);
-    // Formulas
-    TString             fBkg1_Expo  ("TMath::Sqrt( +x[3]*x[3]*(x[0]-1)*(x[0]-1)*(x[0]+1)*(x[0]+1) + TMath::Power( 1 + TMath::Sqrt( (x[0]*x[0] + x[1]*x[1] ) ) , -2*x[2]) )");
-    //
-    // Coefficients
-    RooRealVar         *rBkg1_Expo__Norm=   new RooRealVar     ("rBkg1_Expo__Norm",  "rBkg1_Expo__Norm",  0.5*nBkg1Entries,   0., nBkg1Entries);
-    RooRealVar         *rBkg1_Gauss_Norm=   new RooRealVar     ("rBkg1_Gauss_Norm",  "rBkg1_Gauss_Norm",  0.5*nBkg1Entries,   0., nBkg1Entries);
-    //
-    // PDFs
-    RooGenericPdf      *fBkg1_Expo_     =   new RooGenericPdf   ("fBkg1_Cstm_",     "fBkg1_Cstm_",   fBkg1_Expo.Data(), RooArgList( fRap_,    *rBkg1_Cf00, *rBkg1_Cf01, *rBkg1_Cf02));
-    RooGaussian        *fBkg1_Gauss     =   new RooGaussian     ("fBkg1_Gauss",     "fBkg1_Gauss",   fRap_,    *rBkg1_Mean,    *rBkg1_Widt);
-    RooAddPdf          *fBkg1_Model     =   new RooAddPdf       ("fBkg1_Model",     "fBkg1_Model",  RooArgList( *fBkg1_Expo_, *fBkg1_Gauss ), RooArgList(*rBkg1_Expo__Norm, *rBkg1_Gauss_Norm) );
-    //
-    // Combinatorial Background Fit
-    RooFitResult* fFitRsltBkg1;
-    for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )    {
-        fFitRsltBkg1    =   fBkg1_Model->fitTo(*bkg1Loose,Extended(kTRUE),Save(),NumCPU(kCPU_use));
-        fFitRsltBkg1    =   fBkg1_Model->fitTo(*bkg1,Extended(kTRUE),Save(),NumCPU(kCPU_use));
-        //auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(0));
-        //if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
-    }
-    //
-    // Combinatorial Background + Combinatorial Phis
-    //
-    //>->-> Recovering Previous Shape
-    //
-    RooRealVar         *rBkg2_Cf00      =   new RooRealVar      ("rBkg2_Cf00",  "rBkg2_Cf00",   rBkg1_Cf00->getValV());
-    RooRealVar         *rBkg2_Cf01      =   new RooRealVar      ("rBkg2_Cf01",  "rBkg2_Cf01",   rBkg1_Cf01->getValV());
-    RooRealVar         *rBkg2_Cf02      =   new RooRealVar      ("rBkg2_Cf02",  "rBkg2_Cf02",   rBkg1_Cf02->getValV());
-    //
-    RooRealVar         *rBkg2_Mean      =   new RooRealVar      ("rBkg2_Mean",  "rBkg2_Mean",   rBkg1_Mean->getValV());
-    RooRealVar         *rBkg2_Widt      =   new RooRealVar      ("rBkg2_Widt",  "rBkg2_Widt",   rBkg1_Widt->getValV());
-    //
-    RooGenericPdf      *fBkg2_Expo_     =   new RooGenericPdf   ("fBkg2_Expo_", "fBkg2_Expo_",  fBkg1_Expo.Data(), RooArgList( fRap_,    *rBkg2_Cf00, *rBkg2_Cf01, *rBkg2_Cf02));
-    RooGaussian        *fBkg2_Gauss     =   new RooGaussian     ("fBkg2_Gauss", "fBkg2_Gauss",  fRap_,    *rBkg2_Mean,    *rBkg2_Widt);
-    //
-    RooRealVar         *rBkg2_Expo__Norm=   new RooRealVar     ("rBkg2_Expo__Norm",  "rBkg2_Expo__Norm",  rBkg1_Expo__Norm->getValV()/nBkg1Entries);
-    RooRealVar         *rBkg2_Gauss_Norm=   new RooRealVar     ("rBkg2_Gauss_Norm",  "rBkg2_Gauss_Norm",  rBkg1_Gauss_Norm->getValV()/nBkg1Entries);
-    //
-    RooAddPdf          *fBkg2_MdBk1     =   new RooAddPdf       ("fBkg2_MdBk1", "fBkg2_MdBk1",  RooArgList( *fBkg2_Expo_, *fBkg2_Gauss ), RooArgList(*rBkg2_Expo__Norm, *rBkg2_Gauss_Norm) );
-    //
-    //>->-> Variables
-    //
-    RooRealVar         *rBkg2_Slop      =   new RooRealVar      ("rBkg1_Cf00",  "rBkg1_Cf00",     .5,    0.1,     1.);
-    //
-    // Formulas
-    TString             fBkg2_Lin       ("TMath::Max(0.,1.*-TMath::Abs(x[0])*(x[1]) + x[1])");
-    //
-    // Coefficients
-    RooRealVar         *rBkg2_Bkg1__Norm=   new RooRealVar     ("rBkg2_Bkg1__Norm",  "rBkg2_Bkg1__Norm",  0.5*nBkg2Entries,   0., nBkg2Entries);
-    RooRealVar         *rBkg2_Tria__Norm=   new RooRealVar     ("rBkg2_Tria__Norm",  "rBkg2_Tria__Norm",  0.5*nBkg2Entries,   0., nBkg2Entries);
-    //
-    // PDFs
-    RooGenericPdf      *fBkg2_Tria     =   new RooGenericPdf   ("fBkg2_Tria",       "fBkg2_Tria",   fBkg2_Lin.Data(), RooArgList( fRap_,    *rBkg2_Slop));
-    RooAddPdf          *fBkg2_Model    =   new RooAddPdf       ("fBkg2_Model",      "fBkg2_Model",  RooArgList( *fBkg2_Tria, *fBkg2_MdBk1 ), RooArgList(*rBkg2_Tria__Norm, *rBkg2_Bkg1__Norm) );
-    //
-    RooFitResult* fFitRsltBkg2;
-    for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )    {
-        fFitRsltBkg2    =   fBkg2_Model->fitTo(*bkg2Loose,  Extended(kTRUE),      Save(), NumCPU(kCPU_use));
-        fFitRsltBkg2    =   fBkg2_Model->fitTo(*bkg2,       Extended(kTRUE),      Save(), NumCPU(kCPU_use));
-        //auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(0));
-        //if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
-    }
-    //
-    // Signal Extraction
-    //
-    //>->-> Recovering Previous Shape
-    //
-    RooRealVar         *rSign_BkSl      =   new RooRealVar      ("rSign_BkSl",      "rSign_BkSl",       rBkg2_Slop->getValV());
-    //
-    RooRealVar         *rSign_Bkg1__Norm=   new RooRealVar      ("rSign_Bkg1__Norm", "rSign_Bkg1__Norm",rBkg2_Bkg1__Norm->getValV()/nBkg2Entries);
-    RooRealVar         *rSign_BkTr__Norm=   new RooRealVar      ("rSign_BkTr__Norm", "rSign_BkTr__Norm",rBkg2_Tria__Norm->getValV()/nBkg2Entries);
-    //
-    RooGenericPdf      *fSign_BkTr     =   new RooGenericPdf    ("fSign_BkTr",       "fSign_BkTr",      fBkg2_Lin.Data(), RooArgList( fRap_,    *rSign_BkSl));
-    RooAddPdf          *fSign_MdBk2    =   new RooAddPdf        ("fSign_MdBk2",      "fSign_MdBk2",     RooArgList( *fSign_BkTr, *fBkg2_MdBk1 ), RooArgList(*rSign_BkTr__Norm, *rSign_Bkg1__Norm) );
-    //
-    //
-    //>->-> Variables
-    //
-    RooRealVar         *rSign_Mean      =   new RooRealVar      ("rSign_Mean","rSign_Mean",     0.);
-    RooRealVar         *rSign_Widt      =   new RooRealVar      ("rSign_Widt","rSign_Widt",     .5,    0.1,     1.);
-    //
-    RooRealVar         *rSign_Slop      =   new RooRealVar      ("rSign_Slop",  "rSign_Slop",     .5,    0.1,     1.);
-    //
-    // Coefficients
-    RooRealVar         *rSign_FBkg_Norm=   new RooRealVar       ("rSign_FBkg_Norm",  "rSign_FBkg_Norm",  0.5*nDataEntries,     0., nDataEntries);
-    RooRealVar         *rSign_Tria_Norm=   new RooRealVar       ("rSign_Tria_Norm",  "rSign_Tria_Norm",  0.5*nDataEntries,     0., nDataEntries);
-    RooRealVar         *rSign_Sign_Norm=   new RooRealVar       ("rSign_Sign_Norm",  "rSign_Sign_Norm",  0.5*nDataEntries,     0., nDataEntries);
-    //
-    // PDFs
-    RooGenericPdf      *fSign_Tria      =   new RooGenericPdf   ("fSign_Tria",       "fSign_Tria",  fBkg2_Lin.Data(), RooArgList( fRap_,    *rSign_Slop));
-    RooGaussian        *fSign_Sign      =   new RooGaussian     ("fSign_Sign",      "fSign_Sign",   fRap_,  *rSign_Mean,   *rSign_Widt);
-    RooAddPdf          *fSign_Model     =   new RooAddPdf       ("fSign_Model",     "fSign_Model",  RooArgList( *fSign_Sign,    *fSign_Tria,  *fSign_MdBk2 ), RooArgList(*rSign_Sign_Norm, *rSign_Tria_Norm, *rSign_FBkg_Norm) );
-    //
-    RooFitResult* fFitRsltSign;
-    for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )    {
-        fFitRsltSign    =   fSign_Model->fitTo(*dataLoose,  Extended(kTRUE),      Save(), NumCPU(kCPU_use));
-        fFitRsltSign    =   fSign_Model->fitTo(*data,       Extended(kTRUE),      Save(), NumCPU(kCPU_use));
-        //auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().at(0));
-        //if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError()) ) break;
-    }
-    //
-    
-    /*
-     
-     //>->-> Variables
-     //
-     //
-     // Formulas
-     TString             fBkg2_Lin       ("TMath::Max(0.,1.*-TMath::Abs(x[0])*(x[1]) + x[1])");
-     //
-     // Coefficients
-     RooRealVar         *rBkg2_Bkg1__Norm=   new RooRealVar     ("rBkg2_Bkg1__Norm",  "rBkg2_Bkg1__Norm",  0.5*nBkg2Entries,   0., nBkg2Entries);
-     RooRealVar         *rBkg2_Tria__Norm=   new RooRealVar     ("rBkg2_Tria__Norm",  "rBkg2_Tria__Norm",  0.5*nBkg2Entries,   0., nBkg2Entries);
-     //
-     // PDFs
-     RooGenericPdf      *fBkg2_Tria     =   new RooGenericPdf   ("fBkg2_Tria",       "fBkg2_Tria",   fBkg2_Lin.Data(), RooArgList( fRap_,    *rBkg2_Slop));
-     */
-    if ( true )
-    {
-        TCanvas * fSaveToCanvas     = new TCanvas();
-        RooPlot * fSaveToFrame      = fRap_.frame();
-        TLegend * fLegend           = new TLegend   (0.12,0.60,0.30,0.85);
-        
-        bkg1                        ->plotOn(fSaveToFrame,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
-        fBkg1_Model                 ->plotOn (fSaveToFrame,      LineColor(colors[1]),                   LineStyle(kDashed), Name("RooMod"));
-        
-        fSaveToFrame                ->Draw("same");
-        fLegend                     ->Draw("same");
-        fSaveToCanvas               ->Write ();
-        fSaveToCanvas               ->SaveAs(Form("result/SEFitCheck/RaP_bkg1_%s.pdf",fName));
-        fSaveToCanvas               ->SetLogy();
-        fSaveToCanvas               ->SaveAs(Form("result/SEFitCheck/RaP_bkg1_logy_%s.pdf",fName));
-        
-        TCanvas * fSaveToCanva2     = new TCanvas();
-        RooPlot * fSaveToFram2      = fRap_.frame();
-        TLegend * fLegen2           = new TLegend   (0.12,0.60,0.30,0.85);
-            
-        bkg2                        ->plotOn    (fSaveToFram2,  MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
-        fBkg2_Model                 ->plotOn    (fSaveToFram2,  LineColor(colors[1]),                   LineStyle(kDashed), Name("RooMod"));
-        fBkg2_Model                 ->plotOn    (fSaveToFram2,  Components("fBkg2_Tria"),       LineStyle(kDashed), LineColor(colors[2]),      Name("RooBB"));
-        fBkg2_Model                 ->plotOn    (fSaveToFram2,  Components("fBkg2_MdBk1"),      LineStyle(kDashed), LineColor(33),      Name("RooBS"));
-
-        fLegen2                     ->SetFillColor(kWhite);
-        fLegen2                     ->SetLineColor(kWhite);
-        fLegen2                     ->AddEntry(fSaveToFram2->findObject("RooData"), "Data",                 "EP");
-        fLegen2                     ->AddEntry(fSaveToFram2->findObject("RooMod"),  "Full Model",           "L");
-        fLegen2                     ->AddEntry(fSaveToFram2->findObject("RooBB"),   "Combinatorial Phis",   "L");
-        fLegen2                     ->AddEntry(fSaveToFram2->findObject("RooBS"),   "Combinatorial Kaons",  "L");
-    
-        fSaveToFram2                ->Draw("same");
-        fLegen2                     ->Draw("same");
-        fSaveToCanva2               ->Write ();
-        fSaveToCanva2               ->SaveAs(Form("result/SEFitCheck/RaP_bkg2_%s.pdf",fName));
-        fSaveToCanva2               ->SetLogy();
-        fSaveToCanva2               ->SaveAs(Form("result/SEFitCheck/RaP_bkg2_logy_%s.pdf",fName));
-        
-        TCanvas * fSaveToCanva3     = new TCanvas();
-        RooPlot * fSaveToFram3      = fRap_.frame();
-        TLegend * fLegen3           = new TLegend   (0.12,0.60,0.30,0.85);
-            
-        data                        ->plotOn    (fSaveToFram3,  MarkerColor(colors[0]),            MarkerStyle(markers[2]),    Name("RooData"));
-        fSign_Model                 ->plotOn    (fSaveToFram3,  LineColor(colors[1]),               LineStyle(kDashed), Name("RooMod"));
-        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fBkg2_MdBk1"),  LineStyle(kDashed), LineColor(colors[2]),      Name("RooBB"));
-        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fSign_Tria"),   LineStyle(kDashed), LineColor(colors[2]),       Name("RooBS"));
-        fSign_Model                 ->plotOn    (fSaveToFram3,  Components("fSign_Sign"),   LineStyle(kSolid),  LineColor(colors[2]),       Name("RooSS"));
-        
-        fLegen3                     ->SetFillColor(kWhite);
-        fLegen3                     ->SetLineColor(kWhite);
-        fLegen3                     ->AddEntry(fSaveToFram3->findObject("RooData"), "Data",                 "EP");
-        fLegen3                     ->AddEntry(fSaveToFram3->findObject("RooMod"),  "Full Model",           "L");
-        fLegen3                     ->AddEntry(fSaveToFram3->findObject("RooBB"),   "Kaon Combinatorial",   "L");
-        fLegen3                     ->AddEntry(fSaveToFram3->findObject("RooBS"),   "Secondary Signal",  "L");
-        fLegen3                     ->AddEntry(fSaveToFram3->findObject("RooSS"),   "Signal",  "L");
-            
-        fSaveToFram3                ->Draw("same");
-        fLegen3                     ->Draw("same");
-        fSaveToCanva3               ->Write ();
-        fSaveToCanva3               ->SaveAs(Form("result/SEFitCheck/RaP_data_%s.pdf",fName));
-        fSaveToCanva3               ->SetLogy();
-        fSaveToCanva3               ->SaveAs(Form("result/SEFitCheck/RaP_data_logy_%s.pdf",fName));
-    }
-    
-    // Un-Silencing TCanvas Pop-Up
-    gROOT->SetBatch(false);
-    
-    return nullptr; //fFitResults;
-}
 
 
-Float_t             fMeasureMeanPT                  ( TF1 * fLowFit, TGraphAsymmErrors * gTotal, Bool_t fReFit = false )   {
+
+
+Float_t             fMeasureMeanPT                  ( TF1 * fLowFit, TH1D * gTotal, Bool_t fReFit = false )   {
     Float_t fResult = 0.;
     if ( fReFit )   {
         gTotal->Fit(fLowFit);
@@ -2356,19 +1886,17 @@ Float_t             fMeasureMeanPT                  ( TF1 * fLowFit, TGraphAsymm
     std::vector<float>  fIntegral;
     std::vector<float>  fMeanPT;
     std::vector<float>  fWidth;
-    auto    nEntries        =   gTotal->GetN();
-    fIntegral.push_back(fLowFit->Integral(0.,gTotal->GetPointX(0) - gTotal->GetErrorXlow(0)));
-    fMeanPT.push_back(  fLowFit->Moment(1,0.,gTotal->GetPointX(0) - gTotal->GetErrorXlow(0)));
+    auto    nEntries        =   gTotal->GetNbinsX();
+    fIntegral.push_back(fLowFit->Integral(0.,gTotal->GetBinLowEdge(1)));
+    fMeanPT.push_back(  fLowFit->Moment(1,0.,gTotal->GetBinLowEdge(1)));
     fWidth.push_back(   1.);
-    for ( Int_t iPnt = 0; iPnt < nEntries; iPnt++ )   {
-        auto    fXLow   =   gTotal->GetPointX(iPnt) - gTotal->GetErrorXlow(iPnt);
-        auto    fXHig   =   gTotal->GetPointX(iPnt) + gTotal->GetErrorXhigh(iPnt);
-        fWidth.push_back(   fXHig - fXLow );
-        fIntegral.push_back(gTotal->GetPointY(iPnt));
-        fMeanPT.push_back(  fLowFit->Moment(1,fXLow,fXHig));
+    for ( Int_t iBin = 1; iBin <= nEntries; iBin++ )   {
+        fWidth.push_back(   gTotal->GetBinWidth(iBin) );
+        fIntegral.push_back(gTotal->GetBinContent(iBin));
+        fMeanPT.push_back(  fLowFit->Moment(1,gTotal->GetBinLowEdge(iBin),gTotal->GetBinLowEdge(iBin+1)));
     }
-    fIntegral.push_back(fLowFit->Integral(gTotal->GetPointX(nEntries-1) + gTotal->GetErrorXhigh(nEntries-1),1.e2));
-    fMeanPT.push_back(  fLowFit->Moment(1,gTotal->GetPointX(nEntries-1) + gTotal->GetErrorXhigh(nEntries-1),1.e2));
+    fIntegral.push_back(fLowFit->Integral(gTotal->GetBinLowEdge(nEntries+1),1.e2));
+    fMeanPT.push_back(  fLowFit->Moment(1,gTotal->GetBinLowEdge(nEntries+1),1.e2));
     fWidth.push_back(   1.);
     for ( Int_t iTer = 0; iTer < fIntegral.size(); iTer++ ) {
         fResult +=  fIntegral.at(iTer)*fMeanPT.at(iTer)*fWidth.at(iTer);
@@ -2799,6 +2327,12 @@ std::pair<std::vector<float>,TH1F*>     uIntegralError                  ( std::v
     */
     
     return fResult;
+}
+
+void
+fCalculateSystematics
+(){
+    
 }
 
 #endif

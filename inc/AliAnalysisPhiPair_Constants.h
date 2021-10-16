@@ -10,24 +10,14 @@
 //>->->->->->   Branching Ratio
 auto const  kBR                     =   0.492;
 auto const  kBRerr                  =   0.005;
-auto const  kSysLow_BR              =   kBRerr/kBR;
 auto const  kSysHig_BR              =   kBRerr/kBR;
+auto const  kSysLow_BR              =   kBRerr/kBR;
 //
-//>->->->->->   Signal Extraction
-auto const  kSysLow_1D_SE           =   0.06;
-auto const  kSysHig_1D_SE           =   0.06;
-auto const  kSysLow_2D_SE           =   0.15;
-auto const  kSysHig_2D_SE           =   0.15;
+//  -   7 TeV
+auto const  kTriggerEff             =   .7574; // 5TeV 0.7574;// 7TeV 0.85;
+auto const  kSysHig_TE              =   0.062/0.852;
+auto const  kSysLow_TE              =   0.030/0.852;
 //
-//>->->->->->   Tracking Efficiency
-auto const  kSysLow_TR              =   0.08;
-auto const  kSysHig_TR              =   0.08;
-//
-//>->->->->->   PID Efficiency
-auto const  kSysLow_PD              =   0.015;
-auto const  kSysHig_PD              =   0.015;
-//
-auto const  kTriggerEff             =   0.85; // 5TeV 0.7574;// 7TeV 0.85;
 auto const  nMltTrgECls             =   10;
 Float_t const  kMultTrgEff      []  =   {.998822,0.995576,0.991524,0.986489,0.975743,0.9575743,0.937151,0.897753,0.696985};
 Float_t const  kMltTrgECls      []  =   {0,5,10,15,20,30,40,50,70,100};
@@ -154,11 +144,12 @@ const   Float_t   fMaxPT1D  =   10.;
 //-// pT bins 2D
 const   Int_t     nBinPT2D  =   10;
 const   Float_t   fMinPT2D  =   0.4;
-const   Float_t   fMaxPT2D  =   20.;
+const   Float_t   fMaxPT2D  =   10.;
         Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
+        Float_t  *fArrPT2D_Comp  =   new Float_t [nBinPT2D+2];
 
 //-// Muliplicity bins
-const   Int_t     nBinMult  =   10;
+const   Int_t     nBinMult  =   5;
 const   Float_t   fMinMult  =   0.0;
 const   Float_t   fMaxMult  =   100.0;
         Float_t  *fArrMult  =   new Float_t [nBinMult+1];
@@ -335,19 +326,18 @@ void    fSetBinPT2D ()      {
     fArrPT2D[8]     =   2.80; //1.2
     fArrPT2D[9]     =   4.00; //6.0
     fArrPT2D[10]    =   10.0;
+    fArrPT2D_Comp[0]=   0.00;
+    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )    {
+        fArrPT2D_Comp[iPT2D+1]  =   fArrPT2D_Comp[iPT2D];
+    }
 }
 void    fSetBinMult ()      {
     fArrMult[0]  =  0.00;
-    fArrMult[1]  =  1.00;
-    fArrMult[2]  =  5.00;
-    fArrMult[3]  =  10.0;
-    fArrMult[4]  =  15.0;
-    fArrMult[5]  =  20.0;
-    fArrMult[6]  =  30.0;
-    fArrMult[7]  =  40.0;
-    fArrMult[8]  =  50.0;
-    fArrMult[9]  =  70.0;
-    fArrMult[10] =  100.;
+    fArrMult[1]  =  5.00;
+    fArrMult[2]  =  15.0;
+    fArrMult[3]  =  30.0;
+    fArrMult[4]  =  50.0;
+    fArrMult[5]  =  100.;
 }
 void    fSetBinRap_ ()      {
     for (int i = 0; i <= nBinRap_; i++ )

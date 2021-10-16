@@ -1,0 +1,43 @@
+\section{Introduction}
+\label{sec:Introduction}
+The analysis is performed using pp collisions data at $\sqrt{s}$=\SI{7}{\tera\electronvolt}, collected during the run1 data-taking period with the ALICE detector at the LHC. A detailed description of the ALICE detector can be found here \cite{Collaboration_2008}. In this analysis the $\phi$ mesons are reconstructed using their decay in a Kaon couple of opposite sign, which has a branching ratio of $49.2\%\pm 0.5\%$ \cite{PDG}. The Invariant Mass technique is used for the reconstruction of the mesons, both for inclusive $\phi$ mesons and $\phi$-meson pairs. For the latter a 2D generalisation is required, this will be the topic of section \ref{sec:SignalExtraction}.\\
+
+\subsection{Analysis Summary}
+Title of Note: First measurement of $\phi$-pair production in minimum-bias pp collisions at $\sqrt{s}=$\SI{7}{\tera\electronvolt}.\\
+Objective: This note documents the analysis of $\phi$-meson pairs in minimum-bias pp collisions at $\sqrt{s}=$\SI{7}{\tera\electronvolt} which are intended for inclusion in a forthcoming paper.\\
+Primary Author: Nicola Rubini, University of Bologna\\
+TWiki Address: TBD\\
+Relevant Presentations:
+\begin{itemize}
+\item \href{https://indico.cern.ch/event/1046617/}{\bf{Resonance PAG Meeting, 9 June 2021}}
+\item \href{https://indico.cern.ch/event/1052315/}{\bf{Resonance PAG Meeting, 7 July 2021}}
+\item \href{https://indico.cern.ch/event/1074274/}{\bf{Resonance PAG Meeting, 15 September 2021}}
+\item \href{https://indico.cern.ch/event/1079015/}{\bf{Resonance PAG Meeting, 22 September 2021}}
+\item \href{https://indico.cern.ch/event/1081307/}{\bf{Resonance PAG Meeting, 6 October 2021}}
+\end{itemize}
+
+\subsubsection{Source Code}
+The latest version of the Analysis Task used to fetch Data and Monte Carlo simulations can be seen \href{https://github.com/alisw/AliPhysics/tree/master/PWGLF/RESONANCES/extra}{here}. The files of interested for the presented analysis are:\\
+\href{https://github.com/alisw/AliPhysics/blob/master/PWGLF/RESONANCES/extra/AddAnalysisTaskPhiCount.C}{\texttt{AddAnalysisTaskPhiCount.C}}.\\
+\href{https://github.com/alisw/AliPhysics/blob/master/PWGLF/RESONANCES/extra/AliAnalysisTaskPhiCount.cxx}{\texttt{AliAnalysisTaskPhiCount.cxx}}.\\
+\href{https://github.com/alisw/AliPhysics/blob/master/PWGLF/RESONANCES/extra/AliAnalysisTaskPhiCount.h}{\texttt{AliAnalysisTaskPhiCount.h}}.\\
+\indent All the analysis code, comprehensive of plot generation macros, can be found \href{https://github.com/Nikolajal/AliAnalysisPhiCount}{here}, using the latest version of the package \href{https://github.com/Nikolajal/AliAnalysisUtility.git}{\texttt{AliAnalysisUtility}}
+
+
+\subsection{Physics Motivation}
+The production and study of the QGP has always been a primary goal for the ALICE collaboration. One of the signature for the creation of this new state of matter is the strangeness enhancement (SE) phenomenon \cite{First_SE}, which is the enhancement of the ratio of strange hadrons to pions in heavy-ion (HI) collisions with respect to proton-proton (pp) collisions.\\
+\indent Recent results suggested this phenomenon is not an "on-off" effect, but is rather a smooth evolution that can be characterised by the event multiplicity up to a plateau in the very populated heavy-ion collisions. This evolution starts, and has been measured, in high multiplicity pp collisions\cite{SE_in_pp}. This came as a surprise result given that QGP is not expected in a system as small as pp.\\
+\indent This brief review should set the stage to understanding the importance of the strangeness production as a QGP signature and in its own right as a characterisation of the hadronisation processes in both HI and pp collisions. This analysis aims at taking a clearer picture of the production mechanisms of this very special class of particles by the mean of the $\phi$(1020). This meson is a probe of choice because of its nature: it is a bound state $s\overline{s}$, so it is only sensitive to the strangeness production. Moreover it stands as a very peculiar exception in the context of the statistical model: in this theoretical framework the SE is related to the net strangeness, thus the $\phi$ meson should be excluded. On the contrary, recent results show that an enhancement is indeed seen in HI collisions \cite{SE_HI}. As per the pp collisions models, one of the most effective phenomenological models, the Lund String Model, provides predictions for an enhancement in the production of multiple $\phi$ mesons w.r.t. to a simplistic statistical approach \cite{LUND}.\\
+\indent Given all of the above, this study should prove useful both in HI and pp systems for a deeper insight in strangeness production and should provide a useful tool for Monte Carlo comparison with a variety of phenomenological and theoretical models.
+
+
+
+
+
+
+
+
+
+
+
+

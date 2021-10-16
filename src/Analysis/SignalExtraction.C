@@ -18,12 +18,14 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
         RooMsgService::instance().setSilentMode(fSilent);
     }
     fChooseOption(fOption);
+    gErrorIgnoreLevel   =   kWarning;
     
     // Retrieving PreProcessed data histograms
     TFile*  insFile_DT_Yield            =   new TFile   (Form(kAnalysis_InvMassHist,"Yield"));
-    TFile*  insFile_DT_Mult             =   new TFile   (Form(kAnalysis_InvMassHist,"Multiplicity"));
+    TFile*  insFile_DT_Multi            =   new TFile   (Form(kAnalysis_InvMassHist,"Multiplicity"));
     TFile*  insFile_DT_Rap              =   new TFile   (Form(kAnalysis_InvMassHist,"Rapidity"));
-    TFile*  insFile_DT_Slp              =   new TFile   (Form(kMassResolution_Anal,"Yield"));
+    TFile*  insFile_UT_Yield            =   new TFile   (Form(kMassResolution_Anal,"Yield"));
+    TFile*  insFile_UT_Multi            =   new TFile   (Form(kMassResolution_Anal,"Multiplicity"));
     
     // Recovering the histograms-------------------------------------------------------------------------------
 
@@ -62,9 +64,9 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
     }
     //
     hName                       =   "hSigmaCnt_1D";
-    hSlop_Reference             =   (TH1F*)(insFile_DT_Slp->Get(hName));
+    hSlop_Reference             =   (TH1F*)(insFile_UT_Yield->Get(hName));
     hName                       =   "hSigmaCnt_1D_in_2D_bin";
-    hSlop_Referen2D             =   (TH1F*)(insFile_DT_Slp->Get(hName));
+    hSlop_Referen2D             =   (TH1F*)(insFile_UT_Yield->Get(hName));
 
     // >->-->-> 2-Dimension analysis //
     //
@@ -108,14 +110,14 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
     for ( Int_t iMult = 0; iMult <= nBinMult; iMult++ )
     {
         hName = Form("hREC_1D_in_MT_%i",iMult);
-        hREC_1D_in_MT[iMult]   =   (TH1F*)(insFile_DT_Mult->Get(hName));
+        hREC_1D_in_MT[iMult]   =   (TH1F*)(insFile_DT_Multi->Get(hName));
         
         hREC_1D_in_MT_in_PT[iMult] = new TH1F     *[nBinPT1D];
 
         for ( Int_t jHisto = 0; jHisto < nBinPT1D; jHisto++ )
         {
             hName = Form("hREC_1D_in_MT_PT_%i_%i",iMult,jHisto);
-            hREC_1D_in_MT_in_PT[iMult][jHisto]   = (TH1F*)(insFile_DT_Mult->Get(hName));
+            hREC_1D_in_MT_in_PT[iMult][jHisto]   = (TH1F*)(insFile_DT_Multi->Get(hName));
         }
     }
     
@@ -132,21 +134,21 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
     for ( Int_t iMult = 0; iMult <= nBinMult; iMult++ )
     {
         hName   =   Form("hREC_2D_in_MT_%i",iMult);
-        hREC_2D_in_MT[iMult]   =   (TH2F*)(insFile_DT_Mult->Get(hName));
+        hREC_2D_in_MT[iMult]   =   (TH2F*)(insFile_DT_Multi->Get(hName));
 
         hREC_1D_in_MT_in_PT_2D_bin[iMult]  = new
         TH1F     *[nBinPT2D];
         hREC_2D_in_MT_in_PT[iMult]         = new TH2F    **[nBinPT2D];
         for ( Int_t jHisto = 0; jHisto < nBinPT2D; jHisto++ )
         {
-            hName = Form("hREC_1D_in_PT_2D_bin_%i_in_MT_%i",iMult,jHisto);
-            hREC_1D_in_MT_in_PT_2D_bin[iMult][jHisto]  =   (TH1F*)(insFile_DT_Mult->Get(hName));
+            hName = Form("hREC_1D_in_PT_2D_bin_%i_in_MT_%i",jHisto,iMult);
+            hREC_1D_in_MT_in_PT_2D_bin[iMult][jHisto]  =   (TH1F*)(insFile_DT_Multi->Get(hName));
             
             hREC_2D_in_MT_in_PT[iMult][jHisto]         = new TH2F     *[nBinPT2D];
             for ( Int_t kHisto = 0; kHisto < nBinPT2D; kHisto++ )
             {
                 hName = Form("hREC_2D_in_PT_%i_%i_in_MT_%i",jHisto,kHisto,iMult);
-                hREC_2D_in_MT_in_PT[iMult][jHisto][kHisto]    =    (TH2F*)(insFile_DT_Mult->Get(hName));
+                hREC_2D_in_MT_in_PT[iMult][jHisto][kHisto]    =    (TH2F*)(insFile_DT_Multi->Get(hName));
             }
         }
     }
@@ -233,7 +235,7 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
     if ( kDoYield )   {
         //
         //>>    Timer
-        fStartTimer("Yield Analysis Signal Extrapolation");
+        fStartTimer("Yield Analysis Signal Extraction");
         //
         //>>    Total Fit number abnd progressive
         fTotalCount = nBinPT1D + nBinPT2D * ( nBinPT2D + 1 );
@@ -251,7 +253,7 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
         fProgrCount +=  nBinPT1D;
         //
         //>>    Print Progress
-        fPrintLoopTimer("Yield Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
+        fPrintLoopTimer("Yield Analysis Signal Extraction",fProgrCount,fTotalCount,1);
         //
         //>>    Fit
         std::vector<TH1F*>  f1DCheck;
@@ -260,7 +262,7 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
         //Progressive Count
         fProgrCount +=  nBinPT2D;
         //
-        fStopTimer("Yield Analysis Signal Extrapolation");
+        fStopTimer("Yield Analysis Signal Extraction");
         //
         // >> YIELD ANALYSIS //
         TFile *outFil2  =   new TFile   (Form(kASigExtr_FitCheckRst,"Yield"),"recreate");
@@ -272,9 +274,6 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
             if ( strncmp(hSave->GetName(),"h1D_anBB",7) == 0 )  hSave->Scale(1.,"width");
             if ( strncmp(hSave->GetName(),"h1D_anSS",7) == 0 )  hSave->Scale(1.,"width");
             hSave   ->  Write();
-            if ( strncmp(hSave->GetName(),"h1D_bWidt",7) == 0 ) uPlotReferenceValue(hSave,kPhiMesonWidth,kPhiMesonWdErr)->SaveAs("./result/wid.pdf");
-            if ( strncmp(hSave->GetName(),"h1D_bSlop",7) == 0 ) uPlotReferenceValue(hSave,0.001,0.0001)->SaveAs("./result/res.pdf");
-            if ( strncmp(hSave->GetName(),"h1D_bMass",7) == 0 ) uPlotReferenceValue(hSave,kPhiMesonMass_,kPhiMesonMsErr)->SaveAs("./result/mas.pdf");
         }
         for ( auto hSave : f1DCheck )    {
             if ( strncmp(hSave->GetName(),"hRAW_1D_in_2D_bin",17) == 0 )    hSave->Scale(1.,"width");
@@ -294,129 +293,70 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
         outFil2->Close();
     }
     //
-    /*
-    if ( kDoRapidity )   {
-        //
-        //>>    Timer
-        fStartTimer("Rapidity Analysis Signal Extrapolation");
-        //
-        //>>    Total Fit number abnd progressive
-        fTotalCount = nBinRap_ * ( nBinPT1D + nBinPT2D * ( nBinPT2D + 1 ) );
-        fProgrCount = 0;
-        //
-        TFile      *outCheckFit     =   new TFile(fRapSigChek,"recreate");
-        gROOT                       ->  ProcessLine(Form(".! mkdir -p ./result/rapidity/ExtractionCheck/1D/"));
-        gROOT                       ->  ProcessLine(Form(".! mkdir -p ./result/rapidity/ExtractionCheck/2D/"));
-        //
-        std::vector<std::vector<TH1F*>> fFitResults_1DYield;
-        std::vector<std::vector<TH2F*>> fFitResults_2DYield;
-        std::vector<std::vector<TH1F*>> f1DCheck;
-        for ( Int_t iRap = 0; iRap < nBinRap_; iRap++ ) {
-            gROOT                       ->  ProcessLine(Form(".! mkdir -p ./result/rapidity/ExtractionCheck/1D/%i",iRap));
-            //
-            //>>    Fit the Model
-            //fFitResults_1DYield.push_back ( FitModel        (hREC_1D_in_RP_in_PT[iRap],hSlop_Reference,Form("./result/rapidity/ExtractionCheck/1D/%i",iRap),Form("RAP_%i",iRap)) );
-            //
-            //>>    Progressive Count
-            fProgrCount +=  nBinPT1D;
-            //
-            //>>    Print Progress
-            fPrintLoopTimer("Rapidity Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
-            gROOT                       ->  ProcessLine(Form(".! mkdir -p ./result/rapidity/ExtractionCheck/2D/%i",iRap));
-            //
-            //>>    Fit
-            std::vector<TH1F*>  f1DCheck_Temp;
-            fFitResults_2DYield.push_back( FitModel(hREC_1D_in_PT_2D_bin,hSlop_Referen2D,hREC_2D_in_RP_in_PT[iRap],f1DCheck_Temp,Form("./result/rapidity/ExtractionCheck/2D/%i",iRap),Form("RAP_%i",iRap)) );
-            f1DCheck.push_back(f1DCheck_Temp);
-            //
-            //Progressive Count
-            fProgrCount +=  nBinPT2D;
-            fPrintLoopTimer("Rapidity Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
-        }
-        //
-        fStopTimer("Rapidity Analysis Signal Extrapolation");
-        //
-        // >> YIELD ANALYSIS //
-        TFile *outFil2  =   new TFile   (fRapSigExtr,"recreate");
-        //
-        hEvntEff->Write();
-        hEvntMlt->Write();
-
-        for ( Int_t iRap = 0; iRap < nBinRap_; iRap++ ) {
-            
-            for ( auto hSave : fFitResults_1DYield.at(iRap) )    {
-                if ( strncmp(hSave->GetName(),"hRAW_1D",7) == 0 )   hSave->Scale(1.,"width");
-                if ( strncmp(hSave->GetName(),"h1D_anBB",7) == 0 )  hSave->Scale(1.,"width");
-                hSave   ->  SetName(Form("%s_in_Rap_%i",hSave->GetName(),iRap));
-                hSave   ->  Write();
-            }
-            for ( auto hSave : f1DCheck.at(iRap) )    {
-                if ( strncmp(hSave->GetName(),"hRAW_1D_in_2D_bin",17) == 0 )    hSave->Scale(1.,"width");
-                if ( strncmp(hSave->GetName(),"2Dbin_anBB",17) == 0 )           hSave->Scale(1.,"width");
-                hSave   ->  SetName(Form("%s_in_Rap_%i",hSave->GetName(),iRap));
-                hSave   ->  Write();
-            }
-            for ( auto hSave : fFitResults_2DYield.at(iRap) )    {
-                if ( strncmp(hSave->GetName(),"hRAW_2D",7) == 0 )   hSave->Scale(1.,"width");
-                if ( strncmp(hSave->GetName(),"anSB2D",6) == 0 )    hSave->Scale(1.,"width");
-                if ( strncmp(hSave->GetName(),"anBS2D",6) == 0 )    hSave->Scale(1.,"width");
-                if ( strncmp(hSave->GetName(),"anBB2D",6) == 0 )    hSave->Scale(1.,"width");
-                hSave   ->  SetName(Form("%s_in_Rap_%i",hSave->GetName(),iRap));
-                hSave   ->  Write();
-            }
-        }
-        //
-        outCheckFit->Close();
-        //
-        outFil2->Close();
-    }
-    //
     if ( kDoMultiplicity )   {
         //
         //>>    Timer
-        fStartTimer("Multiplicity Analysis Signal Extrapolation");
+        fStartTimer("Multiplicity Analysis Signal Extraction");
         //
-        //>>    Total Fit number abnd progressive
-        fTotalCount = nBinMult * ( nBinPT1D + nBinPT2D * ( nBinPT2D + 1 ) );
+        //>>    Total Fit number and progressive
+        fTotalCount = ( nBinMult + 1 ) * ( nBinPT1D + nBinPT2D * ( nBinPT2D + 1 ) );
         fProgrCount = 0;
         //
-        TFile      *outCheckFit     =   new TFile(fMltSigChek,"recreate");
-        gROOT                       ->  ProcessLine(Form(".! mkdir -p ./result/multiplicity/ExtractionCheck/1D/"));
-        gROOT                       ->  ProcessLine(Form(".! mkdir -p ./result/multiplicity/ExtractionCheck/2D/"));
+        gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_SigExtr_Dir,"Multiplicity")));
+        gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtr_Plot_Direct,"Multiplicity"))+TString("1D/"));
+        gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtr_Plot_Direct,"Multiplicity"))+TString("2D/"));
+        for ( Int_t iMlt = -1; iMlt < nBinMult; iMlt++ )    {
+            if ( iMlt == -1 )   {
+                gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtr_Plot_Direct,"Multiplicity"))+TString("1D/MLT_Inclusive/"));
+                gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtr_Plot_Direct,"Multiplicity"))+TString("2D/MLT_Inclusive/"));
+            }   else    {
+                gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtr_Plot_Direct,"Multiplicity"))+TString(Form("1D/MLT_%i/",iMlt)));
+                gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtr_Plot_Direct,"Multiplicity"))+TString(Form("2D/MLT_%i/",iMlt)));
+            }
+        }
+        TFile      *outCheckFitYld  =   new TFile   (Form(kASigExtr_FitCheckPlt,"Multiplicity"),"recreate");
+        //
+        //  Recover Resolution
+        hName                       =   "hSigmaCnt_1D";
+        TH1F*   hReferenceRes1D     =   (TH1F*)(insFile_UT_Multi->Get(hName));
+        hName                       =   "hSigmaCnt_1D_in_2D_bin";
+        TH1F*   hReferenceRes2D     =   (TH1F*)(insFile_UT_Multi->Get(hName));
         //
         std::vector<std::vector<TH1F*>> fFitResults_1DYield;
         std::vector<std::vector<TH2F*>> fFitResults_2DYield;
         std::vector<std::vector<TH1F*>> f1DCheck;
         for ( Int_t iMlt = 0; iMlt <= nBinMult; iMlt++ ) {
-            gROOT                       ->  ProcessLine(Form(".! mkdir -p ./result/multiplicity/ExtractionCheck/1D/%i",iMlt));
             //
             //>>    Fit the Model
-            fFitResults_1DYield.push_back ( FitModel        (hREC_1D_in_MT_in_PT[iMlt],hSlop_Reference,Form("./result/multiplicity/ExtractionCheck/1D/%i",iMlt),Form("MLT_%i",iMlt)) );
+            if ( iMlt == 0) fFitResults_1DYield.push_back ( FitModel        (hREC_1D_in_MT_in_PT[iMlt],hReferenceRes1D,(TString(Form(kASigExtr_Plot_Direct,"Multiplicity"))+TString("/1D/MLT_Inclusive")).Data(),Form("MLT_%i",iMlt)) );
+            else            fFitResults_1DYield.push_back ( FitModel        (hREC_1D_in_MT_in_PT[iMlt],hReferenceRes1D,(TString(Form(kASigExtr_Plot_Direct,"Multiplicity"))+TString(Form("1D/MLT_%i/",iMlt-1))).Data(),Form("MLT_%i",iMlt)) );
             //
             //>>    Progressive Count
             fProgrCount +=  nBinPT1D;
             //
             //>>    Print Progress
-            fPrintLoopTimer("Multiplicity Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
-            gROOT                       ->  ProcessLine(Form(".! mkdir -p ./result/multiplicity/ExtractionCheck/2D/%i",iMlt));
+            fPrintLoopTimer("Multiplicity Analysis Signal Extraction",fProgrCount,fTotalCount,1);
             //
-            //>>    Fit
-            std::vector<TH1F*>  f1DCheck_Temp;
-            //fFitResults_2DYield.push_back( FitModel(hREC_1D_in_PT_2D_bin,hSlop_Referen2D,hREC_2D_in_MT_in_PT[iMlt],f1DCheck_Temp,Form("./result/multiplicity/ExtractionCheck/2D/%i",iMlt),Form("MLT_%i",iMlt)) );
-            //f1DCheck.push_back(f1DCheck_Temp);
+            //>>    Fit the model
+            std::vector<TH1F*>  f1DCheck_temp;
+            if ( iMlt == 0) fFitResults_2DYield.push_back( FitModel(hREC_1D_in_MT_in_PT_2D_bin[iMlt],hReferenceRes2D,hREC_2D_in_MT_in_PT[iMlt],f1DCheck_temp,(TString(Form(kASigExtr_Plot_Direct,"Multiplicity"))+TString("/2D/MLT_Inclusive")).Data(),Form("MLT_%i",iMlt)) );
+            else            fFitResults_2DYield.push_back( FitModel(hREC_1D_in_MT_in_PT_2D_bin[iMlt],hReferenceRes2D,hREC_2D_in_MT_in_PT[iMlt],f1DCheck_temp,(TString(Form(kASigExtr_Plot_Direct,"Multiplicity"))+TString(Form("2D/MLT_%i/",iMlt-1))).Data(),Form("MLT_%i",iMlt)) );
+            f1DCheck.push_back(f1DCheck_temp);
             //
             //Progressive Count
-            fProgrCount +=  nBinPT2D;
-            fPrintLoopTimer("Multiplicity Analysis Signal Extrapolation",fProgrCount,fTotalCount,1);
+            fProgrCount +=  nBinPT2D*( nBinPT2D + 1 );
+            fPrintLoopTimer("Multiplicity Analysis Signal Extraction",fProgrCount,fTotalCount,1);
         }
         //
-        fStopTimer("Multiplicity Analysis Signal Extrapolation");
+        fStopTimer("Multiplicity Analysis Signal Extraction");
         //
-        // >> YIELD ANALYSIS //
-        TFile *outFil2  =   new TFile   (fMltSigExtr,"recreate");
+        TFile *outFil2  =   new TFile   (Form(kASigExtr_FitCheckRst,"Multiplicity"),"recreate");
         //
-        hEvntEff->Write();
-        hEvntMlt->Write();
+        hName       =   "fQC_Event_Enum_FLL";
+        (TH1D*)(insFile_DT_Multi->Get(hName))->Write();
+        //
+        hName       =   "fQC_Event_Enum_V0M";
+        (TH1D*)(insFile_DT_Multi->Get(hName))->Write();
 
         for ( Int_t iMlt = 0; iMlt <= nBinMult; iMlt++ ) {
             for ( auto hSave : fFitResults_1DYield.at(iMlt) )    {
@@ -441,15 +381,16 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
             }
         }
         //
-        outCheckFit->Close();
+        outCheckFitYld->Close();
         //
         outFil2->Close();
     }
-     */
     //
     // >-> Close input File
     //
     insFile_DT_Yield    ->Close();
     insFile_DT_Rap      ->Close();
-    insFile_DT_Mult     ->Close();
+    insFile_DT_Multi    ->Close();
+    //
+    gErrorIgnoreLevel   =   kInfo;
 }
