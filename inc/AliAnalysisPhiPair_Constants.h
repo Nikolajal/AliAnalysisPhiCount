@@ -13,24 +13,23 @@ auto const  kBRerr                  =   0.005;
 auto const  kSysHig_BR              =   kBRerr/kBR;
 auto const  kSysLow_BR              =   kBRerr/kBR;
 //
+//-//       TRIGGER EFFICIENCY
 //  -   7 TeV
-auto const  kTriggerEff             =   .7574; // 5TeV 0.7574;// 7TeV 0.85;
+auto const  kTriggerEff10bcdef      =   0.85;
 auto const  kSysHig_TE              =   0.062/0.852;
 auto const  kSysLow_TE              =   0.030/0.852;
 //
-auto const  nMltTrgECls             =   10;
-Float_t const  kMultTrgEff      []  =   {.998822,0.995576,0.991524,0.986489,0.975743,0.9575743,0.937151,0.897753,0.696985};
-Float_t const  kMltTrgECls      []  =   {0,5,10,15,20,30,40,50,70,100};
-auto const  kSysLow_Trigger         =   0.01;
-auto const  kSysHig_Trigger         =   0.01;
-//
-auto const  kTrackingEff            =   -1.0; //Unused
-auto const  kSysLow_Tracking        =   0.01;
-auto const  kSysHig_Tracking        =   0.01;
-
-//
-auto const  kSignalMiss1D           =   0.960419;
-auto const  kSignalMiss2D           =   0.922404;
+//  -   5 TeV
+auto const  kTriggerEff15n17pq      =   .7574;
+auto const  kLHC15n_nEV             =   1.013736e8;
+auto const  kLHC17pq_nEV            =   8.692481e8;
+auto const  kLHC15n_fEV             =   (kLHC15n_nEV)/(kLHC15n_nEV+kLHC17pq_nEV);
+auto const  kLHC17pq_fEV            =   (kLHC17pq_nEV)/(kLHC15n_nEV+kLHC17pq_nEV);
+//                                       0-1    1-5     5-10    10-15   15-20   20-30   30-40   40-50   50-70   70-100
+auto const      kTriggerEffMNBins   =   10;
+Float_t const   kTriggerEffMBins     [] =   {0.,    1.,     5.,     10.,    15.,    20.,    30.,    40.,    50.,    70.,     100.};
+Float_t const   kTriggerEffM15n      [] =   {0.999, 0.998,  0.994,  0.990,  0.984,  0.972,  0.952,  0.930,  0.890,  0.706};
+Float_t const   kTriggerEffM17pq     [] =   {0.999, 0.999,  0.999,  0.998,  0.998,  0.995,  0.989,  0.978,  0.947,  0.795};
 
 //-//   Analysis settings
 auto        kDoMultiplicity         =   false;
@@ -39,17 +38,20 @@ auto        kDoTrigger              =   false;
 auto        kDoRapidity             =   false;
 
 //-// InvMass range Pythia MC
-const   Float_t   fMinIMMC  =   0.75;
-const   Float_t   fMaxIMMC  =   1.25;
+auto const  fMinIMMC                =   0.75;
+auto const  fMaxIMMC                =   1.25;
 
 
 
-//-// Systematics Options
+//  Systematics Options
+//  >   Signal Extraction
+std::vector<TString>    kSyst_SEX_1D_Options    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"  };
+std::vector<TString>    kSyst_SEX_1D_Names      =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"  };
+std::vector<TString>    kSyst_SEX_1D_Legend     =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"  };
 //
-std::vector<TString>    sOptions    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"  };
-const   Int_t   nOptions            =   sOptions.size();
-std::vector<TString>    sOption2    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",  "BKG"   };
-const   Int_t   nOption2            =   sOption2.size();
+std::vector<TString>    kSyst_SEX_2D_Options    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",    "BKG"   };
+std::vector<TString>    kSyst_SEX_2D_Names      =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",    "BKG"   };
+std::vector<TString>    kSyst_SEX_2D_Legend     =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",    "BKG"   };
 //
 //-//-//    PID
 //
@@ -118,6 +120,7 @@ auto const  kPhiMesonWidth          =   0.004249;
 auto const  kPhiMesonWdErr          =   0.000013;
 auto const  kKaonMass               =   .493677;
 auto const  kKaonMassUncert         =   .000013;
+auto const kTriggerEff = 0.99;
 //
 //-// -- -- -- -- -- -- -- -- -- -- -- -- -- Binning
 //
@@ -197,25 +200,27 @@ RooFitResult   ***          NULL_ROOFITPTR3  =   nullptr;
 //
 //-// -- -- -- -- -- -- -- -- -- -- -- -- -- Trees
 typedef struct  {
-    UChar_t     nPhi,           EventMask,      iKaon[1024],    jKaon[1024],   Nature[1024];
+    UChar_t     EventMask,      iKaon[1024],    jKaon[1024],    Nature[1024];
     Float_t     Multiplicity,   Px[1024],       Py[1024],       Pz[1024],       pT[1024],      Rap[1024],       InvMass[1024],       TrueInvMass[1024];
     Bool_t      kHasRap[1024],  kHasMult;
-    Int_t       iPT1D[1024],    iPT2D[1024],    iRap[1024],     iMult;
+    Int_t       nPhi,           iPT1D[1024],    iPT2D[1024],    iRap[1024],     iMult;
 } Struct_PhiCandidate;
 typedef struct  {
-    UChar_t nKaon,          EventMask,      Charge[1024];
-    Char_t  SigmaTOF[1024], SigmaTPC[1024];
-    Float_t Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    UChar_t     EventMask,      Charge[1024];
+    Char_t      SigmaTOF[1024], SigmaTPC[1024];
+    Float_t     Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    Int_t       nKaon;
 } Struct_KaonCandidate;
 typedef struct  {
-    UChar_t nPhi,           TrueEventMask,  EventMask,      Selection[1024];
-    Float_t Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
-    Bool_t  fTru,           fGen,           fRec;
+    UChar_t     TrueEventMask,  EventMask,      Selection[1024];
+    Float_t     Multiplicity,   Px[1024],       Py[1024],       Pz[1024],       InvMass[1024];
+    Bool_t      fTru,           fGen,           fRec;
+    Int_t       nPhi;
 } Struct_PhiEfficiency;
 typedef struct  {
-    UChar_t nKaon,          TrueEventMask,  EventMask,      Charge[1024],   Selection[1024];
-    Float_t Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
-    Bool_t  ftru;
+    UChar_t     TrueEventMask,  EventMask,      Charge[1024],   Selection[1024];
+    Float_t     Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    Bool_t      nKaon,          ftru;
 } Struct_KaonEfficiency;
 //
 //-// -- -- -- -- -- -- -- -- -- -- -- -- -- Event Utilities
@@ -226,30 +231,44 @@ enum kEventCount {
     kUnderFlow = 0, kALL = 1, kHasEvent = 2, kHasMCTracks = 3, kNoTrigger = 4, kTrigger = 5, kHasPID = 5, kIncmpDAQ = 6, kNoSPDVtx = 7, kVtxMismatch = 8, kVertex = 9, kVertex10 = 10
 };
 
+//
+//  Option choosing accepted strings
+std::vector<TString>    kOptStrings_All             =   {"all","full","fll"};
+std::vector<TString>    kOptStrings_Yield           =   {"yield","yld","std","standard"};
+std::vector<TString>    kOptStrings_Multiplicity    =   {"multiplicity","mult","mlt"};
+
 //------------------------------//
 //      BINNING UTILITIES       //
 //------------------------------//
 //
 //-//   Setters
-void    fSetBinIM1D ()      {
+void
+fSetBinIM1D
+()      {
     for (int i = 0; i <= nBinIM1D; i++ )
     {
         fArrIM1D[i] = fMinIM1D+(i)*(fMaxIM1D - fMinIM1D)/(static_cast<Float_t>(nBinIM1D));
     }
 }
-void    fSetBinIM2D ()      {
+void
+fSetBinIM2D
+()      {
     for (int i = 0; i <= nBinIM2D; i++ )
     {
         fArrIM2D[i] = fMinIM2D+(i)*(fMaxIM2D - fMinIM2D)/(static_cast<Float_t>(nBinIM2D));
     }
 }
-void    fSetBinNTup ()      {
+void
+fSetBinNTup
+()      {
     for (int i = 0; i <= nBinNTup; i++ )
     {
         fArrNTup[i] = fMinNTup+(i)*(fMaxNTup - fMinNTup)/(static_cast<Float_t>(nBinNTup));
     }
 }
-void    fSetBinPT1D ()      {
+void
+fSetBinPT1D
+()      {
     /*
     fArrPT1D[0]     =   0.5; //0.1
     fArrPT1D[1]     =   0.7; //0.1
@@ -314,7 +333,9 @@ void    fSetBinPT1D ()      {
     fArrPT1D[19]    =   8.0; //2.0
     fArrPT1D[20]    =   10.;
 }
-void    fSetBinPT2D ()      {
+void
+fSetBinPT2D
+()      {
     fArrPT2D[0]     =   0.40; //0.3
     fArrPT2D[1]     =   0.80; //0.2
     fArrPT2D[2]     =   1.00; //0.1
@@ -327,11 +348,11 @@ void    fSetBinPT2D ()      {
     fArrPT2D[9]     =   4.00; //6.0
     fArrPT2D[10]    =   10.0;
     fArrPT2D_Comp[0]=   0.00;
-    for ( Int_t iPT2D = 0; iPT2D < nBinPT2D; iPT2D++ )    {
-        fArrPT2D_Comp[iPT2D+1]  =   fArrPT2D_Comp[iPT2D];
-    }
+    for ( Int_t iPT2D = 0; iPT2D <= nBinPT2D; iPT2D++ ) fArrPT2D_Comp[iPT2D+1]  =   fArrPT2D[iPT2D];
 }
-void    fSetBinMult ()      {
+void
+fSetBinMult
+()      {
     fArrMult[0]  =  0.00;
     fArrMult[1]  =  5.00;
     fArrMult[2]  =  15.0;
@@ -339,7 +360,9 @@ void    fSetBinMult ()      {
     fArrMult[4]  =  50.0;
     fArrMult[5]  =  100.;
 }
-void    fSetBinRap_ ()      {
+void
+fSetBinRap_
+()      {
     for (int i = 0; i <= nBinRap_; i++ )
     {
         fArrRap_[i] = fMinRap_+(i)*(fMaxRap_ - fMinRap_)/(static_cast<Float_t>(nBinRap_));
@@ -353,25 +376,33 @@ void    fSetBinRap_ ()      {
     fArrRap_[5]  =  1.000;
     
 }
-void    fSetBinSyst ()      {
+void
+fSetBinSyst
+()      {
     for (int i = 0; i <= nBinSyst; i++ )
     {
         fArrSyst[i] = fMinSyst+(i)*(fMaxSyst - fMinSyst)/(static_cast<Float_t>(nBinSyst));
     }
 }
-void    fSetBinIMRs ()      {
+void
+fSetBinIMRs
+()      {
     for (int i = 0; i <= nBinIMRs; i++ )
     {
         fArrIMRs[i] = fMinIMRs+(i)*(fMaxIMRs - fMinIMRs)/(static_cast<Float_t>(nBinIMRs));
     }
 }
-void    fSetBinIMR2 ()      {
+void
+fSetBinIMR2
+()      {
     for (int i = 0; i <= nBinIMR2; i++ )
     {
         fArrIMR2[i] = fMinIMR2+(i)*(fMaxIMR2 - fMinIMR2)/(static_cast<Float_t>(nBinIMR2));
     }
 }
-void    fSetAllBins ()      {
+void
+fSetAllBins
+()      {
     fSetBinIM1D();
     fSetBinIM2D();
     fSetBinPT1D();
@@ -385,7 +416,9 @@ void    fSetAllBins ()      {
 }
 //
 //-//   Getters
-Int_t   fGetBinIM1D (Float_t input_value )      {
+Int_t
+fGetBinIM1D
+ (Float_t input_value )      {
     if ( input_value > fMaxIM1D ) return -1;
     for ( Int_t iBin = 0; iBin <= nBinIM1D; iBin++ )
     {
@@ -396,7 +429,9 @@ Int_t   fGetBinIM1D (Float_t input_value )      {
     }
     return -1;
 }
-Int_t   fGetBinIM2D (Float_t input_value )      {
+Int_t
+fGetBinIM2D
+ (Float_t input_value )      {
     if ( input_value > fMaxIM2D ) return -1;
     for ( Int_t iBin = 0; iBin <= nBinIM2D; iBin++ )
     {
@@ -407,7 +442,9 @@ Int_t   fGetBinIM2D (Float_t input_value )      {
     }
     return -1;
 }
-Int_t   fGetBinPT1D (Float_t input_value )      {
+Int_t
+fGetBinPT1D
+ (Float_t input_value )      {
     for ( Int_t iBin = 0; iBin <= nBinPT1D; iBin++ )
     {
         if ( input_value <= fArrPT1D[iBin] )
@@ -417,7 +454,9 @@ Int_t   fGetBinPT1D (Float_t input_value )      {
     }
     return -1;
 }
-Int_t   fGetBinPT2D (Float_t input_value )      {
+Int_t
+fGetBinPT2D
+ (Float_t input_value )      {
     for ( Int_t iBin = 0; iBin <= nBinPT2D; iBin++ )
     {
         if ( input_value <= fArrPT2D[iBin] )
@@ -427,7 +466,9 @@ Int_t   fGetBinPT2D (Float_t input_value )      {
     }
     return -1;
 }
-Int_t   fGetBinMult (Float_t input_value )      {
+Int_t
+fGetBinMult
+ (Float_t input_value )      {
     for ( Int_t iBin = 0; iBin <= nBinMult; iBin++ )
     {
         if ( input_value == fMinMult ) return 0;
@@ -438,7 +479,9 @@ Int_t   fGetBinMult (Float_t input_value )      {
     }
     return -1;
 }
-Int_t   fGetBinRap_ (Float_t input_value )      {
+Int_t
+fGetBinRap_
+ (Float_t input_value )      {
     for ( Int_t iBin = 0; iBin <= nBinRap_; iBin++ )
     {
         if ( fabs(input_value) <= fArrRap_[iBin] )
@@ -448,7 +491,9 @@ Int_t   fGetBinRap_ (Float_t input_value )      {
     }
     return -1;
 }
-Int_t   fGetBinNTup (Float_t input_value )      {
+Int_t
+fGetBinNTup
+ (Float_t input_value )      {
     for ( Int_t iBin = 0; iBin <= nBinNTup; iBin++ )
     {
         if ( input_value <= fArrNTup[iBin] )
@@ -458,7 +503,11 @@ Int_t   fGetBinNTup (Float_t input_value )      {
     }
     return -1;
 }
-Int_t   fGetBinMultEff (Float_t input_value )   {
+Int_t
+fGetBinMultEff
+ (Float_t input_value )      {
+    return -1;
+    /*
     for ( Int_t iBin = 0; iBin <= nMltTrgECls; iBin++ )
     {
         if ( input_value <= kMltTrgECls[iBin] )
@@ -467,6 +516,7 @@ Int_t   fGetBinMultEff (Float_t input_value )   {
         }
     }
     return -1;
+     */
 }
 
 //------------------------------//

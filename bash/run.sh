@@ -1,19 +1,19 @@
 #! /bin/bash
 
-./GeneratorMC.sh
-mkdir result || exit 1
+./bash/GeneratorMC.sh
+mkdir -p result/MC_Production/
 
-strun=0
-nruns=1000
-njobs=16
+strun=971
+nruns=$((2500-$strun))
+njobs=3
 nevents=100000
 
 for run in $(seq $strun $(($strun + $nruns - 1))); do
 
     ### wait if there are too many jobs running
     while true; do
-        bkgjobs=$(jobs | grep GeneratorMC | wc -l | xargs)
-        if [ $bkgjobs -lt $njobs ]; then
+        bkgjobs=$(ps aux | grep MCG_PhiAnalysis | wc -l | xargs)
+        if [ $bkgjobs -lt $(($njobs +1)) ]; then
             break
         fi
         echo "[---] sleep while waiting for a free job slot"
@@ -25,7 +25,7 @@ for run in $(seq $strun $(($strun + $nruns - 1))); do
     
     echo "[---] starting run: $runid"
 
-    ./GeneratorMC result/outGeneratorMC_$runid.root $nevents $runid >& /dev/null
+    ./exe/MCG_PhiAnalysis result/MC_Production/outGeneratorMC_$runid.root $nevents $runid 0 >& ./result/MC_Production/log.$runid.log &
 
     sleep 1s
 

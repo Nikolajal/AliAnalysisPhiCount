@@ -16,6 +16,7 @@ FinalPlots
     //  Recovering calculated Systematic Results
     TFile*  insFile_DT_Yield    =   new TFile   (Form(kASigExtp_FitCheckRst,"Yield_7TeV"));
     TFile*  insFile_DT_Yiel2    =   new TFile   (Form(kASigExtp_FitCheckRst,"Yield"));
+    TFile*  insFile_DT_Mult_    =   new TFile   (Form(kASigExtp_FitCheckRst,"Multiplicity"));
     //
     TH1F   *hMultipleResults_Stat,*hMultipleResults_Syst,*hMultipleResult2_Stat,*hMultipleResult2_Syst;
     hName       =   "hMultipleResults_Stat";
@@ -65,25 +66,25 @@ FinalPlots
     //
     //  7TeV
     //  STAT
-    hMultipleResults_Stat->SetMarkerStyle(markers[3]);
-    hMultipleResults_Stat->SetMarkerColor(colors[4]);
-    hMultipleResults_Stat->SetFillColor(colors[4]);
-    hMultipleResults_Stat->SetLineColorAlpha(colors[4],1.);
+    hMultipleResults_Stat->SetMarkerStyle(fGetMarker(3));
+    hMultipleResults_Stat->SetMarkerColor(fGetColor(4));
+    hMultipleResults_Stat->SetFillColor(fGetColor(4));
+    hMultipleResults_Stat->SetLineColorAlpha(fGetColor(3),1.);
     //  SYST
-    hMultipleResults_Syst->SetMarkerStyle(markers[3]);
-    hMultipleResults_Syst->SetMarkerColor(colors[5]);
-    hMultipleResults_Syst->SetFillColorAlpha(colors[5],0.3);
+    hMultipleResults_Syst->SetMarkerStyle(fGetMarker(3));
+    hMultipleResults_Syst->SetMarkerColor(fGetColor(5));
+    hMultipleResults_Syst->SetFillColorAlpha(fGetColor(5),0.3);
     hMultipleResults_Syst->SetLineColorAlpha(0.,0.);
     hMultipleResults_Stat->Draw("E1P MIN0");
-    hMultipleResults_Syst->Draw("E2 SAME");
+    hMultipleResults_Syst->Draw("E2 SAME MIN0");
     //
     //  5TeV
     //  STAT
-    hMultipleResult2_Stat->SetMarkerStyle(markers[3]);
-    hMultipleResult2_Stat->SetMarkerColor(colors[3]);
-    hMultipleResult2_Stat->SetFillColor(colors[3]);
-    hMultipleResult2_Stat->SetLineColorAlpha(colors[3],1.);
-    hMultipleResult2_Stat->Draw("E1P SAME");
+    hMultipleResult2_Stat->SetMarkerStyle(fGetMarker(3));
+    hMultipleResult2_Stat->SetMarkerColor(fGetColor(3));
+    hMultipleResult2_Stat->SetFillColor(fGetColor(3));
+    hMultipleResult2_Stat->SetLineColorAlpha(fGetColor(3),1.);
+    hMultipleResult2_Stat->Draw("E1P SAME MIN0");
     //
     //  TLegend();
     TLegend*    lLegend =   new TLegend(0.7,0.6,0.88,0.85);
@@ -108,6 +109,27 @@ FinalPlots
         if ( iTer == 5 ) uLatex->DrawLatexNDC(0.18,0.80,"#gamma_{#phi}");
         lLegend->Draw("SAME");
         cDrawResults->SaveAs(Form("TEST_%i.pdf",iTer));
+    }
+    for ( Int_t iTer = 0; iTer < 6; iTer++ ) {
+        TH1F * hCurrent_Plot;
+        if ( iTer == 0 ) hCurrent_Plot = (TH1F*)(insFile_DT_Mult_->Get("hShow1D"));
+        if ( iTer == 1 ) hCurrent_Plot = (TH1F*)(insFile_DT_Mult_->Get("hShow2D"));
+        if ( iTer == 2 ) hCurrent_Plot = (TH1F*)(insFile_DT_Mult_->Get("hShowR1"));
+        if ( iTer == 3 ) hCurrent_Plot = (TH1F*)(insFile_DT_Mult_->Get("hShowR2"));
+        if ( iTer == 4 ) hCurrent_Plot = (TH1F*)(insFile_DT_Mult_->Get("hShowP1"));
+        if ( iTer == 5 ) hCurrent_Plot = (TH1F*)(insFile_DT_Mult_->Get("hShowP2"));
+        
+        hCurrent_Plot->SetMinimum(0);
+        hCurrent_Plot->Draw();
+        
+        if ( iTer == 0 ) uLatex->DrawLatexNDC(0.18,0.80,"#frac{dN_{#phi}}{dy}");
+        if ( iTer == 1 ) uLatex->DrawLatexNDC(0.18,0.80,"#frac{dN_{#phi#phi}}{dy}");
+        if ( iTer == 2 ) uLatex->DrawLatexNDC(0.18,0.80,"#frac{#LT Y_{#phi#phi} #GT}{#LT Y_{#phi} #GT}");
+        if ( iTer == 3 ) uLatex->DrawLatexNDC(0.18,0.80,"#frac{#LT Y_{#phi#phi} #GT}{#LT Y_{#phi} #GT^{2}}");
+        if ( iTer == 4 ) uLatex->DrawLatexNDC(0.18,0.80,"#sigma^{2}_{#phi}");
+        if ( iTer == 5 ) uLatex->DrawLatexNDC(0.18,0.80,"#gamma_{#phi}");
+        
+        cDrawResults->SaveAs(Form("TEST_show_%i.pdf",iTer));
     }
     delete  cDrawResults;
 }

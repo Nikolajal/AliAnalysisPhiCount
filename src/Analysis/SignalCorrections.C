@@ -13,8 +13,8 @@ testfunc
     h->GetXaxis()->SetBinLabel(3,"[15-30]");
     h->GetXaxis()->SetBinLabel(2,"[30-50]");
     h->GetXaxis()->SetBinLabel(1,"[50-100]");
-    h->SetMarkerStyle(markers[1]);
-    h->SetMarkerColor(colors[3]);
+    h->SetMarkerStyle(fGetMarker(1));
+    h->SetMarkerColor(fGetColor(1));
     h->SetMaximum(1.2*h->GetMaximum());
 }
 
@@ -134,8 +134,8 @@ SignalCorrections
     auto        kN_Trg          =   (hEvntEff->GetBinContent(kEventCount::kTrigger));
     auto        kN_Vtx          =   (hEvntEff->GetBinContent(kEventCount::kVertex));
     auto        kN_MB           =   (hEvntEff->GetBinContent(kEventCount::kVertex10));
-    Double_t    f1DCorrection   =   (1./kBR)        *(1./kN_MB) *(kTriggerEff/1.)   *(1./kSignalMiss1D) *(kN_Vtx/kN_Trg);
-    Double_t    f2DCorrection   =   (1./(kBR*kBR))  *(1./kN_MB) *(kTriggerEff/1.)   *(1./kSignalMiss2D) *(kN_Vtx/kN_Trg);
+    Double_t    f1DCorrection   =   (1./kBR)        *(1./kN_MB) *(kTriggerEff/1.)   *(kN_Vtx/kN_Trg);
+    Double_t    f2DCorrection   =   (1./(kBR*kBR))  *(1./kN_MB) *(kTriggerEff/1.)   *(kN_Vtx/kN_Trg);
     //
     // >-> YIELD ANALYSIS //
     //
@@ -169,11 +169,6 @@ SignalCorrections
     hTitle  =   Form("hRES_2D_Cond3_Syst");
     TH1F       *hRES_2D_Cond3_Syst              =   new TH1F(hName,hTitle,nBinPT2D,fArrPT2D);
     //
-    hName   =   Form("gConditional_Mean_PT");
-    hTitle  =   Form("gConditional_Mean_PT");
-    TGraphMultiErrors  *gConditional_Mean_PT    =   new TGraphMultiErrors(hName,hTitle,nBinPT2D,2);
-    //
-    //
     hName   =   Form("hMultipleResults_Stat");
     hTitle  =   Form("hMultipleResults_Stat");
     TH1F*   hMultipleResults_Stat               =   new TH1F(hName,hTitle,6,0,6);
@@ -184,11 +179,19 @@ SignalCorrections
     //
     hName   =   Form("hMeanPT_2D_Stat");
     hTitle  =   Form("hMeanPT_2D_Stat");
-    //TH1F*   hMeanPT_2D_Stat                     =   new TH1F(hName,hTitle,fArrPT2D_Comp,nBinPT2D+1);
+    TH1F*   hMeanPT_2D_Stat                     =   new TH1F(hName,hTitle,nBinPT2D+1,fArrPT2D_Comp);
     //
     hName   =   Form("hMeanPT_2D_Syst");
     hTitle  =   Form("hMeanPT_2D_Syst");
-    //TH1F*   hMeanPT_2D_Syst                     =   new TH1F(hName,hTitle,fArrPT2D_Comp,nBinPT2D+1);
+    TH1F*   hMeanPT_2D_Syst                     =   new TH1F(hName,hTitle,nBinPT2D+1,fArrPT2D_Comp);
+    //
+    hName   =   Form("hMeanPT_1D_Stat");
+    hTitle  =   Form("hMeanPT_1D_Stat");
+    TH1F*   hMeanPT_1D_Stat                     =   new TH1F(hName,hTitle,1,0,1);
+    //
+    hName   =   Form("hMeanPT_1D_Syst");
+    hTitle  =   Form("hMeanPT_1D_Syst");
+    TH1F*   hMeanPT_1D_Syst                     =   new TH1F(hName,hTitle,1,0,1);
     //
     
     //-------------------------//
@@ -224,6 +227,11 @@ SignalCorrections
         hMultipleResults_Syst   ->  SetBinContent   (1, fResults[0]);
         hMultipleResults_Syst   ->  SetBinError     (1, fResults[3]);
         //
+        hMeanPT_1D_Stat     ->  SetBinContent   ( 1, fResults[5]);
+        hMeanPT_1D_Stat     ->  SetBinError     ( 1, fResults[6]);
+        hMeanPT_1D_Syst     ->  SetBinContent   ( 1, fResults[5]);
+        hMeanPT_1D_Syst     ->  SetBinError     ( 1, fResults[8]);
+        //
         for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ ) {
             //  Progressive Count
             fProgrCount++;
@@ -237,13 +245,17 @@ SignalCorrections
             hRES_2D_Cond2_Syst  ->  SetBinContent   ( iFit+1, fResults[10] );
             hRES_2D_Cond2_Syst  ->  SetBinError     ( iFit+1, fResults[12] );
             //
-            //hMeanPT_2D_Stat     ->  SetBinContent   ( iFit+1, fResults[5]);
-            //hMeanPT_2D_Stat     ->  SetBinError     ( iFit+1, fResults[6]);
-            //hMeanPT_2D_Syst     ->  SetBinContent   ( iFit+1, fResults[5]);
-            //hMeanPT_2D_Syst     ->  SetBinError     ( iFit+1, fResults[8]);
+            hMeanPT_2D_Stat     ->  SetBinContent   ( iFit+2, fResults[5]);
+            hMeanPT_2D_Stat     ->  SetBinError     ( iFit+2, fResults[6]);
+            hMeanPT_2D_Syst     ->  SetBinContent   ( iFit+2, fResults[5]);
+            hMeanPT_2D_Syst     ->  SetBinError     ( iFit+2, fResults[8]);
         }
         //
         auto fResult2       = fMeasureFullYield(hRES_2D_Cond2_Stat,hRES_2D_Cond2_Syst,"2D_-1",Form(kASigExtp_Plot_Direct,"Yield"));
+        hMeanPT_2D_Stat     ->  SetBinContent   ( 1, fResult2[5]);
+        hMeanPT_2D_Stat     ->  SetBinError     ( 1, fResult2[6]);
+        hMeanPT_2D_Syst     ->  SetBinContent   ( 1, fResult2[5]);
+        hMeanPT_2D_Syst     ->  SetBinError     ( 1, fResult2[8]);
         //
         auto fExtrap_1_Stat =   0.;
         auto fExtrap_1_Syst =   0.;
@@ -320,7 +332,9 @@ SignalCorrections
         //
         std::vector<TH1F*> f1DSpectra;
         std::vector<Double_t> fYield1D;
+        std::vector<Double_t> fYield1D_stat;
         std::vector<Double_t> fYield2D;
+        std::vector<Double_t> fYield2D_stat;
         for ( Int_t iMlt = 0; iMlt <= nBinMult; iMlt++ ) {
             //  Normalisation Factor for Multiplicity bin
             auto    kNormalisation1D    =   (1.)/(fEvaluateINELgt0(iMlt-1,hUtilEventMultiplicity) * kBR );
@@ -341,6 +355,7 @@ SignalCorrections
             //  Yield evaluation
             auto    fResults    =   fMeasureFullYield(f1DSpectra.at(iMlt),f1DSpectra.at(iMlt),Form("1D_in_Mlt_%i",iMlt),Form(kASigExtp_Plot_Direct,"Multiplicity"));
             fYield1D.push_back(fResults[0]);   // !TEMP
+            fYield1D_stat.push_back(fResults[1]);   // !TEMP
             // *************************************************************
             // TODO: Save results to a histo
             // *************************************************************
@@ -365,17 +380,17 @@ SignalCorrections
                 //  Print loop Timer
                 fPrintLoopTimer("Fit_for_extrapolation",fProgrCount,fTotalCount,1);
                 //
-                fResults = fMeasureFullYield(hRES_2D_Cond1_in_MT.at(iFit),hRES_2D_Cond1_in_MT.at(iFit),Form("1D_2D_%i",iFit+1),Form(kASigExtp_Plot_Direct,"Multiplicity"));
+                fResults = fMeasureFullYield(hRES_2D_Cond1_in_MT.at(iFit),hRES_2D_Cond1_in_MT.at(iFit),Form("1D_2D_%i_in_Mlt_%i",iFit+1,iMlt),Form(kASigExtp_Plot_Direct,"Multiplicity"));
                 //
                 hRES_2D_Cond2_in_MT  ->  SetBinContent   ( iFit+1, fResults[10] );
-                hRES_2D_Cond2_in_MT  ->  SetBinError     ( iFit+1, fResults[10]*0.04 );
+                hRES_2D_Cond2_in_MT  ->  SetBinError     ( iFit+1, fResults[11] );
             }
             //  Progressive Count
             fProgrCount++;
             //  Print loop Timer
             fPrintLoopTimer("Fit_for_extrapolation",fProgrCount,fTotalCount,1);
             //
-            fResults = fMeasureFullYield(hRES_2D_Cond2_in_MT,hRES_2D_Cond2_in_MT,Form("1D_2D_%i",0),Form(kASigExtp_Plot_Direct,"Multiplicity"));
+            fResults = fMeasureFullYield(hRES_2D_Cond2_in_MT,hRES_2D_Cond2_in_MT,Form("1D_2D_%i_in_Mlt_%i",-1,iMlt),Form(kASigExtp_Plot_Direct,"Multiplicity"));
             //
             auto fExtrap_1_Stat =   0.;
             auto fExtrap_1_Syst =   0.;
@@ -392,6 +407,7 @@ SignalCorrections
                  fIntegral_Val_ =   uHistoIntegralAndError(hRES_2D_Cond1_in_MT,fIntegral_Syst);
             //
             fYield2D.push_back( fIntegral_Val_ + fExtrap_1_Val_ + fExtrap_2_Val_ );
+            fYield2D_stat.push_back( SquareSum({ fIntegral_Stat, fExtrap_1_Stat, fExtrap_2_Stat }) );
             
             
             
@@ -444,19 +460,21 @@ SignalCorrections
         for ( auto kYield : fYield1D ) {
             auto k1D    =   kYield;
             auto k2D    =   fYield2D.at(iTer-1);
+            auto kE1    =   fYield1D_stat.at(iTer-1);
+            auto kE2    =   fYield2D_stat.at(iTer-1);
             //
             hShow1D->SetBinContent  ( 7-iTer, k1D );
-            hShow1D->SetBinError    ( 7-iTer, 0 );
+            hShow1D->SetBinError    ( 7-iTer, kE1);
             hShow2D->SetBinContent  ( 7-iTer, k2D );
-            hShow2D->SetBinError    ( 7-iTer, 0 );
+            hShow2D->SetBinError    ( 7-iTer, kE2 );
             hShowR1->SetBinContent  ( 7-iTer, k2D/k1D );
-            hShowR1->SetBinError    ( 7-iTer, 0 );
+            hShowR1->SetBinError    ( 7-iTer, (k2D/k1D)*SquareSum( {kE1/k1D, kE2/k2D} ) );
             hShowR2->SetBinContent  ( 7-iTer, k2D/(k1D*k1D) );
-            hShowR2->SetBinError    ( 7-iTer, 0 );
+            hShowR2->SetBinError    ( 7-iTer, (k2D/(k1D*k1D))*SquareSum( {4*kE1/k1D, kE2/k2D} )  );
             hShowP1->SetBinContent  ( 7-iTer, fSigmaPhiValue(k1D,k2D) );
-            hShowP1->SetBinError    ( 7-iTer, 0 );
+            hShowP1->SetBinError    ( 7-iTer, fSigmaPhiError(k1D,k2D,kE1,kE2) );
             hShowP2->SetBinContent  ( 7-iTer, fGammaPhiValue(k1D,k2D) );
-            hShowP2->SetBinError    ( 7-iTer, 0 );
+            hShowP2->SetBinError    ( 7-iTer, fGammaPhiError(k1D,k2D,kE1,kE2) );
             //
             iTer++;
         }
@@ -531,13 +549,20 @@ SignalCorrections
         hRES_1D_Syst            ->SetNameTitle(hName,hTitle);
         hRES_1D_Syst            ->Write();
         //
-        gConditional_Mean_PT    ->Write();
         hRES_2D_Cond2_Stat      ->Write();
         hRES_2D_Cond2_Syst      ->Write();
         hMultipleResults_Stat   ->Write();
         hMultipleResults_Syst   ->Write();
+        hMeanPT_1D_Stat         ->Write();
+        hMeanPT_1D_Syst         ->Write();
+        hMeanPT_2D_Stat         ->Write();
+        hMeanPT_2D_Syst         ->Write();
         //
-        gROOT->SetBatch(kTRUE);
+        gROOT->SetBatch();
+        auto cDrawMeanPT = uPlotSpectrum(hMeanPT_2D_Stat,hMeanPT_2D_Syst,"R MPT 12D");
+        cDrawMeanPT ->  SetLogy(kFALSE);
+        cDrawMeanPT ->  SaveAs(Form("%s%s",Form(kASigExtp_Plot_Direct,"Yield"),"/Full/MeanPT.pdf"));
+        delete      cDrawMeanPT;
         //
         for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ ) {
             hName   =   Form("hRES_2D_Cond1_Stat_%i",iFit);
@@ -549,7 +574,8 @@ SignalCorrections
             hRES_2D_Cond1_Syst.at(iFit)->SetNameTitle(hName,hTitle);
             hRES_2D_Cond1_Syst.at(iFit)->Write();
         }
-        auto cDrawResult = uPlotSpectrum(hRES_1D_Stat,hRES_1D_Syst,"1D");
+        //
+        auto cDrawResult = uPlotSpectrum(hRES_1D_Stat,hRES_1D_Syst,"SPT 1D");
         cDrawResult ->  SetLogx();
         cDrawResult ->  SetLeftMargin(0.16);
         cDrawResult ->  SaveAs(Form("%s%s",Form(kASigExtp_Plot_Direct,"Yield"),"/1D/Yield_1D.pdf"));
@@ -557,7 +583,7 @@ SignalCorrections
         //
         TCanvas    *cDrawFullResults    =   new TCanvas("","",900,1200);
         cDrawFullResults->Divide(3,4);
-        cDrawResult =   uPlotSpectrum(hRES_2D_Cond2_Stat,hRES_2D_Cond2_Syst,"12D");
+        cDrawResult =   uPlotSpectrum(hRES_2D_Cond2_Stat,hRES_2D_Cond2_Syst,"SPT 12D");
         uLatex->DrawLatexNDC(0.2,0.53,Form("p_{T,#phi_{2}} #in [%.1f;%.1f]",0.,fArrPT2D[0]));
         cDrawFullResults    ->cd    (1);
         cDrawResult ->  SetLogx();
@@ -566,7 +592,7 @@ SignalCorrections
         cDrawResult ->  SaveAs(Form("%s%s",Form(kASigExtp_Plot_Direct,"Yield"),Form("/2D/Yield_2D_%i.pdf",-1)));
         delete          cDrawResult;
         for ( Int_t iHisto = 0; iHisto < hRES_2D_Cond1_Stat.size(); iHisto++ )  {
-            cDrawResult =   uPlotSpectrum(hRES_2D_Cond1_Stat.at(iHisto),hRES_2D_Cond1_Syst.at(iHisto),"12D");
+            cDrawResult =   uPlotSpectrum(hRES_2D_Cond1_Stat.at(iHisto),hRES_2D_Cond1_Syst.at(iHisto),"SPT 12D");
             uLatex->DrawLatexNDC(0.2,0.53,Form("p_{T,#phi_{2}} #in [%.1f;%.1f]",fArrPT2D[iHisto],fArrPT2D[iHisto+1]));
             cDrawFullResults    ->cd    (iHisto+2);
             cDrawResult ->  SetLogx();
@@ -577,12 +603,6 @@ SignalCorrections
         }
         cDrawFullResults->SaveAs(Form("%s%s",Form(kASigExtp_Plot_Direct,"Yield"),Form("/2D/Yield_2D.pdf")));
         delete      cDrawFullResults;
-        //
-        cDrawResult = new TCanvas();
-        uPlotSpectrum(hRES_1D_Stat,hRES_1D_Syst,"1D");
-        
-        cDrawResult ->  SaveAs(Form("%s%s",Form(kASigExtp_Plot_Direct,"Yield"),"/Full/Production.pdf"));
-        delete      cDrawResult;
         //
         gROOT->SetBatch(kFALSE);
         //

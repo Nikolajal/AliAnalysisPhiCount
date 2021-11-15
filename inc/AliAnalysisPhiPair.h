@@ -18,7 +18,7 @@
 //>>    Performance Regulation Values
 auto const  kCPU_use                =   1;
 auto const  kNCycle_                =   3;
-auto        kStatEvalCycles         =   1000;
+auto        kStatEvalCycles         =   100;
 auto const  kPrintIntervalPP        =   1000000;
 auto const  k2DErrorLimit           =   10.;
 auto const  kCPUStrategy            =   1;
@@ -315,28 +315,28 @@ fRooPlotPlotter
     switch (fPlotterSelect(fSelect))
     {
         case 1:
-            fData                           ->plotOn(fRooPlot,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
-            fModel                          .plotOn (fRooPlot,      LineColor(colors[2]),                   LineStyle(kSolid), Name("RooMod"));
-            fModel                          .plotOn (fRooPlot,      Components("fBkg"),             LineStyle(kDashed), LineColor(colors[2]),      Name("RooBB"));
-            fModel                          .plotOn (fRooPlot,      Components("fSig"),             LineColor(colors[1]),       Name("RooSS"));
-            fData                           ->plotOn(fRooPlot,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
+            fData                           ->plotOn(fRooPlot,      MarkerColor(kColors[0]),                MarkerStyle(kMarkers[2]),    Name("RooData"));
+            fModel                          .plotOn (fRooPlot,      LineColor(kColors[2]),                   LineStyle(kSolid), Name("RooMod"));
+            fModel                          .plotOn (fRooPlot,      Components("fBkg"),             LineStyle(kDashed), LineColor(kColors[2]),      Name("RooBB"));
+            fModel                          .plotOn (fRooPlot,      Components("fSig"),             LineColor(kColors[1]),       Name("RooSS"));
+            fData                           ->plotOn(fRooPlot,      MarkerColor(kColors[0]),                MarkerStyle(kMarkers[2]),    Name("RooData"));
             break;
         case 2:
-            fData                           ->plotOn(fRooPlot,      CutRange("fDrawRange"),         MarkerColor(colors[0]),    MarkerStyle(markers[2]) ,   Name("RooData"));
-            fModel                          .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  LineColor(colors[2]),       LineStyle(kSolid), Name("RooMod"));
-            fModel                          .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fBkg"), LineStyle(kDashed), LineColor(colors[4]),      Name("RooBB"));
-            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fSigSig"),LineColor(colors[1]),       Name("RooSS"));
-            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fSigBkg"),LineStyle(kDashed), LineColor(colors[5]),    Name("RooSB"));
-            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fBkgSig"),LineStyle(kDashed), LineColor(colors[6]),    Name("RooBS"));
-            fData                           ->plotOn(fRooPlot,      CutRange("fDrawRange"),         MarkerColor(colors[0]),    MarkerStyle(markers[2]) ,   Name("RooData"));
+            fData                           ->plotOn(fRooPlot,      CutRange("fDrawRange"),         MarkerColor(kColors[0]),    MarkerStyle(kMarkers[2]) ,   Name("RooData"));
+            fModel                          .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  LineColor(kColors[2]),       LineStyle(kSolid), Name("RooMod"));
+            fModel                          .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fBkg"), LineStyle(kDashed), LineColor(kColors[4]),      Name("RooBB"));
+            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fSigSig"),LineColor(kColors[1]),       Name("RooSS"));
+            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fSigBkg"),LineStyle(kDashed), LineColor(kColors[5]),    Name("RooSB"));
+            fModel                      .plotOn (fRooPlot,      ProjectionRange("fDrawRange"),  Components("fBkgSig"),LineStyle(kDashed), LineColor(kColors[6]),    Name("RooBS"));
+            fData                           ->plotOn(fRooPlot,      CutRange("fDrawRange"),         MarkerColor(kColors[0]),    MarkerStyle(kMarkers[2]) ,   Name("RooData"));
             break;
         case 3:
-            fData                           ->plotOn(fRooPlot,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
-            fModel                          .plotOn (fRooPlot,      LineColor(colors[1]),                   LineStyle(kSolid), Name("RooMod"));
-            fModel                          .plotOn (fRooPlot,      Components("fBkg"),             LineStyle(kDashed), LineColor(colors[2]),      Name("RooBB"));
+            fData                           ->plotOn(fRooPlot,      MarkerColor(kColors[0]),                MarkerStyle(kMarkers[2]),    Name("RooData"));
+            fModel                          .plotOn (fRooPlot,      LineColor(kColors[1]),                   LineStyle(kSolid), Name("RooMod"));
+            fModel                          .plotOn (fRooPlot,      Components("fBkg"),             LineStyle(kDashed), LineColor(kColors[2]),      Name("RooBB"));
             fModel                          .plotOn (fRooPlot,      Components("fBk2"),             LineStyle(kDashed), LineColor(33),      Name("RooB2"));
-            fModel                          .plotOn (fRooPlot,      Components("fSig"),             LineColor(colors[2]),       Name("RooSS"));
-            fData                           ->plotOn(fRooPlot,      MarkerColor(colors[0]),                MarkerStyle(markers[2]),    Name("RooData"));
+            fModel                          .plotOn (fRooPlot,      Components("fSig"),             LineColor(kColors[2]),       Name("RooSS"));
+            fData                           ->plotOn(fRooPlot,      MarkerColor(kColors[0]),                MarkerStyle(kMarkers[2]),    Name("RooData"));
             break;
         default:
             cout << "Improper option, no changes made" << endl;
@@ -1112,18 +1112,42 @@ Int_t kWidth[] = {1,3,3,1,1};
 //
 //_____________________________________________________________________________
 //
-void                fChooseOption                   ( TString fOption ) {
-    if ( fOption.IsNull() ) cout << "[INFO] No option chosen, standard all inclusive analysis enabled" <<endl;
-    else    {
-        kDoMultiplicity         =   false;
-        kDoYield                =   false;
-        kDoTrigger              =   false;
-        kDoRapidity             =   false;
-        if ( fOption.Contains("Multiplicity",TString::kIgnoreCase) )    { kDoMultiplicity = true;   cout << "[INFO] Multiplicity option chosen" <<endl;}
-        if ( fOption.Contains("Yield",TString::kIgnoreCase) )           { kDoYield = true;          cout << "[INFO] Yield option chosen" <<endl;}
-        if ( fOption.Contains("Trigger",TString::kIgnoreCase) )         { kDoTrigger = true;        cout << "[INFO] Trigger option chosen" <<endl;}
-        if ( fOption.Contains("Rapidity",TString::kIgnoreCase) )        { kDoRapidity = true;       cout << "[INFO] Rapidity option chosen" <<endl;}
+Bool_t
+fChooseOption
+ ( TString fOption ) {
+    kDoMultiplicity         =   false;
+    kDoYield                =   false;
+    kDoTrigger              =   false;
+    kDoRapidity             =   false;
+    if ( fOption.IsNull() ) {
+        cout << "[INFO] No option chosen" << endl;
+        return false;
     }
+    //
+    //  Check option: ALL
+    for ( auto kString : kOptStrings_All )  {
+        if ( fOption.Contains(kString,   TString::kIgnoreCase) ) {
+            kDoMultiplicity         =   true;
+            kDoYield                =   true;
+        }
+    }
+    //  Check option: YIELD
+    for ( auto kString : kOptStrings_Yield )  {
+        if ( fOption.Contains(kString,   TString::kIgnoreCase) ) {
+            kDoYield                =   true;
+        }
+    }
+    //  Check option: MULTIPLICITY
+    for ( auto kString : kOptStrings_Multiplicity )  {
+        if ( fOption.Contains(kString,   TString::kIgnoreCase) ) {
+            kDoMultiplicity         =   true;
+        }
+    }
+    if ( kDoYield )         cout << "[INFO] Yield option chosen" <<endl;
+    if ( kDoMultiplicity )  cout << "[INFO] Multiplicity option chosen" <<endl;
+    auto    fResult =   kDoYield || kDoMultiplicity;
+    if ( !fResult ) cout << "[INFO] No option chosen" << endl;
+    return  fResult;
 }
 //
 //_____________________________________________________________________________
@@ -1328,9 +1352,9 @@ fEvaluateExtrapolationUncertainty
     gPad                            ->  SetLogy();
     //
     //  Draw Spectra
-    fTotalUncertaintySpectrum       ->  SetMarkerStyle(markers[2]);
+    fTotalUncertaintySpectrum       ->  SetMarkerStyle(kMarkers[2]);
     fTotalUncertaintySpectrum       ->  SetMarkerSize(2);
-    fTotalUncertaintySpectrum       ->  SetMarkerColor(colors[0]);
+    fTotalUncertaintySpectrum       ->  SetMarkerColor(kColors[0]);
     fTotalUncertaintySpectrum       ->  SetLineColor(kBlack);
     fTotalUncertaintySpectrum       ->  DrawClone("EP");
     //
@@ -1381,9 +1405,9 @@ fEvaluateExtrapolationUncertainty
     hYieldVariations            ->  SetNameTitle( Form("hYieldVariations_%s",fName.Data()), "dN/dy variations" );
     //
     //  Gauss Fit
-    hYieldVariations            ->  Fit( "gaus", "IEMQS" );
-    auto fErrorMean             =   hYieldVariations->GetFunction("gaus")->GetParameter(1);
-    auto fErrorSTDV             =   hYieldVariations->GetFunction("gaus")->GetParameter(2);
+    //hYieldVariations            ->  Fit( "gaus", "IEMQS" );
+    auto fErrorMean             =   hYieldVariations->GetMean();
+    auto fErrorSTDV             =   hYieldVariations->GetRMS();
     auto fErrorFULL             =   fabs( fErrorMean - fStandardYield ) + fErrorSTDV;
     //
     //  Save in Results
@@ -1404,9 +1428,9 @@ fEvaluateExtrapolationUncertainty
     hPTVariation                ->  SetNameTitle( Form("hYieldVariations_%s",fName.Data()), "dN/dy variations" );
     //
     //  Gauss Fit
-    hPTVariation                ->  Fit( "gaus", "IEMQS" );
-    fErrorMean                  =   hPTVariation->GetFunction("gaus")->GetParameter(1);
-    fErrorSTDV                  =   hPTVariation->GetFunction("gaus")->GetParameter(2);
+    //hPTVariation                ->  Fit( "gaus", "IEMQS" );
+    fErrorMean                  =   hPTVariation->GetMean();
+    fErrorSTDV                  =   hPTVariation->GetRMS();
     fErrorFULL                  =   fabs( fErrorMean - fStandardMeanPT ) + fErrorSTDV;
     //
     //  Save in Results
@@ -1462,9 +1486,9 @@ fEvaluateExtrapolationUncertainty
     gPad                            ->  SetLogy();
     //
     //  Draw Spectra
-    fTotalUncertaintySpectrum       ->  SetMarkerStyle(markers[2]);
+    fTotalUncertaintySpectrum       ->  SetMarkerStyle(kMarkers[2]);
     fTotalUncertaintySpectrum       ->  SetMarkerSize(2);
-    fTotalUncertaintySpectrum       ->  SetMarkerColor(colors[0]);
+    fTotalUncertaintySpectrum       ->  SetMarkerColor(kColors[0]);
     fTotalUncertaintySpectrum       ->  SetLineColor(kBlack);
     fTotalUncertaintySpectrum       ->  GetXaxis()  ->  SetRangeUser(0.,4.0);
     fTotalUncertaintySpectrum       ->  DrawClone("EP");
@@ -1600,8 +1624,8 @@ fExtrapolateModel
     TCanvas                *cDrawResult =   new TCanvas(Form("%s_%s",gStatistics->GetName(),fName.Data()),"",1600,800);
     cDrawResult->Divide(2,1);
     gStyle  ->SetOptStat(0);
-    gTotal->SetMarkerStyle(markers[2]);
-    gTotal->SetMarkerColor(colors[0]);
+    gTotal->SetMarkerStyle(kMarkers[2]);
+    gTotal->SetMarkerColor(kColors[0]);
     gTotal->SetLineColor(kBlack);
     //
     //  Draw Spectra w/ function
@@ -1715,12 +1739,12 @@ Double_t*           fMeasureFullYield               ( TH1F* gStatistics, TH1F* g
     fResult[5]  =   fExtrapolResults[5];
     //
     //  Statistical Error of Result
-    fResult[6]  =   SquareSum( { fIntegralStat, fExtrapolResults[1] } );
-    fResult[7]  =   SquareSum( { fIntegralStat, fExtrapolResults[2] } );
+    fResult[6]  =   SquareSum( { fIntegralMeanPTStat, fExtrapolResults[6] } );
+    fResult[7]  =   SquareSum( { fIntegralMeanPTStat, fExtrapolResults[7] } );
     //
     //  Systematical Error of Result
-    fResult[8]  =   SquareSum( { fIntegralSyst, fExtrapolResults[3] } );
-    fResult[9]  =   SquareSum( { fIntegralSyst, fExtrapolResults[4] } );
+    fResult[8]  =   SquareSum( { fIntegralMeanPTSyst, fExtrapolResults[8] } );
+    fResult[9]  =   SquareSum( { fIntegralMeanPTSyst, fExtrapolResults[9] } );
     //
     //  Extrapolation only
     fResult[10] =   fExtrapolResults[0];
@@ -1778,15 +1802,16 @@ Double_t*           fMeasureFullYield               ( std::vector<TH1F*>  gStati
 //_____________________________________________________________________________
 //
 Double_t            fEvaluateINELgt0                ( Int_t iMultBin, TH1  *hMultCounter)  {
-    Double_t    fResult =   0;
+    auto    fResult = -1;
     auto    kUtilCount  =   (TH1F*)(hMultCounter->Clone());
     for ( Int_t iTer = 1; iTer <= kUtilCount->GetNbinsX(); iTer++ ) {
         auto    kBinCenter  =   hMultCounter->GetBinCenter(iTer);
-        if ( kBinCenter < kMltTrgECls[0] || kBinCenter > kMltTrgECls[nMltTrgECls-1] ) continue;
+        if ( kBinCenter < kTriggerEffMBins[0] || kBinCenter > kTriggerEffMBins[kTriggerEffMNBins] ) continue;
         auto    kBinContent =   hMultCounter->GetBinContent(iTer);
-        for ( Int_t iTe2 = 1; iTe2 < nMltTrgECls; iTe2++ )  {
-            if ( kBinCenter < kMltTrgECls[iTe2] )   {
-                kUtilCount->SetBinContent(iTer,kBinContent/kMultTrgEff[iTe2-1]);
+        for ( Int_t iTe2 = 1; iTe2 <= kTriggerEffMNBins+1; iTe2++ )  {
+            if ( kBinCenter < kTriggerEffMBins[iTe2] )   {
+                auto kEff = kLHC15n_fEV*kTriggerEffM15n[iTe2-1] + kLHC17pq_fEV*kTriggerEffM17pq[iTe2-1];
+                kUtilCount->SetBinContent(iTer,kBinContent/kEff);
                 break;
             }
         }
