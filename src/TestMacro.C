@@ -1,6 +1,5 @@
 #include "../inc/AliAnalysisPhiPair.h"
-#include "./Analysis/SignalExtraction.C"
-#include "./PreProcessing.C"
+#include "/Users/nikolajal/alice/AliAnalysisPhiCount/AliAnalysisUtility/ReweightEfficiency.C"
 // !TODO: Can there really be a TODO in a Test Macro?
 
 void
@@ -8,10 +7,42 @@ TestMacro
 ()  {
     fSetAllBins();
     //
+    TFile* kINFILE_1  =   new TFile   ("/Users/nikolajal/alice/AliAnalysisPhiCount/result/Yield/PreProcessing/IM_MonteCarloTruth.root");
+    TFile* kINFILE_2  =   new TFile   ("/Users/nikolajal/alice/AliAnalysisPhiCount/result/Yield/SignalExtrapolation/FitResults.root");
+    TFile* kOUTILE_1  =   new TFile   ("/Users/nikolajal/alice/AliAnalysisPhiCount/test.root","recreate");
     //
+    auto fEff = uLoadHistograms<0,TH1F>(kINFILE_1,"h1D_Eff");
+    auto fGen = uLoadHistograms<0,TH1F>(kINFILE_1,"h1D_Ngen_Fin");
+    auto fRec = uLoadHistograms<0,TH1F>(kINFILE_1,"h1D_Nrec_Fin");
+    auto fMe1 = uLoadHistograms<0,TH1F>(kINFILE_2,"h1D_Nraw_stat");
+    auto fMe2 = uLoadHistograms<0,TH1F>(kINFILE_2,"h1D_Nraw_syst");
+    auto fMe3 = uSumErrors(fMe1,fMe2);
     //
+    fSetAllFunctions();
+    fSetFunction(fLevyTsallis);
+    fMe3->Fit(fLevyTsallis,"IMREQS","",0.4,2);
     //
+    TCanvas* c1 = new TCanvas();
+    gPad->SetLogy();
+    //gPad->SetLogx();
+    fGen->Draw();
+    //
+    ReweightEfficiency(fMe2,fLevyTsallis,fGen,fRec,kOUTILE_1,0,1,0.00001);
+    //
+    return;
+    //
+    /*
+    for ( Int_t i = 0; i < nBinPT2D; i++ )  {
+        for ( Int_t j = i; j < nBinPT2D; j+=2 )  {
+            cout << "\\begin{figure}[!h]" << endl;
+            cout << "\\centering" << endl;
+            cout << Form("\\includegraphics[width=0.9\\linewidth]{../result/Yield/SignalExtraction/Plots/2D/PT_%2.1f_%2.1f__%2.1f_%2.1f_.pdf}",fArrPT2D[i],fArrPT2D[i+1],fArrPT2D[j],fArrPT2D[j+1]) << endl;
+            cout << Form("\\includegraphics[width=0.9\\linewidth]{../result/Yield/SignalExtraction/Plots/2D/PT_%2.1f_%2.1f__%2.1f_%2.1f_.pdf}",fArrPT2D[i],fArrPT2D[i+1],fArrPT2D[j+1],fArrPT2D[j+2]) << endl;
+            cout << "\\end{figure}[!h]" << endl;
+        }
+    }
     
+    return;
     TFile*  kINFILE_HI   =   new TFile   ("/Users/nikolajal/alice/AliAnalysisPhiCount/result/Reference_HI_MB.root");
     TProfile * hTest = (TProfile*)(kINFILE_HI->Get("hHISysErr"));
     TH1F* hTest2 = new TH1F("","",nBinPT1D,fArrPT1D);
@@ -223,7 +254,7 @@ TestMacro
         fOutput.at(6)->SetMarkerColor(colors[1+(6%3)]);
     }
      */
-    
+    /*
     TCanvas* cTest = new TCanvas("","",1000,700);
     cTest->Divide(3,2);
     auto iTer = 1;

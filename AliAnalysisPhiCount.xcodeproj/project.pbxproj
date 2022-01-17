@@ -1,0 +1,121 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXFileReference section */
+		DA1BA7BD27425E5B0026D827 /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; path = src; sourceTree = "<group>"; };
+		DA1BA7BF27425E5B0026D827 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		DA1BA7C127425E5B0026D827 /* inc */ = {isa = PBXFileReference; lastKnownFileType = folder; path = inc; sourceTree = "<group>"; };
+		DA1BA7C327425E5C0026D827 /* bash */ = {isa = PBXFileReference; lastKnownFileType = folder; path = bash; sourceTree = "<group>"; };
+		DA1BA7C427425EE20026D827 /* AliAnalysisUtility.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AliAnalysisUtility.xcodeproj; path = AliAnalysisUtility/AliAnalysisUtility.xcodeproj; sourceTree = "<group>"; };
+		DA1ED50727439CD000C7BD2B /* AliAnalysisTask.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AliAnalysisTask.xcodeproj; path = AliAnalysisTaskPhiCount/AliAnalysisTask.xcodeproj; sourceTree = "<group>"; };
+		DAADFCA8276C862300534E2A /* AliAnalysisQA.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AliAnalysisQA.xcodeproj; path = AliAnalysisQA/AliAnalysisQA.xcodeproj; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		DA1BA7B527425DD80026D827 = {
+			isa = PBXGroup;
+			children = (
+				DAADFCA8276C862300534E2A /* AliAnalysisQA.xcodeproj */,
+				DA1ED50727439CD000C7BD2B /* AliAnalysisTask.xcodeproj */,
+				DA1BA7C427425EE20026D827 /* AliAnalysisUtility.xcodeproj */,
+				DA1BA7C327425E5C0026D827 /* bash */,
+				DA1BA7C127425E5B0026D827 /* inc */,
+				DA1BA7BF27425E5B0026D827 /* README.md */,
+				DA1BA7BD27425E5B0026D827 /* src */,
+			);
+			sourceTree = "<group>";
+		};
+		DA1BA7C527425EE20026D827 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DA1ED50827439CD000C7BD2B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DAADFCA9276C862300534E2A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		DA1BA7B627425DD80026D827 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1300;
+			};
+			buildConfigurationList = DA1BA7B927425DD80026D827 /* Build configuration list for PBXProject "AliAnalysisPhiCount" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DA1BA7B527425DD80026D827;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = DAADFCA9276C862300534E2A /* Products */;
+					ProjectRef = DAADFCA8276C862300534E2A /* AliAnalysisQA.xcodeproj */;
+				},
+				{
+					ProductGroup = DA1ED50827439CD000C7BD2B /* Products */;
+					ProjectRef = DA1ED50727439CD000C7BD2B /* AliAnalysisTask.xcodeproj */;
+				},
+				{
+					ProductGroup = DA1BA7C527425EE20026D827 /* Products */;
+					ProjectRef = DA1BA7C427425EE20026D827 /* AliAnalysisUtility.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		DA1BA7BA27425DD80026D827 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		DA1BA7BB27425DD80026D827 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DA1BA7B927425DD80026D827 /* Build configuration list for PBXProject "AliAnalysisPhiCount" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA1BA7BA27425DD80026D827 /* Debug */,
+				DA1BA7BB27425DD80026D827 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DA1BA7B627425DD80026D827 /* Project object */;
+}

@@ -356,12 +356,12 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
     //-------------------------//
     //
     // Evaluating entries and saving them for later
-    Int_t nEvents = (!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : nEventsCut);
+    Int_t nEvents = 301;(!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : nEventsCut);
     
     if ( nEvents > 0 )  fStartTimer("Phi Analysis");
     
     // Starting cycle
-    for ( Int_t iEvent = 0; iEvent < nEvents; iEvent++ )
+    for ( Int_t iEvent = 300; iEvent < nEvents; iEvent++ )
     {
         // Recovering events
         TPhiCandidate->GetEntry(iEvent);
@@ -377,26 +377,27 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
         Bool_t  fCheckFill4 =   false;
         
         // Discarding Pile-up events
-        //if ( kDoYield           &&  fCheckMask(evPhiCandidate.EventMask,1) ) continue;
-        //if ( kDoMultiplicity    &&  ( fCheckMask(evPhiCandidate.EventMask,1) || fCheckMask(evPhiCandidate.EventMask,2) )) continue;
+        if ( kDoYield           &&  fCheckMask(evPhiCandidate.EventMask,1) ) continue;
+        if ( kDoMultiplicity    &&  ( fCheckMask(evPhiCandidate.EventMask,1) || fCheckMask(evPhiCandidate.EventMask,2) )) continue;
         
         fHEventCount_PhiCandidate_General_in_MT->Fill(evPhiCandidate.Multiplicity);
         for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )  {
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
             if ( !fAcceptCandidate(evPhiCandidate.InvMass[iPhi],LPhi_candidate1.Pt()) ) continue;
-            if ( !kDoRapidity && !fCutRapidity(LPhi_candidate1.Rapidity()) ) continue;
-            if (  kOnlyTrue && !evPhiCandidate.Nature[iPhi] ) continue;
+            //if ( !kDoRapidity && !fCutRapidity(LPhi_candidate1.Rapidity()) ) continue;
+            //if (  kOnlyTrue && !evPhiCandidate.Nature[iPhi] ) continue;
             U_AccCand[U_nAccept] = iPhi;
             evPhiCandidate.pT[iPhi]     =   LPhi_candidate1.Pt();
             evPhiCandidate.Rap[iPhi]    =   LPhi_candidate1.Rapidity();
             evPhiCandidate.iRap[iPhi]   =   fGetBinRap_(evPhiCandidate.Rap[iPhi]);
             evPhiCandidate.iPT1D[iPhi]  =   fGetBinPT1D(evPhiCandidate.pT[iPhi]);
             evPhiCandidate.iPT2D[iPhi]  =   fGetBinPT2D(evPhiCandidate.pT[iPhi]);
-            evPhiCandidate.kHasRap[iPhi]=   fabs(LPhi_candidate1.Rapidity()) <0.5;
+            evPhiCandidate.kHasRap[iPhi]=   ( LPhi_candidate1.Rapidity() > -0.5 ) && ( LPhi_candidate1.Rapidity() < +0.5 );
             U_nAccept++;
         }
         //
         if ( U_nAccept == 0 )       hTriggerEvt->Fill(0);
+        if ( U_nAccept == 0 ) continue;
         //
         //__________ORDERING by PT
         auto kContinue = kTRUE;
@@ -426,12 +427,16 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
         Int_t   iMult               =   fGetBinMult(evPhiCandidate.Multiplicity);
         evPhiCandidate.kHasMult     =   iMult != -1;
         //
+        //cout << "iEV: " << iEvent << endl;
+        //cout << "Accepted: " << U_nAccept << endl;
         for ( Int_t iPhi = 0; iPhi < U_nAccept; iPhi++ )    {
             // Must have at least 1 candidate
             if ( U_nAccept < 1 ) break;
 
             // Selecting valid candidates
+            //cout << "Try to pass cuts..." << endl;
             if ( !fAcceptCandidate( evPhiCandidate, U_AccCand, iPhi) ) continue;
+            //cout << "PASSED! " << iPhi << endl;
             //
             // >> 1-Dimensional Analysis Fill
             //
@@ -455,7 +460,7 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
             }
             hTriggerEvt1D                                       ->  Fill(evPhiCandidate.pT[U_AccCand[iPhi]]);
             //
-            if  ( fabs(iRapidity) < .5 )    {
+            if  ( evPhiCandidate.kHasRap[U_AccCand[iPhi]] )    {
             //
             // >->-->-> Rapidity
             //
@@ -468,6 +473,7 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
             // >->-->-> Yield
             //
                 if ( kDoYield ) {
+                    //cout << "fill!" << iPhi << endl;
                     hREC_1D                                         ->  Fill(iInvarMass);
                     hREC_1D_in_PT[iPT1D]                            ->  Fill(iInvarMass);
                     hREC_1D_in_PT_2D_bin[iPT2D]                     ->  Fill(iInvarMass);
@@ -515,7 +521,7 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
                 }
                 hTriggerEvt2D                                       ->  Fill(evPhiCandidate.pT[U_AccCand[iPhi]],evPhiCandidate.pT[U_AccCand[jPhi]],0.5);
                 //
-                if  ( fabs(iRapidity) < .5 && fabs(jRapidity) < .5 )    {
+                if  ( evPhiCandidate.kHasRap[U_AccCand[iPhi]] && evPhiCandidate.kHasRap[U_AccCand[iPhi]] )    {
                     if  ( fHasDiffRap && kDoRapidity )     {
                 //
                 // >->-->-> Rapidity
@@ -528,6 +534,13 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
                 //
                 // >->-->-> Yield
                 //
+                         if ( ( iPT2D == jPT2D)&&(iPT2D == 0) ) {
+                             cout << "iEV: " << iEvent << endl;
+                             for ( int i = 0; i < U_nAccept; i++ ){ cout << evPhiCandidate.pT[U_AccCand[i]] << endl;
+                             cout << evPhiCandidate.iPT2D[U_AccCand[i]] << endl;
+                             cout << iPT2D << endl;
+                             }
+                         }
                          hREC_2D                                    ->  Fill(iInvarMass,jInvarMass);
                          hREC_2D_in_PT[iPT2D][jPT2D]                ->  Fill(iInvarMass,jInvarMass);
                      }
@@ -885,8 +898,6 @@ void PreProcessing_Data ( string fFileName = "", TString fOption = "", Int_t nEv
             for (int jHisto = 0; jHisto < nBinPT2D; jHisto++)   {
                 
                 hREC_2D_in_PT[iHisto][jHisto]->Write();
-                
-                if ( hREC_2D_in_PT[iHisto][jHisto]->GetEntries() == 0 ) continue;
                 
                 gROOT->SetBatch(kTRUE);
                 

@@ -33,20 +33,14 @@ Production_SignalExtraction
     //  Utility variables-------------------------------------------------------------------------------------
     Int_t fTotalCount, fProgrCount;
     //
-    
-    
-    
     TFile*  insFile_DT_Slp     =   new TFile   ( Form( kMassResolution_Anal,  "yield" ) );
-    
     TH1F       *hSlop_Reference;
     TH1F       *hSlop_Referen2D;
- hName                       =   "hSigmaCnt_1D";
- hSlop_Reference             =   (TH1F*)(insFile_DT_Slp->Get(hName));
- hName                       =   "hSigmaCnt_1D_in_2D_bin";
- hSlop_Referen2D             =   (TH1F*)(insFile_DT_Slp->Get(hName));
-    
-    
-    
+    hName                       =   "hSigmaCnt_1D";
+    hSlop_Reference             =   (TH1F*)(insFile_DT_Slp->Get(hName));
+    hName                       =   "hSigmaCnt_1D_in_2D_bin";
+    hSlop_Referen2D             =   (TH1F*)(insFile_DT_Slp->Get(hName));
+    //
     if ( kDoYield ) {
         //
         //  Retrieving PreProcessed data histograms & reference resolution------------------------------------

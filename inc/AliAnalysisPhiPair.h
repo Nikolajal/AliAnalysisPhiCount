@@ -18,13 +18,13 @@
 //>>    Performance Regulation Values
 auto const  kCPU_use                =   1;
 auto const  kNCycle_                =   3;
-auto        kStatEvalCycles         =   100;
+auto        kStatEvalCycles         =   500;
 auto const  kPrintIntervalPP        =   1000000;
 auto const  k2DErrorLimit           =   10.;
-auto const  kCPUStrategy            =   1;
-auto const  kFitOffset              =   true;
-auto const  kFitInitHesse           =   true;
-auto const  kFitMinos               =   true;
+auto const  kCPUStrategy            =   2;
+auto const  kFitOffset              =   false;
+auto const  kFitInitHesse           =   false;
+auto const  kFitMinos               =   false;
 auto const  kFitMinuitStrategy      =   2;
 auto const  kSaveToFile             =   true;
 //
@@ -401,11 +401,11 @@ fFitCoreModel
     //>>    Signal PDF Coefficients
     RooRealVar sMass, sWidt, sSlop;
                                 sMass   =   RooRealVar      ("bMass",   "bMass",    kPhiMesonMass_,  kPhiMesonMass_*0.5,  kPhiMesonMass_*1.5);
-    if ( fLosWidt )             sWidt   =   RooRealVar      ("bWidt",   "bWidt",    kPhiMesonWidth,  kPhiMesonWidth*0.5,  kPhiMesonWidth*1.5);
+    if ( fLosWidt )             sWidt   =   RooRealVar      ("bWidt",   "bWidt",    kPhiMesonWidth,  kPhiMesonWidth*0.1,  kPhiMesonWidth*10.);
     else                        sWidt   =   RooRealVar      ("bWidt",   "bWidt",    kPhiMesonWidth);
     if ( bPythiaTest )          sSlop   =   RooRealVar      ("bSlop",   "bSlop",    0.);
-    else if ( !fUseFreeRes )    sSlop   =   RooRealVar      ("bSlop",   "bSlop",    fRescaleRes*hSlopReference->GetBinContent(PTindex+1)/1000.);
-    else                        sSlop   =   RooRealVar      ("bSlop",   "bSlop",    fRescaleRes*hSlopReference->GetBinContent(PTindex+1)/1000.);
+    else if ( !fUseFreeRes )    sSlop   =   RooRealVar      ("bSlop",   "bSlop",    fRescaleRes*hSlopReference->GetBinContent(PTindex+1));
+    else                        sSlop   =   RooRealVar      ("bSlop",   "bSlop",    fRescaleRes*hSlopReference->GetBinContent(PTindex+1), 0., 10.*fRescaleRes*hSlopReference->GetBinContent(PTindex+1) );
     //
     //>>    Normalisation Coefficients
     RooRealVar  nSS,    nBB;
@@ -534,12 +534,112 @@ FitModel
                 if  ( fDimension == 1)  fResults.push_back( new TH1F(Form("%s%s_%s","h1D_",    N_Raw->GetName(), fNameFile.Data()),  Form("%s%s","h1D_",     N_Raw->GetName()),nBinPT1D,fArrPT1D) );
                 else                    fResults.push_back( new TH1F(Form("%s%s_%s","h2Dbin_", N_Raw->GetName(), fNameFile.Data()),  Form("%s%s","h2Dbin_",  N_Raw->GetName()),nBinPT2D,fArrPT2D) );
             }
+            /*
             if  ( fDimension == 1)  {
                 fResults.push_back( new TH1F("hRAW_1D","hRAW_1D",nBinPT1D,fArrPT1D) );
                 fResults.push_back( new TH1F("hCOR_1D","hCOR_1D",nBinPT1D,fArrPT1D) );
             }   else    {
                 fResults.push_back( new TH1F("hRAW_1D_in_2D_bin","hRAW_1D_in_2D_bin",nBinPT1D,fArrPT1D) );
                 fResults.push_back( new TH1F("hCOR_1D_in_2D_bin","hCOR_1D_in_2D_bin",nBinPT1D,fArrPT1D) );
+            }
+             */
+        }
+        //
+        //>>    Filling Raw Count Histograms
+        Int_t   iTer = 0;
+        Float_t fCount, fCounE, fMean, fWidth;
+        Double_t    fMin,   fMax;
+        for ( auto fCoeff : fFitresultsStore[iFit]->floatParsFinal() )   {
+            auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
+            fResults.at(iTer)->SetBinContent          (iFit+1,N_Raw->getVal());
+            fResults.at(iTer)->SetBinError            (iFit+1,N_Raw->getError());
+            /*
+            if ( strncmp(N_Raw->GetName(),"anSS",4) == 0 )  {
+                fCount = N_Raw->getVal();
+                fCounE = N_Raw->getError();
+            }
+            if ( strncmp(N_Raw->GetName(),"bMass",5) == 0 ) fMean   =   N_Raw->getVal();
+            if ( strncmp(N_Raw->GetName(),"bWidt",5) == 0 ) fWidth  =   N_Raw->getVal();
+             */
+            iTer++;
+        }
+        for ( auto fCoeff : fFitresultsStore[iFit]->constPars() )   {
+            auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
+            fResults.at(iTer)->SetBinContent          (iFit+1,N_Raw->getVal());
+            fResults.at(iTer)->SetBinError            (iFit+1,N_Raw->getError());
+            /*
+            if ( strncmp(N_Raw->GetName(),"bMass",5) == 0 ) fMean   =   N_Raw->getVal();
+            if ( strncmp(N_Raw->GetName(),"bWidt",5) == 0 ) fWidth  =   N_Raw->getVal();
+             */
+            iTer++;
+        }
+        //
+        RooRealVar      vIntU   =   RooRealVar      ("vIntU",   "vIntU",    2*kKaonMass,  1000 );
+        RooRealVar      vMean   =   RooRealVar      ("vMean",   "vMean",    fMean   );
+        RooRealVar      vStdv   =   RooRealVar      ("vStdv",   "vStdv",    fWidth  );
+        //
+        SetBoundaries(fOption,fMin,fMax);
+        //
+        vIntU.setRange("Full",2*kKaonMass,1000);
+        vIntU.setRange("Meas",fMin,fMax);
+        //
+        RooBreitWigner  hUtil   =   RooBreitWigner  ("hUtil",   "hUtil",    vIntU,  vMean,  vStdv);
+        //
+        Float_t         kCorr   =   hUtil.analyticalIntegral(1,"Meas")/hUtil.analyticalIntegral(1,"Full");
+        //
+        fResults.at(iTer)->SetBinContent          (iFit+1,fCount/kCorr);
+        fResults.at(iTer)->SetBinError            (iFit+1,fCounE/kCorr);
+        iTer++;
+        //
+        fResults.at(iTer)->SetBinContent          (iFit+1,kCorr);
+        fResults.at(iTer)->SetBinError            (iFit+1,0);
+        iTer++;
+    }
+    //
+    return  fResults;
+}
+std::vector<TH1F*>
+FitModel
+ ( TH1F **hTarget, TH1F* hSlopReference, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
+    return FitModel(hTarget,hSlopReference,NULL_ROOFITPTR2,1,fOption,fTargetPath,fNameFile);
+}
+std::vector<TH1F*>
+FitModel
+ ( TH1F **hTarget, TH1F* hSlopReference, RooFitResult** &fFitresultsStore, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
+    return FitModel(hTarget,hSlopReference,fFitresultsStore,2,fOption,fTargetPath,fNameFile);
+}
+//
+std::vector<TH1F*>
+FitModel
+ ( std::vector<TH1F*> hTarget, TH1F* hSlopReference, RooFitResult** &fFitresultsStore, Int_t fDimension, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "" )  {
+    std::vector<TH1F*>  fResults;
+    if ( !fFitresultsStore )  {  fFitresultsStore = new RooFitResult*[((fDimension == 1)? nBinPT1D : nBinPT2D)]; }
+    auto iFit = 0;
+    for ( auto kCurrent_Target : hTarget ) {
+        //>>    Fit to model
+        fFitresultsStore[iFit]      =   fFitCoreModel(kCurrent_Target,hSlopReference,fNameFile,fOption,iFit,fDimension,fTargetPath);
+        //
+        //>>    SegFault Protection
+        if ( !fFitresultsStore[iFit] ) continue;
+        //
+        //>>    Building Raw Count histograms
+        if ( iFit == 0 )   {
+            for ( auto fCoeff : fFitresultsStore[iFit]->floatParsFinal() )   {
+                auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
+                if  ( fDimension == 1)  fResults.push_back( new TH1F(Form("%s%s_%s","h1D_",     N_Raw->GetName(),   fNameFile.Data()),  Form("%s%s",    "h1D_",     N_Raw->GetName()),  nBinPT1D,   fArrPT1D) );
+                else                    fResults.push_back( new TH1F(Form("%s%s_%s","h1D_2Db_", N_Raw->GetName(),   fNameFile.Data()),  Form("%s%s",    "h1D_2Db_", N_Raw->GetName()),  nBinPT2D,   fArrPT2D) );
+            }
+            for ( auto fCoeff : fFitresultsStore[iFit]->constPars() )   {
+                auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
+                if  ( fDimension == 1)  fResults.push_back( new TH1F(Form("%s%s_%s","h1D_",     N_Raw->GetName(),   fNameFile.Data()),  Form("%s%s",    "h1D_",     N_Raw->GetName()),  nBinPT1D,   fArrPT1D) );
+                else                    fResults.push_back( new TH1F(Form("%s%s_%s","h1D_2Db_", N_Raw->GetName(),   fNameFile.Data()),  Form("%s%s",    "h1D_2Db_", N_Raw->GetName()),  nBinPT2D,   fArrPT2D) );
+            }
+            if  ( fDimension == 1)  {
+                fResults.push_back( new TH1F(Form("%s%s_%s","h1D_",     "Nraw", fNameFile.Data()),  Form("%s%s_%s","h1D_",     "Nraw", fNameFile.Data()),  nBinPT1D,   fArrPT1D) );
+                fResults.push_back( new TH1F(Form("%s%s_%s","h1D_",     "Kcor", fNameFile.Data()),  Form("%s%s_%s","h1D_",     "Kcor", fNameFile.Data()),  nBinPT1D,   fArrPT1D) );
+            }   else    {
+                fResults.push_back( new TH1F(Form("%s%s_%s","h1D_2Db_", "Nraw", fNameFile.Data()),  Form("%s%s_%s","h1D_2Db_", "Nraw", fNameFile.Data()),  nBinPT2D,   fArrPT2D) );
+                fResults.push_back( new TH1F(Form("%s%s_%s","h1D_2Db_", "Kcor", fNameFile.Data()),  Form("%s%s_%s","h1D_2Db_", "Kcor", fNameFile.Data()),  nBinPT2D,   fArrPT2D) );
             }
         }
         //
@@ -588,18 +688,19 @@ FitModel
         fResults.at(iTer)->SetBinContent          (iFit+1,kCorr);
         fResults.at(iTer)->SetBinError            (iFit+1,0);
         iTer++;
+        iFit++;
     }
     //
     return  fResults;
 }
 std::vector<TH1F*>
 FitModel
- ( TH1F **hTarget, TH1F* hSlopReference, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
+ ( std::vector<TH1F*> hTarget, TH1F* hSlopReference, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
     return FitModel(hTarget,hSlopReference,NULL_ROOFITPTR2,1,fOption,fTargetPath,fNameFile);
 }
 std::vector<TH1F*>
 FitModel
- ( TH1F **hTarget, TH1F* hSlopReference, RooFitResult** &fFitresultsStore, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
+ ( std::vector<TH1F*> hTarget, TH1F* hSlopReference, RooFitResult** &fFitresultsStore, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
     return FitModel(hTarget,hSlopReference,fFitresultsStore,2,fOption,fTargetPath,fNameFile);
 }
 //
@@ -620,7 +721,7 @@ fFitCoreModel
     fAlwaysFit  =   fOption.Contains("FIT", TString::kIgnoreCase);
     fSaveToFile =   fOption.Contains("SAVE",TString::kIgnoreCase);
     //
-    //>>    Check there is a reasonable amount of entries form the general method, or if it has been overrided
+    //>>    Check there is a reasonable amount of entries from the general method, or if it has been overrided
     if ( !fIsWorthFitting( THdata ) || fAlwaysFit ) return nullptr;
     //
     //>>    Global Variables
@@ -672,16 +773,10 @@ fFitCoreModel
     RooRealVar pSlopey  = RooRealVar ("pSlopy","pSlopy" ,fYShapes->getRealValue("bSlop",0));
     
     // Coefficients
-    auto fS__x  =   fXShapes->getRealValue("anSS",0);
-    auto fB__x  =   fXShapes->getRealValue("anBB",0);
-    auto fS__y  =   fYShapes->getRealValue("anSS",0);
-    auto fB__y  =   fYShapes->getRealValue("anBB",0);
-    auto fTot_  =   fS__x*fS__y+fB__x*fB__y+fS__x*fB__y+fB__x*fS__y;
-    
-    RooRealVar n0       = RooRealVar ("anSS2D","anSS2D" ,nEntries*(fS__x*fS__y)/fTot_,0.,nEntries);
-    RooRealVar n1       = RooRealVar ("anBB2D","anBB2D" ,nEntries*(fB__x*fB__y)/fTot_,0.,nEntries);
-    RooRealVar n2       = RooRealVar ("anBS2D","anBS2D" ,nEntries*(fB__x*fS__y)/fTot_,0.,nEntries);
-    RooRealVar n3       = RooRealVar ("anSB2D","anSB2D" ,nEntries*(fS__x*fB__y)/fTot_,0.,nEntries);
+    RooRealVar n0       = RooRealVar ("anSS2D","anSS2D" ,0.50*nEntries,1,1.00*nEntries);
+    RooRealVar n1       = RooRealVar ("anBB2D","anBB2D" ,0.18*nEntries,1,1.00*nEntries);
+    RooRealVar n2       = RooRealVar ("anBS2D","anBS2D" ,0.18*nEntries,1,1.00*nEntries);
+    RooRealVar n3       = RooRealVar ("anSB2D","anSB2D" ,0.02*nEntries,1,1.00*nEntries);
     
     // PDFs
     RooChebychev        fBkgx   ("fBkgx","fBkgx"        ,xInvMass,RooArgSet(ch1x,ch2x,ch3x,ch4x));
@@ -712,11 +807,11 @@ fFitCoreModel
     RooAddPdf           fMod    ("fMod2D","fMod2D"      ,RooArgList(*fBB,fSS,*fSB,*fBS),RooArgList(n1,n0,n3,n2));
     
     RooFitResult* fFitResults;
-    fFitResults      =   fMod.fitTo(*dataLoose,Save(),NumCPU(kCPU_use,kCPUStrategy));
+    fFitResults =   fMod.fitTo(*dataLoose,Extended(kTRUE),Save(),NumCPU(kCPU_use,kCPUStrategy),Offset(kFitOffset),Strategy(kFitMinuitStrategy),InitialHesse(kFitInitHesse),Minos(kFitMinos));
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
-        fFitResults      =   fMod.fitTo(*data,Extended(kTRUE),Save(),NumCPU(kCPU_use,kCPUStrategy),Offset(kFitOffset),Strategy(kFitMinuitStrategy),InitialHesse(kFitInitHesse),Minos(kFitMinos));
-        auto N_Raw      =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().find("anSS2D"));
+        fFitResults =   fMod.fitTo(*data,Extended(kTRUE),Save(),NumCPU(kCPU_use,kCPUStrategy),Offset(kFitOffset),Strategy(kFitMinuitStrategy),InitialHesse(kFitInitHesse),Minos(kFitMinos));
+        auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().find("anSS2D"));
         if ( fIsResultAcceptable(N_Raw->getVal(),N_Raw->getError(),k2DErrorLimit) ) break;
     }
     // Save to file
@@ -867,6 +962,7 @@ fFitCoreModel
 std::vector<TH2F*>
 FitModel
  ( TH1F  **hShapeFit, TH1F* hSlopReference, TH2F***hTarget, RooFitResult*** &fFitresultsStore = NULL_ROOFITPTR3, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
+    
     std::vector<TH2F*>  fResults;
     RooFitResult      **fShapeStore = nullptr;
     if ( !fFitresultsStore )    {
@@ -895,12 +991,12 @@ FitModel
             //
             //>>    Building Raw Count histograms
             if ( iFit == 0 && jFit == 0 )   {
-                Int_t   iTer = 0;
+                //Int_t   iTer = 0;
                 for ( auto fCoeff : fFitresultsStore[iFit][jFit]->floatParsFinal() )   {
                     auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
                     fResults.push_back( new TH2F(Form("%s_%s",N_Raw->GetName(),fNameFile.Data()),N_Raw->GetName(),nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D) );
-                    if ( strncmp(N_Raw->GetName(),"anSS2D",6) == 0 ) fResults.at(iTer)->SetName("hRAW_2D");
-                    iTer++;
+                    //if ( strncmp(N_Raw->GetName(),"anSS2D",6) == 0 ) fResults.at(iTer)->SetName("hRAW_2D");
+                    //iTer++;
                 }
                 for ( auto fCoeff : fFitresultsStore[iFit][jFit]->constPars() )   {
                     auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
@@ -920,6 +1016,15 @@ FitModel
                     fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,2.*N_Raw->getVal());
                     fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,2.*N_Raw->getError());
                 }
+                iTer++;
+            }
+            for ( auto fCoeff : fFitresultsStore[iFit][jFit]->constPars() )   {
+                auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
+                cout << N_Raw->GetName() << ": " << N_Raw->getVal() << " +- " << N_Raw->getError() << endl;
+                fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,N_Raw->getVal());
+                fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
+                fResults.at(iTer)->SetBinContent          (jFit+1,iFit+1,N_Raw->getVal());
+                fResults.at(iTer)->SetBinError            (jFit+1,iFit+1,N_Raw->getError());
                 iTer++;
             }
         }
@@ -970,6 +1075,7 @@ FitModel
                 fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
                 iTer++;
             }
+            
         }
     }
     return fResults;
@@ -994,6 +1100,143 @@ FitModel
     return  FitModel(hTarget,hSlopReference,fShapeStore,NULL_ROOFITPTR3,fOption,fTargetPath,fNameFile,f1Din2DbinCheck);
 }
 //
+std::vector<TH2F*>
+FitModel
+ ( std::vector<TH1F*> hShapeFit, TH1F* hSlopReference, std::vector<std::vector<TH2F*>>hTarget, RooFitResult*** &fFitresultsStore = NULL_ROOFITPTR3, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
+    std::vector<TH2F*>  fResults;
+    RooFitResult      **fShapeStore = nullptr;
+    if ( !fFitresultsStore )    {
+        fFitresultsStore = new RooFitResult**[nBinPT2D];
+        for ( Int_t iTer = 0; iTer < nBinPT2D; iTer++ ) {
+            fFitresultsStore[iTer]  =    new RooFitResult    *[nBinPT2D];
+        }
+    }
+    //
+    //>>    Recover 1D Shapes
+    f1Din2DbinCheck     =   FitModel(hShapeFit,hSlopReference,fShapeStore,2,fOption,fTargetPath,fNameFile);
+    //
+    //>>    Fit 2D Histograms
+    for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ ) {
+        for ( Int_t jFit = iFit; jFit > -1; jFit-- ) {
+            //
+            //>>    Protection Against SegFault
+            if ( !fShapeStore[iFit] ) continue;
+            if ( !fShapeStore[jFit] ) continue;
+            //
+            //>>    Fit
+            fFitresultsStore[iFit][jFit]       =  fFitCoreModel(hTarget[iFit][jFit],hSlopReference,fShapeStore[iFit],fShapeStore[jFit],fNameFile,fOption,iFit,jFit,fTargetPath);
+            //
+            //>>    Protection Against SegFault
+            if ( !fFitresultsStore[iFit][jFit] ) continue;
+            //
+            //>>    Building Raw Count histograms
+            if ( iFit == 0 && jFit == 0 )   {
+                Int_t   iTer = 0;
+                for ( auto fCoeff : fFitresultsStore[iFit][jFit]->floatParsFinal() )   {
+                    auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
+                    fResults.push_back( new TH2F(Form("%s_%s",N_Raw->GetName(),fNameFile.Data()),N_Raw->GetName(),nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D) );
+                    iTer++;
+                }
+                for ( auto fCoeff : fFitresultsStore[iFit][jFit]->constPars() )   {
+                    auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
+                    fResults.push_back( new TH2F(Form("%s_%s",N_Raw->GetName(),fNameFile.Data()),N_Raw->GetName(),nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D) );
+                }
+            }
+            //
+            //>>    Filling Raw Count Histograms
+            Int_t   iTer = 0;
+            for ( auto fCoeff : fFitresultsStore[iFit][jFit]->floatParsFinal() )   {
+                auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
+                fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,N_Raw->getVal());
+                fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
+                fResults.at(iTer)->SetBinContent          (jFit+1,iFit+1,N_Raw->getVal());
+                fResults.at(iTer)->SetBinError            (jFit+1,iFit+1,N_Raw->getError());
+                if ( iFit == jFit ) {
+                    fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,2.*N_Raw->getVal());
+                    fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,2.*N_Raw->getError());
+                }
+                iTer++;
+            }
+            for ( auto fCoeff : fFitresultsStore[iFit][jFit]->constPars() )   {
+                auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
+                fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,N_Raw->getVal());
+                fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
+                fResults.at(iTer)->SetBinContent          (jFit+1,iFit+1,N_Raw->getVal());
+                fResults.at(iTer)->SetBinError            (jFit+1,iFit+1,N_Raw->getError());
+                iTer++;
+            }
+        }
+    }
+    return fResults;
+}
+std::vector<TH2F*>
+FitModel
+ ( std::vector<std::vector<TH2F*>>hTarget, TH1F* hSlopReference,  RooFitResult**  fShapeStore, RooFitResult*** &fFitresultsStore = NULL_ROOFITPTR3, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
+    std::vector<TH2F*>  fResults;
+    if ( !fFitresultsStore )    {
+        fFitresultsStore = new RooFitResult**[nBinPT2D];
+        for ( Int_t iTer = 0; iTer < nBinPT2D; iTer++ ) {
+            fFitresultsStore[iTer]  =    new RooFitResult    *[nBinPT2D];
+        }
+    }
+    //
+    //>>    Fit 2D Histograms
+    for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ ) {
+        for ( Int_t jFit = 0; jFit < nBinPT2D; jFit++ ) {
+            //
+            //>>    Protection Against SegFault
+            if ( !fShapeStore[iFit] ) continue;
+            if ( !fShapeStore[jFit] ) continue;
+            //
+            //>>    Fit
+            fFitresultsStore[iFit][jFit]       =  fFitCoreModel(hTarget[iFit][jFit],hSlopReference,fShapeStore[iFit],fShapeStore[jFit],fNameFile,fOption,iFit,jFit,fTargetPath);
+            //
+            //>>    Protection Against SegFault
+            if ( !fFitresultsStore[iFit][jFit] ) continue;
+            //
+            //>>    Building Raw Count histograms
+            if ( iFit == 0 && jFit == 0 )   {
+                Int_t   iTer = 0;
+                for ( auto fCoeff : fFitresultsStore[iFit][jFit]->floatParsFinal() )   {
+                    auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
+                    fResults.push_back( new TH2F(N_Raw->GetName(),N_Raw->GetName(),nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D) );
+                    if ( strncmp(N_Raw->GetName(),"anSS2D",6) == 0 ) fResults.at(iTer)->SetName("hRAW_2D");
+                    iTer++;
+                }
+            }
+            //
+            //>>    Filling Raw Count Histograms
+            Int_t   iTer = 0;
+            for ( auto fCoeff : fFitresultsStore[iFit][jFit]->floatParsFinal() )   {
+                auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
+                fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,N_Raw->getVal());
+                fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
+                iTer++;
+            }
+        }
+    }
+    return fResults;
+}
+std::vector<TH2F*>
+FitModel                        ( std::vector<TH1F*> hShapeFit, TH1F* hSlopReference, std::vector<std::vector<TH2F*>>hTarget, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "",  std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
+    return  FitModel(hShapeFit,hSlopReference,hTarget,NULL_ROOFITPTR3,fOption,fTargetPath,fNameFile);
+}
+std::vector<TH2F*>
+FitModel
+ ( std::vector<TH1F*> hShapeFit, TH1F* hSlopReference, std::vector<std::vector<TH2F*>>hTarget, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
+    return  FitModel(hShapeFit,hSlopReference,hTarget,NULL_ROOFITPTR3,fOption,fTargetPath,fNameFile,f1Din2DbinCheck);
+}
+std::vector<TH2F*>
+FitModel
+ ( std::vector<std::vector<TH2F*>>hTarget, TH1F* hSlopReference, RooFitResult**  fShapeStore, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "" )  {
+    return  FitModel(hTarget,hSlopReference,fShapeStore,NULL_ROOFITPTR3,"",fTargetPath,fNameFile,f1Din2DbinCheck);
+}
+std::vector<TH2F*>
+FitModel
+ ( std::vector<std::vector<TH2F*>>hTarget, TH1F* hSlopReference, RooFitResult**  fShapeStore, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
+    return  FitModel(hTarget,hSlopReference,fShapeStore,NULL_ROOFITPTR3,fOption,fTargetPath,fNameFile,f1Din2DbinCheck);
+}
+//
 //_____________________________________________________________________________
 
 //------------------------------//
@@ -1002,6 +1245,7 @@ FitModel
 //
 template < class Tclass >
 void    SetAxis             ( Tclass * aTarget, string aOption = "" )   {
+    SetStyle();
     if ( aOption.find("IM") != -1 )
     {
         if ( aOption.find("2D") != -1 )
@@ -1031,7 +1275,8 @@ void    SetAxis             ( Tclass * aTarget, string aOption = "" )   {
             
             // Y-Axis formatting
             aTarget->GetYaxis()->SetTitle("#frac{d^{2}N_{#phi#phi}}{dydp_{T}#phi_{2}}(GeV/c)^{-1}");
-            aTarget->GetYaxis()->SetTitleOffset(1.15);
+            aTarget->GetYaxis()->SetTitleOffset(2.15);
+            aTarget->GetYaxis()->SetTitleSize(0.032);
         }
         else if ( aOption.find("2D") != -1 )
         {
@@ -1041,7 +1286,8 @@ void    SetAxis             ( Tclass * aTarget, string aOption = "" )   {
                 
             // Y-Axis formatting
             aTarget->GetYaxis()->SetTitle("#it{p}_{T,#phi_{2}} (GeV/#it{c})");
-            aTarget->GetYaxis()->SetTitleOffset(1.15);
+            aTarget->GetYaxis()->SetTitleOffset(2.15);
+            aTarget->GetYaxis()->SetTitleSize(0.032);
                 
             // Z-Axis formatting
             //aTarget->GetZaxis()->SetTitle("#frac{d^{3}N_{#phi#phi}}{dydp_{T}#phi_{1}dp_{T}#phi_{2}}(GeV/c)^{-1}");
@@ -1055,8 +1301,19 @@ void    SetAxis             ( Tclass * aTarget, string aOption = "" )   {
             
             // Y-Axis formatting
             aTarget->GetYaxis()->SetTitle("#frac{d^{2}N_{#phi}}{dydp_{T}}(GeV/c)^{-1}");
-            aTarget->GetYaxis()->SetTitleOffset(1.15);
+            aTarget->GetYaxis()->SetTitleOffset(2.15);
+            aTarget->GetYaxis()->SetTitleSize(0.032);
         }
+    }
+    else if ( aOption.find("CR") != -1 )
+    {
+        // X-Axis formatting
+        aTarget->GetXaxis()->SetTitle("#Delta#varphi (deg)");
+        aTarget->GetXaxis()->SetTitleOffset(1.15);
+        
+        // Y-Axis formatting
+        aTarget->GetYaxis()->SetTitle("#frac{d^{2}N_{#phi}}{dyd#varphi}");
+        aTarget->GetYaxis()->SetTitleOffset(1.15);
     }
 }
 //
@@ -1117,6 +1374,7 @@ fChooseOption
  ( TString fOption ) {
     kDoMultiplicity         =   false;
     kDoYield                =   false;
+    kDoCorrelation          =   false;
     kDoTrigger              =   false;
     kDoRapidity             =   false;
     if ( fOption.IsNull() ) {
@@ -1129,8 +1387,10 @@ fChooseOption
         if ( fOption.Contains(kString,   TString::kIgnoreCase) ) {
             kDoMultiplicity         =   true;
             kDoYield                =   true;
+            kDoCorrelation          =   true;
         }
     }
+    // TODO: If already triggerd in all avoid scrolling through option tags
     //  Check option: YIELD
     for ( auto kString : kOptStrings_Yield )  {
         if ( fOption.Contains(kString,   TString::kIgnoreCase) ) {
@@ -1143,9 +1403,16 @@ fChooseOption
             kDoMultiplicity         =   true;
         }
     }
+    //  Check option: CORRELATION
+    for ( auto kString : kOptStrings_Correlation )  {
+        if ( fOption.Contains(kString,   TString::kIgnoreCase) ) {
+            kDoCorrelation          =   true;
+        }
+    }
     if ( kDoYield )         cout << "[INFO] Yield option chosen" <<endl;
     if ( kDoMultiplicity )  cout << "[INFO] Multiplicity option chosen" <<endl;
-    auto    fResult =   kDoYield || kDoMultiplicity;
+    if ( kDoCorrelation )   cout << "[INFO] Correlation option chosen" <<endl;
+    auto    fResult =   kDoYield || kDoMultiplicity || kDoCorrelation;
     if ( !fResult ) cout << "[INFO] No option chosen" << endl;
     return  fResult;
 }
@@ -1255,7 +1522,10 @@ void                fSetFunction                    ( TF2* fFitFunction , Double
     fFitFunction    ->  SetParLimits(ySlop,0.05,30);
     fFitFunction    ->  SetParameter(ySlop,.330);
 }
-
+void                fSetAllCustomFunctions(){
+    fSetAllFunctions();
+    for ( auto func : kAllFunctions ) fSetFunction(func);
+}
 //
 //_____________________________________________________________________________
 //
@@ -1377,7 +1647,7 @@ fEvaluateExtrapolationUncertainty
         //  Dump Canvas
         auto    cDump   =   new TCanvas();
         //  Randomise points
-        auto    fCurrentUtilitySpectrum =   uRandomizePoints( fStaticUncertaintySpectrum, fVariableUncertaintySpectrum );
+        auto    fCurrentUtilitySpectrum =   uRandomisePoints( fStaticUncertaintySpectrum, fVariableUncertaintySpectrum );
         //
         //  //! TODO: Looks like a cheap fix
         //
@@ -1660,12 +1930,12 @@ fExtrapolateModel
     uRandomGen->SetSeed(1);
     auto fSystResults                   =   fEvaluateExtrapolationUncertainty(fIsConditional,gStatistics,gSystematics,fIntegral,fMinFitInt,fMaxFitInt,TString("Syst_")+fName,fFolder);
     //
-    auto fSystResuFit                   =   fEvaluateExtrapolationUncertainty(fIsConditional,gStatistics,gSystematics,fSystFitFunctions,fMinFitInt,fMaxFitInt,TString("SFit_")+fName,fFolder);
+    //auto fSystResuFit                   =   fEvaluateExtrapolationUncertainty(fIsConditional,gStatistics,gSystematics,fSystFitFunctions,fMinFitInt,fMaxFitInt,TString("SFit_")+fName,fFolder);
     //
     fResult[1] = fResult[2] = fStatResults.at(0);
-    fResult[3] = fResult[4] = SquareSum( { fSystResults.at(0), fSystResuFit.at(0) } );
+    fResult[3] = fResult[4] = SquareSum( { fSystResults.at(0)/*, fSystResuFit.at(0)*/ } );
     fResult[6] = fResult[7] = fStatResults.at(2);
-    fResult[8] = fResult[9] = SquareSum( { fSystResults.at(2), fSystResuFit.at(2) } );
+    fResult[8] = fResult[9] = SquareSum( { fSystResults.at(2)/*, fSystResuFit.at(2)*/ } );
     //_____________________________________
     //
     //  End Optimisation mode
@@ -1899,7 +2169,10 @@ Bool_t      fSetCandidates                      ( TTree* TPhiCnd, Struct_PhiCand
 //
 //_____________________________________________________________________________
 //
-
+/*
+std::tuple<Double_t,Double_t,Double_t>
+GetFullYield
+ */
 
 
 
@@ -2359,5 +2632,184 @@ fCalculateSystematics
 (){
     
 }
+
+void
+uOrderPTCandidates
+ ( Struct_PhiCandidate &fCurrent_Candidates ) {
+    auto    kContinue   =   true;
+    Int_t   kNewArray[128];
+    for ( Int_t iPhi = 0; iPhi < fCurrent_Candidates.nPhi; iPhi++ ) kNewArray[iPhi] = iPhi;
+    while ( kContinue ) {
+        Int_t   nSwitches   =   0;
+        for ( Int_t iPhi = 0; iPhi < fCurrent_Candidates.nPhi-1; iPhi++ )    {
+            auto    kPT_Cand1   =   fCurrent_Candidates.pT[kNewArray[iPhi]  ];
+            auto    kPT_Cand2   =   fCurrent_Candidates.pT[kNewArray[iPhi+1]];
+            if  ( kPT_Cand1 >= kPT_Cand2 )   continue;
+            Int_t   kFirst      =   kNewArray[iPhi];
+            Int_t   kSecond     =   kNewArray[iPhi+1];
+            kNewArray[iPhi]     =   kSecond;
+            kNewArray[iPhi+1]   =   kFirst;
+            nSwitches++;
+        }
+        if ( nSwitches == 0 ) kContinue = false;
+    }
+    Struct_PhiCandidate kUtility = fCurrent_Candidates;
+    for ( Int_t iPhi = 0; iPhi < fCurrent_Candidates.nPhi; iPhi++ )    {
+        fCurrent_Candidates.InvMass     [ iPhi ]    =   kUtility.InvMass        [ kNewArray[iPhi] ];
+        fCurrent_Candidates.TrueInvMass [ iPhi ]    =   kUtility.TrueInvMass    [ kNewArray[iPhi] ];
+        fCurrent_Candidates.iKaon       [ iPhi ]    =   kUtility.iKaon          [ kNewArray[iPhi] ];
+        fCurrent_Candidates.jKaon       [ iPhi ]    =   kUtility.jKaon          [ kNewArray[iPhi] ];
+        fCurrent_Candidates.pT          [ iPhi ]    =   kUtility.pT             [ kNewArray[iPhi] ];
+        fCurrent_Candidates.Phi         [ iPhi ]    =   kUtility.Phi            [ kNewArray[iPhi] ];
+        fCurrent_Candidates.Rap         [ iPhi ]    =   kUtility.Rap            [ kNewArray[iPhi] ];
+        fCurrent_Candidates.iPT1D       [ iPhi ]    =   kUtility.iPT1D          [ kNewArray[iPhi] ];
+        fCurrent_Candidates.iPT2D       [ iPhi ]    =   kUtility.iPT2D          [ kNewArray[iPhi] ];
+        fCurrent_Candidates.kHasRap     [ iPhi ]    =   kUtility.kHasRap        [ kNewArray[iPhi] ];
+    }
+}
+
+
+/*
+// TODO: STD::VEC with fit parameter
+TH1F*
+uCalculateResolutionTrueMassFIT
+ ( std::vector<TH1F*> hInput,  std::vector<TH1F*> hResol, TH1F* hFill, TString kFolder = "" ) {
+    auto    fResult =   (TH1F*)(hFill->Clone());
+    auto    iHist   =   1;
+    for ( auto kHisto : hInput ) {
+        //
+        //  --- Setting up the Fit
+        gROOT   ->  SetBatch( kTRUE );
+        //
+        RooRealVar      InvMass =   RooRealVar  ("InvMass", "m_{k^{+}k^{-}}^{REC}", 1.005,  1.0335  );
+        RooDataHist*    data    =   new RooDataHist ("Data",    "Data", InvMass,    Import(*kHisto) );
+        //
+        RooRealVar      sMass, sWidt, sSlop;
+                        sMass   =   RooRealVar  ("bMass",   "bMass",    kPhiMesonMass_);
+                        sWidt   =   RooRealVar  ("bWidt",   "bWidt",    kPhiMesonWidth);
+                        sSlop   =   RooRealVar  ("bSlop",   "bSlop",    0.0015,     0.0000, 0.0100);
+        RooVoigtian     fSig    =   RooVoigtian ("fSig",    "fSig",     InvMass,    sMass,  sWidt,  sSlop);
+        //
+        auto fFitResults = fSig.fitTo(*data,Save(),NumCPU(kCPU_use,kCPUStrategy),Offset(kFitOffset),Strategy(kFitMinuitStrategy),InitialHesse(kFitInitHesse),Minos(kFitMinos));
+        auto N_Raw  =   static_cast<RooRealVar*>(fFitResults ->floatParsFinal().find("bSlop"));
+        //
+        fResult->SetBinContent  ( iHist, N_Raw -> getVal() );
+        fResult->SetBinError    ( iHist, N_Raw -> getError() );
+        //
+        TCanvas *cDrawPlot   =   new TCanvas();
+        auto fSaveToFrame   =   InvMass.frame(Name(""),Title(""));
+        data                ->plotOn(fSaveToFrame,      MarkerColor(38),                MarkerStyle(26),    Name("RooData"));
+        fSig                .plotOn (fSaveToFrame,      LineColor(4),                   LineStyle(kSolid), Name("RooMod"));
+        fSaveToFrame        ->  SetTitle("");
+        fSaveToFrame        ->  Draw();
+        cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Yield")+TString(Form("MDSVoigtFit_1D_%i.pdf",iHist)));
+        //if ( kDoMultiplicity )  cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString(Form("MDSVoigtFit_1D_%i.pdf",iHist)));
+        delete              cDrawPlot;
+        //
+        iHist++;
+    }
+    return fResult;
+}*/
+
+void
+uPlotInvMass
+ ( TH2F* hTarget, TString kFolder )  {
+    auto    kTokenArray =   TString(hTarget->GetName()).Tokenize("_");
+    auto    kLast       =   (TObjString*)kTokenArray->At( kTokenArray->GetLast() );
+    auto    k2Last      =   (TObjString*)kTokenArray->At( kTokenArray->GetLast() -1 );
+    auto    iHisto      =   k2Last->GetString().Atoi();
+    auto    jHisto      =   kLast->GetString().Atoi();
+    
+    gROOT->SetBatch(kTRUE);
+    SetStyle();
+    gStyle->SetPadTopMargin(0.2);
+    gStyle->SetPadRightMargin(0.18);
+    gStyle->SetPadLeftMargin(0.16);
+    
+    TCanvas    *cDrawHisto  =   new TCanvas("cDrawHisto","cDrawHisto",3000,3000);
+    //
+    //  X axis
+    hTarget->GetXaxis()->SetLabelOffset(0.015);
+    hTarget->GetXaxis()->SetTitleOffset(1.3);
+    hTarget->GetXaxis()->SetNdivisions(8);
+    //
+    //  Y axis
+    hTarget->GetYaxis()->SetTitleOffset(1.45);
+    hTarget->GetYaxis()->SetNdivisions(8);
+    //
+    //  Z axis
+    hTarget->GetZaxis()->SetTitle(Form("Counts/( %.1f MeV/#it{c}^{2} )",1000*kBinningPrecision2D));
+    hTarget->GetZaxis()->SetTitleOffset(1.3);
+    hTarget->GetZaxis()->SetNdivisions(8);
+    //
+    hTarget->Draw("COLZ");
+    
+    uLatex->SetTextFont(60);
+    uLatex->SetTextSize(0.05);
+    uLatex->DrawLatexNDC(0.12, 0.95,"ALICE Performance");
+    uLatex->SetTextFont(42);
+    uLatex->SetTextSize(0.04);
+    uLatex->DrawLatexNDC(0.12, 0.90,"pp #sqrt{#it{s}}= 7 TeV");
+    uLatex->DrawLatexNDC(0.12, 0.85,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+    //
+    uLatex->DrawLatexNDC(0.50, 0.90,Form("%.2f < #it{p}_{T,#phi_{1}} < %.2f GeV/#it{c}",fArrPT2D[iHisto],fArrPT2D[iHisto+1]));
+    uLatex->DrawLatexNDC(0.50, 0.85,Form("%.2f < #it{p}_{T,#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[jHisto],fArrPT2D[jHisto+1]));
+    
+    cDrawHisto->SaveAs(Form("%s/InvariantMass_%.1f_%.1f_%.1f_%.1f.pdf",kFolder.Data(),fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]));
+    cDrawHisto->SaveAs(Form("%s/InvariantMass_%.1f_%.1f_%.1f_%.1f.pdf",kFolder.Data(),fArrPT2D[iHisto],fArrPT2D[iHisto+1],fArrPT2D[jHisto],fArrPT2D[jHisto+1]));
+    delete cDrawHisto;
+    
+    gROOT->SetBatch(kFALSE);
+}
+
+void
+uPlotInvMass
+ ( TH1F* hTarget, TString kFolder )  {
+    auto    kTokenArray =   TString(hTarget->GetName()).Tokenize("_");
+    auto    kLast       =   (TObjString*)kTokenArray->At( kTokenArray->GetLast() );
+    auto    iHisto      =   kLast->GetString().Atoi();
+    
+    gROOT->SetBatch(kTRUE);
+    SetStyle();
+    gStyle->SetPadTopMargin(0.2);
+    gStyle->SetPadRightMargin(0.08);
+    gStyle->SetPadLeftMargin(0.20);
+    
+    TCanvas    *cDrawHisto  =   new TCanvas("cDrawHisto","cDrawHisto",3000,3000);
+    //  --- X axis
+    hTarget->GetXaxis()->SetLabelOffset(0.015);
+    hTarget->GetXaxis()->SetTitleOffset(1.25);
+    hTarget->GetXaxis()->SetNdivisions(8);
+    //  --- Y axis
+    hTarget->GetYaxis()->SetTitle(Form("Counts/( %.1f MeV/#it{c}^{2} )",1000*kBinningPrecision1D));
+    hTarget->GetYaxis()->SetTitleOffset(1.75);
+    hTarget->GetYaxis()->SetNdivisions(8);
+    //  --- Z axis
+    //hTarget->GetZaxis()->SetTitleOffset(1.35);
+    //  --- General Style
+    hTarget->SetMarkerStyle ( uGetMarker(2) );
+    hTarget->SetMarkerColor ( uGetColor(2) );
+    hTarget->SetMarkerSize  ( 3 );
+    hTarget->SetLineColor   ( uGetColor(0) );
+    hTarget->Draw("PE1");
+    
+    uLatex->SetTextFont(60);
+    uLatex->SetTextSize(0.05);
+    uLatex->DrawLatexNDC(0.12, 0.95,"ALICE Performance");
+    uLatex->SetTextFont(42);
+    uLatex->SetTextSize(0.04);
+    if ( is_pp_anl )    uLatex->DrawLatexNDC(0.12, 0.90,Form("pp  #sqrt{#it{s}}= %2.2f TeV", kEnergy));
+    if ( is_pb_anl )    uLatex->DrawLatexNDC(0.12, 0.90,Form("pPb #sqrt{#it{s}}= %2.2f TeV", kEnergy));
+    uLatex->DrawLatexNDC(0.12, 0.85,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+    //
+    uLatex->DrawLatexNDC(0.50, 0.90,Form("%.2f < #it{p}_{T,#phi_{1}} < %.2f GeV/#it{c}",fArrPT1D[iHisto],fArrPT1D[iHisto+1]));
+    
+    cDrawHisto->SaveAs(Form("%s/InvariantMass_%.1f_%.1f.pdf",kFolder.Data(),fArrPT1D[iHisto],fArrPT1D[iHisto+1]));
+    cDrawHisto->SaveAs(Form("%s/InvariantMass_%.1f_%.1f.eps",kFolder.Data(),fArrPT1D[iHisto],fArrPT1D[iHisto+1]));
+    delete cDrawHisto;
+    
+    gROOT->SetBatch(kFALSE);
+}
+
 
 #endif

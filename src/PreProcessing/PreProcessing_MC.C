@@ -20,13 +20,13 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
     TFile *insFileMC        =   new TFile   (fFileName.c_str());
     
     //Retrieving Event data TTree
-    TTree   *TPhiEfficiency =   (TTree*)insFileMC->Get(Form("%s%s",fPhiCandidateEff_Tree,"_name"));
+    TTree   *TPhiEfficiency =   (TTree*)insFileMC->Get(Form("%s%s",fPhiCandidateEff_Tree,""));
     TTree   *TKaonCandidate =   nullptr;//(TTree*)insFileMC->Get(fKaonCandidateEff_Tree);
-    TTree   *TPhiCandidate  =   (TTree*)insFileMC->Get(Form("%s%s",fPhiCandidate_Tree,"_name"));
+    TTree   *TPhiCandidate  =   (TTree*)insFileMC->Get(Form("%s%s",fPhiCandidate_Tree,""));
     TTree   *TKaonEfficiency=   nullptr;//(TTree*)insFileMC->Get(fKaonCandidate_Tree);
     
     // Retrieving Event Count Histogram
-    TList  *fQCOutputList   =   (TList*)insFileMC       ->Get("fQCOutputList_name");
+    TList  *fQCOutputList   =   (TList*)insFileMC       ->Get("fQCOutputList");
     TH1D   *fHEventCount    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_FLL");
     TH1D   *fHEvCountMlt    =   (TH1D*) fQCOutputList   ->FindObject("fQC_Event_Enum_V0M");
     
@@ -738,7 +738,7 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
             Float_t iInvarMass          =   evPhiCandidate.InvMass[U_AccCand[iPhi]];
             Float_t iRapidity           =   LPhi_candidate1.Rapidity();
             Int_t   iRap                =   fGetBinRap_(LPhi_candidate1.Rapidity());
-            Bool_t  fHasRapidity        =   fabs(LPhi_candidate1.Rapidity()) <0.5;
+            Bool_t  fHasRapidity        =   ( LPhi_candidate1.Rapidity() > -0.465 ) && ( LPhi_candidate1.Rapidity() < +0.035 );
             //
             if ( fHasRapidity )  {
                 //
@@ -823,7 +823,7 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
                 Float_t jTrueIMass          =   evPhiCandidate.TrueInvMass[U_AccCand[jPhi]];
                 Float_t jRapidity           =   LPhi_candidate2.Rapidity();
                 Int_t   jRap                =   fGetBinRap_(LPhi_candidate2.Rapidity());
-                        fHasRapidity        =   fabs(LPhi_candidate1.Rapidity())<0.5 && fabs(LPhi_candidate2.Rapidity())<0.5;
+                        fHasRapidity        =   ( LPhi_candidate1.Rapidity() > -0.5 ) && ( LPhi_candidate1.Rapidity() < +0.5 ) && ( LPhi_candidate2.Rapidity() > -0.5 ) && ( LPhi_candidate2.Rapidity() < +0.5 );
                 Int_t   ijRap               =   fGetBinRap_(fabs(LPhi_candidate2.Rapidity()-LPhi_candidate1.Rapidity()));
                 //
                 if ( fHasRapidity )  {
@@ -904,7 +904,7 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
     fStopTimer("Efficiency Utility Histograms Production");
     //
     //>>    Evaluating entries and saving them for later
-    nEvents = 0;//(!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : min( nEventsCut, TPhiCandidate->GetEntries() ) );
+    nEvents = (!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : min( nEventsCut, (int)TPhiCandidate->GetEntries() ) );
     //
     //>>    If there are actually entries start timer
     if ( nEvents > 0 )  fStartTimer("Resolution Utility Histograms Production");
@@ -921,7 +921,7 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
         
         // Discarding Pile-up events
         //if ( kDoYield           &&  fCheckMask(evPhiCandidate.EventMask,1) ) continue;
-        //if ( kDoMultiplicity    &&  fCheckMask(evPhiCandidate.TrueEventMask,1) ) continue;
+        //if ( kDoMultiplicity    &&  ( fCheckMask(evPhiCandidate.EventMask,1) || fCheckMask(evPhiCandidate.EventMask,2) )) continue;
         
         for ( Int_t iPhi = 0; iPhi < evPhiCandidate.nPhi; iPhi++ )  {
             LPhi_candidate1.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
@@ -963,7 +963,7 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
             Float_t iTrueIMass          =   evPhiCandidate.TrueInvMass[U_AccCand[iPhi]];
             Float_t iRapidity           =   evPhiCandidate.Rap[U_AccCand[iPhi]];
             Int_t   iRap                =   evPhiCandidate.iRap[U_AccCand[iPhi]];
-            Bool_t  fHasRapidity        =   fabs(evPhiCandidate.Rap[U_AccCand[iPhi]]) < 0.5;
+            Bool_t  fHasRapidity        =   ( LPhi_candidate1.Rapidity() > -0.465 ) && ( LPhi_candidate1.Rapidity() < +0.035 );
             //
             // >->-->-> Yie
             //
@@ -997,7 +997,7 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
                 Float_t jTrueIMass          =   evPhiCandidate.TrueInvMass[U_AccCand[jPhi]];
                 Float_t jRapidity           =   evPhiCandidate.Rap[U_AccCand[jPhi]];
                 Int_t   jRap                =   evPhiCandidate.iRap[U_AccCand[jPhi]];
-                        fHasRapidity        =   evPhiCandidate.kHasRap[U_AccCand[iPhi]] && evPhiCandidate.kHasRap[U_AccCand[jPhi]];
+                        fHasRapidity        =   ( LPhi_candidate1.Rapidity() > -0.465 ) && ( LPhi_candidate1.Rapidity() < +0.035 ) && ( LPhi_candidate2.Rapidity() > -0.465 ) && ( LPhi_candidate2.Rapidity() < +0.035 );;
                 Int_t   ijRap               =   fGetBinRap_(evPhiCandidate.Rap[U_AccCand[iPhi]]-evPhiCandidate.Rap[U_AccCand[jPhi]]);
                 Bool_t  fHasDiffRap         =   ijRap != -1;
                 //
@@ -1015,7 +1015,7 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
         }
     }
     //
-    fStopTimer("Resolution Utility Histograms Production");
+    if ( nEvents > 0 )  fStopTimer("Resolution Utility Histograms Production");
     //
     //--------------------------//
     // PostProcessin output obj //
@@ -1023,7 +1023,7 @@ void PreProcessing_MC ( string fFileName = "", TString fOption = "", Int_t nEven
     //
     // >> YIELD ANALYSIS //
     //
-    auto fNormEvent = fHEventCount->GetBinContent(kTrigger);
+    auto fNormEvent = fHEventCount->GetBinContent(1);
     auto fTotlEvent = hProdDistrTRU->GetEntries();
     /*
     for ( Int_t iCnt = 0; iCnt < fNormEvent - fTotlEvent; iCnt++ ) {

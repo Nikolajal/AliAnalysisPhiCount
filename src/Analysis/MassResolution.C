@@ -300,7 +300,7 @@ void MassResolution ( TString fOption = "", bool fSilent = true )   {
     hSigmaHig_1D->Draw("SAME");
     //
     lLegend         ->Draw("SAME");
-    if ( kDoYield )         cAllResolutions_1D->SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString("cAllResolutions_1D.pdf"));
+    if ( kDoYield )         cAllResolutions_1D->SaveAs(Form(kMassResolution_Plot,"Yield")+TString("cAllResolutions_1D.pdf"));
     if ( kDoMultiplicity )  cAllResolutions_1D->SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString("cAllResolutions_1D.pdf"));
     delete      cAllResolutions_1D;
     //

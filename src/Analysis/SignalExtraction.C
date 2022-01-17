@@ -9,8 +9,6 @@ void SignalExtraction ( TString fOption = "", bool fSilent = true )
     
     //>-> OPTIONS
     
-    bool kDosss = true;
-    
     // Silencing warnings for smoother running
     if ( fSilent )
     {
