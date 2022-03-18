@@ -5,6 +5,7 @@
 #include "../src/AliAnalysisQAEvent.cxx"
 #include "../src/AliAnalysisQATrack.cxx"
 #include "../src/AliAnalysisQAPID.cxx"
+#include "../src/AliAnalysisQAMult.cxx"
 //
 //>->->->->->->->->->->->->->->
 //

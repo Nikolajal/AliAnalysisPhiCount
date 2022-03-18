@@ -34,9 +34,9 @@ void PP_Resl ( TString fOption = "all", TString kFolder = "", Bool_t fSilent = k
     TH1F*   h1D_Template_2Db    =   new TH1F( "", "", nBinPT2D, fArrPT2D );
     //
     
-    auto h1D_FullResolutions    =   uCalculateResolution ( h1D_InvMassRes,      h1D_RecInvMass,     h1D_TruInvMass,     h1D_Template,       { kPhiMesonMass_, 1.005,  1.0335 }, { kPhiMesonWidth, kPhiMesonWidth*0.9, kPhiMesonWidth*1.1 }, 0.001, kPlotFolder1D+TString("/Resolution/") );
+    auto h1D_FullResolutions    =   uCalculateResolution ( h1D_InvMassRes,      h1D_RecInvMass,     h1D_TruInvMass,     h1D_Template,       { kPhiMesonMass_, 1.005,  1.0335 }, { kPhiMesonWidth, kPhiMesonWidth*0., kPhiMesonWidth*2.0 }, 0.001, kPlotFolder1D+TString("/Resolution/") );
     cout << "2D" << endl;
-    auto h2Db_FullResolutions   =   uCalculateResolution ( h1D_InvMassRes_2Db,  h1D_RecInvMass_2Db, h1D_TruInvMass_2Db, h1D_Template_2Db,   { kPhiMesonMass_, 1.005,  1.0335 }, { kPhiMesonWidth, kPhiMesonWidth*0.9, kPhiMesonWidth*1.1 }, 0.001, kPlotFolder2D+TString("/Resolution/") );
+    auto h2Db_FullResolutions   =   uCalculateResolution ( h1D_InvMassRes_2Db,  h1D_RecInvMass_2Db, h1D_TruInvMass_2Db, h1D_Template_2Db,   { kPhiMesonMass_, 1.005,  1.0335 }, { kPhiMesonWidth, kPhiMesonWidth*0., kPhiMesonWidth*2.0 }, 0.001, kPlotFolder2D+TString("/Resolution/") );
     gROOT->SetBatch( kFALSE );
     //
     for ( auto kSave : h1D_FullResolutions  )   kSave->SetName(Form("%s_1D",    kSave->GetName()));

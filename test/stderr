@@ -1,0 +1,6 @@
+Run.sh: line 4: root-config: command not found
+Run.sh: line 4: pythia8-config: command not found
+./MCG_PhiAnalysis.C:3:10: fatal error: Pythia8/Pythia.h: No such file or directory
+ #include "Pythia8/Pythia.h"
+          ^~~~~~~~~~~~~~~~~~
+compilation terminated.

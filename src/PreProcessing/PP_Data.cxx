@@ -2,7 +2,7 @@
 // !TODO: AXIS and TITLES conforming to ALICE guidelines
 // !TODO: Make the InvMass distinction for all options
 
-void PP_Data ( TString fFileName = "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/tmp/LHC15TeV_DT/LHC15TeV_DT_STD.root", TString fOption = "mult", Int_t nEventsCut = -1., TString kFolder = "" )    {
+void PP_Data ( TString fFileName, TString fOption, Int_t nEventsCut, TString kFolder )    {
     // --- --- --- --- --- --- --- SET-UP --- --- --- --- --- --- --- --- --- --- ---
     //
     //  Check Correct Syntax
@@ -37,7 +37,11 @@ void PP_Data ( TString fFileName = "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/t
     //
     // ---  --- YIELD ANALYSIS
     //
-    TH2F*   hTest = new TH2F("test","test",nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D);
+    //--//--//--//--//
+    // !TODO: TEMPORARY
+    TH1F*   hTest = new TH1F("test","test",1000,-10,10);
+    TH1F*   hTes2 = new TH1F("tes2","test",1000,-10,10);
+    //--//--//--//--//
     TH1F*               h1D_Nrec;
     std::vector<TH1F*>  h1D_Nrec_PT;
     //
@@ -68,7 +72,7 @@ void PP_Data ( TString fFileName = "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/t
         TH1F*                   h1D_Nrec_2Db_PT_Util;
         hName                   =   Form( "h1D_Nrec_2Db_PT_%i", iPT2D );
         hTitle                  =   Form( "m_{K^{+}K^{-}} in p_{T} range [%.2f#;%.2f] GeV/c", fArrPT2D[iPT2D], fArrPT2D[iPT2D+1] );
-        h1D_Nrec_2Db_PT_Util    =   new TH1F ( hName, hTitle, nBinIM2D, fArrIM2D );
+        h1D_Nrec_2Db_PT_Util    =   new TH1F ( hName, hTitle, nBinIM1D, fArrIM1D );
         SetAxis( h1D_Nrec_2Db_PT_Util, "IM 1D" );
         h1D_Nrec_2Db_PT.push_back( h1D_Nrec_2Db_PT_Util );
         std::vector<TH2F*>  h2D_Nrec_PT_VecUtil;
@@ -179,12 +183,13 @@ void PP_Data ( TString fFileName = "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/t
     // --- --- --- --- --- --- --- ANALYSIS --- --- --- --- --- --- --- --- --- --- -
     //
     //  --- Applying limitation sample cuts
-    Int_t nEvents = (!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : nEventsCut);
+    Int_t nEvents = (!TPhiCandidate) ? 0 : ( nEventsCut == -1.? TPhiCandidate->GetEntries() : min( 1.*nEventsCut, 1.*TPhiCandidate->GetEntries() ) );
     if ( nEvents > 0 )  fStartTimer("Phi Yield Analysis");
     //
     //  --- Start Analysis cycle
     for ( Int_t iEvent = 0; iEvent < nEvents; ++iEvent )    {
         TPhiCandidate->GetEntry(iEvent);
+        //
         fPrintLoopTimer("Phi Yield Analysis",iEvent,nEvents,kPrintIntervalPP);
         //
         //  --- Evaluate the Event is of interest for the analysis
@@ -209,8 +214,11 @@ void PP_Data ( TString fFileName = "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/t
             fCurrent_Candidates.Rap         [ fCurrent_Candidates.nPhi ]    =   kTLVUtility.Rapidity();
             fCurrent_Candidates.iPT1D       [ fCurrent_Candidates.nPhi ]    =   fGetBinPT1D( kTLVUtility.Pt() );
             fCurrent_Candidates.iPT2D       [ fCurrent_Candidates.nPhi ]    =   fGetBinPT2D( kTLVUtility.Pt() );
+            fCurrent_Candidates.kHasRap     [ fCurrent_Candidates.nPhi ]    =   kFALSE;
+            hTest->Fill(kTLVUtility.Rapidity());
             if ( is_pp_anl )    fCurrent_Candidates.kHasRap     [ fCurrent_Candidates.nPhi ]    =   fabs( kTLVUtility.Rapidity() ) < 0.5;
-            if ( is_pb_anl )    fCurrent_Candidates.kHasRap     [ fCurrent_Candidates.nPhi ]    =   ( kTLVUtility.Rapidity() +0.465 ) < 0.5 && ( kTLVUtility.Rapidity() +0.465 ) > 0;
+            if ( is_pb_anl )    fCurrent_Candidates.kHasRap     [ fCurrent_Candidates.nPhi ]    =   ( kTLVUtility.Rapidity() < 0.035 ) && ( kTLVUtility.Rapidity() > -0.465 );
+            if ( fCurrent_Candidates.kHasRap     [ fCurrent_Candidates.nPhi ] ) hTes2->Fill(kTLVUtility.Rapidity());
             fCurrent_Candidates.nPhi++;
         }
         //
@@ -223,7 +231,7 @@ void PP_Data ( TString fFileName = "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/t
         //  --- Event variables
         fCurrent_Candidates.Multiplicity    =   evPhiCandidate.Multiplicity;
         fCurrent_Candidates.iMult           =   1+fGetBinMult(evPhiCandidate.Multiplicity);
-        fCurrent_Candidates.kHasMult        =   fCurrent_Candidates.iMult != -1;
+        fCurrent_Candidates.kHasMult        =   fCurrent_Candidates.iMult != 0;
         //
         for ( Int_t iPhi = 0; iPhi < fCurrent_Candidates.nPhi; iPhi++ )  {
             //
@@ -254,14 +262,12 @@ void PP_Data ( TString fFileName = "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/t
                     if ( kDoYield ) {   //  --- YIELD ANALYSIS
                         h2D_Nrec                                                                                                                        ->  Fill( fCurrent_Candidates.InvMass[iPhi], fCurrent_Candidates.InvMass[jPhi] );
                         h2D_Nrec_PT                                     .at( fCurrent_Candidates.iPT2D[iPhi] )  .at( fCurrent_Candidates.iPT2D[jPhi] )  ->  Fill( fCurrent_Candidates.InvMass[iPhi], fCurrent_Candidates.InvMass[jPhi] );
-                        hTest   -> Fill( fCurrent_Candidates.pT[iPhi], fCurrent_Candidates.pT[jPhi] );
                     } if ( kDoMultiplicity && fCurrent_Candidates.kHasMult )    {   //  --- MULTIPLICITY ANALYSIS
                         h2D_Nrec_MT_PT  .at(0)                          .at( fCurrent_Candidates.iPT2D[iPhi] )  .at( fCurrent_Candidates.iPT2D[jPhi] )  ->  Fill( fCurrent_Candidates.InvMass[iPhi], fCurrent_Candidates.InvMass[jPhi] );
                         h2D_Nrec_MT_PT  .at(fCurrent_Candidates.iMult)  .at( fCurrent_Candidates.iPT2D[iPhi] )  .at( fCurrent_Candidates.iPT2D[jPhi] )  ->  Fill( fCurrent_Candidates.InvMass[iPhi], fCurrent_Candidates.InvMass[jPhi] );
                         
                     } if ( kDoCorrelation ) {
-                        auto    kDeltaPhi   =   ( fCurrent_Candidates.Phi[iPhi] - fCurrent_Candidates.Phi[jPhi]  );
-                        auto    iCrPh       =   fGetBinCrPh( kDeltaPhi < -180 ? kDeltaPhi + 360 : kDeltaPhi > 180 ? kDeltaPhi -360 : kDeltaPhi );
+                        auto    iCrPh       =   fGetBinCrPh( fCurrent_Candidates.Phi[iPhi] - fCurrent_Candidates.Phi[jPhi]  );
                         h2D_Nrec_CR_PT      .at(iCrPh)                  .at( fCurrent_Candidates.iPT2D[iPhi] )  .at( fCurrent_Candidates.iPT2D[jPhi] )  ->  Fill( fCurrent_Candidates.InvMass[iPhi], fCurrent_Candidates.InvMass[jPhi] );
                     }
                 }
@@ -285,6 +291,7 @@ void PP_Data ( TString fFileName = "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/t
         //
         // --- Saving to File
         hTest                   ->  Write();
+        hTes2                   ->  Write();
         fHEventCount            ->  Write();
         fHEvCountMlt            ->  Write();
         h1D_Nrec                ->  Write();
@@ -296,6 +303,7 @@ void PP_Data ( TString fFileName = "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/t
         //
         // --- Printing to Plots
         // TODO: Make the same for 1D, generate for Mult histos
+        //  TODO: Make input for energy and Collision System
         for ( auto kPlot : h1D_Nrec_PT )                                    if ( kPlot->GetEntries() != 0 ) uPlotInvMass(kPlot,kFolder1D+TString("/InvMass/"));
         //  TODO: make the 2D equivalent for 1D histos
         //for ( auto kPlot : h1D_Nrec_2Db_PT )                                if ( kPlot->GetEntries() != 0 ) uPlotInvMass(kPlot,kFolder2D+TString("/InvMass/"));
@@ -303,9 +311,13 @@ void PP_Data ( TString fFileName = "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/t
     }
     //  --- --- MULTIPLICITY ANALYSIS
     if ( kDoMultiplicity ) {
-        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Multiplicity")+kFolder).Data())));
-        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Multiplicity")+kFolder).Data()))+TString("/Plots/1D/")).Data()));
-        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Multiplicity")+kFolder).Data()))+TString("/Plots/2D/")).Data()));
+        auto    kFolder1D       =   TString(Form(kAnalysis_PreProc_Dir,(TString("Multiplicity")+kFolder).Data()))+TString("/Plots/1D/");
+        auto    kFolder2D       =   TString(Form(kAnalysis_PreProc_Dir,(TString("Multiplicity")+kFolder).Data()))+TString("/Plots/2D/");
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data())));
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",kFolder1D.Data()));
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",kFolder2D.Data()));
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s/InvMass/",kFolder1D.Data()));
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s/InvMass/",kFolder2D.Data()));
         TFile *outFile_Yield    =   new TFile   (Form(kAnalysis_InvMassHist,(TString("Multiplicity")+kFolder).Data()),"recreate");
         //
         // --- Saving to File

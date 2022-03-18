@@ -7,6 +7,11 @@
 //      !TODO: CLEAN - UP       //
 //------------------------------//
 //
+auto kCheckPileUp   = true;
+auto is_pp_anl      = false;
+auto is_pb_anl      = true;
+auto kEnergy        = 5.0;
+//
 //>->->->->->   Branching Ratio
 auto const  kBR                     =   0.492;
 auto const  kBRerr                  =   0.005;
@@ -15,7 +20,7 @@ auto const  kSysLow_BR              =   kBRerr/kBR;
 //
 //-//       TRIGGER EFFICIENCY
 //  -   7 TeV
-auto const  kTriggerEff10bcdef      =   0.85;
+auto const  kTriggerEff10bcdef      =   0.852;
 auto const  kSysHig_TE              =   0.062/0.852;
 auto const  kSysLow_TE              =   0.030/0.852;
 //
@@ -34,6 +39,7 @@ Float_t const   kTriggerEffM17pq [] =   {0.999, 0.999,  0.999,  0.998,  0.998,  
 //-//   Analysis settings
 auto        kDoMultiplicity         =   false;
 auto        kDoYield                =   false;
+auto        kDoCorrelation          =   false;
 auto        kDoTrigger              =   false;
 auto        kDoRapidity             =   false;
 
@@ -49,12 +55,16 @@ std::vector<TString>    kSyst_SEX_1D_Options    =   {"RA","RB","RC","RD","RE","R
 std::vector<TString>    kSyst_SEX_1D_Names      =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"  };
 std::vector<TString>    kSyst_SEX_1D_Legend     =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"  };
 //
-std::vector<TString>    kSyst_SEX_2D_Options    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",    "BKG"   };
+std::vector<TString>    kSyst_SEX_2D_Options    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",  "BKG"  };
 std::vector<TString>    kSyst_SEX_2D_Names      =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",    "BKG"   };
 std::vector<TString>    kSyst_SEX_2D_Legend     =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",    "BKG"   };
 //
 //-//-//    PID
 //
+std::vector<TString>    kSyst_PID_XD_Options    =   {"PID1","PID2","PID3","PID4","PID5","PID6"};
+std::vector<TString>    kSyst_PID_XD_Names      =   {"PID1","PID2","PID3","PID4","PID5","PID6"};
+std::vector<TString>    kSyst_PID_XD_Legend     =   {"PID1","PID2","PID3","PID4","PID5","PID6"};
+
 const   Int_t   nPIDFiles           =   6;
 std::vector<TString>    sOptiPID    =   {"#sigma_{TPC}^{vet} 3.3","#sigma_{TPC}^{vet} 2.7","#sigma_{TPC}^{aln} 5.5","#sigma_{TPC}^{aln} 4.5","#sigma_{TOF}^{vet} 3.3","#sigma_{TOF}^{vet} 2.7"};
 const   TString sPID_DT_Name        =   "20210805_LHC10X%s.root";
@@ -88,8 +98,11 @@ TString const   kMassResolution_Plot    =   kMassResolution_Dir_ + TString("Plot
 TString const   kAnalysis_SigExtr_Dir   =   TString("./result/%s/SignalExtraction/");
 TString const   kAnalysis_SgExSys_Dir   =   TString("./result/%s/SignalExtraction/Systematics/");
 TString const   kASigExtr_FitCheckPlt   =   kAnalysis_SigExtr_Dir + TString("FitCheck.root");
+TString const   kASigExtr_FitChkPltSY   =   kAnalysis_SigExtr_Dir + TString("/%s/FitCheck.root");
 TString const   kASigExtr_FitCheckRst   =   kAnalysis_SigExtr_Dir + TString("FitResults.root");
+TString const   kASigExtr_FitChkRstSY   =   kAnalysis_SigExtr_Dir + TString("/%s/FitResults_%s.root");
 TString const   kASigExtr_Plot_Direct   =   kAnalysis_SigExtr_Dir + TString("Plots/");
+TString const   kASigExtrPlotDirectSY   =   kAnalysis_SigExtr_Dir + TString("/%s/Plots/");
 //
 //-//-//-//     Signal Extrapolation
 //
@@ -102,6 +115,12 @@ TString const   kASigExtp_Plot_Direct   =   kAnalysis_SigExtp_Dir + TString("Plo
 //
 TString const   kAnalysis_Systemt_Dir   =   TString("./result/%s/Systematics/");
 TString const   kSystematicsPlot        =   kAnalysis_Systemt_Dir + TString("Plots/");
+//
+//-//-//-//     MC Comparison
+//
+TString const   kProduction_MC_Dir      =   TString("./result/%s/MC_Production/");
+TString const   kProduction_MC_Plot     =   kProduction_MC_Dir + TString("Plots/");
+TString const   kProduction_MC_Ofl      =   kProduction_MC_Dir + TString("ComparePlots_%s.root");
 //
 //-// -- -- -- -- -- -- -- -- -- -- -- -- -- Tree Names
 //
@@ -120,32 +139,54 @@ auto const  kPhiMesonWidth          =   0.004249;
 auto const  kPhiMesonWdErr          =   0.000013;
 auto const  kKaonMass               =   .493677;
 auto const  kKaonMassUncert         =   .000013;
-auto const kTriggerEff = 0.99;
+auto const  kTriggerEff             =   1.;
 //
 //-// -- -- -- -- -- -- -- -- -- -- -- -- -- Binning
 //
 //-// InvMass bins 1D
-const   Float_t     kBinningPrecision1D =   .5*MeV;     // From AliAnalysisUtility *MeV the value was in GeV is now in MeV, /MeV the value was in MeV and is now in GeV
+const   Float_t     kBinningPrecision1D = 0.4 * MeV;     // From AliAnalysisUtility *MeV the value was in GeV is now in MeV, /MeV the value was in MeV and is now in GeV
 const   Float_t     fMinIM1D  = 0.99;
 const   Float_t     fMaxIM1D  = 1.08;
 const   Int_t       nBinIM1D  = (int)((fMaxIM1D-fMinIM1D)/kBinningPrecision1D);
-        Float_t    *fArrIM1D  = new Float_t [nBinIM1D+1];
+        Float_t*    fArrIM1D  = new Float_t [nBinIM1D+1];
 
 //-// InvMass bins 2D
-auto const  kBinningPrecision2D     =   1.*MeV;
-const   Float_t   fMinIM2D  = 0.99;
-const   Float_t   fMaxIM2D  = 1.08;
-const   Int_t     nBinIM2D  = (int)((fMaxIM2D-fMinIM2D)/kBinningPrecision2D);
-        Float_t * fArrIM2D  = new Float_t [nBinIM2D+1];
+const   Float_t     kBinningPrecision2D = 0.8 * MeV;
+const   Float_t     fMinIM2D    =   0.99;
+const   Float_t     fMaxIM2D    =   1.08;
+const   Int_t       nBinIM2D    =   (int)((fMaxIM2D-fMinIM2D)/kBinningPrecision2D);
+        Float_t*    fArrIM2D    =   new Float_t [nBinIM2D+1];
+
+//-// InvMass bins Resolution for REC
+const   Float_t     kBinningPrecisionRC = 0.2 * MeV;
+const   Float_t     fMinIMRC    =   1.00;
+const   Float_t     fMaxIMRC    =   1.04;
+const   Int_t       nBinIMRC    =   (int)((fMaxIMRC-fMinIMRC)/kBinningPrecisionRC);
+        Float_t*    fArrIMRC    =   new Float_t [nBinIMRC+1];
+
+//-// InvMass bins Resolution for TRUE
+const   Float_t     kBinningPrecisionTR = 0.001 * MeV;
+const   Float_t     fMinIMTR    =   1.00;
+const   Float_t     fMaxIMTR    =   1.04;
+const   Int_t       nBinIMTR    =   (int)((fMaxIMTR-fMinIMTR)/kBinningPrecisionTR);
+        Float_t*    fArrIMTR    =   new Float_t [nBinIMTR+1];
+
+
+//-// InvMass bins Resolution
+const   Float_t     kBinningPrecisionRX = 0.2 * MeV;
+const   Float_t     fMinIMRX    =   1.00;
+const   Float_t     fMaxIMRX    =   1.04;
+const   Int_t       nBinIMRX    =   (int)((fMaxIMRX-fMinIMRX)/kBinningPrecisionRX);
+        Float_t*    fArrIMRX    =   new Float_t [nBinIMRX+1];
 
 //-// pT bins 1D
-const   Int_t     nBinPT1D  =   20;
+const   Int_t     nBinPT1D  =   19;
 const   Float_t   fMinPT1D  =   0.4;
 const   Float_t   fMaxPT1D  =   10.;
         Float_t  *fArrPT1D  =   new Float_t [nBinPT1D+1];
 
 //-// pT bins 2D
-const   Int_t     nBinPT2D  =   10;
+const   Int_t     nBinPT2D  =   8;
 const   Float_t   fMinPT2D  =   0.4;
 const   Float_t   fMaxPT2D  =   10.;
         Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
@@ -156,6 +197,14 @@ const   Int_t     nBinMult  =   5;
 const   Float_t   fMinMult  =   0.0;
 const   Float_t   fMaxMult  =   100.0;
         Float_t  *fArrMult  =   new Float_t [nBinMult+1];
+
+//-// Phi-Correlation bins
+const   Int_t     nBinCrPh  =   5;
+const   Float_t   fMinCrPh  =   -180;
+const   Float_t   fMaxCrPh  =   180;
+        Float_t  *fArrCrPh  =   new Float_t [nBinCrPh+1];
+
+//-// Utility Bins
 
 //-// Rapidity bins
 const   Int_t     nBinRap_  =   200;
@@ -169,23 +218,26 @@ const   Float_t   fMinNTup  =   -0.5;
 const   Float_t   fMaxNTup  =   4.5;
         Float_t  *fArrNTup  =   new Float_t [nBinNTup+1];
 
-//-// N-Tuples bins
+//-// Systematics bins
 const   Int_t     nBinSyst  =   120;
 const   Float_t   fMinSyst  =   -.6;
 const   Float_t   fMaxSyst  =   .6;
         Float_t  *fArrSyst  =   new Float_t [nBinSyst+1];
 
-//-// N-Tuples bins
+//-// Mass Resolution bins
 const   Int_t     nBinIMRs  =   100;
 const   Float_t   fMinIMRs  =   -.01;
 const   Float_t   fMaxIMRs  =   .01;
         Float_t  *fArrIMRs  =   new Float_t [nBinIMRs+1];
 
-//-// N-Tuples bins
+//-// Mass Resolution bins
 const   Int_t     nBinIMR2  =   40;
 const   Float_t   fMinIMR2  =   -.01;
 const   Float_t   fMaxIMR2  =   .01;
         Float_t  *fArrIMR2  =   new Float_t [nBinIMR2+1];
+
+
+
 //
 //-// -- -- -- -- -- -- -- -- -- -- -- -- -- Dump Variables
 //
@@ -200,32 +252,35 @@ RooFitResult   ***          NULL_ROOFITPTR3  =   nullptr;
 //
 //-// -- -- -- -- -- -- -- -- -- -- -- -- -- Trees
 typedef struct  {
-    UChar_t     nPhi;
-    //Int_t       nPhi;
-    UChar_t     EventMask,      iKaon[1024],    jKaon[1024],    Nature[1024];
-    Float_t     Multiplicity,   Px[1024],       Py[1024],       Pz[1024],       pT[1024],      Rap[1024],       InvMass[1024],       TrueInvMass[1024];
-    Bool_t      kHasRap[1024],  kHasMult;
-    Int_t       iPT1D[1024],    iPT2D[1024],    iRap[1024],     iMult;
+    //  --- Event Variables
+    UChar_t     EventMask;
+    Bool_t      kHasMult;
+    Int_t       nPhi,       iMult;
+    Float_t     Multiplicity, Spherocity, RTransverse;
+    //  --- Pair Variables
+    Bool_t      kHasRap [2048];
+    Int_t       iPT1D   [2048], iPT2D   [2048], iRap    [2048], iKaon   [2048], jKaon   [2048];
+    Float_t     Px      [2048], Py      [2048], Pz      [2048], pT  [2048], Rap [2048], InvMass [2048], TrueInvMass [2048], Phi [2048];
 } Struct_PhiCandidate;
 typedef struct  {
-    UChar_t     EventMask,      Charge[1024];
-    Char_t      SigmaTOF[1024], SigmaTPC[1024];
-    Float_t     Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
-    //Int_t       nKaon;
-    UChar_t       nKaon;
+    UChar_t     EventMask,      Charge[2048];
+    Char_t      SigmaTOF[2048], SigmaTPC[2048];
+    Float_t     Multiplicity,   Px[2048],       Py[2048],       Pz[2048],   InvMass[2048],       Phi[2048];
+    Int_t       nKaon;
+    //UChar_t     nKaon;
 } Struct_KaonCandidate;
 typedef struct  {
-    UChar_t     TrueEventMask,  EventMask,      Selection[1024];
-    Float_t     Multiplicity,   Px[1024],       Py[1024],       Pz[1024],       InvMass[1024],  pT[1024],      Rap[1024];
-    Bool_t      kHasRap[1024],  kIsGen[1024],   kIsRec[1024],   kHasMult;
+    UChar_t     TrueEventMask,  EventMask,      Selection[2048];
+    Float_t     Multiplicity,   Px[2048],       Py[2048],       Pz[2048],       InvMass[2048],  pT[2048],      Rap[2048],   Phi[2048];
+    Bool_t      kHasRap[2048],  kIsGen[2048],   kIsRec[2048],   kHasMult;
     Bool_t      fTru,           fGen,           fRec,           IsMB;
-    Int_t       iPT1D[1024],    iPT2D[1024],    iRap[1024],     iMult;
-    //Int_t       nPhi;
-    UChar_t     nPhi;
+    Int_t       iPT1D[2048],    iPT2D[2048],    iRap[2048],     iMult;
+    Int_t       nPhi;
+    //UChar_t     nPhi;
 } Struct_PhiEfficiency;
 typedef struct  {
-    UChar_t     TrueEventMask,  EventMask,      Charge[1024],   Selection[1024];
-    Float_t     Multiplicity,   Px[1024],       Py[1024],       Pz[1024],   InvMass[1024];
+    UChar_t     TrueEventMask,  EventMask,      Charge[2048],   Selection[2048];
+    Float_t     Multiplicity,   Px[2048],       Py[2048],       Pz[2048],   InvMass[2048];
     Bool_t      nKaon,          ftru;
 } Struct_KaonEfficiency;
 //
@@ -234,19 +289,17 @@ enum class kEventMask {
     kVoid1, kPileUp, kPileUpMult, kINELgt0, kVoid5, kVoid6, kVoid7, kVoid8
 };
 enum kEventCount {
-    kUnderFlow = 0, kALL = 1, kHasEvent = 2, kHasMCTracks = 3, kNoTrigger = 4, kTrigger = 5, kHasPID = 5, kIncmpDAQ = 6, kNoSPDVtx = 7, kVtxMismatch = 8, kVertex = 9, kVertex10 = 10
+    kUnderFlow = 0, kALL = 1, kHasEvent = 2, kHasMCTracks = 3, kNoTrigger = 4, kTrigger = 5, kHasPID = 5, kIncmpDAQ = 6, kNoSPDVtx = 7, kVtxMismatch = 8, kVertex = 9, kVertex10 = 10, kPU_MB = 12, kPU_Mlt = 13
 };
 //
-auto kCheckPileUp   = true;
-auto is_pp_anl      = true;
-auto is_pb_anl      = false;
-auto kEnergy        = 7.00;
-std::vector<std::pair<TString,TString>> kDefaultDataset = {std::pair<TString,TString>("LHC10b","LHC14j4b"),std::pair<TString,TString>("LHC10c","LHC14j4c"),std::pair<TString,TString>("LHC10d","LHC14j4d"),std::pair<TString,TString>("LHC10e","LHC14j4e")};
+std::vector<std::pair<TString,TString>> kpp7TeVDataset = {std::pair<TString,TString>("LHC10b","LHC14j4b"),std::pair<TString,TString>("LHC10c","LHC14j4c"),std::pair<TString,TString>("LHC10d","LHC14j4d"),std::pair<TString,TString>("LHC10e","LHC14j4e")};
+std::vector<std::pair<TString,TString>> kpp5TeVDataset = {std::pair<TString,TString>("LHC15TeV_DT","LHC15TeV_MC")};
 //
 //  Option choosing accepted strings
 std::vector<TString>    kOptStrings_All             =   {"all","full","fll"};
 std::vector<TString>    kOptStrings_Yield           =   {"yield","yld","std","standard"};
 std::vector<TString>    kOptStrings_Multiplicity    =   {"multiplicity","mult","mlt"};
+std::vector<TString>    kOptStrings_Correlation     =   {"correlation","corr","crph"};
 
 //------------------------------//
 //      BINNING UTILITIES       //
@@ -270,84 +323,58 @@ fSetBinIM2D
     }
 }
 void
-fSetBinNTup
+fSetBinIMRX
 ()      {
-    for (int i = 0; i <= nBinNTup; i++ )
+    for (int i = 0; i <= nBinIMRX; i++ )
     {
-        fArrNTup[i] = fMinNTup+(i)*(fMaxNTup - fMinNTup)/(static_cast<Float_t>(nBinNTup));
+        fArrIMRX[i] = fMinIMRX+(i)*(fMaxIMRX - fMinIMRX)/(static_cast<Float_t>(nBinIMRX));
+    }
+}
+void
+fSetBinIMRC
+()      {
+    for (int i = 0; i <= nBinIMRC; i++ )
+    {
+        fArrIMRC[i] = fMinIMRC+(i)*(fMaxIMRC - fMinIMRC)/(static_cast<Float_t>(nBinIMRC));
+    }
+}
+void
+fSetBinIMTR
+()      {
+    for (int i = 0; i <= nBinIMTR; i++ )
+    {
+        fArrIMTR[i] = fMinIMTR+(i)*(fMaxIMTR - fMinIMTR)/(static_cast<Float_t>(nBinIMTR));
     }
 }
 void
 fSetBinPT1D
 ()      {
-    /*
-    fArrPT1D[0]     =   0.5; //0.1
-    fArrPT1D[1]     =   0.7; //0.1
-    fArrPT1D[2]     =   0.9; //0.1
-    fArrPT1D[3]     =   1.2; //0.1
-    fArrPT1D[4]     =   1.4; //0.1
-    fArrPT1D[5]     =   1.6; //0.1
-    fArrPT1D[6]     =   1.8; //0.2
-    fArrPT1D[7]     =   2.0; //0.2
-    fArrPT1D[8]     =   2.2; //0.2
-    fArrPT1D[9]     =   2.6; //0.2
-    fArrPT1D[10]    =   3.0; //0.2
-    fArrPT1D[11]    =   3.5; //0.4
-    fArrPT1D[12]    =   4.0; //0.4
-    fArrPT1D[13]    =   5.0; //0.4
-    fArrPT1D[14]    =   8.0; //0.4
-    fArrPT1D[15]    =   12.; //0.4
-    */
-    /*
     fArrPT1D[0]     =   0.4; //0.1
     fArrPT1D[1]     =   0.6; //0.1
-    fArrPT1D[2]     =   0.8; //0.1
-    fArrPT1D[3]     =   1.0; //0.1
-    fArrPT1D[4]     =   1.2; //0.1
-    fArrPT1D[5]     =   1.4; //0.1
-    fArrPT1D[6]     =   1.6; //0.2
-    fArrPT1D[7]     =   1.8; //0.2
-    fArrPT1D[8]     =   2.0; //0.2
-    fArrPT1D[9]     =   2.5; //0.2
-    fArrPT1D[10]    =   3.0; //0.2
-    fArrPT1D[11]    =   3.5; //0.4
-    fArrPT1D[12]    =   4.0; //0.4
-    fArrPT1D[13]    =   4.5; //0.4
-    fArrPT1D[14]    =   5.0; //0.4
-    fArrPT1D[15]    =   6.0; //0.4
-    fArrPT1D[16]    =   7.0; //0.4
-    fArrPT1D[17]    =   8.0; //0.4
-    fArrPT1D[18]    =   10.; //0.4
-    fArrPT1D[19]    =   13.; //0.4
-    fArrPT1D[20]    =   16.; //0.4
-    fArrPT1D[21]    =   21.; //0.4
-    */
-    fArrPT1D[0]     =   0.4; //0.1
-    fArrPT1D[1]     =   0.5; //0.1
-    fArrPT1D[2]     =   0.6; //0.1
-    fArrPT1D[3]     =   0.7; //0.1
-    fArrPT1D[4]     =   0.8; //0.1
-    fArrPT1D[5]     =   0.9; //0.1
-    fArrPT1D[6]     =   1.0; //0.2
-    fArrPT1D[7]     =   1.2; //0.2
-    fArrPT1D[8]     =   1.4; //0.2
-    fArrPT1D[9]     =   1.6; //0.2
-    fArrPT1D[10]    =   1.8; //0.2
-    fArrPT1D[11]    =   2.0; //0.4
-    fArrPT1D[12]    =   2.4; //0.4
-    fArrPT1D[13]    =   2.8; //0.4
-    fArrPT1D[14]    =   3.2; //0.4
-    fArrPT1D[15]    =   3.6; //0.4
-    fArrPT1D[16]    =   4.0; //1.0
-    fArrPT1D[17]    =   5.0; //1.0
-    fArrPT1D[18]    =   6.0; //2.0
-    fArrPT1D[19]    =   8.0; //2.0
-    fArrPT1D[20]    =   10.;
+    fArrPT1D[2]     =   0.7; //0.1
+    fArrPT1D[3]     =   0.8; //0.1
+    fArrPT1D[4]     =   0.9; //0.1
+    fArrPT1D[5]     =   1.0; //0.2
+    fArrPT1D[6]     =   1.2; //0.2
+    fArrPT1D[7]     =   1.4; //0.2
+    fArrPT1D[8]     =   1.6; //0.2
+    fArrPT1D[9]     =   1.8; //0.2
+    fArrPT1D[10]    =   2.0; //0.4
+    fArrPT1D[11]    =   2.4; //0.4
+    fArrPT1D[12]    =   2.8; //0.4
+    fArrPT1D[13]    =   3.2; //0.4
+    fArrPT1D[14]    =   3.6; //0.4
+    fArrPT1D[15]    =   4.0; //1.0
+    fArrPT1D[16]    =   5.0; //1.0
+    fArrPT1D[17]    =   6.0; //2.0
+    fArrPT1D[18]    =   8.0; //2.0
+    fArrPT1D[19]    =   10.;
 }
 void
 fSetBinPT2D
 ()      {
-    fArrPT2D[0]     =   0.40; //0.3
+    /*
+    fArrPT2D[0]     =   0.40; //0.4
     fArrPT2D[1]     =   0.80; //0.2
     fArrPT2D[2]     =   1.00; //0.1
     fArrPT2D[3]     =   1.10; //0.1
@@ -358,6 +385,31 @@ fSetBinPT2D
     fArrPT2D[8]     =   2.80; //1.2
     fArrPT2D[9]     =   4.00; //6.0
     fArrPT2D[10]    =   10.0;
+    */
+    /*
+    fArrPT2D[0]     =   0.40; //0.4
+    fArrPT2D[1]     =   0.90; //0.2
+    fArrPT2D[2]     =   1.10; //0.1
+    fArrPT2D[3]     =   1.30; //0.1
+    fArrPT2D[4]     =   1.50; //0.2
+    fArrPT2D[5]     =   1.70; //0.2
+    fArrPT2D[6]     =   2.00; //0.4
+    fArrPT2D[7]     =   2.50; //0.7
+    fArrPT2D[8]     =   3.00; //1.2
+    fArrPT2D[9]     =   4.00; //6.0
+    fArrPT2D[10]    =   10.0;
+     */
+    
+    fArrPT2D[0]     =   0.40; //0.3
+    fArrPT2D[1]     =   1.00; //0.1
+    fArrPT2D[2]     =   1.20; //0.2
+    fArrPT2D[3]     =   1.40; //0.2
+    fArrPT2D[4]     =   1.60; //0.4
+    fArrPT2D[5]     =   2.00; //0.8
+    fArrPT2D[6]     =   2.80; //1.2
+    fArrPT2D[7]     =   4.00; //6.0
+    fArrPT2D[8]     =   10.0;
+    //
     fArrPT2D_Comp[0]=   0.00;
     for ( Int_t iPT2D = 0; iPT2D <= nBinPT2D; iPT2D++ ) fArrPT2D_Comp[iPT2D+1]  =   fArrPT2D[iPT2D];
 }
@@ -370,6 +422,16 @@ fSetBinMult
     fArrMult[3]  =  30.0;
     fArrMult[4]  =  50.0;
     fArrMult[5]  =  100.;
+}
+void
+fSetBinCrPh
+()      {
+    fArrCrPh[0]  =  -180.;
+    fArrCrPh[1]  =  -110.;
+    fArrCrPh[2]  =  -040.;
+    fArrCrPh[3]  =  +040.;
+    fArrCrPh[4]  =  +110.;
+    fArrCrPh[5]  =  +180.;
 }
 void
 fSetBinRap_
@@ -386,6 +448,14 @@ fSetBinRap_
     fArrRap_[4]  =  0.480;
     fArrRap_[5]  =  1.000;
     
+}
+void
+fSetBinNTup
+()      {
+    for (int i = 0; i <= nBinNTup; i++ )
+    {
+        fArrNTup[i] = fMinNTup+(i)*(fMaxNTup - fMinNTup)/(static_cast<Float_t>(nBinNTup));
+    }
 }
 void
 fSetBinSyst
@@ -416,8 +486,12 @@ fSetAllBins
 ()      {
     fSetBinIM1D();
     fSetBinIM2D();
+    fSetBinIMRX();
+    fSetBinIMRC();
+    fSetBinIMTR();
     fSetBinPT1D();
     fSetBinPT2D();
+    fSetBinCrPh();
     fSetBinNTup();
     fSetBinMult();
     fSetBinRap_();
@@ -487,6 +561,15 @@ fGetBinMult
         {
             return iBin -1;
         }
+    }
+    return -1;
+}
+Int_t
+fGetBinCrPh
+ (Float_t input_value )      {
+    for ( Int_t iBin = 0; iBin <= nBinCrPh; iBin++ ) {
+        if ( input_value == fMinCrPh )          return 0;
+        if ( input_value <= fArrCrPh[iBin] )    return iBin -1;
     }
     return -1;
 }

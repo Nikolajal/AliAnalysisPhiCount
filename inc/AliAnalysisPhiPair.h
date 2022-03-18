@@ -18,14 +18,14 @@
 //>>    Performance Regulation Values
 auto const  kCPU_use                =   1;
 auto const  kNCycle_                =   3;
-auto        kStatEvalCycles         =   500;
+auto        kStatEvalCycles         =   5;
 auto const  kPrintIntervalPP        =   1000000;
 auto const  k2DErrorLimit           =   10.;
 auto const  kCPUStrategy            =   2;
-auto const  kFitOffset              =   false;
-auto const  kFitInitHesse           =   false;
-auto const  kFitMinos               =   false;
-auto const  kFitMinuitStrategy      =   2;
+auto const  kFitOffset              =   true;
+auto const  kFitInitHesse           =   true;
+auto const  kFitMinos               =   true;
+auto const  kFitMinuitStrategy      =   1;
 auto const  kSaveToFile             =   true;
 //
 //_____________________________________________________________________________
@@ -441,7 +441,6 @@ fFitCoreModel
     }
     //
     // Modify Raw with missing signal
-    
     //
     if ( fSaveToFile || kSaveToFile )
     {
@@ -490,7 +489,8 @@ fFitCoreModel
         uLatex->DrawLatexNDC(0.59, 0.83,"ALICE Performance");
         uLatex->SetTextFont(42);
         uLatex->SetTextSize(0.04);
-        uLatex->DrawLatexNDC(0.59, 0.77,"pp #sqrt{#it{s}}= 7 TeV");
+        if ( is_pp_anl ) uLatex->DrawLatexNDC(0.59, 0.77, Form("pp #sqrt{#it{s}}= %.2f TeV",kEnergy));
+        if ( is_pb_anl ) uLatex->DrawLatexNDC(0.59, 0.77, Form("pPb #sqrt{#it{s}}= %.2f TeV",kEnergy));
         if ( PTDimension == 1 ) uLatex->DrawLatexNDC(0.59, 0.72,Form("%.2f < #it{p}_{T} < %.2f GeV/#it{c}",fArrPT1D[PTindex],fArrPT1D[PTindex+1]));
         if ( PTDimension == 2 ) uLatex->DrawLatexNDC(0.59, 0.72,Form("%.2f < #it{p}_{T} < %.2f GeV/#it{c}",fArrPT2D[PTindex],fArrPT2D[PTindex+1]));
         uLatex->DrawLatexNDC(0.59, 0.67,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
@@ -501,11 +501,50 @@ fFitCoreModel
         if ( PTDimension == 1 )fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f_1D_%s.eps",fPathToSave.Data(),fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data()));
         if ( PTDimension == 2 )fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f_1D_%s.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fName.Data()));
         delete fSaveToCanvas;
+        
+        if ( PTDimension == 1 )fSaveToCanvas   =   new TCanvas(
+                                                Form("PT_%.1f_%.1f_1D_%s",fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data()),
+                                                Form("PT_%.1f_%.1f_1D_%s",fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data())
+                                                );
+        
+        if ( PTDimension == 2 )fSaveToCanvas   =   new TCanvas(
+                                                Form("PT_%.1f_%.1f_2D_%s",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fName.Data()),
+                                                Form("PT_%.1f_%.1f_2D_%s",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fName.Data())
+                                                );
+        //
+        //  --- Calculate Chi^2
+        RooHist*    hResidualHisto      =   fSaveToFrame->residHist(nullptr,"RooMod");
+        RooPlot*    fSaveToFrame_Res    =   InvMass.frame(Name(TString(hName)+TString("_Residual")),Title(TString(hTitle)+TString("_Residual")));
+        fSaveToFrame_Res    ->  addPlotable( hResidualHisto );
+        fAxisMaker( fSaveToFrame_Res, "InvMass1D" );
+        //
+        fMaximum            =   fSaveToFrame_Res->GetMaximum();
+        fSaveToFrame_Res    ->  SetMaximum(fMaximum*1.80);
+        //
+        fSaveToFrame_Res    ->  Draw("same");
+        //
+        uLatex->SetTextFont(60);
+        uLatex->SetTextSize(0.05);
+        uLatex->DrawLatexNDC(0.59, 0.83,"ALICE Performance");
+        uLatex->SetTextFont(42);
+        uLatex->SetTextSize(0.04);
+        if ( is_pp_anl ) uLatex->DrawLatexNDC(0.59, 0.77, Form("pp #sqrt{#it{s}}= %.2f TeV",kEnergy));
+        if ( is_pb_anl ) uLatex->DrawLatexNDC(0.59, 0.77, Form("pPb #sqrt{#it{s}}= %.2f TeV",kEnergy));
+        if ( PTDimension == 1 ) uLatex->DrawLatexNDC(0.59, 0.72,Form("%.2f < #it{p}_{T} < %.2f GeV/#it{c}",fArrPT1D[PTindex],fArrPT1D[PTindex+1]));
+        if ( PTDimension == 2 ) uLatex->DrawLatexNDC(0.59, 0.72,Form("%.2f < #it{p}_{T} < %.2f GeV/#it{c}",fArrPT2D[PTindex],fArrPT2D[PTindex+1]));
+        uLatex->DrawLatexNDC(0.59, 0.67,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+        uLatex->DrawLatexNDC(0.19, 0.83,Form("#chi^{2}/ndf = %.3f",fSaveToFrame->chiSquare("RooMod",nullptr)));
+        //
+        if ( PTDimension == 1 ) fSaveToCanvas   ->  SaveAs(Form("%s/PT_%.1f_%.1f_1D_%s_Chi2.pdf",fPathToSave.Data(),fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data()));
+        if ( PTDimension == 2 ) fSaveToCanvas   ->  SaveAs(Form("%s/PT_%.1f_%.1f_1D_%s_Chi2.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fName.Data()));
+        if ( PTDimension == 1 ) fSaveToCanvas   ->  SaveAs(Form("%s/PT_%.1f_%.1f_1D_%s_Chi2.eps",fPathToSave.Data(),fArrPT1D[PTindex],fArrPT1D[PTindex+1],fName.Data()));
+        if ( PTDimension == 2 ) fSaveToCanvas   ->  SaveAs(Form("%s/PT_%.1f_%.1f_1D_%s_Chi2.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fName.Data()));
+        delete fSaveToCanvas;
     }
-    
+    //
     // Un-Silencing TCanvas Pop-Up
     gROOT->SetBatch(kFALSE);
-    
+    //
     return fFitResults;
 }
 //
@@ -521,6 +560,9 @@ FitModel
         //
         //>>    SegFault Protection
         if ( !fFitresultsStore[iFit] ) continue;
+        //
+        fFitresultsStore[iFit]->SetName (Form("Result from fit %i",iFit));
+        fFitresultsStore[iFit]->SetTitle(Form("Result from fit %i",iFit));
         //
         //>>    Building Raw Count histograms
         if ( iFit == 0 )   {
@@ -577,13 +619,14 @@ FitModel
         RooRealVar      vIntU   =   RooRealVar      ("vIntU",   "vIntU",    2*kKaonMass,  1000 );
         RooRealVar      vMean   =   RooRealVar      ("vMean",   "vMean",    fMean   );
         RooRealVar      vStdv   =   RooRealVar      ("vStdv",   "vStdv",    fWidth  );
+        RooRealVar      vResl   =   RooRealVar      ("vResl",   "vResl",    0.001  );
         //
         SetBoundaries(fOption,fMin,fMax);
         //
         vIntU.setRange("Full",2*kKaonMass,1000);
         vIntU.setRange("Meas",fMin,fMax);
         //
-        RooBreitWigner  hUtil   =   RooBreitWigner  ("hUtil",   "hUtil",    vIntU,  vMean,  vStdv);
+        RooVoigtian  hUtil   =   RooVoigtian  ("hUtil",   "hUtil",    vIntU,  vMean,  vStdv, vResl );
         //
         Float_t         kCorr   =   hUtil.analyticalIntegral(1,"Meas")/hUtil.analyticalIntegral(1,"Full");
         //
@@ -645,7 +688,7 @@ FitModel
         //
         //>>    Filling Raw Count Histograms
         Int_t   iTer = 0;
-        Float_t fCount, fCounE, fMean, fWidth;
+        Float_t fCount, fCounE, fMean, fWidth, fResl;
         Double_t    fMin,   fMax;
         for ( auto fCoeff : fFitresultsStore[iFit]->floatParsFinal() )   {
             auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
@@ -657,6 +700,7 @@ FitModel
             }
             if ( strncmp(N_Raw->GetName(),"bMass",5) == 0 ) fMean   =   N_Raw->getVal();
             if ( strncmp(N_Raw->GetName(),"bWidt",5) == 0 ) fWidth  =   N_Raw->getVal();
+            if ( strncmp(N_Raw->GetName(),"bSlop",5) == 0 ) fResl   =   N_Raw->getVal();
             iTer++;
         }
         for ( auto fCoeff : fFitresultsStore[iFit]->constPars() )   {
@@ -665,21 +709,25 @@ FitModel
             fResults.at(iTer)->SetBinError            (iFit+1,N_Raw->getError());
             if ( strncmp(N_Raw->GetName(),"bMass",5) == 0 ) fMean   =   N_Raw->getVal();
             if ( strncmp(N_Raw->GetName(),"bWidt",5) == 0 ) fWidth  =   N_Raw->getVal();
+            if ( strncmp(N_Raw->GetName(),"bSlop",5) == 0 ) fResl   =   N_Raw->getVal();
             iTer++;
         }
         //
         RooRealVar      vIntU   =   RooRealVar      ("vIntU",   "vIntU",    2*kKaonMass,  1000 );
         RooRealVar      vMean   =   RooRealVar      ("vMean",   "vMean",    fMean   );
         RooRealVar      vStdv   =   RooRealVar      ("vStdv",   "vStdv",    fWidth  );
+        RooRealVar      vResl   =   RooRealVar      ("vResl",   "vResl",    fResl  );
         //
         SetBoundaries(fOption,fMin,fMax);
         //
         vIntU.setRange("Full",2*kKaonMass,1000);
         vIntU.setRange("Meas",fMin,fMax);
         //
-        RooBreitWigner  hUtil   =   RooBreitWigner  ("hUtil",   "hUtil",    vIntU,  vMean,  vStdv);
+        RooVoigtian  hUtil      =   RooVoigtian  ("hUtil",   "hUtil",    vIntU,  vMean,  vStdv, vResl );
         //
-        Float_t         kCorr   =   hUtil.analyticalIntegral(1,"Meas")/hUtil.analyticalIntegral(1,"Full");
+        auto    fracIntFull     =   hUtil.createIntegral( vIntU, Range("Full") );
+        auto    fracIntMeas     =   hUtil.createIntegral( vIntU, Range("Meas") );
+        Float_t         kCorr   =   (fracIntMeas->getVal())/(fracIntFull->getVal());
         //
         fResults.at(iTer)->SetBinContent          (iFit+1,fCount/kCorr);
         fResults.at(iTer)->SetBinError            (iFit+1,fCounE/kCorr);
@@ -773,10 +821,10 @@ fFitCoreModel
     RooRealVar pSlopey  = RooRealVar ("pSlopy","pSlopy" ,fYShapes->getRealValue("bSlop",0));
     
     // Coefficients
-    RooRealVar n0       = RooRealVar ("anSS2D","anSS2D" ,0.50*nEntries,1,1.00*nEntries);
-    RooRealVar n1       = RooRealVar ("anBB2D","anBB2D" ,0.18*nEntries,1,1.00*nEntries);
-    RooRealVar n2       = RooRealVar ("anBS2D","anBS2D" ,0.18*nEntries,1,1.00*nEntries);
-    RooRealVar n3       = RooRealVar ("anSB2D","anSB2D" ,0.02*nEntries,1,1.00*nEntries);
+    RooRealVar n0       = RooRealVar ("anSS2D","anSS2D" ,0.50*nEntries,0.,1.00*nEntries);
+    RooRealVar n1       = RooRealVar ("anBB2D","anBB2D" ,0.18*nEntries,0.,1.00*nEntries);
+    RooRealVar n2       = RooRealVar ("anBS2D","anBS2D" ,0.18*nEntries,0.,1.00*nEntries);
+    RooRealVar n3       = RooRealVar ("anSB2D","anSB2D" ,0.02*nEntries,0.,1.00*nEntries);
     
     // PDFs
     RooChebychev        fBkgx   ("fBkgx","fBkgx"        ,xInvMass,RooArgSet(ch1x,ch2x,ch3x,ch4x));
@@ -807,7 +855,7 @@ fFitCoreModel
     RooAddPdf           fMod    ("fMod2D","fMod2D"      ,RooArgList(*fBB,fSS,*fSB,*fBS),RooArgList(n1,n0,n3,n2));
     
     RooFitResult* fFitResults;
-    fFitResults =   fMod.fitTo(*dataLoose,Extended(kTRUE),Save(),NumCPU(kCPU_use,kCPUStrategy),Offset(kFitOffset),Strategy(kFitMinuitStrategy),InitialHesse(kFitInitHesse),Minos(kFitMinos));
+    fFitResults      =   fMod.fitTo(*dataLoose,Save(),NumCPU(kCPU_use,kCPUStrategy));
     for ( Int_t iCycle = 0; iCycle < kNCycle; iCycle++ )
     {
         fFitResults =   fMod.fitTo(*data,Extended(kTRUE),Save(),NumCPU(kCPU_use,kCPUStrategy),Offset(kFitOffset),Strategy(kFitMinuitStrategy),InitialHesse(kFitInitHesse),Minos(kFitMinos));
@@ -818,17 +866,24 @@ fFitCoreModel
     if ( fSaveToFile || kSaveToFile )
     {
         SetStyle();
-        
+        //
+        gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form("%s/2D_CloseUp/",fPathToSave.Data())));
+        //
         int         nBinsPrint      =   4;
         double      dIncrement      =   0.014;//(fInvMassValMax-fInvMassValMin)/nBinsPrint;
         TCanvas*    cTotal          =   new TCanvas("","",0,45,1800,1400);
                     cTotal          ->  SetTitle(Form("Slices of 2D Invariant Mass of Kaons in pT %.1f-%.1f GeV, %.1f-%.1f GeV",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
                     cTotal          ->  SetName(Form("PT_%.1f_%.1f__%.1f_%.1f_%s",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data()));
                     cTotal          ->  Divide(2,nBinsPrint);
-        
+        //
+        TCanvas*    cTotal_chi2     =   new TCanvas("","",0,45,1800,1400);
+                    cTotal_chi2     ->  SetTitle(Form("Slices of 2D Invariant Mass of Kaons in pT %.1f-%.1f GeV, %.1f-%.1f GeV",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
+                    cTotal_chi2     ->  SetName(Form("PT_%.1f_%.1f__%.1f_%.1f_%s",fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data()));
+                    cTotal_chi2     ->  Divide(2,nBinsPrint);
+        //
                             xInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
                             yInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
-        
+        //
         for (int i = 0; i < nBinsPrint; i++)
         {
             hName                       = "Slice of 2D Invariant Mass of Kaons";
@@ -864,25 +919,27 @@ fFitCoreModel
             uLatex->DrawLatexNDC(0.50, 0.83,"ALICE Performance");
             uLatex->SetTextFont(42);
             uLatex->SetTextSize(0.035);
-            uLatex->DrawLatexNDC(0.50, 0.77,"pp #sqrt{#it{s}}= 7 TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+            if ( is_pp_anl ) uLatex->DrawLatexNDC(0.50, 0.77, Form("pp #sqrt{#it{s}}= %.2f TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5",kEnergy));
+            if ( is_pb_anl ) uLatex->DrawLatexNDC(0.50, 0.77, Form("pPb #sqrt{#it{s}}= %.2f TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5",kEnergy));
             uLatex->DrawLatexNDC(0.50, 0.72,Form("%.2f < #it{p}_{T,#phi_{1}} < %.2f GeV/#it{c}",fArrPT2D[PTindex],fArrPT2D[PTindex+1]));
             uLatex->DrawLatexNDC(0.51, 0.67,Form("%.2f < #it{p}_{T,#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
             uLatex->DrawLatexNDC(0.50, 0.62,Form("%.3f < M_{KK,#phi_{1}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
             
             fSaveToCanvas               ->Write();
-            fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i));
-            fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i));
+            fSaveToCanvas               ->SaveAs(Form("%s/2D_CloseUp/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i));
+            fSaveToCanvas               ->SaveAs(Form("%s/2D_CloseUp/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i));
             
             cTotal->cd( 2*i+1 );
             fSaveToFrame                ->Draw("same");
             if ( i == 0 )   {
-                fLegend                     ->Draw("same");
+                fLegend                 ->Draw("same");
                 uLatex->SetTextFont(60);
                 uLatex->SetTextSize(0.05);
                 uLatex->DrawLatexNDC(0.55, 0.83,"ALICE Performance");
                 uLatex->SetTextFont(42);
                 uLatex->SetTextSize(0.04);
-                uLatex->DrawLatexNDC(0.55, 0.77,"pp #sqrt{#it{s}}= 7 TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+                if ( is_pp_anl ) uLatex->DrawLatexNDC(0.50, 0.77, Form("pp #sqrt{#it{s}}= %.2f TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5",kEnergy));
+                if ( is_pb_anl ) uLatex->DrawLatexNDC(0.50, 0.77, Form("pPb #sqrt{#it{s}}= %.2f TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5",kEnergy));
                 uLatex->DrawLatexNDC(0.55, 0.72,Form("%.2f < #it{p}_{T,#phi_{1}} < %.2f GeV/#it{c}",fArrPT2D[PTindex],fArrPT2D[PTindex+1]));
                 uLatex->DrawLatexNDC(0.56, 0.67,Form("%.2f < #it{p}_{T,#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
                 uLatex->DrawLatexNDC(0.55, 0.62,Form("%.3f < M_{KK,#phi_{1}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
@@ -890,6 +947,33 @@ fFitCoreModel
                 uLatex->DrawLatexNDC(0.55, 0.83,Form("%.3f < M_{KK,#phi_{1}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
             }
             
+            cTotal_chi2->cd( 2*i+1 );//
+            //  --- Calculate Chi^2
+            RooHist*    hResidualHisto      =   fSaveToFrame->residHist(nullptr,"RooMod");
+            RooPlot*    fSaveToFrame_Res    =   yInvMass.frame(Name(TString(hName)+TString("_Residual")),Title(TString(hTitle)+TString("_Residual")));
+            fSaveToFrame_Res    ->  addPlotable( hResidualHisto );
+            fAxisMaker( fSaveToFrame_Res, "yInvMass2D" );
+            fMaximum            =   fSaveToFrame_Res->GetMaximum();
+            fSaveToFrame_Res    ->  SetMaximum(fMaximum*1.80);
+            //
+            fSaveToFrame_Res            ->Draw("same");
+            if ( i == 0 )   {
+                uLatex->SetTextFont(60);
+                uLatex->SetTextSize(0.05);
+                uLatex->DrawLatexNDC(0.55, 0.83,"ALICE Performance");
+                uLatex->SetTextFont(42);
+                uLatex->SetTextSize(0.04);
+                uLatex->DrawLatexNDC(0.35, 0.83,Form("#chi^{2}/ndf = %.3f",fSaveToFrame->chiSquare("RooMod",nullptr)));
+                if ( is_pp_anl ) uLatex->DrawLatexNDC(0.55, 0.77, Form("pp #sqrt{#it{s}}= %.2f TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5",kEnergy));
+                if ( is_pb_anl ) uLatex->DrawLatexNDC(0.55, 0.77, Form("pPb #sqrt{#it{s}}= %.2f TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5",kEnergy));
+                uLatex->DrawLatexNDC(0.55, 0.72,Form("%.2f < #it{p}_{T,#phi_{1}} < %.2f GeV/#it{c}",fArrPT2D[PTindex],fArrPT2D[PTindex+1]));
+                uLatex->DrawLatexNDC(0.56, 0.67,Form("%.2f < #it{p}_{T,#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
+                uLatex->DrawLatexNDC(0.55, 0.62,Form("%.3f < M_{KK,#phi_{1}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
+            }   else    {
+                uLatex->DrawLatexNDC(0.55, 0.83,Form("%.3f < M_{KK,#phi_{1}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
+                uLatex->DrawLatexNDC(0.55, 0.78,Form("#chi^{2}/ndf = %.3f",fSaveToFrame->chiSquare("RooMod",nullptr)));
+            }
+        
             delete fSaveToCanvas;
         }
                                         xInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
@@ -929,27 +1013,48 @@ fFitCoreModel
             uLatex->DrawLatexNDC(0.50, 0.83,"ALICE Performance");
             uLatex->SetTextFont(42);
             uLatex->SetTextSize(0.035);
-            uLatex->DrawLatexNDC(0.50, 0.77,"pp #sqrt{#it{s}}= 7 TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+            if ( is_pp_anl ) uLatex->DrawLatexNDC(0.50, 0.77, Form("pp #sqrt{#it{s}}= %.2f TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5",kEnergy));
+            if ( is_pb_anl ) uLatex->DrawLatexNDC(0.50, 0.77, Form("pPb #sqrt{#it{s}}= %.2f TeV, #phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5",kEnergy));
             uLatex->DrawLatexNDC(0.50, 0.72,Form("%.2f < #it{p}_{T,#phi_{1}} < %.2f GeV/#it{c}",fArrPT2D[PTindex],fArrPT2D[PTindex+1]));
             uLatex->DrawLatexNDC(0.51, 0.67,Form("%.2f < #it{p}_{T,#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[PTjndex],fArrPT2D[PTjndex+1]));
             uLatex->DrawLatexNDC(0.50, 0.62,Form("%.3f < M_{KK,#phi_{2}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
             
             fSaveToCanvas               ->Write();
-            fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i+nBinsPrint));
-            fSaveToCanvas               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i+nBinsPrint));
+            fSaveToCanvas               ->SaveAs(Form("%s/2D_CloseUp/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i+nBinsPrint));
+            fSaveToCanvas               ->SaveAs(Form("%s/2D_CloseUp/PT_%.1f_%.1f__%.1f_%.1f_%s_%i.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data(),i+nBinsPrint));
             
             cTotal->cd( 2*i+2 );
             fSaveToFrame                ->Draw("same");
             uLatex->DrawLatexNDC(0.50, 0.83,Form("%.3f < M_{KK,#phi_{2}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
             
+            
+            cTotal_chi2->cd( 2*i+2 );//
+            
+            //  --- Calculate Chi^2
+            RooHist*    hResidualHisto      =   fSaveToFrame->residHist(nullptr,"RooMod");
+            RooPlot*    fSaveToFrame_Res    =   xInvMass.frame(Name(TString(hName)+TString("_Residual")),Title(TString(hTitle)+TString("_Residual")));
+            fSaveToFrame_Res    ->  addPlotable( hResidualHisto );
+            fAxisMaker( fSaveToFrame_Res, "xInvMass2D" );
+            fMaximum            =   fSaveToFrame_Res->GetMaximum();
+            fSaveToFrame_Res    ->  SetMaximum(fMaximum*1.80);
+            //
+            fSaveToFrame_Res            ->Draw("same");
+            uLatex->DrawLatexNDC(0.50, 0.83,Form("%.3f < M_{KK,#phi_{1}} < %.3f GeV/#it{c}^{2}",fInvMassValMin+dIncrement*i,fInvMassValMin+dIncrement*(i+1)));
+            uLatex->DrawLatexNDC(0.50, 0.78,Form("#chi^{2}/ndf = %.3f",fSaveToFrame->chiSquare("RooMod",nullptr)));
+            
             delete fSaveToCanvas;
         }
                                         xInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
                                         yInvMass.setRange("fDrawRange",fInvMassValMin,fInvMassValMax);
-        cTotal ->Write();
-        cTotal               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data()));
-        cTotal               ->SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data()));
+        cTotal  ->   Write();
+        cTotal  ->  SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data()));
+        cTotal  ->  SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data()));
         delete cTotal;
+        
+        cTotal_chi2 ->  Write();
+        cTotal_chi2 ->  SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s_Chi2.pdf",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data()));
+        cTotal_chi2 ->  SaveAs(Form("%s/PT_%.1f_%.1f__%.1f_%.1f_%s_Chi2.eps",fPathToSave.Data(),fArrPT2D[PTindex],fArrPT2D[PTindex+1],fArrPT2D[PTjndex],fArrPT2D[PTjndex+1],fName.Data()));
+        delete cTotal_chi2;
     }
     
     // Un-Silencing TCanvas Pop-Up
@@ -959,145 +1064,135 @@ fFitCoreModel
     return fFitResults;
 }
 //
-std::vector<TH2F*>
-FitModel
- ( TH1F  **hShapeFit, TH1F* hSlopReference, TH2F***hTarget, RooFitResult*** &fFitresultsStore = NULL_ROOFITPTR3, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
-    
-    std::vector<TH2F*>  fResults;
-    RooFitResult      **fShapeStore = nullptr;
-    if ( !fFitresultsStore )    {
-        fFitresultsStore = new RooFitResult**[nBinPT2D];
-        for ( Int_t iTer = 0; iTer < nBinPT2D; iTer++ ) {
-            fFitresultsStore[iTer]  =    new RooFitResult    *[nBinPT2D];
-        }
+TCanvas*
+uPlotSpectrum
+( TH1* hTarget, TH1* hTrSyst, TString fOption = "" ){
+    //
+    SetStyle();
+    //
+    TCanvas    *cDrawResult =   new TCanvas("","",1200,1000);
+    gStyle->SetOptStat(0);
+    uSetHisto(hTarget,fOption + TString(" STAT"));
+    uSetHisto(hTrSyst,fOption + TString(" SYST"));
+    if ( fOption.Contains("SPT") )  {
+        gPad->SetLogy();
+        hTrSyst->SetMaximum(2.0*max(hTarget->GetMaximum(),hTrSyst->GetMaximum()));
+        hTrSyst->SetMinimum(0.5*min(hTarget->GetMinimum(),hTrSyst->GetMinimum()));
+    } else {
+        hTrSyst->SetMaximum(1.2*max(hTarget->GetMaximum(),hTrSyst->GetMaximum()));
+        hTrSyst->SetMinimum(0.8*min(hTarget->GetMinimum(),hTrSyst->GetMinimum()));
     }
     //
-    //>>    Recover 1D Shapes
-    f1Din2DbinCheck     =   FitModel(hShapeFit,hSlopReference,fShapeStore,2,fOption,fTargetPath,fNameFile);
+    TLegend    *lLegend;
+    if ( fOption.Contains("R") )        lLegend =   new TLegend(0.65,0.35,0.85,0.5);
+    else if ( fOption.Contains("T") )   lLegend =   new TLegend(0.18,0.18,0.38,0.33);
+    else                                lLegend =   new TLegend(0.2,0.35,0.4,0.5);
+    lLegend     ->  SetFillColorAlpha(0.,0.);
+    lLegend     ->  AddEntry    (hTarget,"Data","P");
+    lLegend     ->  AddEntry    (hTarget,"Stat","F");
+    lLegend     ->  AddEntry    (hTrSyst,"Syst","F");
     //
-    //>>    Fit 2D Histograms
-    for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ ) {
-        for ( Int_t jFit = iFit; jFit < nBinPT2D; jFit++ ) {
-            //
-            //>>    Protection Against SegFault
-            if ( !fShapeStore[iFit] ) continue;
-            if ( !fShapeStore[jFit] ) continue;
-            //
-            //>>    Fit
-            fFitresultsStore[iFit][jFit]       =  fFitCoreModel(hTarget[iFit][jFit],hSlopReference,fShapeStore[iFit],fShapeStore[jFit],fNameFile,fOption,iFit,jFit,fTargetPath);
-            //
-            //>>    Protection Against SegFault
-            if ( !fFitresultsStore[iFit][jFit] ) continue;
-            //
-            //>>    Building Raw Count histograms
-            if ( iFit == 0 && jFit == 0 )   {
-                //Int_t   iTer = 0;
-                for ( auto fCoeff : fFitresultsStore[iFit][jFit]->floatParsFinal() )   {
-                    auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
-                    fResults.push_back( new TH2F(Form("%s_%s",N_Raw->GetName(),fNameFile.Data()),N_Raw->GetName(),nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D) );
-                    //if ( strncmp(N_Raw->GetName(),"anSS2D",6) == 0 ) fResults.at(iTer)->SetName("hRAW_2D");
-                    //iTer++;
-                }
-                for ( auto fCoeff : fFitresultsStore[iFit][jFit]->constPars() )   {
-                    auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
-                    fResults.push_back( new TH2F(Form("%s_%s",N_Raw->GetName(),fNameFile.Data()),N_Raw->GetName(),nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D) );
-                }
-            }
-            //
-            //>>    Filling Raw Count Histograms
-            Int_t   iTer = 0;
-            for ( auto fCoeff : fFitresultsStore[iFit][jFit]->floatParsFinal() )   {
-                auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
-                fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,N_Raw->getVal());
-                fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
-                fResults.at(iTer)->SetBinContent          (jFit+1,iFit+1,N_Raw->getVal());
-                fResults.at(iTer)->SetBinError            (jFit+1,iFit+1,N_Raw->getError());
-                if ( iFit == jFit ) {
-                    fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,2.*N_Raw->getVal());
-                    fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,2.*N_Raw->getError());
-                }
-                iTer++;
-            }
-            for ( auto fCoeff : fFitresultsStore[iFit][jFit]->constPars() )   {
-                auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
-                cout << N_Raw->GetName() << ": " << N_Raw->getVal() << " +- " << N_Raw->getError() << endl;
-                fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,N_Raw->getVal());
-                fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
-                fResults.at(iTer)->SetBinContent          (jFit+1,iFit+1,N_Raw->getVal());
-                fResults.at(iTer)->SetBinError            (jFit+1,iFit+1,N_Raw->getError());
-                iTer++;
-            }
-        }
-    }
-    return fResults;
-}
-std::vector<TH2F*>
-FitModel
- ( TH2F***hTarget, TH1F* hSlopReference,  RooFitResult**  fShapeStore, RooFitResult*** &fFitresultsStore = NULL_ROOFITPTR3, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
-    std::vector<TH2F*>  fResults;
-    if ( !fFitresultsStore )    {
-        fFitresultsStore = new RooFitResult**[nBinPT2D];
-        for ( Int_t iTer = 0; iTer < nBinPT2D; iTer++ ) {
-            fFitresultsStore[iTer]  =    new RooFitResult    *[nBinPT2D];
-        }
+    hTrSyst->Draw("SAME PE2");
+    hTarget->Draw("SAME E1");
+    lLegend->Draw("SAME");
+    //
+    if ( fOption.Contains("R") )    {
+        uLatex->SetTextFont(60);
+        uLatex->SetTextSize(0.05);
+        uLatex->DrawLatexNDC(0.65, 0.3,"ALICE");
+        uLatex->SetTextFont(42);
+        uLatex->SetTextSize(0.04);
+        uLatex->DrawLatexNDC(0.65, 0.25,"pp #sqrt{#it{s}}= 7 TeV");
+        uLatex->DrawLatexNDC(0.65, 0.2,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+    } else if ( fOption.Contains("T") )    {
+        uLatex->SetTextFont(60);
+        uLatex->SetTextSize(0.05);
+        uLatex->DrawLatexNDC(0.63, 0.83,"ALICE");
+        uLatex->SetTextFont(42);
+        uLatex->SetTextSize(0.04);
+        uLatex->DrawLatexNDC(0.63, 0.78,"pp #sqrt{#it{s}}= 7 TeV");
+        uLatex->DrawLatexNDC(0.63, 0.73,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+    } else {
+        uLatex->SetTextFont(60);
+        uLatex->SetTextSize(0.05);
+        uLatex->DrawLatexNDC(0.20, 0.3,"ALICE");
+        uLatex->SetTextFont(42);
+        uLatex->SetTextSize(0.04);
+        uLatex->DrawLatexNDC(0.20, 0.25,"pp #sqrt{#it{s}}= 7 TeV");
+        uLatex->DrawLatexNDC(0.20, 0.2,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
     }
     //
-    //>>    Fit 2D Histograms
-    for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ ) {
-        for ( Int_t jFit = 0; jFit < nBinPT2D; jFit++ ) {
-            //
-            //>>    Protection Against SegFault
-            if ( !fShapeStore[iFit] ) continue;
-            if ( !fShapeStore[jFit] ) continue;
-            //
-            //>>    Fit
-            fFitresultsStore[iFit][jFit]       =  fFitCoreModel(hTarget[iFit][jFit],hSlopReference,fShapeStore[iFit],fShapeStore[jFit],fNameFile,fOption,iFit,jFit,fTargetPath);
-            //
-            //>>    Protection Against SegFault
-            if ( !fFitresultsStore[iFit][jFit] ) continue;
-            //
-            //>>    Building Raw Count histograms
-            if ( iFit == 0 && jFit == 0 )   {
-                Int_t   iTer = 0;
-                for ( auto fCoeff : fFitresultsStore[iFit][jFit]->floatParsFinal() )   {
-                    auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
-                    fResults.push_back( new TH2F(N_Raw->GetName(),N_Raw->GetName(),nBinPT2D,fArrPT2D,nBinPT2D,fArrPT2D) );
-                    if ( strncmp(N_Raw->GetName(),"anSS2D",6) == 0 ) fResults.at(iTer)->SetName("hRAW_2D");
-                    iTer++;
-                }
-            }
-            //
-            //>>    Filling Raw Count Histograms
-            Int_t   iTer = 0;
-            for ( auto fCoeff : fFitresultsStore[iFit][jFit]->floatParsFinal() )   {
-                auto N_Raw      = static_cast<RooRealVar*>(fCoeff);
-                fResults.at(iTer)->SetBinContent          (iFit+1,jFit+1,N_Raw->getVal());
-                fResults.at(iTer)->SetBinError            (iFit+1,jFit+1,N_Raw->getError());
-                iTer++;
-            }
-            
-        }
+    if ( fOption.Contains(" 2D") )   {
+        cDrawResult->cd();
+        gPad    -> SetTopMargin     (0.20);
+        gPad    -> SetBottomMargin  (0.16);
+        gPad    -> SetLeftMargin    (0.12);
+        gPad    -> SetRightMargin   (0.22);
+        gPad    -> SetLogx          (false);
+        gPad    -> SetLogy          (false);
+        gPad    -> SetLogz          ();
+        hTarget -> Draw("COLZ");
+        //  X axis
+        hTarget->GetXaxis()->SetLabelOffset(0.015);
+        hTarget->GetXaxis()->SetTitleOffset(1.3);
+        hTarget->GetXaxis()->SetNdivisions(8);
+        //
+        //  Y axis
+        hTarget->GetYaxis()->SetTitleOffset(1);
+        hTarget->GetYaxis()->SetNdivisions(8);
+        //
+        //  Z axis
+        //hTarget->GetZaxis()->SetTitle(Form("Counts/( %.1f MeV/#it{c}^{2} )",1000*kBinningPrecision2D));
+        hTarget->GetZaxis()->SetTitleOffset(1.35);
+        hTarget->GetZaxis()->SetNdivisions(8);
+        //
+        uLatex->SetTextFont(60);
+        uLatex->SetTextSize(0.05);
+        uLatex->DrawLatexNDC(0.12, 0.95,"ALICE");
+        uLatex->SetTextFont(42);
+        uLatex->SetTextSize(0.04);
+        uLatex->DrawLatexNDC(0.12, 0.90,"pp #sqrt{#it{s}}= 7 TeV");
+        uLatex->DrawLatexNDC(0.12, 0.85,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+        
+        /*
+        
+        SetStyle();
+        gStyle->SetPadTopMargin(0.2);
+        gStyle->SetPadRightMargin(0.18);
+        gStyle->SetPadLeftMargin(0.16);
+        
+        TCanvas    *cDrawHisto  =   new TCanvas("cDrawHisto","cDrawHisto",3000,3000);
+        //
+        //  X axis
+        hTarget->GetXaxis()->SetLabelOffset(0.015);
+        hTarget->GetXaxis()->SetTitleOffset(1.3);
+        hTarget->GetXaxis()->SetNdivisions(8);
+        //
+        //  Y axis
+        hTarget->GetYaxis()->SetTitleOffset(1.45);
+        hTarget->GetYaxis()->SetNdivisions(8);
+        //
+        //  Z axis
+        hTarget->GetZaxis()->SetTitle(Form("Counts/( %.1f MeV/#it{c}^{2} )",1000*kBinningPrecision2D));
+        hTarget->GetZaxis()->SetTitleOffset(1.3);
+        hTarget->GetZaxis()->SetNdivisions(8);
+        //
+        hTarget->Draw("COLZ");
+        
+        uLatex->SetTextFont(60);
+        uLatex->SetTextSize(0.05);
+        uLatex->DrawLatexNDC(0.12, 0.95,"ALICE Performance");
+        uLatex->SetTextFont(42);
+        uLatex->SetTextSize(0.04);
+        uLatex->DrawLatexNDC(0.12, 0.90,"pp #sqrt{#it{s}}= 7 TeV");
+        uLatex->DrawLatexNDC(0.12, 0.85,"#phi #rightarrow K^{+}K^{-}, |#it{y}|<0.5");
+        //
+        uLatex->DrawLatexNDC(0.50, 0.90,Form("%.2f < #it{p}_{T,#phi_{1}} < %.2f GeV/#it{c}",fArrPT2D[iHisto],fArrPT2D[iHisto+1]));
+        uLatex->DrawLatexNDC(0.50, 0.85,Form("%.2f < #it{p}_{T,#phi_{2}} < %.2f GeV/#it{c}",fArrPT2D[jHisto],fArrPT2D[jHisto+1]));
+         */
     }
-    return fResults;
-}
-std::vector<TH2F*>
-FitModel                        ( TH1F  **hShapeFit, TH1F* hSlopReference, TH2F***hTarget, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "",  std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
-    return  FitModel(hShapeFit,hSlopReference,hTarget,NULL_ROOFITPTR3,fOption,fTargetPath,fNameFile);
-}
-std::vector<TH2F*>
-FitModel
- ( TH1F  **hShapeFit, TH1F* hSlopReference, TH2F***hTarget, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
-    return  FitModel(hShapeFit,hSlopReference,hTarget,NULL_ROOFITPTR3,fOption,fTargetPath,fNameFile,f1Din2DbinCheck);
-}
-std::vector<TH2F*>
-FitModel
- ( TH2F***hTarget, TH1F* hSlopReference, RooFitResult**  fShapeStore, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "" )  {
-    return  FitModel(hTarget,hSlopReference,fShapeStore,NULL_ROOFITPTR3,"",fTargetPath,fNameFile,f1Din2DbinCheck);
-}
-std::vector<TH2F*>
-FitModel
- ( TH2F***hTarget, TH1F* hSlopReference, RooFitResult**  fShapeStore, std::vector<TH1F*> &f1Din2DbinCheck, TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", TString fOption = "" )  {
-    return  FitModel(hTarget,hSlopReference,fShapeStore,NULL_ROOFITPTR3,fOption,fTargetPath,fNameFile,f1Din2DbinCheck);
+    //
+    return cDrawResult;
 }
 //
 std::vector<TH2F*>
@@ -1113,11 +1208,12 @@ FitModel
     }
     //
     //>>    Recover 1D Shapes
-    f1Din2DbinCheck     =   FitModel(hShapeFit,hSlopReference,fShapeStore,2,fOption,fTargetPath,fNameFile);
+    gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(fTargetPath+TString("/1D_Shape/")).Data()));
+    f1Din2DbinCheck     =   FitModel(hShapeFit,hSlopReference,fShapeStore,2,fOption,fTargetPath+TString("/1D_Shape/"),fNameFile);
     //
     //>>    Fit 2D Histograms
     for ( Int_t iFit = 0; iFit < nBinPT2D; iFit++ ) {
-        for ( Int_t jFit = iFit; jFit > -1; jFit-- ) {
+        for ( Int_t jFit = iFit; jFit < nBinPT2D; jFit++ ) {
             //
             //>>    Protection Against SegFault
             if ( !fShapeStore[iFit] ) continue;
@@ -1172,6 +1268,13 @@ FitModel
 std::vector<TH2F*>
 FitModel
  ( std::vector<std::vector<TH2F*>>hTarget, TH1F* hSlopReference,  RooFitResult**  fShapeStore, RooFitResult*** &fFitresultsStore = NULL_ROOFITPTR3, TString fOption = "", TString fTargetPath = "./result/SEFitCheck", TString fNameFile = "", std::vector<TH1F*> &f1Din2DbinCheck = NULL_VECTOR )  {
+    cout << "cdddddddd" << endl;
+    cout << "cdddddddd" << endl;
+    cout << "cdddddddd" << endl;
+    cout << "cdddddddd" << endl;
+    cout << "cdddddddd" << endl;
+    cout << "cdddddddd" << endl;
+    cout << "cdddddddd" << endl;
     std::vector<TH2F*>  fResults;
     if ( !fFitresultsStore )    {
         fFitresultsStore = new RooFitResult**[nBinPT2D];
@@ -1419,28 +1522,6 @@ fChooseOption
 //
 //_____________________________________________________________________________
 //
-Double_t
-fGammaPhiValue
- ( Double_t fYieldPhi, Double_t fYieldPhiPhi )  {
-    return  2*fYieldPhiPhi/fYieldPhi -fYieldPhi;
-}
-Double_t
-fGammaPhiError
- ( Double_t fYieldPhi, Double_t fYieldPhiPhi, Double_t fErrorPhi, Double_t fErrorPhiPhi)  {
-    auto    fPar1   =   2*fErrorPhiPhi/fYieldPhi;
-    auto    fPar2   =   (2*fYieldPhiPhi/(fYieldPhi*fYieldPhi)+1)*fErrorPhi;
-    return  fPar1 + fPar2;
-}
-Double_t
-fSigmaPhiValue
- ( Double_t fYieldPhi, Double_t fYieldPhiPhi )  {
-    return  2*fYieldPhiPhi + fYieldPhi - fYieldPhi*fYieldPhi;
-}
-Double_t
-fSigmaPhiError
- ( Double_t fYieldPhi, Double_t fYieldPhiPhi, Double_t fErrorPhi, Double_t fErrorPhiPhi)  {
-    return SquareSum( { 2*fErrorPhiPhi, (-1+fYieldPhi)*fErrorPhi } );
-}
 //
 //_____________________________________________________________________________
 //
@@ -1535,56 +1616,44 @@ void                fFitLevyTsalis                  ( TGraphAsymmErrors* gToBeFi
 //
 //_____________________________________________________________________________
 //
-template < class Tclass >
-Tclass*
+//  !TODO: Generalise and put an enclosure in specific include
+template <  typename THXTarget_Type >
+THXTarget_Type*
 fSetSystErrors
- ( Tclass*                          hStatistics ) {
-    auto        fResult         =   (Tclass*)(hStatistics->Clone());
+ ( THXTarget_Type*  hStatistics, TString kSystematicsFile, TString kSystematicHisto = "hFullSystematic1D" ) {
     //
-    TFile      *fReference      =   new TFile( Form("%s/Full_Systematics.root",(TString(Form(kAnalysis_Systemt_Dir,"yield"))).Data()) );
-    Tclass     *hReference      =   (Tclass*)(fReference->Get("h1DTotalSystematic"));
+    auto    fResult =   (THXTarget_Type*)(hStatistics->Clone());
     //
-    for ( Int_t iBin = 0; iBin < fResult->GetNbinsX(); iBin++ ) {
-        auto    fBinContent     =   fResult->GetBinContent( iBin );
-        fResult->SetBinError( iBin, fBinContent*0.1);//(hReference->GetBinContent(iBin)));
+    TFile*          fReference;
+    THXTarget_Type* hReference;
+    if ( !kSystematicsFile.IsNull() )  {
+        fReference  =   new TFile( kSystematicsFile );
+        hReference  =   (THXTarget_Type*)(fReference->Get(kSystematicHisto));
+    } else {
+        cout << "[WARNING] No Syst file found" << endl;
     }
-    fReference->Close();
+    //
+    for ( Int_t iBin = 1; iBin <= fResult->GetNbinsX(); iBin++ ) {
+        for ( Int_t jBin = 1; jBin <= fResult->GetNbinsY(); jBin++ ) {
+            for ( Int_t kBin = 1; kBin <= fResult->GetNbinsZ(); kBin++ ) {
+                auto    kGlobalBin  =   fResult->GetBin         ( iBin, jBin, kBin );
+                auto    kBinContent =   fResult->GetBinContent  ( kGlobalBin );
+                auto    kBinError   =   0.;
+                cout << " - - - - HISTO : " << hStatistics->GetName() << endl;
+                cout << " - - - - BIN: " << endl;
+                cout << kBinError << endl;
+                if ( hReference ) kBinError = kBinContent * hReference->GetBinContent( kGlobalBin );
+                else  cout << "[WARNING] No Syst histogram found" << endl;
+                cout << kBinError << endl;
+                fResult ->  SetBinContent   ( kGlobalBin, kBinContent );
+                fResult ->  SetBinError     ( kGlobalBin, kBinError );
+            }
+        }
+    }
+    //
+    if ( !kSystematicsFile.IsNull() ) fReference->Close();
     //
     return  fResult;
-}
-template < class Tclass >
-std::vector<Tclass*>
-fSetSystErrors
- ( std::vector<Tclass*>             hStatistics ) {
-    std::vector<Tclass*> fResult;
-    //
-    TFile      *fReference      =   new TFile( Form("%s/Full_Systematics.root",(TString(Form(kAnalysis_Systemt_Dir,"yield"))).Data()) );
-    TH2F       *hReference      =   (TH2F*)(fReference->Get("h2DTotalSystematic"));
-    //
-    auto jBin = 0;
-    for ( auto& iHisto : hStatistics )  {
-        auto    fCurrentHisto   =   new Tclass(*iHisto);
-        for ( Int_t iBin = 0; iBin < iHisto->GetNbinsX(); iBin++ ) {
-            auto    fBinContent     =   fCurrentHisto->GetBinContent( iBin+1 );
-            fCurrentHisto->SetBinError( iBin+1, fBinContent*0.1);//(hReference->GetBinContent(jBin+1,iBin+1)));
-        }
-        jBin++;
-        fResult.push_back(fCurrentHisto);
-    }
-    return fResult;
-}
-//
-template < class Tclass >
-Tclass*
-fSetSystErrors
-( Tclass* hTarget,                  Int_t jBin ) {
-    Tclass* hResult         =   (Tclass*)(hTarget->Clone());
-    TFile*  fReference      =   new TFile( Form("%s/Full_Systematics.root",(TString(Form(kAnalysis_Systemt_Dir,"yield"))).Data()) );
-    TH2F*   hReference      =   (TH2F*)(fReference->Get("h2DTotalSystematic"));
-    for ( Int_t iBin = 0; iBin < hTarget->GetNbinsX(); iBin++ ) {
-        hResult->SetBinError    ( iBin+1, (hTarget->GetBinContent( iBin+1 ))*0.1);//(hReference->GetBinContent(jBin+1,iBin+1)) );
-    }
-    return hResult;
 }
 //
 //_____________________________________________________________________________
@@ -2071,7 +2140,37 @@ Double_t*           fMeasureFullYield               ( std::vector<TH1F*>  gStati
 //
 //_____________________________________________________________________________
 //
-Double_t            fEvaluateINELgt0                ( Int_t iMultBin, TH1  *hMultCounter)  {
+/*
+Double_t            fEvaluateINELgt0                ( Int_t iMultBin, TH1  *hMultCounter, std::vector<Float_t> kEfficiency, std::vector<Float_t> kBinLimits )  {
+    //
+    auto    fResult = -1;
+    auto    kUtilCount  =   (TH1F*)(hMultCounter->Clone());
+    //
+    for ( Int_t iBin = 1; iBin <= kUtilCount->GetNbinsX(); iBin++ ) {
+        //
+        auto    kBinCenter  =   hMultCounter->GetBinCenter(iBin);
+        if ( kBinCenter < kBinLimits[0] || kBinCenter > kBinLimits[kBinLimits.size()-1] ) continue;
+        auto    kBinContent =   hMultCounter->GetBinContent(iBin);
+        //
+        for ( Int_t jBin = 1; jBin < kBinLimits.size(); jBin++ )  {
+            if ( kBinCenter < kBinLimits[jBin] )   {
+                auto kEff = kEfficiency[jBin-1];
+                kUtilCount  ->  SetBinContent( iBin, kBinContent/kEff );
+                break;
+            }
+        }
+    }
+    //
+    if ( iMultBin < 0 || iMultBin > nBinMult )  {
+        for ( Int_t iTer = 0; iTer < nBinMult; iTer++ ) fResult += fEvaluateINELgt0(iTer,kUtilCount);
+    } else {
+        fResult =   ( kUtilCount->Integral( kUtilCount->GetXaxis()->FindBin( fArrMult[iMultBin] ) , kUtilCount->GetXaxis()->FindBin( fArrMult[iMultBin+1] ) ) );
+    }
+    return      fResult;
+}
+*/
+
+Double_t            fEvaluateINELgt0                ( Int_t iMultBin, TH1  *hMultCounter, Bool_t k201517 = true )  {
     auto    fResult = -1;
     auto    kUtilCount  =   (TH1F*)(hMultCounter->Clone());
     for ( Int_t iTer = 1; iTer <= kUtilCount->GetNbinsX(); iTer++ ) {
@@ -2081,6 +2180,7 @@ Double_t            fEvaluateINELgt0                ( Int_t iMultBin, TH1  *hMul
         for ( Int_t iTe2 = 1; iTe2 <= kTriggerEffMNBins+1; iTe2++ )  {
             if ( kBinCenter < kTriggerEffMBins[iTe2] )   {
                 auto kEff = kLHC15n_fEV*kTriggerEffM15n[iTe2-1] + kLHC17pq_fEV*kTriggerEffM17pq[iTe2-1];
+                if ( !k201517 ) kEff= 1.;
                 kUtilCount->SetBinContent(iTer,kBinContent/kEff);
                 break;
             }
@@ -2089,7 +2189,7 @@ Double_t            fEvaluateINELgt0                ( Int_t iMultBin, TH1  *hMul
     if ( iMultBin < 0 || iMultBin > nBinMult )  {
         for ( Int_t iTer = 0; iTer < nBinMult; iTer++ ) fResult += fEvaluateINELgt0(iTer,kUtilCount);
     } else {
-        fResult =   (kUtilCount->Integral(2+fArrMult[iMultBin],1+fArrMult[iMultBin+1]));
+        fResult =   ( kUtilCount->Integral( kUtilCount->GetXaxis()->FindBin( fArrMult[iMultBin] ) , kUtilCount->GetXaxis()->FindBin( fArrMult[iMultBin+1] ) ) );
     }
     return      fResult;
 }
@@ -2107,6 +2207,18 @@ void        fSetPhiCandidate                    ( TTree* TPhiCandidate, Struct_P
     TPhiCandidate-> SetBranchAddress    ("Selection",       &evPhiEfficiency.Selection);
 }
 //
+void        fSetPhiCandidateMC                  ( TTree* TPhiCandidate, Struct_MCParticle &evPhiEfficiency )    {
+    //TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiEfficiency.nPhi);
+    TPhiCandidate-> SetBranchAddress    ("nPart",   &evPhiEfficiency.nPart);
+    TPhiCandidate-> SetBranchAddress    ("Eta_10",  &evPhiEfficiency.Eta_10);
+    TPhiCandidate-> SetBranchAddress    ("Eta_08",  &evPhiEfficiency.Eta_08);
+    TPhiCandidate-> SetBranchAddress    ("Eta_05",  &evPhiEfficiency.Eta_05);
+    TPhiCandidate-> SetBranchAddress    ("V0A",     &evPhiEfficiency.V0A);
+    TPhiCandidate-> SetBranchAddress    ("V0M",     &evPhiEfficiency.V0M);
+    TPhiCandidate-> SetBranchAddress    ("Px",      &evPhiEfficiency.Px);
+    TPhiCandidate-> SetBranchAddress    ("Py",      &evPhiEfficiency.Py);
+    TPhiCandidate-> SetBranchAddress    ("Pz",      &evPhiEfficiency.Pz);
+}
 //_____________________________________________________________________________
 //
 void        fSetKaonCandidate                    ( TTree* TKaonCandidate, Struct_KaonEfficiency &evKaonEfficiency )    {
@@ -2131,9 +2243,11 @@ Bool_t      fSetCandidates                      ( TTree* TPhiCnd, Struct_PhiEffi
 //
 //_____________________________________________________________________________
 //
-void        fSetPhiCandidate                    ( TTree* TPhiCandidate, Struct_PhiCandidate &evPhiCandidate )    {
+void        fSetPhiCandidate                    ( TTree* TPhiCandidate, Struct_PhiCandidate &evPhiCandidate, Bool_t MCFlag = true )    {
     TPhiCandidate-> SetBranchAddress    ("EventMask",       &evPhiCandidate.EventMask);
     TPhiCandidate-> SetBranchAddress    ("Multiplicity",    &evPhiCandidate.Multiplicity);
+    TPhiCandidate-> SetBranchAddress    ("Spherocity",      &evPhiCandidate.Spherocity);
+    TPhiCandidate-> SetBranchAddress    ("RTransverse",     &evPhiCandidate.RTransverse);
     TPhiCandidate-> SetBranchAddress    ("nPhi",            &evPhiCandidate.nPhi);
     TPhiCandidate-> SetBranchAddress    ("Px",              &evPhiCandidate.Px);
     TPhiCandidate-> SetBranchAddress    ("Py",              &evPhiCandidate.Py);
@@ -2141,7 +2255,7 @@ void        fSetPhiCandidate                    ( TTree* TPhiCandidate, Struct_P
     TPhiCandidate-> SetBranchAddress    ("InvMass",         &evPhiCandidate.InvMass);
     TPhiCandidate-> SetBranchAddress    ("iKaon",           &evPhiCandidate.iKaon);
     TPhiCandidate-> SetBranchAddress    ("jKaon",           &evPhiCandidate.jKaon);
-    TPhiCandidate-> SetBranchAddress    ("TrueInvMass",     &evPhiCandidate.TrueInvMass);
+    if ( MCFlag )   TPhiCandidate-> SetBranchAddress    ("TrueInvMass",     &evPhiCandidate.TrueInvMass);
 }
 //
 //_____________________________________________________________________________
@@ -2635,7 +2749,7 @@ fCalculateSystematics
 
 void
 uOrderPTCandidates
- ( Struct_PhiCandidate &fCurrent_Candidates ) {
+ ( Struct_PhiCandidate &fCurrent_Candidates, Bool_t kBiggerFirst = false ) {
     auto    kContinue   =   true;
     Int_t   kNewArray[128];
     for ( Int_t iPhi = 0; iPhi < fCurrent_Candidates.nPhi; iPhi++ ) kNewArray[iPhi] = iPhi;
@@ -2644,7 +2758,8 @@ uOrderPTCandidates
         for ( Int_t iPhi = 0; iPhi < fCurrent_Candidates.nPhi-1; iPhi++ )    {
             auto    kPT_Cand1   =   fCurrent_Candidates.pT[kNewArray[iPhi]  ];
             auto    kPT_Cand2   =   fCurrent_Candidates.pT[kNewArray[iPhi+1]];
-            if  ( kPT_Cand1 >= kPT_Cand2 )   continue;
+            if  (  kBiggerFirst && ( kPT_Cand1 >= kPT_Cand2 ) )   continue;
+            if  ( !kBiggerFirst && ( kPT_Cand1 <= kPT_Cand2 ) )   continue;
             Int_t   kFirst      =   kNewArray[iPhi];
             Int_t   kSecond     =   kNewArray[iPhi+1];
             kNewArray[iPhi]     =   kSecond;
@@ -2655,16 +2770,20 @@ uOrderPTCandidates
     }
     Struct_PhiCandidate kUtility = fCurrent_Candidates;
     for ( Int_t iPhi = 0; iPhi < fCurrent_Candidates.nPhi; iPhi++ )    {
-        fCurrent_Candidates.InvMass     [ iPhi ]    =   kUtility.InvMass        [ kNewArray[iPhi] ];
-        fCurrent_Candidates.TrueInvMass [ iPhi ]    =   kUtility.TrueInvMass    [ kNewArray[iPhi] ];
         fCurrent_Candidates.iKaon       [ iPhi ]    =   kUtility.iKaon          [ kNewArray[iPhi] ];
         fCurrent_Candidates.jKaon       [ iPhi ]    =   kUtility.jKaon          [ kNewArray[iPhi] ];
+        fCurrent_Candidates.Px          [ iPhi ]    =   kUtility.Px             [ kNewArray[iPhi] ];
+        fCurrent_Candidates.Py          [ iPhi ]    =   kUtility.Py             [ kNewArray[iPhi] ];
+        fCurrent_Candidates.Pz          [ iPhi ]    =   kUtility.Pz             [ kNewArray[iPhi] ];
         fCurrent_Candidates.pT          [ iPhi ]    =   kUtility.pT             [ kNewArray[iPhi] ];
-        fCurrent_Candidates.Phi         [ iPhi ]    =   kUtility.Phi            [ kNewArray[iPhi] ];
         fCurrent_Candidates.Rap         [ iPhi ]    =   kUtility.Rap            [ kNewArray[iPhi] ];
+        fCurrent_Candidates.InvMass     [ iPhi ]    =   kUtility.InvMass        [ kNewArray[iPhi] ];
+        fCurrent_Candidates.TrueInvMass [ iPhi ]    =   kUtility.TrueInvMass    [ kNewArray[iPhi] ];
+        fCurrent_Candidates.Phi         [ iPhi ]    =   kUtility.Phi            [ kNewArray[iPhi] ];
+        fCurrent_Candidates.kHasRap     [ iPhi ]    =   kUtility.kHasRap        [ kNewArray[iPhi] ];
         fCurrent_Candidates.iPT1D       [ iPhi ]    =   kUtility.iPT1D          [ kNewArray[iPhi] ];
         fCurrent_Candidates.iPT2D       [ iPhi ]    =   kUtility.iPT2D          [ kNewArray[iPhi] ];
-        fCurrent_Candidates.kHasRap     [ iPhi ]    =   kUtility.kHasRap        [ kNewArray[iPhi] ];
+        fCurrent_Candidates.iRap        [ iPhi ]    =   kUtility.iRap           [ kNewArray[iPhi] ];
     }
 }
 
@@ -2710,6 +2829,8 @@ uCalculateResolutionTrueMassFIT
     }
     return fResult;
 }*/
+
+
 
 void
 uPlotInvMass

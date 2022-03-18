@@ -8,8 +8,8 @@
 //
 //>->   Input Data Directory
 //
-TString fInputData_Directory    =   "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/_Data/20210805_LHC10X/";
-TString fInputData_FileName     =   "20210805_LHC10X_STD.root";
+TString fInputData_Directory    =   "/Volumes/NRUBINI_DATASTASH/Dataset/_Data/p_Pb_5TeV/";
+TString fInputData_FileName     =   "LHC16qt_STD.root";
 TString fInputData_TList        =   "fQCOutputList";
 //
 //>->->     Input Data Trees and Histograms
@@ -44,13 +44,13 @@ TString fQC_PID_SignalDET_P     =   "fQC_PID_Signal%s_%s";
 //
 //>-> Input Monte Carlo Directory
 //
-TString fInputMntC_Directory    =   "/Volumes/[HD][Nikolajal]_Toshiba 2/Dataset/_Sim/20210805_LHC14j4X/";
-TString fInputMntC_FileName     =   "20210805_LHC14j4X_STD.root";
+TString fInputMntC_Directory    =   "/Volumes/NRUBINI_DATASTASH/Dataset/_Sim/p_Pb_5TeV/";
+TString fInputMntC_FileName     =   "LHC17f2b_STD.root";
 TString fInputMntC_TList        =   "fQCOutputList";
 //
 //>-> Output Data Directory
 //
-TString fOutput_Directory       =   "Result";
+TString fOutput_Directory       =   "Result/QualityAssurance/p_Pb_5TeV/";
 TString fOutput_Directory_PID   =   "PIDQA";
 TString fOutput_Directory_Track =   "TRKQA";
 TString fOutput_Directory_Mult  =   "MLTQA";

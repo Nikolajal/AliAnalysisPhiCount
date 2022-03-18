@@ -1,11 +1,14 @@
+#ifndef GENERAL_ANALYSIS_CXX
+#define GENERAL_ANALYSIS_CXX
 // File for 1-Dimensional Analysis:
 // !TODO: Set Global Counter to avoid memory loss due to overlap in names of th**
 // !TODO: Make copies for TH1F/TH1D etc.
 #include "../../inc/AliAnalysisPhiPair.h"
 #include "RooMsgService.h"
 //
+/*
 void
-GeneralAnalysis
+uSysEvaluate_Extrapolation
 ( TH1F* hStandard, std::vector<TH1F*> hVariations, TString fFolder, TString fSubFolder = "", Bool_t kNoBarlowCheck = false  ) {
     //
     gErrorIgnoreLevel   =   kWarning;
@@ -119,13 +122,15 @@ GeneralAnalysis
 }
 //
 void
-GeneralAnalysis
+uEvaluateFullUncertainty
 ( TH1F* hStandard, std::vector<TH1F*> hVariations, TH2F* h2Standard, std::vector<TH2F*> h2Variations, TString fFolder = "" ) {
+    //
+    //  --- Legacy Calculation
     uEvaluateRatioError(hStandard,hVariations,h2Standard,h2Variations,fFolder);
     //
     //! TODO: (1) This is a temporary fix, please address it AYEC.
     //! **** (1)
-    TFile*  fInputData  =   new TFile   ( Form(kASigExtp_FitCheckRst,"yield"/*Yield/Systematics/Standard/"*/) );
+    TFile*  fInputData  =   new TFile   ( Form(kASigExtp_FitCheckRst,"yield"/*Yield/Systematics/Standard/") );
     TH1F*   fUtilityC1  =   (TH1F*)(fInputData->Get("hRES_2D_Cond2_Stat"));
     TH1F*   fUtilityC2  =   (TH1F*)(fInputData->Get("hRES_2D_Cond2_Syst"));
     //! **** (1)
@@ -141,7 +146,6 @@ GeneralAnalysis
     //
     fStartTimer("Systematic uncertainties determination: 1D");
     auto    k1DStandardExtrap   =   fExtrapolateModel(false,hStandard,fSetSystErrors(hStandard),0.032,"SystEval",fMinPT1D,fMaxPT1D,fFolder+TString("/plots/"));
-    auto    k1DStandardIntegr   =   hStandard->Integral("width");
     auto    k1DFullYieldStand   =   k1DStandardIntegr + k1DStandardExtrap[0];
     //
     std::vector<Float_t>   k1DVariationExtrap;
@@ -153,7 +157,6 @@ GeneralAnalysis
     for ( auto  h1DVarHisto : hVariations ) {
         fPrintLoopTimer("Systematic uncertainties determination: 1D",iTer+1,hVariations.size()+1,1);
         auto    k1DVariatinExtrap   =   fExtrapolateModel(false,h1DVarHisto,fSetSystErrors(h1DVarHisto),0.032,"SystEval",fMinPT1D,fMaxPT1D,fFolder+TString("/plots/"));
-        auto    k1DVariatinIntegr   =   h1DVarHisto->Integral("width");
         k1DVariatinIntVanl.push_back( k1DVariatinIntegr );
         k1DVariatinExtVanl.push_back( k1DVariatinExtrap[0] );
         k1DVariationIntegr.push_back( 1 - (k1DVariatinIntegr/k1DStandardIntegr) );
@@ -679,4 +682,5 @@ GeneralAnalysis
     fOutput->Close();
 }
 //
-
+ */
+#endif
