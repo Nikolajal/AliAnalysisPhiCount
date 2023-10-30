@@ -323,7 +323,7 @@ SignalCorrections
         fStartTimer("Fit_for_extrapolation");
         //
         // Output File for Fit Check
-        TFile*  outCheckFitYld  =   new TFile(Form(kASigExtp_FitCheckPlt,"Mutliplicity"),"recreate");
+        TFile*  outCheckFitYld  =   new TFile(Form(kASigExtp_FitCheckPlt,"Multiplicity"),"recreate");
         //
         // Total Fit number and progressive
         //
@@ -558,7 +558,6 @@ SignalCorrections
         hMeanPT_2D_Stat         ->Write();
         hMeanPT_2D_Syst         ->Write();
         //
-        gROOT->SetBatch();
         auto cDrawMeanPT = uPlotSpectrum(hMeanPT_2D_Stat,hMeanPT_2D_Syst,"R MPT 12D");
         cDrawMeanPT ->  SetLogy(kFALSE);
         cDrawMeanPT ->  SaveAs(Form("%s%s",Form(kASigExtp_Plot_Direct,"Yield"),"/Full/MeanPT.pdf"));

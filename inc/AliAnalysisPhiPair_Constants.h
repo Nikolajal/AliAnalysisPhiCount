@@ -10,7 +10,7 @@
 auto kCheckPileUp   = true;
 auto is_pp_anl      = true;
 auto is_pb_anl      = false;
-auto kEnergy        = 7.00;
+auto kEnergy        = 5.00;
 //
 //>->->->->->   Branching Ratio
 auto const  kBR                     =   0.492;
@@ -53,10 +53,9 @@ std::vector<Float_t> const   kTriggerEffMult_p_p__13TeV =   {1.000, 1.000,  0.99
 
 //-//   Analysis settings
 auto        kDoMultiplicity         =   false;
+auto        kDoSpherocity           =   false;
 auto        kDoYield                =   false;
 auto        kDoCorrelation          =   false;
-auto        kDoTrigger              =   false;
-auto        kDoRapidity             =   false;
 
 //-// InvMass range Pythia MC
 auto const  fMinIMMC                =   0.75;
@@ -66,13 +65,13 @@ auto const  fMaxIMMC                =   1.25;
 
 //  Systematics Options
 //  >   Signal Extraction
-std::vector<TString>    kSyst_SEX_1D_Options    =   {"RA","RB"};//,"RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"  };
+std::vector<TString>    kSyst_SEX_1D_Options    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"  };
 std::vector<TString>    kSyst_SEX_1D_Names      =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"  };
 std::vector<TString>    kSyst_SEX_1D_Legend     =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4"  };
 //
-std::vector<TString>    kSyst_SEX_2D_Options    =   {"RA","RB"};//,"RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",  "BKG"  };
-std::vector<TString>    kSyst_SEX_2D_Names      =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",    "BKG"   };
-std::vector<TString>    kSyst_SEX_2D_Legend     =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",    "BKG"   };
+std::vector<TString>    kSyst_SEX_2D_Options    =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",    "BKG"  };
+std::vector<TString>    kSyst_SEX_2D_Names      =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",    "BKG"  };
+std::vector<TString>    kSyst_SEX_2D_Legend     =   {"RA","RB","RC","RD","RE","RF","RG","RH","RI","RJ", "RK","RL","RM","RN","WDT","RSH","RSL",/*"RSX",*/"DG2","DG4",    "BKG"  };
 //
 //-//-//    PID
 //
@@ -82,9 +81,9 @@ std::vector<TString>    kSyst_PID_XD_Legend     =   {"PID1","PID2","PID3","PID4"
 //
 //-//-//    TRK
 //
-std::vector<TString>    kSyst_TRK_XD_Options    =   {"TRK1","TRK2","TRK3","TRK4","TRK5","TRK6","TRK7","TRK8","TRK9","TRK10","TRK11","TRK12"};//,"TRK13","TRK14"};
-std::vector<TString>    kSyst_TRK_XD_Names      =   {"TRK1","TRK2","TRK3","TRK4","TRK5","TRK6","TRK7","TRK8","TRK9","TRK10","TRK11","TRK12"};//,"TRK13","TRK14"};
-std::vector<TString>    kSyst_TRK_XD_Legend     =   {"TRK1","TRK2","TRK3","TRK4","TRK5","TRK6","TRK7","TRK8","TRK9","TRK10","TRK11","TRK12"};//,"TRK13","TRK14"};
+std::vector<TString>    kSyst_TRK_XD_Options    =   {"TRK1","TRK2","TRK3","TRK4","TRK5","TRK6","TRK7","TRK8","TRK9","TRK10","TRK11","TRK12","TRK13"};//,"TRK14"};
+std::vector<TString>    kSyst_TRK_XD_Names      =   {"TRK1","TRK2","TRK3","TRK4","TRK5","TRK6","TRK7","TRK8","TRK9","TRK10","TRK11","TRK12","TRK13"};//,"TRK14"};
+std::vector<TString>    kSyst_TRK_XD_Legend     =   {"TRK1","TRK2","TRK3","TRK4","TRK5","TRK6","TRK7","TRK8","TRK9","TRK10","TRK11","TRK12","TRK13"};//,"TRK14"};
 
 //------------------------------//
 //      GLOBAL VARIABLES        //
@@ -185,7 +184,6 @@ const   Float_t     fMaxIMTR    =   1.04;
 const   Int_t       nBinIMTR    =   (int)((fMaxIMTR-fMinIMTR)/kBinningPrecisionTR);
         Float_t*    fArrIMTR    =   new Float_t [nBinIMTR+1];
 
-
 //-// InvMass bins Resolution
 const   Float_t     kBinningPrecisionRX = 0.2 * MeV;
 const   Float_t     fMinIMRX    =   1.00;
@@ -212,6 +210,12 @@ const   Int_t       nBinIMRX    =   (int)((fMaxIMRX-fMinIMRX)/kBinningPrecisionR
 const   Float_t   fMinMult  =   0.0;
 const   Float_t   fMaxMult  =   100.0;
         Float_t  *fArrMult  =   new Float_t [30];
+
+//-// Spherocity bins
+        Int_t     nBinSphr  =   5;
+const   Float_t   fMinSphr  =   0.0;
+const   Float_t   fMaxSphr  =   1.0;
+        Float_t  *fArrSphr  =   new Float_t [30];
 
 //-// Muliplicity reference
         Int_t     nBinRMlt  =   -1;
@@ -273,13 +277,13 @@ RooFitResult   ***          NULL_ROOFITPTR3  =   nullptr;
 typedef struct  {
     //  --- Event Variables
     UChar_t     EventMask;
-    Bool_t      kHasMult;
-    Int_t       nPhi,       iMult;
-    Float_t     Multiplicity, Spherocity, RTransverse;
+    Bool_t              kHasMult,       kHasSphr,   kHasRtrs;
+    Int_t       nPhi,   iMult,          iSphr,      iRtrs;
+    Float_t             Multiplicity,   Spherocity, RTransverse;
     //  --- Pair Variables
     Bool_t      kHasRap [2048];
     Int_t       iPT1D   [2048], iPT2D   [2048], iRap    [2048], iKaon   [2048], jKaon   [2048];
-    Float_t     Px      [2048], Py      [2048], Pz      [2048], pT  [2048], Rap [2048], InvMass [2048], TrueInvMass [2048], Phi [2048];
+    Float_t     Px      [2048], Py      [2048], Pz      [2048], pT      [2048], Rap     [2048], InvMass     [2048], TrueInvMass [2048], Phi     [2048];
 } Struct_PhiCandidate;
 typedef struct  {
     //  --- Event Variables
@@ -299,13 +303,19 @@ typedef struct  {
     //UChar_t     nKaon;
 } Struct_KaonCandidate;
 typedef struct  {
-    UChar_t     TrueEventMask,  EventMask,      Selection[2048];
-    Float_t     Multiplicity,   Px[2048],       Py[2048],       Pz[2048],       InvMass[2048],  pT[2048],      Rap[2048],   Phi[2048];
-    Bool_t      kHasRap[2048],  kIsGen[2048],   kIsRec[2048],   kHasMult;
+    //  --- Event Variables
+    UChar_t     EventMask;
+    Bool_t              kHasMult,       kHasSphr,   kHasRtrs;
+    Int_t       nPhi,   iMult,          iSphr,      iRtrs;
+    Float_t             Multiplicity,   Spherocity, RTransverse;
+    //  --- Pair Variables
+    Bool_t      kHasRap [2048];
+    Int_t       iPT1D   [2048], iPT2D   [2048], iRap    [2048], iKaon   [2048], jKaon   [2048];
+    Float_t     Px      [2048], Py      [2048], Pz      [2048], pT      [2048], Rap     [2048], InvMass     [2048], TrueInvMass [2048], Phi     [2048];
+    //  --- MC Specifics
+    UChar_t     TrueEventMask,  Selection[2048];
+    Bool_t      kIsGen[2048],   kIsRec[2048];
     Bool_t      fTru,           fGen,           fRec,           IsMB,           IsVTX10;
-    Int_t       iPT1D[2048],    iPT2D[2048],    iRap[2048],     iMult;
-    Int_t       nPhi;
-    //UChar_t     nPhi;
 } Struct_PhiEfficiency;
 typedef struct  {
     UChar_t     TrueEventMask,  EventMask,      Charge[2048],   Selection[2048];
@@ -329,6 +339,7 @@ std::vector<TString>    kOptStrings_All             =   {"all","full","fll"};
 std::vector<TString>    kOptStrings_Yield           =   {"yield","yld","std","standard"};
 std::vector<TString>    kOptStrings_Multiplicity    =   {"multiplicity","mult","mlt"};
 std::vector<TString>    kOptStrings_Correlation     =   {"correlation","corr","crph"};
+std::vector<TString>    kOptStrings_Spherocity      =   {"spherocity","sphr","sph"};
 
 //------------------------------//
 //      BINNING UTILITIES       //
@@ -378,6 +389,26 @@ fSetBinIMTR
 void
 fSetBinPT1D
 ()      {
+    //  --- Preliminary Binning pp@5TeV in mult ( Sushanta )
+    nBinPT1D        =   17;
+    fArrPT1D[0]     =   0.4; //0.2
+    fArrPT1D[1]     =   0.6; //0.2
+    fArrPT1D[2]     =   0.8; //0.1
+    fArrPT1D[3]     =   1.0; //0.2
+    fArrPT1D[4]     =   1.2; //0.2
+    fArrPT1D[5]     =   1.4; //0.2
+    fArrPT1D[6]     =   1.6; //0.2
+    fArrPT1D[7]     =   1.8; //0.2
+    fArrPT1D[8]     =   2.0; //0.4
+    fArrPT1D[9]     =   2.4; //0.4
+    fArrPT1D[10]    =   2.8; //0.4
+    fArrPT1D[11]    =   3.2; //0.4
+    fArrPT1D[12]    =   3.6; //0.4
+    fArrPT1D[13]    =   4.0; //1.0
+    fArrPT1D[14]    =   5.0; //1.0
+    fArrPT1D[15]    =   6.0; //2.0
+    fArrPT1D[16]    =   8.0; //2.0
+    fArrPT1D[17]    =   10.; //---
     //  --- QM2022 Preliminary Binning pp@7TeV
     nBinPT1D        =   20;
     fArrPT1D[0]     =   0.4; //0.2
@@ -401,26 +432,6 @@ fSetBinPT1D
     fArrPT1D[18]    =   5.0; //1.0
     fArrPT1D[19]    =   6.0; //2.0
     fArrPT1D[20]    =   8.0; //---
-    //  --- Preliminary Binning pp@5TeV in mult ( Sushanta )
-    nBinPT1D        =   17;
-    fArrPT1D[0]     =   0.4; //0.2
-    fArrPT1D[1]     =   0.6; //0.2
-    fArrPT1D[2]     =   0.8; //0.1
-    fArrPT1D[3]     =   1.0; //0.2
-    fArrPT1D[4]     =   1.2; //0.2
-    fArrPT1D[5]     =   1.4; //0.2
-    fArrPT1D[6]     =   1.6; //0.2
-    fArrPT1D[7]     =   1.8; //0.2
-    fArrPT1D[8]     =   2.0; //0.4
-    fArrPT1D[9]     =   2.4; //0.4
-    fArrPT1D[10]    =   2.8; //0.4
-    fArrPT1D[11]    =   3.2; //0.4
-    fArrPT1D[12]    =   3.6; //0.4
-    fArrPT1D[13]    =   4.0; //1.0
-    fArrPT1D[14]    =   5.0; //1.0
-    fArrPT1D[15]    =   6.0; //2.0
-    fArrPT1D[16]    =   8.0; //2.0
-    fArrPT1D[17]    =   10.; //---
     //  --- Maximum and Minimum assignment
     fMinPT1D        =   fArrPT1D[0];
     fMaxPT1D        =   fArrPT1D[nBinPT1D];
@@ -440,7 +451,7 @@ fSetBinPT2D
     fArrPT2D[5]     =   2.00; //0.5
     fArrPT2D[6]     =   2.50; //1.5
     fArrPT2D[7]     =   4.00; //4.0
-    fArrPT2D[8]     =   10.0; //---
+    fArrPT2D[8]     =   8.0; //---
     //  --- Maximum and Minimum assignment
     fMinPT2D        =   fArrPT2D[0];
     fMaxPT2D        =   fArrPT2D[nBinPT2D];
@@ -450,16 +461,7 @@ fSetBinPT2D
 void
 fSetBinMult
 ()      {
-    if ( is_pp_anl )    {
-        //  --- Standard Binning pp@5TeV
-        nBinMult     =  5;
-        fArrMult[0]  =  0.00;
-        fArrMult[1]  =  5.00;
-        fArrMult[2]  =  15.0;
-        fArrMult[3]  =  30.0;
-        fArrMult[4]  =  50.0;
-        fArrMult[5]  =  100.0;
-        //  --- Standard Binning pp@13TeV
+    if ( is_pp_anl )    {        //  --- Standard Binning pp@13TeV
         nBinMult     =  7;
         fArrMult[0]  =  0.00;
         fArrMult[1]  =  1.00;
@@ -481,6 +483,17 @@ fSetBinMult
         fArrMult[7]  =  50.0;
         fArrMult[8]  =  70.0;
         fArrMult[9]  =  100.0;
+        //
+        //  --- THIS WILL BE USED --- REMEMBER TO CHANGE REFERENCE
+        //  --- Standard Binning pp@5TeV
+        nBinMult     =  5;
+        fArrMult[0]  =  0.00;
+        fArrMult[1]  =  5.00;
+        fArrMult[2]  =  15.0;
+        fArrMult[3]  =  30.0;
+        fArrMult[4]  =  50.0;
+        fArrMult[5]  =  100.0;
+
     } else if ( is_pb_anl )    {
         nBinMult     =  3;
         fArrMult[0]  =  0.00;   //
@@ -493,14 +506,6 @@ void
 fSetBinRMlt
 ()      {
     if ( is_pp_anl )    {
-        //  --- Standard Binning pp@5TeV
-        nBinRMlt     =  5;
-        fArrRMlt[0]  =  0;
-        fArrRMlt[1]  =  15.48;
-        fArrRMlt[2]  =  (12.07+10.40)/2.;
-        fArrRMlt[3]  =  (9.17+7.76*2)/3.;
-        fArrRMlt[4]  =  (6.30+5.16)/2.;
-        fArrRMlt[5]  =  (3.90*2+2.38*3)/5.;
         //  --- Standard Binning pp@13TeV
         nBinRMlt     =  7;
         fArrRMlt[0]  =  0;
@@ -511,6 +516,16 @@ fSetBinRMlt
         fArrRMlt[5]  =  (12.04+10.02*2)/3.;
         fArrRMlt[6]  =  (7.95+6.32)/2.;
         fArrRMlt[7]  =  (4.50*2+2.55*3)/5.;
+        //
+        //  --- THIS WILL BE USED --- REMEMBER TO CHANGE ACTUAL BINNING
+        //  --- Standard Binning pp@5TeV
+        nBinRMlt     =  5;
+        fArrRMlt[0]  =  0;
+        fArrRMlt[1]  =  15.48;
+        fArrRMlt[2]  =  (12.07+10.40)/2.;
+        fArrRMlt[3]  =  (9.17+7.76*2)/3.;
+        fArrRMlt[4]  =  (6.30+5.16)/2.;
+        fArrRMlt[5]  =  (3.90*2+2.38*3)/5.;
     } else if ( is_pb_anl )    {
         nBinRMlt     =  3;
         fArrRMlt[0]  =  0.00;   //
@@ -518,6 +533,16 @@ fSetBinRMlt
         fArrRMlt[2]  =  (30.33+23.12*4)/5.;  // 37.08
         fArrRMlt[3]  =  (15.89+9.63+4.13)/3.;  // 15.95
     }
+}
+void
+fSetBinSphr
+()      {
+    fArrSphr[0]  =  0.0;
+    fArrSphr[1]  =  0.2;
+    fArrSphr[2]  =  0.4;
+    fArrSphr[3]  =  0.6;
+    fArrSphr[4]  =  0.8;
+    fArrSphr[5]  =  1.0;
 }
 void
 fSetBinCrPh
@@ -533,6 +558,16 @@ fSetBinCrPh
     fArrCrPh[6]  =  +165.;
     fArrCrPh[7]  =  +210.;
     fArrCrPh[8]  =  +255.;
+    fMinCrPh  =   fArrCrPh[0];
+    fMaxCrPh  =   fArrCrPh[nBinCrPh];
+    //  --- Standard Binning pp@5TeV
+    nBinCrPh  =   5;
+    fArrCrPh[0]  =  -105.;
+    fArrCrPh[1]  =  -33.;
+    fArrCrPh[2]  =  +39.;
+    fArrCrPh[3]  =  +111.;
+    fArrCrPh[4]  =  +183.;
+    fArrCrPh[5]  =  +255.;
     fMinCrPh  =   fArrCrPh[0];
     fMaxCrPh  =   fArrCrPh[nBinCrPh];
 }
@@ -602,6 +637,7 @@ fSetAllBins
     fSetBinIMRs();
     fSetBinIMR2();
     fSetBinRMlt();
+    fSetBinSphr();
 }
 //
 //-//   Getters
@@ -681,7 +717,7 @@ fGetBinCrPh
 }
 Float_t
 fGetDltCrPh
- ( Float_t input_value )      {
+ ( Float_t input_value )     {
     return ( input_value < fMinCrPh ? input_value + 360 : input_value > fMaxCrPh ? input_value -360 : input_value );
 }
 Int_t
@@ -712,16 +748,19 @@ Int_t
 fGetBinMultEff
  (Float_t input_value )      {
     return -1;
-    /*
-    for ( Int_t iBin = 0; iBin <= nMltTrgECls; iBin++ )
+}
+Int_t
+fGetBinSphr
+ (Float_t input_value )      {
+    for ( Int_t iBin = 0; iBin <= nBinSphr; iBin++ )
     {
-        if ( input_value <= kMltTrgECls[iBin] )
+        if ( input_value == fMinSphr ) return 0;
+        if ( input_value <= fArrSphr[iBin] )
         {
             return iBin -1;
         }
     }
     return -1;
-     */
 }
 
 //------------------------------//

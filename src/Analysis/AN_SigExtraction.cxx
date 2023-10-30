@@ -143,10 +143,10 @@ void AN_SigExtraction   ( TString fOption = "yield", TString kFolder = "", Bool_
         outFile_Result  ->  Close();
     }
     // --- CORRELATION ANALYSIS
-    if ( kDoCorrelation && false) {
+    if ( kDoCorrelation ) {
         // --- Retrieving PreProcessed Histograms
-        TFile*      insFile_Data_CR         =   new TFile   ( Form(kAnalysis_InvMassHist,   (TString("Correlation")       +kFolder).Data()) );
-        TFile*      insFile_Resl_CR         =   new TFile   ( Form(kMassResolution_Anal,    (TString("Correlation")       +kFolder).Data()) );
+        TFile*      insFile_Data_CR         =   new TFile   ( Form(kAnalysis_InvMassHist,   (TString("Correlation") +kFolder).Data()) );
+        TFile*      insFile_Resl_CR         =   new TFile   ( Form(kMassResolution_Anal,    (TString("Correlation") +kFolder).Data()) );
         //
         auto    h1D_ResolutionReference     =   uLoadHistograms<0,TH1F> ( insFile_Resl_CR, "hRes_RMS_3_1D" );
         auto    h2Db_ResolutionReference    =   uLoadHistograms<0,TH1F> ( insFile_Resl_CR, "hRes_RMS_3_2Db" );
@@ -156,10 +156,10 @@ void AN_SigExtraction   ( TString fOption = "yield", TString kFolder = "", Bool_
         auto    h2D_Nrec_CR_PT              =   uLoadHistograms<3,TH2F> ( insFile_Data_CR, "h2D_Nrec_CR_%i_PT_%i_%i" );
         //
         // --- Building output and check plots directory
-        gROOT                               ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_SigExtr_Dir,"Correlation")));
-        gROOT                               ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtr_Plot_Direct,"Correlation"))+TString("1D/"));
-        gROOT                               ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtr_Plot_Direct,"Correlation"))+TString("2D/"));
-        TFile*  outFile_Check               =   new TFile   (Form(kASigExtr_FitCheckPlt,"Correlation"),"recreate");
+        gROOT                               ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_SigExtr_Dir,(TString("Correlation")+kFolder).Data())));
+        gROOT                               ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtr_Plot_Direct,(TString("Correlation")+kFolder).Data()))+TString("1D/"));
+        gROOT                               ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtr_Plot_Direct,(TString("Correlation")+kFolder).Data()))+TString("2D/"));
+        TFile*  outFile_Check               =   new TFile   (Form(kASigExtr_FitCheckPlt,(TString("Correlation")+kFolder).Data()),"recreate");
         //
         // --- Set the print progress utilities
         fTotalCount = ( nBinPT1D + nBinPT2D * ( nBinPT2D + 1 ) ) * ( nBinCrPh );
@@ -173,7 +173,7 @@ void AN_SigExtraction   ( TString fOption = "yield", TString kFolder = "", Bool_
         for ( auto kTarget : h2D_Nrec_CR_PT )   {
             iCrPh++;
             std::vector<TH1F*>  f1DCheck;
-            fFitResults_2DYield_Array.push_back(    FitModel    ( h1D_Nrec_2Db_PT, h2Db_ResolutionReference, kTarget, f1DCheck, Form( kASigExtr_Plot_Direct, "Correlation" ) + TString( "2D/" ), Form("CR_%i",iCrPh) ) );
+            fFitResults_2DYield_Array.push_back(    FitModel    ( h1D_Nrec_2Db_PT, h2Db_ResolutionReference, kTarget, f1DCheck, Form( kASigExtr_Plot_Direct,(TString("Correlation")+kFolder).Data()) + TString( "2D/" ), Form("CR_%i",iCrPh) ) );
             f1DCheck_Array.push_back(  *(new std::vector<TH1F*> (f1DCheck))  );
             //
             // --- Progressive Count
@@ -184,7 +184,7 @@ void AN_SigExtraction   ( TString fOption = "yield", TString kFolder = "", Bool_
         fStopTimer("Correlation Analysis Signal Extraction");
         //
         // --- Save to file
-        TFile*      outFile_Result  =   new TFile   (Form(kASigExtr_FitCheckRst,"Correlation"),"recreate");
+        TFile*      outFile_Result  =   new TFile   (Form(kASigExtr_FitCheckRst,(TString("Correlation")+kFolder).Data()),"recreate");
         //
         fHEventCount->Write();
         fHEvCountMlt->Write();

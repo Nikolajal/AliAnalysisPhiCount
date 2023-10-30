@@ -2,7 +2,7 @@
 
 void
 MC_Plot
-( std::vector<TString> fTags = {"Pythia6"}, std::vector<TString> fLegendTags = {"Pythia6"} , TString fOption = "yield", TString kFolder = "_p_p__7TeV"  ) {
+( std::vector<TString> fTags = {"Pythia8_Monash_2013"}, std::vector<TString> fLegendTags = {"Pythia8"} , TString fOption = "yield", TString kFolder = "_p_p__7TeV"  ) {
     // --- --- --- --- --- --- --- SET-UP --- --- --- --- --- --- --- --- --- --- ---
     //
     // --- Retrieving Data

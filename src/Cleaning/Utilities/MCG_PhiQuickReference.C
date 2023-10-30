@@ -406,7 +406,7 @@ int main (int argc, char *argv[])
             //Skipping non-charged particles
             if ( !(Current_Particle.eta() <= .5) )  continue;
             
-            // Mutliplicity evaluation
+            // Multiplicity evaluation
             nMultiplicity++;
         }
         hPhiCount       ->  Fill(nPhiMesons);

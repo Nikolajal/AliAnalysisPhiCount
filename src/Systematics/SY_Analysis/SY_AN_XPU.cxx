@@ -16,6 +16,7 @@ SY_AN_XPU
     if ( !fChooseOption(fOption) ) return;
     //
     //  Generating the binning array--------------------------------------------------------------------------
+    SetStyle();
     fSetAllBins();
     //
     if ( kDoYield ) {

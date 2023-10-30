@@ -19,8 +19,8 @@ void PP_MC_Partial ( TString fFileName, TString fOption, Int_t nEventsCut, TStri
     TFile*      insFile_Data    =   new TFile   ( fFileName );
     //
     //   --- Retrieving TTree
-    TTree*      TPhiEfficiency  =   (TTree*)insFile_Data->Get( fPhiCandidateEff_Tree +TString("") );
-    TTree*      TPhiCandidate   =   (TTree*)insFile_Data->Get( fPhiCandidate_Tree +TString("") );
+    TTree*      TPhiEfficiency  =   (TTree*)insFile_Data->Get( fPhiCandidateEff_Tree + TString("") );
+    TTree*      TPhiCandidate   =   (TTree*)insFile_Data->Get( fPhiCandidate_Tree + TString("") );
     //
     //  --- Retrieving Utility Histograms
     TList*      fQCOutputList   =   (TList*)insFile_Data->Get( "fQCOutputList" );
@@ -32,8 +32,8 @@ void PP_MC_Partial ( TString fFileName, TString fOption, Int_t nEventsCut, TStri
     Struct_PhiEfficiency    evPhiEfficiency;
     Struct_KaonCandidate    kfix;           //TODO: Clean the fix
     Struct_KaonEfficiency   kfi2;           //TODO: Clean the fix
-    if ( !fSetCandidates(TPhiCandidate,evPhiCandidate,nullptr,kfix) )   cout << "WW" << endl;    // TODO: Fix the TrueInvMass in case of Data load
-    if ( !fSetCandidates(TPhiEfficiency,evPhiEfficiency,nullptr,kfi2) ) cout << "rW" << endl;
+    if ( !fSetCandidates(TPhiCandidate,evPhiCandidate,nullptr,kfix) )   ;    // TODO: Fix the TrueInvMass in case of Data load
+    if ( !fSetCandidates(TPhiEfficiency,evPhiEfficiency,nullptr,kfi2) ) ;
     //
     //  --- Setting the output datastructure
     fSetAllBins();
@@ -293,6 +293,97 @@ void PP_MC_Partial ( TString fFileName, TString fOption, Int_t nEventsCut, TStri
         //
     }
     //
+    //  --- Spherocity Analysis
+    //
+    std::vector<TH1F*>      h1D_Sphr_Nrec;
+    std::vector<TH1F*>      h1D_Sphr_Ngen;
+    std::vector<TH1F*>      h1D_Sphr_Ntru;
+    std::vector<TH1F*>      h1D_Sphr_Nrec_2Db;
+    std::vector<TH1F*>      h1D_Sphr_Ngen_2Db;
+    std::vector<TH1F*>      h1D_Sphr_Ntru_2Db;
+    std::vector<TH1F*>      h1D_Sphr_Nrec_Fin;
+    std::vector<TH1F*>      h1D_Sphr_Ngen_Fin;
+    std::vector<TH1F*>      h1D_Sphr_Ntru_Fin;
+    std::vector<TH2F*>      h2D_Sphr_Nrec;
+    std::vector<TH2F*>      h2D_Sphr_Ngen;
+    std::vector<TH2F*>      h2D_Sphr_Ntru;
+    std::vector<TH1F*>      h1D_Sphr_Ngen_VTX10;
+    std::vector<TH2F*>      h2D_Sphr_Ngen_VTX10;
+    //
+    for ( Int_t iSphr = 0; iSphr < nBinSphr+1; iSphr++ ) {
+        //
+        hName           =   Form( "h1D_Sphr_Nrec_%i",iSphr );
+        hTitle          =   Form( "Recordable Kaons from phi" );
+        h1D_Sphr_Nrec   .push_back( new TH1F ( hName, hTitle, nBinPT1D, fArrPT1D ) );
+        SetAxis( h1D_Sphr_Nrec.at(iSphr), "PT 1D" );
+        //
+        hName           =   Form( "h1D_Sphr_Nrec_2Db_%i", iSphr );
+        hTitle          =   Form( "Recordable Kaons from phi" );
+        h1D_Sphr_Nrec_2Db.push_back( new TH1F ( hName, hTitle, nBinPT1D, fArrPT1D ) );
+        SetAxis( h1D_Sphr_Nrec_2Db.at(iSphr), "PT 1D" );
+        //
+        hName           =   Form( "h1D_Sphr_Nrec_Fin_%i", iSphr );
+        hTitle          =   Form( "Recordable Kaons from phi" );
+        h1D_Sphr_Nrec_Fin.push_back( new TH1F ( hName, hTitle, nBinPT1D, fArrPT1D ) );
+        SetAxis( h1D_Sphr_Nrec_Fin.at(iSphr), "PT 1D" );
+        //
+        hName           =   Form( "h1D_Sphr_Ngen_%i", iSphr );
+        hTitle          =   Form( "Generated Kaons from phi" );
+        h1D_Sphr_Ngen   .push_back( new TH1F ( hName, hTitle, nBinPT1D, fArrPT1D ) );
+        SetAxis( h1D_Sphr_Ngen.at(iSphr), "PT 1D" );
+        //
+        hName           =   Form( "h1D_Sphr_Ngen_2Db_%i", iSphr );
+        hTitle          =   Form( "Generated Kaons from phi" );
+        h1D_Sphr_Ngen_2Db.push_back( new TH1F ( hName, hTitle, nBinPT1D, fArrPT1D ) );
+        SetAxis( h1D_Sphr_Ngen_2Db.at(iSphr), "PT 1D" );
+        //
+        hName           =   Form( "h1D_Sphr_Ngen_Fin_%i", iSphr );
+        hTitle          =   Form( "Generated Kaons from phi" );
+        h1D_Sphr_Ngen_Fin.push_back( new TH1F ( hName, hTitle, nBinPT1D, fArrPT1D ) );
+        SetAxis( h1D_Sphr_Ngen_Fin.at(iSphr), "PT 1D" );
+        //
+        hName           =   Form( "h1D_Sphr_Ntru_%i", iSphr );
+        hTitle          =   Form( "True Kaons from phi" );
+        h1D_Sphr_Ntru   .push_back( new TH1F ( hName, hTitle, nBinPT1D, fArrPT1D ) );
+        SetAxis( h1D_Sphr_Ntru.at(iSphr), "PT 1D" );
+        //
+        hName           =   Form( "h1D_Sphr_Ntru_2Db_%i", iSphr );
+        hTitle          =   Form( "True Kaons from phi" );
+        h1D_Sphr_Ntru_2Db.push_back( new TH1F ( hName, hTitle, nBinPT1D, fArrPT1D ) );
+        SetAxis( h1D_Sphr_Ntru_2Db.at(iSphr), "PT 1D" );
+        //
+        hName           =   Form( "h1D_Sphr_Ntru_Fin_%i", iSphr );
+        hTitle          =   Form( "True Kaons from phi" );
+        h1D_Sphr_Ntru_Fin.push_back( new TH1F ( hName, hTitle, nBinPT1D, fArrPT1D ) );
+        SetAxis( h1D_Sphr_Ntru_Fin.at(iSphr), "PT 1D" );
+        //
+        hName           =   Form( "h2D_Sphr_Nrec_%i", iSphr );
+        hTitle          =   Form( "Recordable Kaons from phi" );
+        h2D_Sphr_Nrec   .push_back( new TH2F ( hName, hTitle, nBinPT2D, fArrPT2D, nBinPT2D, fArrPT2D ) );
+        //SetAxis( h2D_Sphr_Nrec, "PT 2D" );
+        //
+        hName           =   Form( "h2D_Sphr_Ngen_%i", iSphr );
+        hTitle          =   Form( "Generated Kaons from phi" );
+        h2D_Sphr_Ngen   .push_back( new TH2F ( hName, hTitle, nBinPT2D, fArrPT2D, nBinPT2D, fArrPT2D ) );
+        //SetAxis( h2D_Sphr_Ngen, "PT 2D" );
+        //
+        hName           =   Form( "h2D_Sphr_Ntru_%i", iSphr );
+        hTitle          =   Form( "True Kaons from phi" );
+        h2D_Sphr_Ntru   .push_back( new TH2F ( hName, hTitle, nBinPT2D, fArrPT2D, nBinPT2D, fArrPT2D ) );
+        //SetAxis( h2D_Sphr_Ntru, "PT 2D" );
+        //
+        hName           =   Form( "h1D_Sphr_Ngen_VTX10_%i", iSphr );
+        hTitle          =   Form( "Generated Kaons from phi" );
+        h1D_Sphr_Ngen_VTX10.push_back( new TH1F ( hName, hTitle, nBinPT1D, fArrPT1D ) );
+        SetAxis( h1D_Ngen_VTX10, "PT 1D" );
+        //
+        hName           =   Form( "h2D_Sphr_Ngen_VTX10_%i", iSphr );
+        hTitle          =   Form( "Generated Kaons from phi" );
+        h2D_Sphr_Ngen_VTX10.push_back( new TH2F ( hName, hTitle, nBinPT2D, fArrPT2D, nBinPT2D, fArrPT2D ) );
+        //SetAxis( h2D_Ngen_VTX10, "PT 1D" );
+        //
+    }
+    //
     // --- --- --- --- --- --- --- ANALYSIS --- --- --- --- --- --- --- --- --- --- -
     //
     //  --- Applying limitation sample cuts
@@ -307,7 +398,6 @@ void PP_MC_Partial ( TString fFileName, TString fOption, Int_t nEventsCut, TStri
         //
         //  --- Discarding Pile-up events
         if ( kCheckPileUp   &&  kDoYield           &&  fCheckMask(evPhiCandidate.EventMask,1) ) continue;
-        if ( kCheckPileUp   &&  kDoMultiplicity    &&  ( fCheckMask(evPhiCandidate.EventMask,1) || fCheckMask(evPhiCandidate.EventMask,2) ) ) continue;
         //
         //  --- Loop over candidates
         Struct_PhiCandidate fCurrent_Candidates;
@@ -336,7 +426,7 @@ void PP_MC_Partial ( TString fFileName, TString fOption, Int_t nEventsCut, TStri
         //
         //  --- Event variables
         fCurrent_Candidates.Multiplicity    =   evPhiCandidate.Multiplicity;
-        fCurrent_Candidates.iMult           =   fGetBinMult(evPhiCandidate.Multiplicity);
+        fCurrent_Candidates.iMult           =   fCheckMask(evPhiCandidate.EventMask,2) ? -1 : fGetBinMult(evPhiCandidate.Multiplicity);
         fCurrent_Candidates.kHasMult        =   fCurrent_Candidates.iMult != -1;
         //
         for ( Int_t iPhi = 0; iPhi < fCurrent_Candidates.nPhi; iPhi++ )  {
@@ -389,7 +479,6 @@ void PP_MC_Partial ( TString fFileName, TString fOption, Int_t nEventsCut, TStri
         //
         //  --- Evaluate the Event is of interest for the analysis
         if ( kCheckPileUp   &&  kDoYield           &&  fCheckMask(evPhiCandidate.EventMask,1) ) continue;
-        if ( kCheckPileUp   &&  kDoMultiplicity    &&  ( fCheckMask(evPhiCandidate.EventMask,1) || fCheckMask(evPhiCandidate.EventMask,2) ) ) continue;
         //
         //  --- Loop over candidates
         Struct_PhiEfficiency fCurrent_MCTrue;
@@ -417,8 +506,10 @@ void PP_MC_Partial ( TString fFileName, TString fOption, Int_t nEventsCut, TStri
         fCurrent_MCTrue.IsMB            =   ( fCheckMask( evPhiEfficiency.TrueEventMask, -1 ) );
         fCurrent_MCTrue.IsVTX10         =   ( fCheckMask( evPhiEfficiency.TrueEventMask, 5 ) );
         fCurrent_MCTrue.Multiplicity    =   evPhiEfficiency.Multiplicity;
-        fCurrent_MCTrue.iMult           =   fGetBinMult(evPhiEfficiency.Multiplicity);
+        fCurrent_MCTrue.iMult           =   fCheckMask(evPhiEfficiency.EventMask,2) ? -1 : fGetBinMult(evPhiEfficiency.Multiplicity);
         fCurrent_MCTrue.kHasMult        =   fCurrent_MCTrue.iMult != -1;
+        fCurrent_MCTrue.iSphr           =   fGetBinSphr(evPhiEfficiency.Spherocity);
+        fCurrent_MCTrue.kHasSphr        =   fCurrent_MCTrue.iSphr != -1;
         //
         for ( Int_t iPhi = 0; iPhi < fCurrent_MCTrue.nPhi; iPhi++ )  {
             //
@@ -456,6 +547,29 @@ void PP_MC_Partial ( TString fFileName, TString fOption, Int_t nEventsCut, TStri
                         h1D_Mult_Nrec       [fCurrent_MCTrue.iMult+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
                         h1D_Mult_Nrec_Fin   [fCurrent_MCTrue.iMult+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
                         h1D_Mult_Nrec_2Db   [fCurrent_MCTrue.iMult+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                    }
+                }
+                if ( kDoSpherocity && fCurrent_MCTrue.kHasSphr )    {             //  --- SPHEROCITY ANALYSIS
+                    h1D_Sphr_Ntru           [0]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                    h1D_Sphr_Ntru_Fin       [0]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                    h1D_Sphr_Ntru_2Db       [0]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                    h1D_Sphr_Ntru           [fCurrent_MCTrue.iSphr+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                    h1D_Sphr_Ntru_Fin       [fCurrent_MCTrue.iSphr+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                    h1D_Sphr_Ntru_2Db       [fCurrent_MCTrue.iSphr+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                    if ( fCurrent_MCTrue.kIsGen[iPhi] ) {
+                        h1D_Sphr_Ngen       [0]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                        h1D_Sphr_Ngen_Fin   [0]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                        h1D_Sphr_Ngen_2Db   [0]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                        h1D_Sphr_Ngen       [fCurrent_MCTrue.iSphr+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                        h1D_Sphr_Ngen_Fin   [fCurrent_MCTrue.iSphr+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                        h1D_Sphr_Ngen_2Db   [fCurrent_MCTrue.iSphr+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                    } if ( fCurrent_MCTrue.kIsRec[iPhi] ) {
+                        h1D_Sphr_Nrec       [0]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                        h1D_Sphr_Nrec_Fin   [0]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                        h1D_Sphr_Nrec_2Db   [0]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                        h1D_Sphr_Nrec       [fCurrent_MCTrue.iSphr+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                        h1D_Sphr_Nrec_Fin   [fCurrent_MCTrue.iSphr+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
+                        h1D_Sphr_Nrec_2Db   [fCurrent_MCTrue.iSphr+1]->     Fill( fCurrent_MCTrue.pT[iPhi] );
                     }
                 }
             }
@@ -533,6 +647,10 @@ void PP_MC_Partial ( TString fFileName, TString fOption, Int_t nEventsCut, TStri
         gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/1D/")).Data()));
         gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Yield")+kFolder).Data()))+TString("/Plots/2D/")).Data()));
         TFile *outFile_Yield    =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Yield")+kFolder).Data()),"recreate");
+        //
+        //  --- Normalisation
+        h1D_Ntru   ->  Scale(1.,"width");
+        h1D_Ntru   ->  Scale(1./kEventNormalisation);
         //
         // --- Saving to File
         fHEventCount    ->  Write();
@@ -613,12 +731,62 @@ void PP_MC_Partial ( TString fFileName, TString fOption, Int_t nEventsCut, TStri
         //
         outFile_Yield           ->  Close();
     }
+    //  --- --- MULTIPLICITY ANALYSIS
+    if ( kDoSpherocity ) {
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Spherocity")+kFolder).Data())));
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Spherocity")+kFolder).Data()))+TString("/Plots/1D/")).Data()));
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Spherocity")+kFolder).Data()))+TString("/Plots/2D/")).Data()));
+        TFile *outFile_Yield    =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Spherocity")+kFolder).Data()),"recreate");
+        //
+        // --- Saving to File
+        fHEventCount    ->  Write();
+        fHEvCountMlt    ->  Write();
+        h1D_Nrec        ->  Write();
+        h1D_Ngen        ->  Write();
+        h1D_Ntru        ->  Write();
+        h1D_Nrec_2Db    ->  Write();
+        h1D_Ngen_2Db    ->  Write();
+        h1D_Ntru_2Db    ->  Write();
+        h1D_Nrec_Fin    ->  Write();
+        h1D_Ngen_Fin    ->  Write();
+        h1D_Ntru_Fin    ->  Write();
+        h2D_Nrec        ->  Write();
+        h2D_Ngen        ->  Write();
+        h2D_Ntru        ->  Write();
+        h1D_Ngen_VTX10  ->  Write();
+        h1D_Ngen_VTX10_2Db  ->  Write();
+        h2D_Ngen_VTX10  ->  Write();
+        for ( auto kSave : h1D_Sphr_Nrec )      kSave   ->  Write();
+        for ( auto kSave : h1D_Sphr_Ngen )      kSave   ->  Write();
+        for ( auto kSave : h1D_Sphr_Ntru )      kSave   ->  Write();
+        for ( auto kSave : h1D_Sphr_Nrec_2Db )  kSave   ->  Write();
+        for ( auto kSave : h1D_Sphr_Ngen_2Db )  kSave   ->  Write();
+        for ( auto kSave : h1D_Sphr_Ntru_2Db )  kSave   ->  Write();
+        for ( auto kSave : h1D_Sphr_Nrec_Fin )  kSave   ->  Write();
+        for ( auto kSave : h1D_Sphr_Ngen_Fin )  kSave   ->  Write();
+        for ( auto kSave : h1D_Sphr_Ntru_Fin )  kSave   ->  Write();
+        for ( auto kSave : h2D_Sphr_Nrec )      kSave   ->  Write();
+        for ( auto kSave : h2D_Sphr_Ngen )      kSave   ->  Write();
+        for ( auto kSave : h2D_Sphr_Ntru )      kSave   ->  Write();
+        for ( auto kSave : h1D_Sphr_Ngen_VTX10 )kSave   ->  Write();
+        for ( auto kSave : h2D_Sphr_Ngen_VTX10 )kSave   ->  Write();
+        for ( auto kSave : h1D_TruInvMass )     kSave   ->  Write();
+        for ( auto kSave : h1D_RecInvMass )     kSave   ->  Write();
+        for ( auto kSave : h1D_InvMassRes )     kSave   ->  Write();
+        for ( auto kSave : h1D_TruInvMass_2Db ) kSave   ->  Write();
+        for ( auto kSave : h1D_RecInvMass_2Db ) kSave   ->  Write();
+        for ( auto kSave : h1D_InvMassRes_2Db ) kSave   ->  Write();
+        //
+        // --- Printing to Plots
+        //
+        outFile_Yield           ->  Close();
+    }
     //  --- --- CORRELATION ANALYSIS
     if ( kDoCorrelation ) {
-        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Correlation/")+kFolder).Data())));
-        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Correlation/")+kFolder).Data()))+TString("/Plots/1D/")).Data()));
-        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Correlation/")+kFolder).Data()))+TString("/Plots/2D/")).Data()));
-        TFile *outFile_Yield    =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Correlation/")+kFolder).Data()),"recreate");
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Correlation")+kFolder).Data())));
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Correlation")+kFolder).Data()))+TString("/Plots/1D/")).Data()));
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Correlation")+kFolder).Data()))+TString("/Plots/2D/")).Data()));
+        TFile *outFile_Yield    =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Correlation")+kFolder).Data()),"recreate");
         //
         //  --- Normalisation
         h1D_Nrec_CrPh   ->  Scale(1.,"width");
@@ -627,7 +795,6 @@ void PP_MC_Partial ( TString fFileName, TString fOption, Int_t nEventsCut, TStri
         h1D_Nrec_CrPh   ->  Scale(1./kEventNormalisation);
         h1D_Ngen_CrPh   ->  Scale(1./kEventNormalisation);
         h1D_Ntru_CrPh   ->  Scale(1./kEventNormalisation);
-        
         //
         //  --- Saving to File
         fHEventCount    ->  Write();

@@ -295,7 +295,7 @@ int main (int argc, char *argv[])
             //Skipping non-charged particles
             if ( !Current_Particle.isCharged() )    continue;
             
-            // Mutliplicity evaluation
+            // Multiplicity evaluation
             fMultiplicityCouter++;
             
             // Storing Kaons
@@ -367,7 +367,7 @@ int main (int argc, char *argv[])
             }
         }
         
-        // Assigning Mutliplicity
+        // Assigning Multiplicity
         evPhiCandidate.Multiplicity     =   (1./4.)*fMultiplicityCouter;
         evKaonCandidate.Multiplicity    =   (1./4.)*fMultiplicityCouter;
         evPhiEfficiency.Multiplicity    =   (1./4.)*fMultiplicityCouter;

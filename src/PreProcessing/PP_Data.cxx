@@ -215,7 +215,6 @@ void PP_Data ( TString fFileName, TString fOption, Int_t nEventsCut, TString kFo
             fCurrent_Candidates.iPT1D       [ fCurrent_Candidates.nPhi ]    =   fGetBinPT1D( kTLVUtility.Pt() );
             fCurrent_Candidates.iPT2D       [ fCurrent_Candidates.nPhi ]    =   fGetBinPT2D( kTLVUtility.Pt() );
             fCurrent_Candidates.kHasRap     [ fCurrent_Candidates.nPhi ]    =   kFALSE;
-            hTest->Fill(kTLVUtility.Rapidity());
             if ( is_pp_anl )    fCurrent_Candidates.kHasRap     [ fCurrent_Candidates.nPhi ]    =   fabs( kTLVUtility.Rapidity() ) < 0.5;
             if ( is_pb_anl )    fCurrent_Candidates.kHasRap     [ fCurrent_Candidates.nPhi ]    =   ( kTLVUtility.Rapidity() < 0.035 ) && ( kTLVUtility.Rapidity() > -0.465 );
             if ( fCurrent_Candidates.kHasRap     [ fCurrent_Candidates.nPhi ] ) hTes2->Fill(kTLVUtility.Rapidity());
@@ -260,12 +259,21 @@ void PP_Data ( TString fFileName, TString fOption, Int_t nEventsCut, TString kFo
                 //
                 if ( fCurrent_Candidates.kHasRap[iPhi] && fCurrent_Candidates.kHasRap[jPhi] )  {    //  --- Mid-Rapidity Analyses
                     if ( kDoYield ) {   //  --- YIELD ANALYSIS
+                        if ( kCutInvMass ) {
+                            TLorentzVector  iTLVUtility;
+                            TLorentzVector  jTLVUtility;
+                            TLorentzVector  kTLVUtility;
+                            iTLVUtility.SetXYZM(evPhiCandidate.Px[iPhi],evPhiCandidate.Py[iPhi],evPhiCandidate.Pz[iPhi],evPhiCandidate.InvMass[iPhi]);
+                            jTLVUtility.SetXYZM(evPhiCandidate.Px[jPhi],evPhiCandidate.Py[jPhi],evPhiCandidate.Pz[jPhi],evPhiCandidate.InvMass[jPhi]);
+                            kTLVUtility = iTLVUtility + jTLVUtility;
+                            hTest->Fill(kTLVUtility.Mag());
+                            if ( kTLVUtility.Mag() > 3.5 ) continue;
+                        }
                         h2D_Nrec                                                                                                                        ->  Fill( fCurrent_Candidates.InvMass[iPhi], fCurrent_Candidates.InvMass[jPhi] );
                         h2D_Nrec_PT                                     .at( fCurrent_Candidates.iPT2D[iPhi] )  .at( fCurrent_Candidates.iPT2D[jPhi] )  ->  Fill( fCurrent_Candidates.InvMass[iPhi], fCurrent_Candidates.InvMass[jPhi] );
                     } if ( kDoMultiplicity && fCurrent_Candidates.kHasMult )    {   //  --- MULTIPLICITY ANALYSIS
                         h2D_Nrec_MT_PT  .at(0)                          .at( fCurrent_Candidates.iPT2D[iPhi] )  .at( fCurrent_Candidates.iPT2D[jPhi] )  ->  Fill( fCurrent_Candidates.InvMass[iPhi], fCurrent_Candidates.InvMass[jPhi] );
                         h2D_Nrec_MT_PT  .at(fCurrent_Candidates.iMult)  .at( fCurrent_Candidates.iPT2D[iPhi] )  .at( fCurrent_Candidates.iPT2D[jPhi] )  ->  Fill( fCurrent_Candidates.InvMass[iPhi], fCurrent_Candidates.InvMass[jPhi] );
-                        
                     } if ( kDoCorrelation ) {
                         auto    iCrPh       =   fGetBinCrPh( fCurrent_Candidates.Phi[iPhi] - fCurrent_Candidates.Phi[jPhi]  );
                         h2D_Nrec_CR_PT      .at(iCrPh)                  .at( fCurrent_Candidates.iPT2D[iPhi] )  .at( fCurrent_Candidates.iPT2D[jPhi] )  ->  Fill( fCurrent_Candidates.InvMass[iPhi], fCurrent_Candidates.InvMass[jPhi] );
@@ -305,8 +313,7 @@ void PP_Data ( TString fFileName, TString fOption, Int_t nEventsCut, TString kFo
         // TODO: Make the same for 1D, generate for Mult histos
         //  TODO: Make input for energy and Collision System
         for ( auto kPlot : h1D_Nrec_PT )                                    if ( kPlot->GetEntries() != 0 ) uPlotInvMass(kPlot,kFolder1D+TString("/InvMass/"));
-        //  TODO: make the 2D equivalent for 1D histos
-        //for ( auto kPlot : h1D_Nrec_2Db_PT )                                if ( kPlot->GetEntries() != 0 ) uPlotInvMass(kPlot,kFolder2D+TString("/InvMass/"));
+        for ( auto kPlot : h1D_Nrec_2Db_PT )                                if ( kPlot->GetEntries() != 0 ) uPlotInvMass(kPlot,kFolder2D+TString("/InvMass/"));
         for ( auto kVecPlot : h2D_Nrec_PT ) for ( auto kPlot : kVecPlot )   if ( kPlot->GetEntries() != 0 ) uPlotInvMass(kPlot,kFolder2D+TString("/InvMass/"));
     }
     //  --- --- MULTIPLICITY ANALYSIS

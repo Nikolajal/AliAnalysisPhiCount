@@ -11,62 +11,17 @@
 		DA1BA7BF27425E5B0026D827 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		DA1BA7C127425E5B0026D827 /* inc */ = {isa = PBXFileReference; lastKnownFileType = folder; path = inc; sourceTree = "<group>"; };
 		DA1BA7C327425E5C0026D827 /* bash */ = {isa = PBXFileReference; lastKnownFileType = folder; path = bash; sourceTree = "<group>"; };
-		DA1BA7C427425EE20026D827 /* AliAnalysisUtility.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AliAnalysisUtility.xcodeproj; path = AliAnalysisUtility/AliAnalysisUtility.xcodeproj; sourceTree = "<group>"; };
-		DA45674927AD601A00B5E657 /* AliAnalysisGridJobTaskPhiCountMC.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AliAnalysisGridJobTaskPhiCountMC.xcodeproj; path = AliAnalysisGridJobTaskPhiCountMC/AliAnalysisGridJobTaskPhiCountMC.xcodeproj; sourceTree = "<group>"; };
-		DAADFCA8276C862300534E2A /* AliAnalysisQA.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AliAnalysisQA.xcodeproj; path = AliAnalysisQA/AliAnalysisQA.xcodeproj; sourceTree = "<group>"; };
-		DABC7D0C27AB373B00CCF91E /* AliAnalysisTaskPhiCount.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AliAnalysisTaskPhiCount.xcodeproj; path = AliAnalysisTaskPhiCount/AliAnalysisTaskPhiCount.xcodeproj; sourceTree = "<group>"; };
-		DACB57A527A3E4B400D2EBDD /* AliAnalysisTask_Phi_MC.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AliAnalysisTask_Phi_MC.xcodeproj; path = AliAnalysisTask_Phi_MC/AliAnalysisTask_Phi_MC.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		DA1BA7B527425DD80026D827 = {
 			isa = PBXGroup;
 			children = (
-				DA45674927AD601A00B5E657 /* AliAnalysisGridJobTaskPhiCountMC.xcodeproj */,
-				DAADFCA8276C862300534E2A /* AliAnalysisQA.xcodeproj */,
-				DABC7D0C27AB373B00CCF91E /* AliAnalysisTaskPhiCount.xcodeproj */,
-				DACB57A527A3E4B400D2EBDD /* AliAnalysisTask_Phi_MC.xcodeproj */,
-				DA1BA7C427425EE20026D827 /* AliAnalysisUtility.xcodeproj */,
 				DA1BA7C327425E5C0026D827 /* bash */,
 				DA1BA7C127425E5B0026D827 /* inc */,
 				DA1BA7BF27425E5B0026D827 /* README.md */,
 				DA1BA7BD27425E5B0026D827 /* src */,
 			);
-			sourceTree = "<group>";
-		};
-		DA1BA7C527425EE20026D827 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		DA45674A27AD601A00B5E657 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		DAADFCA9276C862300534E2A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		DABC7D0D27AB373B00CCF91E /* Products */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		DACB57A627A3E4B400D2EBDD /* Products */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -88,28 +43,6 @@
 			);
 			mainGroup = DA1BA7B527425DD80026D827;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = DA45674A27AD601A00B5E657 /* Products */;
-					ProjectRef = DA45674927AD601A00B5E657 /* AliAnalysisGridJobTaskPhiCountMC.xcodeproj */;
-				},
-				{
-					ProductGroup = DAADFCA9276C862300534E2A /* Products */;
-					ProjectRef = DAADFCA8276C862300534E2A /* AliAnalysisQA.xcodeproj */;
-				},
-				{
-					ProductGroup = DACB57A627A3E4B400D2EBDD /* Products */;
-					ProjectRef = DACB57A527A3E4B400D2EBDD /* AliAnalysisTask_Phi_MC.xcodeproj */;
-				},
-				{
-					ProductGroup = DABC7D0D27AB373B00CCF91E /* Products */;
-					ProjectRef = DABC7D0C27AB373B00CCF91E /* AliAnalysisTaskPhiCount.xcodeproj */;
-				},
-				{
-					ProductGroup = DA1BA7C527425EE20026D827 /* Products */;
-					ProjectRef = DA1BA7C427425EE20026D827 /* AliAnalysisUtility.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 			);

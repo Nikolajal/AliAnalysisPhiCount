@@ -4,6 +4,7 @@
 #include "../GeneralAnalysis.cxx"
 #include "RooMsgService.h"
 
+/*
 void
 SY_AN_PID
 ( TString fOption = "Yield", TString kFolder = "_p_p__7TeV" )    {
@@ -16,6 +17,7 @@ SY_AN_PID
     if ( !fChooseOption(fOption) ) return;
     //
     //  Generating the binning array--------------------------------------------------------------------------
+    SetStyle();
     fSetAllBins();
     //
     if ( kDoYield ) {
@@ -29,7 +31,8 @@ SY_AN_PID
         std::vector<TFile*> k1D_VarInFiles;
         for ( auto kCurrent_Syst : kSyst_PID_XD_Options ) {
             push_to_front( k1D_VarInFiles, new TFile ( Form(kASigExtp_FitCheckRst,(TString("Yield")+kFolder+TString("/Systematics/PID/")+(kCurrent_Syst)).Data(),"1D") ) );
-            auto    kCurrent_Variation  =   uLoadHistograms<0,TH1F> ( k1D_VarInFiles.at(0),  "h1D_Nraw_stat", kCurrent_Syst );
+            //
+            auto    kCurrent_Variation  =   uLoadHistograms<0,TH1F> ( k1D_VarInFiles.at(0),  "h1D_Nres_stat", kCurrent_Syst );
             kCurrent_Variation  ->  SetName(kCurrent_Syst.Data());
             k1D_Variations.push_back( kCurrent_Variation );
         }
@@ -38,7 +41,7 @@ SY_AN_PID
         std::vector<TFile*> k2D_VarInFiles;
         for ( auto kCurrent_Syst : kSyst_PID_XD_Options ) {
             push_to_front( k2D_VarInFiles, new TFile ( Form(kASigExtp_FitCheckRst,(TString("Yield")+kFolder+TString("/Systematics/PID/")+(kCurrent_Syst)).Data(),"2D") ) );
-            auto    kCurrent_Variation  =   uLoadHistograms<0,TH2F> ( k2D_VarInFiles.at(0),  "anSS2D_", kCurrent_Syst );
+            auto    kCurrent_Variation  =   uLoadHistograms<0,TH2F> ( k2D_VarInFiles.at(0),  "h2D_Nres_stat", kCurrent_Syst );
             kCurrent_Variation  ->  SetName(kCurrent_Syst.Data());
             k2D_Variations.push_back( kCurrent_Variation );
         }
@@ -46,4 +49,8 @@ SY_AN_PID
         fSetAllCustomFunctions();
         uSysEvaluate_Extrapolation_Custom1D  ( h1D_Nraw_stat, k1D_Variations, h2D_Nraw_stat, k2D_Variations, TString(Form(kAnalysis_Systemt_Dir,(TString("Yield")+kFolder).Data()))+TString("PID"), "", false );
     }
+    if ( kDoMultiplicity ) {
+        
+    }
 }
+*/

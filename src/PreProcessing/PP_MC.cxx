@@ -367,7 +367,7 @@ void PP_MC ( TString fFolderDT, TString fFolderMC, std::vector<pair<TString,TStr
     }
     //  --- --- MULTIPLICITY ANALYSIS
     if ( kDoMultiplicity ) {
-        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Multiplicity/")+kFolder).Data())));
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Multiplicity")+kFolder).Data())));
         gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Multiplicity")+kFolder).Data()))+TString("/Plots/1D/")).Data()));
         gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Multiplicity")+kFolder).Data()))+TString("/Plots/2D/")).Data()));
         gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Multiplicity")+kFolder).Data()))+TString("/Plots/Full/")).Data()));
@@ -489,10 +489,10 @@ void PP_MC ( TString fFolderDT, TString fFolderMC, std::vector<pair<TString,TStr
     }
     //  --- --- CORRELATION ANALYSIS
     if ( kDoCorrelation ) {
-        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Correlation/")+kFolder).Data())));
-        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Correlation/")+kFolder).Data()))+TString("/Plots/1D/")).Data()));
-        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Correlation/")+kFolder).Data()))+TString("/Plots/2D/")).Data()));
-        TFile*  outFile_Yield   =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Correlation/")+kFolder).Data()),"recreate");
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_PreProc_Dir,(TString("Correlation")+kFolder).Data())));
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Correlation")+kFolder).Data()))+TString("/Plots/1D/")).Data()));
+        gROOT                   ->  ProcessLine(Form(".! mkdir -p %s",(TString(Form(kAnalysis_PreProc_Dir,(TString("Correlation")+kFolder).Data()))+TString("/Plots/2D/")).Data()));
+        TFile*  outFile_Yield   =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Correlation")+kFolder).Data()),"recreate");
         auto    kPlotDirectory  =   TString(Form(kAnalysis_PreProc_Dir,(TString("Correlation")+kFolder).Data()))+TString("/Plots/");
         //
         // --- Saving to File

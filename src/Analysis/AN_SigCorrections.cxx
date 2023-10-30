@@ -176,38 +176,17 @@ void AN_SigCorrections   ( TString fOption = "all", TString kFolder = "_p_p__7Te
         push_to_front( kStat_Array, h2D_LowPT_Extrap_stat );
         push_to_front( kSyst_Array, h2D_LowPT_Extrap_syst );
         //
-        fSetSystErrors ( h2D_MeanPT_syst, Form("%s/FullSystematics.root",Form(kAnalysis_Systemt_Dir,  (TString("Yield")+kFolder).Data())), "hFullSystematicsPT" );
+        h2D_MeanPT_syst = fSetSystErrors ( h2D_MeanPT_syst, Form("%s/FullSystematics.root",Form(kAnalysis_Systemt_Dir,  (TString("Yield")+kFolder).Data())), "hFullSystematicsPT" );
         //
         //  --- Final Quantities
-        auto k1DYield_yval = hXD_Nyld_stat->GetBinContent(1);
-        auto k1DYield_stat = hXD_Nyld_stat->GetBinError(1);
-        auto k1DYield_rltv = k1DYield_stat / k1DYield_yval;
-        auto k2DYield_yval = hXD_Nyld_stat->GetBinContent(2);
-        auto k2DYield_stat = hXD_Nyld_stat->GetBinError(2);
-        auto k2DYield_rltv = k1DYield_stat / k1DYield_yval;
-        hXD_Nfqs_stat   ->  SetBinContent   ( 1, k1DYield_yval );
-        hXD_Nfqs_syst   ->  SetBinContent   ( 1, k1DYield_yval );
-        hXD_Nfqs_stat   ->  SetBinError     ( 1, k1DYield_stat );
-        hXD_Nfqs_stat   ->  SetBinContent   ( 2, k2DYield_yval );
-        hXD_Nfqs_syst   ->  SetBinContent   ( 2, k2DYield_yval );
-        hXD_Nfqs_stat   ->  SetBinError     ( 2, k2DYield_stat );
-        hXD_Nfqs_stat   ->  SetBinContent   ( 3, (k2DYield_yval/k1DYield_yval) );
-        hXD_Nfqs_syst   ->  SetBinContent   ( 3, (k2DYield_yval/k1DYield_yval) );
-        hXD_Nfqs_stat   ->  SetBinError     ( 3, (k2DYield_yval/k1DYield_yval)*SquareSum({k1DYield_rltv,k1DYield_rltv,k2DYield_rltv}) );
-        hXD_Nfqs_stat   ->  SetBinContent   ( 4, (k2DYield_yval/(k1DYield_yval*k1DYield_yval)) );
-        hXD_Nfqs_syst   ->  SetBinContent   ( 4, (k2DYield_yval/(k1DYield_yval*k1DYield_yval)) );
-        hXD_Nfqs_stat   ->  SetBinError     ( 4, (k2DYield_yval/(k1DYield_yval*k1DYield_yval))*SquareSum({k1DYield_rltv,k1DYield_rltv,k2DYield_rltv}) );
-        hXD_Nfqs_stat   ->  SetBinContent   ( 5, fSigmaPhiValue(k1DYield_yval,k2DYield_yval) );
-        hXD_Nfqs_syst   ->  SetBinContent   ( 5, fSigmaPhiValue(k1DYield_yval,k2DYield_yval) );
-        hXD_Nfqs_stat   ->  SetBinError     ( 5, fSigmaPhiError(k1DYield_yval,k2DYield_yval,k1DYield_stat,k2DYield_stat) );
-        hXD_Nfqs_stat   ->  SetBinContent   ( 6, fGammaPhiValue(k1DYield_yval,k2DYield_yval) );
-        hXD_Nfqs_syst   ->  SetBinContent   ( 6, fGammaPhiValue(k1DYield_yval,k2DYield_yval) );
-        hXD_Nfqs_stat   ->  SetBinError     ( 6, fGammaPhiError(k1DYield_yval,k2DYield_yval,k1DYield_stat,k2DYield_stat) );
+        hXD_Nfqs_stat   =   uPlotDerivedQuantitiesRaw( {hXD_Nyld_stat->GetBinContent(1),hXD_Nyld_stat->GetBinError(1),hXD_Nyld_stat->GetBinError(1)}, {hXD_Nyld_stat->GetBinContent(2),hXD_Nyld_stat->GetBinError(2),hXD_Nyld_stat->GetBinError(2)} );
+        hXD_Nfqs_syst   =   hXD_Nfqs_stat;
         hXD_Nfqs_syst   =   fSetSystErrors ( hXD_Nfqs_syst, Form("%s/FullSystematics.root",Form(kAnalysis_Systemt_Dir,  (TString("Yield")+kFolder).Data())), "hFullSystematicsRT" );
+        hXD_Nfqs_stat   ->  SetName("hXD_Nfqs_stat");
+        hXD_Nfqs_syst   ->  SetName("hXD_Nfqs_syst");
         //
         //  --- Output
         TFile *outFile_Rslt_YL      =   new TFile   (Form(kASigExtp_FitCheckRst,(TString("Yield")+kFolder).Data()),"recreate");
-        //
         hXD_Nyld_stat               ->  Write();
         hXD_Nyld_syst               ->  Write();
         h1D_Nraw_stat               ->  Write();
@@ -288,6 +267,12 @@ void AN_SigCorrections   ( TString fOption = "all", TString kFolder = "_p_p__7Te
         std::vector<TH1F*>      h1D_Nres_syst_MT;
         std::vector<TH2F*>      h2D_Nraw_stat_MT;
         std::vector<TH2F*>      h2D_Nraw_syst_MT;
+        std::vector<TH1D*>      h2D_MnPt_stat_MT;
+        std::vector<TH1D*>      h2D_MnPt_syst_MT;
+        std::vector<TH1F*>      hXD_Nfqs_stat;
+        std::vector<TH1F*>      hXD_Nfqs_syst;
+        std::vector<std::vector<TH1D*>> h2D_Slcs_stat_MT;
+        std::vector<std::vector<TH1D*>> h2D_Slcs_syst_MT;
         std::vector<std::map<TString,std::tuple<Float_t,Float_t,Float_t>>>                  kMult1D_Results;
         std::vector<std::vector<std::map<TString,std::tuple<Float_t,Float_t,Float_t>>>>     kMult2D_Results;
         TString kPlotFolder1D_Full  =   TString( Form(kASigExtp_Plot_Direct,(TString("Multiplicity")+kFolder).Data()) ) +TString(Form("/1D/"));
@@ -319,7 +304,7 @@ void AN_SigCorrections   ( TString fOption = "all", TString kFolder = "_p_p__7Te
             h1D_Nraw_MT.at(iMult)        ->  Scale(1.,"width");
             //
             h1D_Nres_stat_MT.push_back( uEfficiencyCorrection1D ( h1D_Nraw_MT.at(iMult), h1D_Nrec, h1D_Ngen, f1DCorrection ) );
-            h1D_Nres_syst_MT.push_back( fSetSystErrors ( h1D_Nres_stat_MT.at(iMult), "" ) );
+            h1D_Nres_syst_MT.push_back( fSetSystErrors ( h1D_Nres_stat_MT.at(iMult), Form("%s/FullSystematics.root",Form(kAnalysis_Systemt_Dir+TString(Form("/MLT_%i/",iMult)),(TString("Multiplicity")+kFolder).Data())), "hFullSystematics1D" ));
             SetAxis(h1D_Nres_stat_MT.at(iMult),"PT1D");
             SetAxis(h1D_Nres_syst_MT.at(iMult),"PT1D");
             h1D_Nres_stat_MT.at(iMult)   ->  SetName(Form("h1D_Nres_stat_MT_%i",iMult));
@@ -329,91 +314,177 @@ void AN_SigCorrections   ( TString fOption = "all", TString kFolder = "_p_p__7Te
             //
             h2D_Nraw_MT.at(iMult)        ->  Scale(1.,"width");
             h2D_Nraw_stat_MT.push_back( uEfficiencyCorrection2D ( h2D_Nraw_MT.at(iMult), h1D_Nrec_2Db, h1D_Ngen_2Db, f2DCorrection ) );
-            h2D_Nraw_syst_MT.push_back( fSetSystErrors ( h2D_Nraw_stat_MT.at(iMult), "" ) );
-            h2D_Nraw_stat_MT.at(iMult)   ->  SetName(Form("h2D_Nraw_stat_MT_%i",iMult));
-            h2D_Nraw_syst_MT.at(iMult)   ->  SetName(Form("h2D_Nraw_syst_MT_%i",iMult));
+                                       h2D_Nraw_syst_MT.push_back( fSetSystErrors ( h2D_Nraw_stat_MT.at(iMult), Form("%s/FullSystematics.root",Form(kAnalysis_Systemt_Dir+TString(Form("/MLT_%i/",iMult)),(TString("Multiplicity")+kFolder).Data())), "hFullSystematics2D"));
+            h2D_Nraw_stat_MT.at(iMult)   ->  SetName(Form("h2D_Nres_stat_MT_%i",iMult));
+            h2D_Nraw_syst_MT.at(iMult)   ->  SetName(Form("h2D_Nres_syst_MT_%i",iMult));
             //
             kMult2D_Results.push_back( uMeasureFullYield2D( h2D_Nraw_stat_MT.at(iMult),h2D_Nraw_syst_MT.at(iMult),kStandardSystematicFitFunctions,kStatEvalCycles,kPlotFolder2D.at(iMult), "2D_%i" ) );
             //
+            //  --- Conditional Spectra
+            std::vector<TH1D*>  k2DProjectionArrayStat;
+            std::vector<TH1D*>  k2DProjectionArraySyst;
+            for ( Int_t iBin = 1; iBin <= h2D_Nraw_stat_MT.at(iMult)->GetNbinsX(); iBin++ ) k2DProjectionArrayStat.push_back( (TH1D*)(h2D_Nraw_stat_MT.at(iMult)->ProjectionX(Form("%s_stat_%i",h2D_Nraw_stat_MT.at(iMult)->GetName(),iBin),iBin,iBin))->Clone() );
+            for ( Int_t iBin = 1; iBin <= h2D_Nraw_syst_MT.at(iMult)->GetNbinsX(); iBin++ ) k2DProjectionArraySyst.push_back( (TH1D*)(h2D_Nraw_syst_MT.at(iMult)->ProjectionX(Form("%s_syst_%i",h2D_Nraw_syst_MT.at(iMult)->GetName(),iBin),iBin,iBin))->Clone() );
+            //
+            auto    iBin    = -1;
+            TH1D*   h2D_LowPT_Extrap_stat   =   (TH1D*)(h2D_Nraw_stat_MT.at(iMult)->ProjectionX(Form("%s_stat_%i",h2D_Nraw_stat_MT.at(iMult)->GetName(),0),1,1))->Clone();
+            TH1D*   h2D_LowPT_Extrap_syst   =   (TH1D*)(h2D_Nraw_syst_MT.at(iMult)->ProjectionX(Form("%s_syst_%i",h2D_Nraw_syst_MT.at(iMult)->GetName(),0),1,1))->Clone();
+            TH1D*   h2D_MeanPT_stat         =   new TH1D ( Form("h2D_MeanPT_stat_MT_%i",iMult), "h2D_MeanPT_stat", nBinPT2D+1, fArrPT2D_Comp);
+            TH1D*   h2D_MeanPT_syst         =   new TH1D ( Form("h2D_MeanPT_syst_MT_%i",iMult), "h2D_MeanPT_syst", nBinPT2D+1, fArrPT2D_Comp);
+            //
+            for ( auto kResult : kMult2D_Results.at(iMult) )    {
+                iBin++;
+                //
+                if ( iBin <= 0 ) continue;
+                //
+                auto kMPTValue  =   get<0>(kResult["PT_FLL"]);
+                auto kMPT_stat  =   get<1>(kResult["PT_FLL"]);
+                auto kMPT_syst  =   get<2>(kResult["PT_FLL"]);
+                h2D_MeanPT_stat         ->  SetBinContent   ( iBin, kMPTValue );
+                h2D_MeanPT_stat         ->  SetBinError     ( iBin, kMPT_stat );
+                h2D_MeanPT_syst         ->  SetBinContent   ( iBin, kMPTValue );
+                h2D_MeanPT_syst         ->  SetBinError     ( iBin, kMPT_syst );
+                //
+                if ( iBin <= 1 ) continue;
+                //
+                auto kBinValue  =   get<0>(kResult["YL_EXT"]);
+                auto kBin_stat  =   get<1>(kResult["YL_EXT"]);
+                auto kBin_syst  =   get<2>(kResult["YL_EXT"]);
+                h2D_LowPT_Extrap_stat   ->  SetBinContent   ( iBin-1, kBinValue );
+                h2D_LowPT_Extrap_stat   ->  SetBinError     ( iBin-1, kBin_stat );
+                h2D_LowPT_Extrap_syst   ->  SetBinContent   ( iBin-1, kBinValue );
+                h2D_LowPT_Extrap_syst   ->  SetBinError     ( iBin-1, kBin_syst );
+                //
+            }
+            h2D_LowPT_Extrap_stat       ->  Scale( 1., "width" );
+            h2D_LowPT_Extrap_syst       ->  Scale( 1., "width" );
+            push_to_front( k2DProjectionArrayStat, h2D_LowPT_Extrap_stat );
+            push_to_front( k2DProjectionArraySyst, h2D_LowPT_Extrap_syst );
+            //
+            fSetSystErrors ( h2D_MeanPT_syst, Form("%s/FullSystematics.root",Form(kAnalysis_Systemt_Dir+TString(Form("/MLT_%i/",iMult)),(TString("Multiplicity")+kFolder).Data())), "hFullSystematicsPT");
+            //
+            h2D_MnPt_stat_MT.push_back(h2D_MeanPT_stat);
+            h2D_MnPt_syst_MT.push_back(h2D_MeanPT_syst);
+            h2D_Slcs_stat_MT.push_back(k2DProjectionArrayStat);
+            h2D_Slcs_syst_MT.push_back(k2DProjectionArraySyst);
         }
         //
         //  --- Build output plots
-        //
-        TGraphErrors*   g1D_Nres_Mult   =   new TGraphErrors ( );
-        TGraphErrors*   g2D_Nres_Mult   =   new TGraphErrors ( );
-        TGraphErrors*   gR1_Nres_Mult   =   new TGraphErrors ( );
-        TGraphErrors*   gR2_Nres_Mult   =   new TGraphErrors ( );
-        TGraphErrors*   gP1_Nres_Mult   =   new TGraphErrors ( );
-        TGraphErrors*   gP2_Nres_Mult   =   new TGraphErrors ( );
-        TGraphErrors*   g1DR_Nres_Mult  =   new TGraphErrors ( );
-        TGraphErrors*   g2DR_Nres_Mult  =   new TGraphErrors ( );
-        g1D_Nres_Mult   ->  SetNameTitle( "g1D_Nres_Mult", "g1D_Nres_Mult" );
-        g2D_Nres_Mult   ->  SetNameTitle( "g2D_Nres_Mult", "g2D_Nres_Mult" );
-        gR1_Nres_Mult   ->  SetNameTitle( "gR1_Nres_Mult", "gR1_Nres_Mult" );
-        gR2_Nres_Mult   ->  SetNameTitle( "gR2_Nres_Mult", "gR2_Nres_Mult" );
-        gP1_Nres_Mult   ->  SetNameTitle( "gP1_Nres_Mult", "gP1_Nres_Mult" );
-        gP2_Nres_Mult   ->  SetNameTitle( "gP2_Nres_Mult", "gP2_Nres_Mult" );
-        g1D_Nres_Mult   ->  SetNameTitle( "g1D_Nres_Mult", "g1D_Nres_Mult" );
-        g2D_Nres_Mult   ->  SetNameTitle( "g2D_Nres_Mult", "g2D_Nres_Mult" );
+        TGraphErrors*   g1D_Nres_Stat_Mult   =   new TGraphErrors ( );
+        TGraphErrors*   g2D_Nres_Stat_Mult   =   new TGraphErrors ( );
+        TGraphErrors*   gR1_Nres_Stat_Mult   =   new TGraphErrors ( );
+        TGraphErrors*   gR2_Nres_Stat_Mult   =   new TGraphErrors ( );
+        TGraphErrors*   gP1_Nres_Stat_Mult   =   new TGraphErrors ( );
+        TGraphErrors*   gP2_Nres_Stat_Mult   =   new TGraphErrors ( );
+        TGraphErrors*   g1D_Nres_Syst_Mult   =   new TGraphErrors ( );
+        TGraphErrors*   g2D_Nres_Syst_Mult   =   new TGraphErrors ( );
+        TGraphErrors*   gR1_Nres_Syst_Mult   =   new TGraphErrors ( );
+        TGraphErrors*   gR2_Nres_Syst_Mult   =   new TGraphErrors ( );
+        TGraphErrors*   gP1_Nres_Syst_Mult   =   new TGraphErrors ( );
+        TGraphErrors*   gP2_Nres_Syst_Mult   =   new TGraphErrors ( );
+        g1D_Nres_Stat_Mult   ->  SetNameTitle( "g1D_Nres_Stat_Mult", "g1D_Nres_Stat_Mult" );
+        g2D_Nres_Stat_Mult   ->  SetNameTitle( "g2D_Nres_Stat_Mult", "g2D_Nres_Stat_Mult" );
+        gR1_Nres_Stat_Mult   ->  SetNameTitle( "gR1_Nres_Stat_Mult", "gR1_Nres_Stat_Mult" );
+        gR2_Nres_Stat_Mult   ->  SetNameTitle( "gR2_Nres_Stat_Mult", "gR2_Nres_Stat_Mult" );
+        gP1_Nres_Stat_Mult   ->  SetNameTitle( "gP1_Nres_Stat_Mult", "gP1_Nres_Stat_Mult" );
+        gP2_Nres_Stat_Mult   ->  SetNameTitle( "gP2_Nres_Stat_Mult", "gP2_Nres_Stat_Mult" );
+        g1D_Nres_Stat_Mult   ->  SetNameTitle( "g1D_Nres_Stat_Mult", "g1D_Nres_Stat_Mult" );
+        g2D_Nres_Stat_Mult   ->  SetNameTitle( "g2D_Nres_Stat_Mult", "g2D_Nres_Stat_Mult" );
+        g1D_Nres_Syst_Mult   ->  SetNameTitle( "g1D_Nres_Syst_Mult", "g1D_Nres_Syst_Mult" );
+        g2D_Nres_Syst_Mult   ->  SetNameTitle( "g2D_Nres_Syst_Mult", "g2D_Nres_Syst_Mult" );
+        gR1_Nres_Syst_Mult   ->  SetNameTitle( "gR1_Nres_Syst_Mult", "gR1_Nres_Syst_Mult" );
+        gR2_Nres_Syst_Mult   ->  SetNameTitle( "gR2_Nres_Syst_Mult", "gR2_Nres_Syst_Mult" );
+        gP1_Nres_Syst_Mult   ->  SetNameTitle( "gP1_Nres_Syst_Mult", "gP1_Nres_Syst_Mult" );
+        gP2_Nres_Syst_Mult   ->  SetNameTitle( "gP2_Nres_Syst_Mult", "gP2_Nres_Syst_Mult" );
+        g1D_Nres_Syst_Mult   ->  SetNameTitle( "g1D_Nres_Syst_Mult", "g1D_Nres_Syst_Mult" );
+        g2D_Nres_Syst_Mult   ->  SetNameTitle( "g2D_Nres_Syst_Mult", "g2D_Nres_Syst_Mult" );
         //
         auto iTer = -1;
         for ( auto kCurrent_1D_Result : kMult1D_Results )    {
             iTer++;
-            if ( iTer <= 0 ) continue;
             auto    kYield_1D   =   get<0>( kCurrent_1D_Result["YL_FLL"] );
             auto    kError_1D   =   get<1>( kCurrent_1D_Result["YL_FLL"] );
             auto    kYield_2D   =   get<0>( ((kMult2D_Results.at(iTer)).at(0))["YL_FLL"] );
             auto    kError_2D   =   get<1>( ((kMult2D_Results.at(iTer)).at(0))["YL_FLL"] );
+            //
+            hXD_Nfqs_stat.push_back( new TH1F ( Form("hXD_Nfqs_stat_MT_%i",iTer), "hXD_Nfqs_stat", 6, 0.5, 6.5 ) );
+            hXD_Nfqs_syst.push_back( new TH1F ( Form("hXD_Nfqs_syst_MT_%i",iTer), "hXD_Nfqs_syst", 6, 0.5, 6.5 ) ); // Yield 1D, Yield 2D, R1, R2, P1, P2
+            //
+            hXD_Nfqs_stat.at(iTer) = uPlotDerivedQuantitiesRaw( {kYield_1D, kError_1D, 0.}, {kYield_2D, kError_2D, 0.} );
+            hXD_Nfqs_syst.at(iTer) = hXD_Nfqs_stat.at(iTer);
+            hXD_Nfqs_syst.at(iTer) = fSetSystErrors ( hXD_Nfqs_syst.at(iTer), Form("%s/FullSystematics.root",Form(kAnalysis_Systemt_Dir+TString(Form("/MLT_%i/",iTer)),(TString("Multiplicity")+kFolder).Data())), "hFullSystematicsRT" );
+            hXD_Nfqs_stat.at(iTer) -> SetName(Form("hXD_Nfqs_stat_MT_%i",iTer));
+            hXD_Nfqs_syst.at(iTer) -> SetName(Form("hXD_Nfqs_syst_MT_%i",iTer));
+            auto    kErrSy_1D   =   hXD_Nfqs_syst.at(iTer)->GetBinError(1);
+            auto    kErrSy_2D   =   hXD_Nfqs_syst.at(iTer)->GetBinError(2);
             auto    kErRel_1D   =   kError_1D/kYield_1D;
             auto    kErRel_2D   =   kError_2D/kYield_2D;
+            auto    kErRSys1D   =   kErrSy_1D/kYield_1D;
+            auto    kErRSys2D   =   kErrSy_2D/kYield_2D;
             //
-            g1D_Nres_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_1D );
-            g1D_Nres_Mult->SetPointError   ( iTer-1, 0,              kError_1D );
+            if ( iTer <= 0 ) continue;
             //
-            g2D_Nres_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_2D );
-            g2D_Nres_Mult->SetPointError   ( iTer-1, 0,              kError_2D );
+            g1D_Nres_Stat_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_1D );
+            g1D_Nres_Stat_Mult->SetPointError   ( iTer-1, 0,              kError_1D );
             //
-            gR1_Nres_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_2D/kYield_1D );
-            gR1_Nres_Mult->SetPointError   ( iTer-1, 0,              (kYield_2D/kYield_1D)*SquareSum( { kErRel_2D, kErRel_1D } ) );
+            g2D_Nres_Stat_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_2D );
+            g2D_Nres_Stat_Mult->SetPointError   ( iTer-1, 0,              kError_2D );
             //
-            gR2_Nres_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_2D/(kYield_1D*kYield_1D) );
-            gR2_Nres_Mult->SetPointError   ( iTer-1, 0,              (kYield_2D/(kYield_1D*kYield_1D))*SquareSum( { kErRel_2D, kErRel_1D } ) );
+            gR1_Nres_Stat_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_2D/kYield_1D );
+            gR1_Nres_Stat_Mult->SetPointError   ( iTer-1, 0,              (kYield_2D/kYield_1D)*SquareSum( { kErRel_2D, kErRel_1D } ) );
             //
-            gP1_Nres_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], fSigmaPhiValue ( kYield_1D, kYield_2D ) );
-            gP1_Nres_Mult->SetPointError   ( iTer-1, 0,              fSigmaPhiError ( kYield_1D, kYield_2D, kError_1D, kError_2D ) );
+            gR2_Nres_Stat_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_2D/(kYield_1D*kYield_1D) );
+            gR2_Nres_Stat_Mult->SetPointError   ( iTer-1, 0,              (kYield_2D/(kYield_1D*kYield_1D))*SquareSum( { 2*kErRel_2D, kErRel_1D } ) );
             //
-            gP2_Nres_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], fGammaPhiValue ( kYield_1D, kYield_2D ) );
-            gP2_Nres_Mult->SetPointError   ( iTer-1, 0,              fGammaPhiError ( kYield_1D, kYield_2D, kError_1D, kError_2D ) );
+            gP1_Nres_Stat_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], fSigmaPhiValue ( kYield_1D, kYield_2D ) );
+            gP1_Nres_Stat_Mult->SetPointError   ( iTer-1, 0,              fSigmaPhiError ( kYield_1D, kYield_2D, kError_1D, kError_2D ) );
+            //
+            gP2_Nres_Stat_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], fGammaPhiValue ( kYield_1D, kYield_2D ) );
+            gP2_Nres_Stat_Mult->SetPointError   ( iTer-1, 0,              fGammaPhiError ( kYield_1D, kYield_2D, kError_1D, kError_2D ) );
+            //
+            g1D_Nres_Syst_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_1D );
+            g1D_Nres_Syst_Mult->SetPointError   ( iTer-1, 0,              kErrSy_1D );
+            //
+            g2D_Nres_Syst_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_2D );
+            g2D_Nres_Syst_Mult->SetPointError   ( iTer-1, 0,              kErrSy_2D );
+            //
+            gR1_Nres_Syst_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_2D/kYield_1D );
+            gR1_Nres_Syst_Mult->SetPointError   ( iTer-1, 0,              (kYield_2D/kYield_1D)*SquareSum( { kErRSys2D, kErRSys1D } ) );
+            //
+            gR2_Nres_Syst_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], kYield_2D/(kYield_1D*kYield_1D) );
+            gR2_Nres_Syst_Mult->SetPointError   ( iTer-1, 0,              (kYield_2D/(kYield_1D*kYield_1D))*SquareSum( { 2*kErRSys2D, kErRSys1D } ) );
+            //
+            gP1_Nres_Syst_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], fSigmaPhiValue ( kYield_1D, kYield_2D ) );
+            gP1_Nres_Syst_Mult->SetPointError   ( iTer-1, 0,              fSigmaPhiError ( kYield_1D, kYield_2D, kErrSy_1D, kErrSy_2D ) );
+            //
+            gP2_Nres_Syst_Mult->SetPoint        ( iTer-1, fArrRMlt[iTer], fGammaPhiValue ( kYield_1D, kYield_2D ) );
+            gP2_Nres_Syst_Mult->SetPointError   ( iTer-1, 0,              fGammaPhiError ( kYield_1D, kYield_2D, kErrSy_1D, kErrSy_2D ) );
         }
-        //
-        // --- Printing to Plots
-        SetStyle();
-        gROOT       ->  SetBatch(kTRUE);
-        //
-        auto cDraw1DMultNorm    =   new TCanvas( "cDraw1DMultNorm", "cDraw1DMultNorm", 1500, 1500 );
-        //
-        g1D_Nres_Mult      ->  Draw("EP");
-        //
-        cDraw1DMultNorm         ->  SaveAs( kPlotFolder1D_Full + TString("/Test.pdf") );
-        cDraw1DMultNorm         ->  SaveAs( kPlotFolder1D_Full + TString("/Test.eps") );
-        //
-        delete  cDraw1DMultNorm;
-        //
-        gROOT           ->  SetBatch(kFALSE);
-        //
         //  --- Output
         TFile *outFile_Rslt_ML      =   new TFile   (Form(kASigExtp_FitCheckRst,(TString("Multiplicity")+kFolder).Data()),"recreate");
         //
-        g1D_Nres_Mult->Write();
-        g2D_Nres_Mult->Write();
-        gR1_Nres_Mult->Write();
-        gR2_Nres_Mult->Write();
-        gP1_Nres_Mult->Write();
-        gP2_Nres_Mult->Write();
+        g1D_Nres_Stat_Mult->Write();
+        g2D_Nres_Stat_Mult->Write();
+        gR1_Nres_Stat_Mult->Write();
+        gR2_Nres_Stat_Mult->Write();
+        gP1_Nres_Stat_Mult->Write();
+        gP2_Nres_Stat_Mult->Write();
+        g1D_Nres_Syst_Mult->Write();
+        g2D_Nres_Syst_Mult->Write();
+        gR1_Nres_Syst_Mult->Write();
+        gR2_Nres_Syst_Mult->Write();
+        gP1_Nres_Syst_Mult->Write();
+        gP2_Nres_Syst_Mult->Write();
         for ( auto kSave : h1D_Nres_stat_MT )   kSave ->  Write();
         for ( auto kSave : h1D_Nres_syst_MT )   kSave ->  Write();
         for ( auto kSave : h2D_Nraw_stat_MT )   kSave ->  Write();
         for ( auto kSave : h2D_Nraw_syst_MT )   kSave ->  Write();
+        for ( auto kSave : h2D_MnPt_stat_MT )   kSave ->  Write();
+        for ( auto kSave : h2D_MnPt_syst_MT )   kSave ->  Write();
+        for ( auto kSaveArray : h2D_Slcs_stat_MT ) for ( auto kSave : kSaveArray ) kSave ->  Write();
+        for ( auto kSaveArray : h2D_Slcs_syst_MT ) for ( auto kSave : kSaveArray ) kSave ->  Write();
+        for ( auto kSave : hXD_Nfqs_stat )   kSave ->  Write();
+        for ( auto kSave : hXD_Nfqs_syst )   kSave ->  Write();
         //
         outFile_Rslt_ML->Close();
         outFile_Chck_ML->Close();
@@ -421,18 +492,10 @@ void AN_SigCorrections   ( TString fOption = "all", TString kFolder = "_p_p__7Te
         insFile_Data_ML->Close();
     }
     // --- CORRELATION ANALYSIS
-    /*
-    if ( kDoCorrelation && false ) {
+    /* if ( kDoCorrelation && false) {
         //  --- Load Files
-        TFile*  insFile_Data_CR     =   new TFile   (Form(kASigExtr_FitCheckRst,"Correlation"));
-        TFile*  insFile_Effc_CR     =   new TFile   (Form(kAnalysis_MCTruthHist,"Correlation"));
-        //
-        //  --- Build output structure
-        gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kAnalysis_SigExtp_Dir,"Correlation")));
-        gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,"Correlation")));
-        gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,"Correlation"))+TString("/1D"));
-        gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,"Correlation"))+TString("/2D"));
-        gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,"Correlation"))+TString("/Full"));
+        TFile*  insFile_Data_CR     =   new TFile   (Form(kASigExtr_FitCheckRst,(TString("Correlation")+kFolder).Data()));
+        TFile*  insFile_Effc_CR     =   new TFile   (Form(kAnalysis_MCTruthHist,(TString("Correlation")+kFolder).Data()));
         //
         //  --- Load Histograms
         auto        fHEventCount    =   uLoadHistograms<0,TH1F> ( insFile_Data_CR, "fQC_Event_Enum_FLL" );
@@ -440,29 +503,65 @@ void AN_SigCorrections   ( TString fOption = "all", TString kFolder = "_p_p__7Te
         auto        h1D_Ngen_2Db    =   uLoadHistograms<0,TH1F> ( insFile_Effc_CR, "h1D_Ngen_2Db" );
         auto        h2D_Nraw_CR     =   uLoadHistograms<1,TH2F> ( insFile_Data_CR, "anSS2D_CR_%i" );
         //
-        //  --- Minimum Bias Normalisation
-        auto        kN_Trg          =   (fHEventCount->GetBinContent(kEventCount::kTrigger) );
-        auto        kN_Vtx          =   (fHEventCount->GetBinContent(kEventCount::kVertex)  );
-        auto        kN_MB           =   (fHEventCount->GetBinContent(kEventCount::kVertex10));
-        Double_t    f1DCorrection   =   (1./kBR)        *(1./kN_MB) *(kTriggerEff/1.)   *(kN_Vtx/kN_Trg);
-        Double_t    f2DCorrection   =   (1./(kBR*kBR))  *(1./kN_MB) *(kTriggerEff/1.)   *(kN_Vtx/kN_Trg);
-        //
         //  --- Output File for Fit Check
-        TFile*  outFile_Chck_CR     =   new TFile(Form(kASigExtp_FitCheckPlt,"Correlation"),"recreate");
+        TFile*  outFile_Chck_CR     =   new TFile(Form(kASigExtp_FitCheckPlt,(TString("Correlation")+kFolder).Data()),"recreate");
         //
-        //  --- Efficiency correction
-        std::vector<std::vector<TH1F*>> h2D_Nres_Cd1_Stat;
-        std::vector<std::vector<TH1F*>> h2D_Nres_Cd1_Syst;
-        //
-        for ( auto h2D_Nraw : h2D_Nraw_CR ) {
-            // TODO: CHECK FIX  --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-            h2D_Nraw->Scale(1.,"width");
-            // TODO: CHECK FIX  --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-            h2D_Nres_Cd1_Stat.push_back( fEfficiencycorrection ( h2D_Nraw, h1D_Nrec_2Db, h1D_Ngen_2Db, f2DCorrection ) );
-            // TODO: CHECK FIX  --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-            for ( Int_t iBin = 0; iBin < h2D_Nraw->GetNbinsX(); ++iBin ) for ( Int_t jBin = 0; jBin < h2D_Nraw->GetNbinsY(); ++jBin ) h2D_Nraw->SetBinError(iBin,jBin,0);
-            // TODO: CHECK FIX  --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-            h2D_Nres_Cd1_Syst.push_back( fEfficiencycorrection ( h2D_Nraw, h1D_Nrec_2Db, h1D_Ngen_2Db, f2DCorrection ) );
+        //  --- Minimum Bias Normalisation
+        Double_t    f1DCorrection   =   -1;
+        Double_t    f2DCorrection   =   -1;
+        if ( is_pp_anl ) {
+            auto        kN_PU           =   (fHEventCount->GetBinContent(kEventCount::kPU_MB));
+            auto        kN_Trg          =   (fHEventCount->GetBinContent(kEventCount::kTrigger));
+            auto        kN_Vtx          =   (fHEventCount->GetBinContent(kEventCount::kVertex));
+            auto        kN_MB           =   -kN_PU +(fHEventCount->GetBinContent(kEventCount::kVertex10));
+            f1DCorrection               =   (1./kBR)        *(1./kN_MB) *(kN_Vtx/kN_Trg);
+            f2DCorrection               =   (1./(kBR*kBR))  *(1./kN_MB) *(kN_Vtx/kN_Trg);
+            if ( fabs( kEnergy - 5  ) < 0.1 ) { f1DCorrection   *=  kTriggerEff15n17pq; f2DCorrection   *=  kTriggerEff15n17pq; }
+            if ( fabs( kEnergy - 7  ) < 0.1 ) { f1DCorrection   *=  kTriggerEff10bcdef; f2DCorrection   *=  kTriggerEff10bcdef; }
+            if ( fabs( kEnergy - 13 ) < 0.1 ) { f1DCorrection   *=  kTriggerEff13TeV;   f2DCorrection   *=  kTriggerEff13TeV;   }
+        } else if ( is_pb_anl ) {
+            auto        kN_PU           =   (fHEventCount->GetBinContent(kEventCount::kPU_MB));
+            auto        kN_Trg          =   (fHEventCount->GetBinContent(kEventCount::kTrigger));
+            auto        kN_Vtx          =   (fHEventCount->GetBinContent(kEventCount::kVertex));
+            auto        kN_MB           =   -kN_PU +(fHEventCount->GetBinContent(kEventCount::kVertex10));
+            f1DCorrection               =   (1./kBR)        *(1./kN_MB) *(kN_Vtx/kN_Trg) *(1./0.5); // y normalisation 0.5
+            f2DCorrection               =   (1./(kBR*kBR))  *(1./kN_MB) *(kN_Vtx/kN_Trg) *(1./0.5); // y normalisation 0.5
+            if ( fabs( kEnergy - 5  ) < 0.1 ) {   f1DCorrection   *=  0.978;     f2DCorrection       *=  0.978; }
+        }
+        //  --- Build output structure
+        Int_t   iCrPh = -1;
+        std::vector<TString>    kPlotFolder1D;
+        std::vector<TString>    kPlotFolder2D;
+        std::vector<TH1F*>      h1D_Nres_stat_CR;
+        std::vector<TH1F*>      h1D_Nres_syst_CR;
+        std::vector<TH2F*>      h2D_Nraw_stat_CR;
+        std::vector<TH2F*>      h2D_Nraw_syst_CR;
+        std::vector<std::map<TString,std::tuple<Float_t,Float_t,Float_t>>>                  kMult1D_Results;
+        std::vector<std::vector<std::map<TString,std::tuple<Float_t,Float_t,Float_t>>>>     kMult2D_Results;
+        TString kPlotFolder1D_Full  =   TString( Form(kASigExtp_Plot_Direct,(TString("Correlation")+kFolder).Data()) ) +TString(Form("/1D/"));
+        TString kPlotFolder2D_Full  =   TString( Form(kASigExtp_Plot_Direct,(TString("Correlation")+kFolder).Data()) ) +TString(Form("/2D/"));
+        TString kPlotFolderFL_Full  =   TString( Form(kASigExtp_Plot_Direct,(TString("Correlation")+kFolder).Data()) ) +TString(Form("/Full/"));
+        gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,(TString("Correlation")+kFolder).Data()))+TString(Form("/1D/")));
+        gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,(TString("Correlation")+kFolder).Data()))+TString(Form("/2D/")));
+        for ( auto kTarget : h2D_Nraw_CR )   {
+            iCrPh++;
+            //
+            fSetAllCustomFunctions();
+            //
+            gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,(TString("Correlation")+kFolder).Data()))+TString(Form("/CRL_%i/1D/",iCrPh)));
+            gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,(TString("Correlation")+kFolder).Data()))+TString(Form("/CRL_%i/2D/",iCrPh)));
+            gROOT                       ->  ProcessLine(Form(".! mkdir -p %s",Form(kASigExtp_Plot_Direct,(TString("Correlation")+kFolder).Data()))+TString(Form("/CRL_%i/Full/",iCrPh)));
+            kPlotFolder1D.push_back( TString( Form(kASigExtp_Plot_Direct,(TString("Correlation")+kFolder).Data()) ) +TString(Form("/CRL_%i/1D/",iCrPh)) );
+            kPlotFolder2D.push_back( TString( Form(kASigExtp_Plot_Direct,(TString("Correlation")+kFolder).Data()) ) +TString(Form("/CRL_%i/2D/",iCrPh)) );
+            //
+            h2D_Nraw_CR.at(iCrPh)        ->  Scale(1.,"width");
+            h2D_Nraw_stat_CR.push_back( uEfficiencyCorrection2D ( h2D_Nraw_CR.at(iCrPh), h1D_Nrec_2Db, h1D_Ngen_2Db, f2DCorrection ) );
+            h2D_Nraw_syst_CR.push_back( fSetSystErrors ( h2D_Nraw_stat_CR.at(iCrPh), "" ) );
+            h2D_Nraw_stat_CR.at(iCrPh)   ->  SetName(Form("h2D_Nraw_stat_CR_%i",iCrPh));
+            h2D_Nraw_syst_CR.at(iCrPh)   ->  SetName(Form("h2D_Nraw_syst_CR_%i",iCrPh));
+            //
+            kMult2D_Results.push_back( uMeasureFullYield2D( h2D_Nraw_stat_CR.at(iCrPh),h2D_Nraw_syst_CR.at(iCrPh),kStandardSystematicFitFunctions,kStatEvalCycles,kPlotFolder2D.at(iCrPh), "2D_%i" ) );
+            //
         }
         //
         //  --- Final Result Histograms
@@ -477,67 +576,38 @@ void AN_SigCorrections   ( TString fOption = "all", TString kFolder = "_p_p__7Te
         TH1F*   h1D_PhiCorr_Syst    =   new TH1F ( hName, hTitle, nBinCrPh, fArrCrPh );
         SetAxis( h1D_PhiCorr_Syst, "CR" );
         //
-        // --- Set the print progress utilities
-        fTotalCount = nBinCrPh;
-        fProgrCount = 0;
-        fStartTimer("Correlation Analysis Signal Correction");
-        //
-        for ( auto iTer = 0; iTer < h2D_Nres_Cd1_Stat.size(); ++iTer ) {
-            hName   =   Form( "h2D_Nres_Cd1_Stat_0_CR_%i", iTer );
-            hTitle  =   Form( "h2D_Nres_Cd1_Stat_0_CR_%i", iTer );
-            auto    h2D_Nres_Cd1_Stat_0 =   new TH1F( hName, hTitle, nBinPT2D, fArrPT2D );
+        auto iBin = -1;
+        for ( auto kCurrent_2D_Result : kMult2D_Results ) {
+            iBin++;
+            auto    kYield_2D   =   get<0>( kCurrent_2D_Result.at(0)["YL_FLL"] );
+            auto    kError_2D   =   get<1>( kCurrent_2D_Result.at(0)["YL_FLL"] );
+            auto    kErSys_2D   =   get<2>( kCurrent_2D_Result.at(0)["YL_FLL"] );
+            auto    kErRel_2D   =   kError_2D/kYield_2D;
             //
-            hName   =   Form( "h2D_Nres_Cd1_Syst_0_CR_%i", iTer );
-            hTitle  =   Form( "h2D_Nres_Cd1_Syst_0_CR_%i", iTer );
-            auto    h2D_Nres_Cd1_Syst_0 =   new TH1F( hName, hTitle, nBinPT2D, fArrPT2D );
+            cout << "iBin: " << iBin << endl;
+            cout << "kYield_2D: " << kYield_2D << endl;
+            cout << "kError_2D: " << kError_2D << endl;
+            cout << "kErSys_2D: " << kErSys_2D << endl;
+            cout << "kErRel_2D: " << kErRel_2D << endl;
             //
-            for ( auto jTer = 0; jTer < h2D_Nres_Cd1_Stat.at(iTer).size(); ++jTer ) {
-                auto    kCurrent_FullYield  =   fMeasureFullYield(h2D_Nres_Cd1_Stat.at(iTer).at(jTer),h2D_Nres_Cd1_Syst.at(iTer).at(jTer),Form("1D_2D_CR_%i_%i",iTer,jTer+1),Form(kASigExtp_Plot_Direct,"Correlation"));
-                h2D_Nres_Cd1_Stat_0 ->  SetBinContent   ( jTer+1, kCurrent_FullYield[10] );
-                h2D_Nres_Cd1_Stat_0 ->  SetBinError     ( jTer+1, kCurrent_FullYield[11] );
-                h2D_Nres_Cd1_Syst_0 ->  SetBinContent   ( jTer+1, kCurrent_FullYield[10] );
-                h2D_Nres_Cd1_Syst_0 ->  SetBinError     ( jTer+1, kCurrent_FullYield[12] );
-            }
-            //
-            auto fIntegral_Stat =   0.;
-            auto fIntegral_Syst =   0.;
-            auto fIntegral_Val_ =   uHistoIntegralAndError(h2D_Nres_Cd1_Stat.at(iTer),fIntegral_Stat);
-                 fIntegral_Val_ =   uHistoIntegralAndError(h2D_Nres_Cd1_Syst.at(iTer),fIntegral_Syst);
-            //
-            push_to_front( h2D_Nres_Cd1_Stat.at(iTer), h2D_Nres_Cd1_Stat_0 );
-            push_to_front( h2D_Nres_Cd1_Syst.at(iTer), h2D_Nres_Cd1_Syst_0 );
-            //
-            auto    kCurrent_FullYield  =   fMeasureFullYield( h2D_Nres_Cd1_Stat.at(iTer).at(0),h2D_Nres_Cd1_Syst.at(iTer).at(0),Form("1D_2D_CR_%i_%i",iTer,0),Form(kASigExtp_Plot_Direct,"Correlation"));
-            //
-            auto    fExtrapol_Val_ =   kCurrent_FullYield[10];
-            auto    fExtrapol_Stat =   kCurrent_FullYield[11];
-            auto    fExtrapol_Syst =   kCurrent_FullYield[12];
-            //
-            auto    fSecondIntErr   =   1.;
-            auto fTotalYield    =   fExtrapol_Val_ +    fIntegral_Val_ +    h2D_Nres_Cd1_Stat.at(iTer).at(0)->IntegralAndError(-1,1000,fSecondIntErr,"width");
-            auto fTotalEStat    =   SquareSum( { fIntegral_Stat, fExtrapol_Stat, fSecondIntErr } );
-                                                                            h2D_Nres_Cd1_Syst.at(iTer).at(0)->IntegralAndError(-1,1000,fSecondIntErr,"width");
-            auto fTotalESyst    =   SquareSum( { fIntegral_Syst, fExtrapol_Syst, fSecondIntErr } );
-            h1D_PhiCorr_Stat    ->  SetBinContent   ( iTer+1, fTotalYield );
-            h1D_PhiCorr_Stat    ->  SetBinError     ( iTer+1, fTotalEStat );
-            h1D_PhiCorr_Syst    ->  SetBinContent   ( iTer+1, fTotalYield );
-            h1D_PhiCorr_Syst    ->  SetBinError     ( iTer+1, fTotalESyst );
-            //
-            // --- Progressive Count
-            fProgrCount++;
-            fPrintLoopTimer("Correlation Analysis Signal Correction",fProgrCount,fTotalCount,1);
+            h1D_PhiCorr_Stat->SetBinContent ( iBin+1, kYield_2D );
+            h1D_PhiCorr_Stat->SetBinError   ( iBin+1, kError_2D );
+            h1D_PhiCorr_Syst->SetBinContent ( iBin+1, kYield_2D );
+            h1D_PhiCorr_Syst->SetBinError   ( iBin+1, kErSys_2D );
         }
         //
         fStopTimer("Correlation Analysis Signal Correction");
         //
         //  --- Output
-        TFile *outFile_Rslt_CR      =   new TFile   (Form(kASigExtp_FitCheckRst,"Correlation"),"recreate");
+        TFile *outFile_Rslt_CR      =   new TFile   (Form(kASigExtp_FitCheckRst,(TString("Correlation")+kFolder).Data()),"recreate");
         //
         h1D_PhiCorr_Stat->Scale(1.,"width");
         h1D_PhiCorr_Syst->Scale(1.,"width");
         //
         h1D_PhiCorr_Stat->Write();
         h1D_PhiCorr_Syst->Write();
+        //
+        uPlotCorrelation ( h1D_PhiCorr_Stat, h1D_PhiCorr_Syst, kPlotFolderFL_Full )->Write();
         //
         outFile_Rslt_CR->Close();
         outFile_Chck_CR->Close();

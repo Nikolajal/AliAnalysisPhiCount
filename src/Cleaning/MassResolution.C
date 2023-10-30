@@ -245,7 +245,7 @@ void MassResolution ( TString fOption = "", bool fSilent = true )   {
         fGaussFitRslt       ->  SetRange( kFull_Mean-(2)*kFull_STDV, kFull_Mean+(2)*kFull_STDV  );
         fGaussFitRslt       ->  Draw("SAME");
         if ( kDoYield )         cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Yield")+TString(Form("3SigGuassFit_2D_%i.pdf",iFit)));
-        if ( kDoMultiplicity )  cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Mutliplicity")+TString(Form("3SigGuassFit_2D_%i.pdf",iFit)));
+        if ( kDoMultiplicity )  cDrawPlot           ->  SaveAs(Form(kMassResolution_Plot,"Multiplicity")+TString(Form("3SigGuassFit_2D_%i.pdf",iFit)));
         delete              cDrawPlot;
         //
                             cDrawPlot   =   new TCanvas();
